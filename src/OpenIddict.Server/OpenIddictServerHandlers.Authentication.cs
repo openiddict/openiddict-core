@@ -79,6 +79,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<ExtractAuthorizationRequest>()
                         .SetOrder(100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -96,11 +97,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
                     }
 
                     var notification = new ExtractAuthorizationRequestContext(context.Transaction);
@@ -155,6 +151,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<ValidateAuthorizationRequest>()
                         .SetOrder(ExtractAuthorizationRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -172,11 +169,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
                     }
 
                     var notification = new ValidateAuthorizationRequestContext(context.Transaction);
@@ -231,6 +223,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<HandleAuthorizationRequest>()
                         .SetOrder(ValidateAuthorizationRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -248,11 +241,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
                     }
 
                     var notification = new HandleAuthorizationRequestContext(context.Transaction);
@@ -335,6 +323,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<ApplyAuthorizationResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -352,11 +341,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
                     }
 
                     var notification = new ApplyAuthorizationResponseContext(context.Transaction);

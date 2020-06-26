@@ -84,6 +84,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireTokenRequest>()
                         .UseScopedHandler<ExtractTokenRequest>()
                         .SetOrder(100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -101,11 +102,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Token)
-                    {
-                        return;
                     }
 
                     var notification = new ExtractTokenRequestContext(context.Transaction);
@@ -160,6 +156,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireTokenRequest>()
                         .UseScopedHandler<ValidateTokenRequest>()
                         .SetOrder(ExtractTokenRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -177,11 +174,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Token)
-                    {
-                        return;
                     }
 
                     var notification = new ValidateTokenRequestContext(context.Transaction);
@@ -231,6 +223,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireTokenRequest>()
                         .UseScopedHandler<HandleTokenRequest>()
                         .SetOrder(ValidateTokenRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -248,11 +241,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Token)
-                    {
-                        return;
                     }
 
                     var notification = new HandleTokenRequestContext(context.Transaction);
@@ -335,6 +323,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireTokenRequest>()
                         .UseScopedHandler<ApplyTokenResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -352,11 +341,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Token)
-                    {
-                        return;
                     }
 
                     var notification = new ApplyTokenResponseContext(context.Transaction);

@@ -59,6 +59,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<ExtractLogoutRequest>()
                         .SetOrder(100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -76,11 +77,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
                     }
 
                     var notification = new ExtractLogoutRequestContext(context.Transaction);
@@ -135,6 +131,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<ValidateLogoutRequest>()
                         .SetOrder(ExtractLogoutRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -152,11 +149,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
                     }
 
                     var notification = new ValidateLogoutRequestContext(context.Transaction);
@@ -206,6 +198,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<HandleLogoutRequest>()
                         .SetOrder(ValidateLogoutRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -223,11 +216,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
                     }
 
                     var notification = new HandleLogoutRequestContext(context.Transaction);
@@ -306,6 +294,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<ApplyLogoutResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -323,11 +312,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
                     }
 
                     var notification = new ApplyLogoutResponseContext(context.Transaction);

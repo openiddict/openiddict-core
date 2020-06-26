@@ -43,28 +43,48 @@ namespace OpenIddict.Validation
 
             await foreach (var handler in GetHandlersAsync())
             {
-                await handler.HandleAsync(context);
+                try
+                {
+                    await handler.HandleAsync(context);
+                }
+
+                catch (Exception exception) when (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(exception, "An exception was thrown by {FullName} while handling the {Event} event.",
+                        handler.GetType().FullName, typeof(TContext).FullName);
+
+                    throw;
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("The event {Event} was successfully processed by {FullName}.",
+                        typeof(TContext).FullName, handler.GetType().FullName);
+                }
 
                 switch (context)
                 {
                     case BaseRequestContext notification when notification.IsRequestHandled:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug("The event context was marked as handled by {Name}.", handler.GetType().FullName);
+                            _logger.LogDebug("The event {Event} was marked as handled by {FullName}.",
+                                typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
                     case BaseRequestContext notification when notification.IsRequestSkipped:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug("The event context was marked as skipped by {Name}.", handler.GetType().FullName);
+                            _logger.LogDebug("The event {Event} was marked as skipped by {FullName}.",
+                                typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
                     case BaseValidatingContext notification when notification.IsRejected:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug("The event context was marked as rejected by {Name}.", handler.GetType().FullName);
+                            _logger.LogDebug("The event {Event} was marked as rejected by {FullName}.",
+                                typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 

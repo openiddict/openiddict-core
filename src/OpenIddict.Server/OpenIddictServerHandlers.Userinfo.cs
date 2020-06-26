@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 
 namespace OpenIddict.Server
 {
@@ -60,6 +61,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireUserinfoRequest>()
                         .UseScopedHandler<ExtractUserinfoRequest>()
                         .SetOrder(100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -77,11 +79,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Userinfo)
-                    {
-                        return;
                     }
 
                     var notification = new ExtractUserinfoRequestContext(context.Transaction);
@@ -136,6 +133,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireUserinfoRequest>()
                         .UseScopedHandler<ValidateUserinfoRequest>()
                         .SetOrder(ExtractUserinfoRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -153,11 +151,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Userinfo)
-                    {
-                        return;
                     }
 
                     var notification = new ValidateUserinfoRequestContext(context.Transaction);
@@ -207,6 +200,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireUserinfoRequest>()
                         .UseScopedHandler<HandleUserinfoRequest>()
                         .SetOrder(ValidateUserinfoRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -224,11 +218,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Userinfo)
-                    {
-                        return;
                     }
 
                     var notification = new HandleUserinfoRequestContext(context.Transaction);
@@ -309,6 +298,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireUserinfoRequest>()
                         .UseScopedHandler<ApplyUserinfoResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -326,11 +316,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Userinfo)
-                    {
-                        return;
                     }
 
                     var notification = new ApplyUserinfoResponseContext(context.Transaction);
