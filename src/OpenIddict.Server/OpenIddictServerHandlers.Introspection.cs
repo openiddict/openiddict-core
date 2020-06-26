@@ -80,6 +80,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractIntrospectionRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -155,6 +156,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ValidateIntrospectionRequest>()
                         .SetOrder(ExtractIntrospectionRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -225,6 +227,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<HandleIntrospectionRequest>()
                         .SetOrder(ValidateIntrospectionRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -337,6 +340,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                         .UseScopedHandler<ApplyIntrospectionResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -393,6 +397,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
                         .UseSingletonHandler<ValidateTokenParameter>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -437,6 +442,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
                         .UseSingletonHandler<ValidateClientIdParameter>()
                         .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -497,6 +503,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientId>()
                         .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -559,6 +566,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientType>()
                         .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -642,6 +650,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientSecret>()
                         .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -710,6 +719,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireEndpointPermissionsEnabled>()
                         .UseScopedHandler<ValidateEndpointPermissions>()
                         .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -764,6 +774,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
                         .UseScopedHandler<ValidateToken>()
                         .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -821,6 +832,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
                         .UseSingletonHandler<ValidateTokenType>()
                         .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -873,6 +885,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireClientIdParameter>()
                         .UseSingletonHandler<ValidateAuthorizedParty>()
                         .SetOrder(ValidateTokenType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -982,6 +995,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleIntrospectionRequestContext>()
                         .UseSingletonHandler<AttachPrincipal>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -1020,6 +1034,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleIntrospectionRequestContext>()
                         .UseSingletonHandler<AttachMetadataClaims>()
                         .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -1089,6 +1104,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<AttachApplicationClaims>()
                         .SetOrder(AttachMetadataClaims.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -1211,6 +1227,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyIntrospectionResponseContext>()
                         .UseSingletonHandler<NormalizeErrorResponse>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

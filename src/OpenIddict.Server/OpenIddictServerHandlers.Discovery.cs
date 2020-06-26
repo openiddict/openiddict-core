@@ -83,6 +83,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractConfigurationRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -158,6 +159,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ValidateConfigurationRequest>()
                         .SetOrder(ExtractConfigurationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -224,6 +226,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<HandleConfigurationRequest>()
                         .SetOrder(ValidateConfigurationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -319,6 +322,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                         .UseScopedHandler<ApplyConfigurationResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -375,6 +379,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachEndpoints>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -471,6 +476,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachGrantTypes>()
                         .SetOrder(AttachEndpoints.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -505,6 +511,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachResponseModes>()
                         .SetOrder(AttachGrantTypes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -539,6 +546,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachResponseTypes>()
                         .SetOrder(AttachResponseModes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -574,6 +582,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachClientAuthenticationMethods>()
                         .SetOrder(AttachResponseTypes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -625,6 +634,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachCodeChallengeMethods>()
                         .SetOrder(AttachClientAuthenticationMethods.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -659,6 +669,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachScopes>()
                         .SetOrder(AttachCodeChallengeMethods.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -693,6 +704,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachClaims>()
                         .SetOrder(AttachScopes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -727,6 +739,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachSubjectTypes>()
                         .SetOrder(AttachClaims.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -761,6 +774,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachSigningAlgorithms>()
                         .SetOrder(AttachSubjectTypes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -832,6 +846,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachAdditionalMetadata>()
                         .SetOrder(AttachSigningAlgorithms.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -875,6 +890,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractCryptographyRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -950,6 +966,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ValidateCryptographyRequest>()
                         .SetOrder(ExtractCryptographyRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -1016,6 +1033,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<HandleCryptographyRequest>()
                         .SetOrder(ValidateCryptographyRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -1154,6 +1172,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                         .UseScopedHandler<ApplyCryptographyResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -1210,6 +1229,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleCryptographyRequestContext>()
                         .UseSingletonHandler<AttachSigningKeys>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

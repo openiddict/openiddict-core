@@ -72,6 +72,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractRevocationRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -147,6 +148,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ValidateRevocationRequest>()
                         .SetOrder(ExtractRevocationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -217,6 +219,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<HandleRevocationRequest>()
                         .SetOrder(ValidateRevocationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -283,6 +286,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                         .UseScopedHandler<ApplyRevocationResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -339,6 +343,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseSingletonHandler<ValidateTokenParameter>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -383,6 +388,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseSingletonHandler<ValidateClientIdParameter>()
                         .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -443,6 +449,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientId>()
                         .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -505,6 +512,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientType>()
                         .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -588,6 +596,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientSecret>()
                         .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -656,6 +665,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireEndpointPermissionsEnabled>()
                         .UseScopedHandler<ValidateEndpointPermissions>()
                         .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -710,6 +720,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseScopedHandler<ValidateToken>()
                         .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -767,6 +778,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseSingletonHandler<ValidateTokenType>()
                         .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -818,6 +830,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireClientIdParameter>()
                         .UseSingletonHandler<ValidateAuthorizedParty>()
                         .SetOrder(ValidateTokenType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -927,6 +940,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleRevocationRequestContext>()
                         .UseSingletonHandler<AttachPrincipal>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -980,6 +994,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<RevokeToken>()
                         .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -1045,6 +1060,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyRevocationResponseContext>()
                         .UseSingletonHandler<NormalizeErrorResponse>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

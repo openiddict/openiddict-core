@@ -88,6 +88,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractAuthorizationRequestContext>.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -199,6 +200,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -311,6 +313,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(ProcessFormPostResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -361,6 +364,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireHttpRequest>()
                         .UseSingletonHandler<ProcessFormPostResponse>()
                         .SetOrder(ProcessQueryResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -457,6 +461,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireHttpRequest>()
                         .UseSingletonHandler<ProcessQueryResponse>()
                         .SetOrder(ProcessFragmentResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -527,6 +532,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireHttpRequest>()
                         .UseSingletonHandler<ProcessFragmentResponse>()
                         .SetOrder(ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

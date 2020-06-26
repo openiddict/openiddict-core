@@ -85,6 +85,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -196,6 +197,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -303,6 +305,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(ProcessRedirectionResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -348,6 +351,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessRedirectionResponse>()
                         .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, IOpenIddictServerHandlerFilter<ApplyLogoutResponseContext>>.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
