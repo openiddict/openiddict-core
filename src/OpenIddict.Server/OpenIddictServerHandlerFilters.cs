@@ -48,6 +48,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not an authorization request.
+        /// </summary>
+        public class RequireAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Authorization);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if authorization storage was not enabled.
         /// </summary>
         public class RequireAuthorizationStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -80,6 +96,38 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a configuration request.
+        /// </summary>
+        public class RequireConfigurationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Configuration);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a cryptography request.
+        /// </summary>
+        public class RequireCryptographyRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Cryptography);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if the degraded mode was not enabled.
         /// </summary>
         public class RequireDegradedModeDisabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -108,6 +156,22 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.IncludeDeviceCode);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a device request.
+        /// </summary>
+        public class RequireDeviceRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Device);
             }
         }
 
@@ -156,6 +220,38 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.IncludeIdentityToken);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not an introspection request.
+        /// </summary>
+        public class RequireIntrospectionRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Introspection);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a logout request.
+        /// </summary>
+        public class RequireLogoutRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Logout);
             }
         }
 
@@ -220,6 +316,22 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.IncludeRefreshToken);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a revocation request.
+        /// </summary>
+        public class RequireRevocationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Revocation);
             }
         }
 
@@ -304,6 +416,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a token request.
+        /// </summary>
+        public class RequireTokenRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Token);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if token storage was not enabled.
         /// </summary>
         public class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -332,6 +460,38 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.IncludeUserCode);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a userinfo request.
+        /// </summary>
+        public class RequireUserinfoRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Userinfo);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the request is not a verification request.
+        /// </summary>
+        public class RequireVerificationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.EndpointType == OpenIddictServerEndpointType.Verification);
             }
         }
     }

@@ -20,6 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 
 namespace OpenIddict.Server
 {
@@ -81,6 +82,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<ExtractConfigurationRequest>()
                         .SetOrder(100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -98,11 +100,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
                     }
 
                     var notification = new ExtractConfigurationRequestContext(context.Transaction);
@@ -157,6 +154,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<ValidateConfigurationRequest>()
                         .SetOrder(ExtractConfigurationRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -174,11 +172,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
                     }
 
                     var notification = new ValidateConfigurationRequestContext(context.Transaction);
@@ -224,6 +217,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<HandleConfigurationRequest>()
                         .SetOrder(ValidateConfigurationRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -241,11 +235,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
                     }
 
                     var notification = new HandleConfigurationRequestContext(context.Transaction);
@@ -320,6 +309,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<ApplyConfigurationResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -337,11 +327,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
                     }
 
                     var notification = new ApplyConfigurationResponseContext(context.Transaction);
@@ -888,6 +873,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<ExtractCryptographyRequest>()
                         .SetOrder(100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -905,11 +891,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
                     }
 
                     var notification = new ExtractCryptographyRequestContext(context.Transaction);
@@ -964,6 +945,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<ValidateCryptographyRequest>()
                         .SetOrder(ExtractCryptographyRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -981,11 +963,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
                     }
 
                     var notification = new ValidateCryptographyRequestContext(context.Transaction);
@@ -1031,6 +1008,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<HandleCryptographyRequest>()
                         .SetOrder(ValidateCryptographyRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1048,11 +1026,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
                     }
 
                     var notification = new HandleCryptographyRequestContext(context.Transaction);
@@ -1170,6 +1143,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<ApplyCryptographyResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1187,11 +1161,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
                     }
 
                     var notification = new ApplyCryptographyResponseContext(context.Transaction);

@@ -78,6 +78,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireIntrospectionRequest>()
                         .UseScopedHandler<ExtractIntrospectionRequest>()
                         .SetOrder(100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -95,11 +96,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Introspection)
-                    {
-                        return;
                     }
 
                     var notification = new ExtractIntrospectionRequestContext(context.Transaction);
@@ -154,6 +150,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireIntrospectionRequest>()
                         .UseScopedHandler<ValidateIntrospectionRequest>()
                         .SetOrder(ExtractIntrospectionRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -171,11 +168,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Introspection)
-                    {
-                        return;
                     }
 
                     var notification = new ValidateIntrospectionRequestContext(context.Transaction);
@@ -225,6 +217,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireIntrospectionRequest>()
                         .UseScopedHandler<HandleIntrospectionRequest>()
                         .SetOrder(ValidateIntrospectionRequest.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -242,11 +235,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Introspection)
-                    {
-                        return;
                     }
 
                     var notification = new HandleIntrospectionRequestContext(context.Transaction);
@@ -338,6 +326,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireIntrospectionRequest>()
                         .UseScopedHandler<ApplyIntrospectionResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -355,11 +344,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.EndpointType != OpenIddictServerEndpointType.Introspection)
-                    {
-                        return;
                     }
 
                     var notification = new ApplyIntrospectionResponseContext(context.Transaction);
