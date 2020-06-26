@@ -45,6 +45,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                         .UseSingletonHandler<ValidateIssuer>()
                         .SetOrder(HandleErrorResponse<HandleConfigurationResponseContext>.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -109,6 +110,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                         .UseSingletonHandler<ExtractCryptographyEndpoint>()
                         .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -164,6 +166,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                         .UseSingletonHandler<ExtractIntrospectionEndpoint>()
                         .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -223,6 +226,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
                         .UseSingletonHandler<ExtractSigningKeys>()
                         .SetOrder(HandleErrorResponse<HandleCryptographyResponseContext>.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

@@ -86,6 +86,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -197,6 +198,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -309,6 +311,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(ProcessRedirectionResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -354,6 +357,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireHttpRequest>()
                         .UseSingletonHandler<ProcessRedirectionResponse>()
                         .SetOrder(ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

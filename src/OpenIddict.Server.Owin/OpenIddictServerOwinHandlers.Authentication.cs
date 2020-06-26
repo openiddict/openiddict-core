@@ -87,6 +87,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractAuthorizationRequestContext>.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -198,6 +199,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -305,6 +307,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(ProcessFormPostResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -355,6 +358,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessFormPostResponse>()
                         .SetOrder(ProcessQueryResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -452,6 +456,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessQueryResponse>()
                         .SetOrder(ProcessFragmentResponse.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -522,6 +527,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessFragmentResponse>()
                         .SetOrder(ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor.Order - 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

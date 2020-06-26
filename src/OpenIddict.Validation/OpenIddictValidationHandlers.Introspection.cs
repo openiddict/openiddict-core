@@ -51,6 +51,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
                         .UseSingletonHandler<AttachCredentials>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -86,6 +87,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
                         .UseSingletonHandler<AttachToken>()
                         .SetOrder(AttachCredentials.Descriptor.Order + 100_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -121,6 +123,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                         .UseSingletonHandler<HandleInactiveResponse>()
                         .SetOrder(HandleErrorResponse<HandleIntrospectionResponseContext>.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -178,6 +181,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                         .UseSingletonHandler<ValidateWellKnownClaims>()
                         .SetOrder(HandleInactiveResponse.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -298,6 +302,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                         .UseSingletonHandler<ValidateIssuer>()
                         .SetOrder(ValidateWellKnownClaims.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -354,6 +359,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                         .UseSingletonHandler<ValidateTokenType>()
                         .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>
@@ -403,6 +409,7 @@ namespace OpenIddict.Validation
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                         .UseSingletonHandler<PopulateClaims>()
                         .SetOrder(ValidateTokenType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 /// <summary>

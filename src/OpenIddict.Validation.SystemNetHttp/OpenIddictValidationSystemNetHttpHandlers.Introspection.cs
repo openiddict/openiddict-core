@@ -48,6 +48,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                         .AddFilter<RequireHttpMetadataAddress>()
                         .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
                         .SetOrder(AttachFormParameters<PrepareIntrospectionRequestContext>.Descriptor.Order - 1000)
+                        .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
                 public async ValueTask HandleAsync([NotNull] PrepareIntrospectionRequestContext context)
