@@ -96,7 +96,7 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
                 }
 
-                if (options.UseReferenceTokens)
+                if (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens)
                 {
                     throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
                 }

@@ -54,7 +54,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireGrantTypePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireIdentityTokenIncluded>();
             builder.Services.TryAddSingleton<RequirePostLogoutRedirectUriParameter>();
-            builder.Services.TryAddSingleton<RequireReferenceTokensEnabled>();
+            builder.Services.TryAddSingleton<RequireReferenceAccessTokensEnabled>();
+            builder.Services.TryAddSingleton<RequireReferenceRefreshTokensEnabled>();
             builder.Services.TryAddSingleton<RequireRefreshTokenIncluded>();
             builder.Services.TryAddSingleton<RequireRollingTokensDisabled>();
             builder.Services.TryAddSingleton<RequireRollingTokensEnabled>();

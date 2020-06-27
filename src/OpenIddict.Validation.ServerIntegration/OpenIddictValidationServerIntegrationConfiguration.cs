@@ -59,8 +59,8 @@ namespace OpenIddict.Validation.ServerIntegration
                 options.EncryptionCredentials.Add(credentials);
             }
 
-            // Note: token entry validation must be enabled to be able to validate reference tokens.
-            options.EnableTokenEntryValidation = _options.CurrentValue.UseReferenceTokens;
+            // Note: token entry validation must be enabled to be able to validate reference access tokens.
+            options.EnableTokenEntryValidation = _options.CurrentValue.UseReferenceAccessTokens;
         }
 
         /// <summary>

@@ -3969,6 +3969,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                     mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                    mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
                 }));
 
                 options.Services.AddSingleton(manager);
@@ -4042,6 +4045,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                     mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                    mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
                 }));
 
                 options.Services.AddSingleton(manager);

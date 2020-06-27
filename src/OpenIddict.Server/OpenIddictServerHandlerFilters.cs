@@ -176,9 +176,9 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if reference tokens are disabled.
+        /// Represents a filter that excludes the associated handlers if reference access tokens are disabled.
         /// </summary>
-        public class RequireReferenceTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        public class RequireReferenceAccessTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
             public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
@@ -187,7 +187,23 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Options.UseReferenceTokens);
+                return new ValueTask<bool>(context.Options.UseReferenceAccessTokens);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if reference refresh tokens are disabled.
+        /// </summary>
+        public class RequireReferenceRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.Options.UseReferenceRefreshTokens);
             }
         }
 

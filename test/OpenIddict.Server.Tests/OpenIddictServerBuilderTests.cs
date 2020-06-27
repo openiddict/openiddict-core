@@ -1683,19 +1683,35 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void UseReferenceTokens_ReferenceTokensAreEnabled()
+        public void UseReferenceAccessTokens_ReferenceAccessTokensAreEnabled()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.UseReferenceTokens();
+            builder.UseReferenceAccessTokens();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.UseReferenceTokens);
+            Assert.True(options.UseReferenceAccessTokens);
+        }
+
+        [Fact]
+        public void UseReferenceRefreshTokens_ReferenceRefreshTokensAreEnabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.UseReferenceRefreshTokens();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.UseReferenceRefreshTokens);
         }
 
         [Fact]
