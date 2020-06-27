@@ -174,13 +174,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new InvalidOperationException("The asymmetric encryption key doesn't contain the required private key.");
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.Aes256KW))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW))
             {
                 return AddEncryptionCredentials(new EncryptingCredentials(key,
                     SecurityAlgorithms.Aes256KW, SecurityAlgorithms.Aes256CbcHmacSha512));
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.RsaOAEP))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaOAEP))
             {
                 return AddEncryptionCredentials(new EncryptingCredentials(key,
                     SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512));
@@ -190,9 +190,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AppendLine("An encryption algorithm cannot be automatically inferred from the encrypting key.")
                 .Append("Consider using 'options.AddEncryptionCredentials(EncryptingCredentials)' instead.")
                 .ToString());
-
-            static bool IsAlgorithmSupported(SecurityKey key, string algorithm) =>
-                key.CryptoProviderFactory.IsSupportedAlgorithm(algorithm, key);
         }
 
         /// <summary>
@@ -606,36 +603,36 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new InvalidOperationException("The asymmetric signing key doesn't contain the required private key.");
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.RsaSha256))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
             {
                 return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.HmacSha256))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
             {
                 return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
             }
 
 #if SUPPORTS_ECDSA
             // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.EcdsaSha256))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
             {
                 return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256));
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.EcdsaSha384))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
             {
                 return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha384));
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.EcdsaSha512))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
             {
                 return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
             }
 #else
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.EcdsaSha256) ||
-                IsAlgorithmSupported(key, SecurityAlgorithms.EcdsaSha384) ||
-                IsAlgorithmSupported(key, SecurityAlgorithms.EcdsaSha512))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
+                key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
+                key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
             {
                 throw new PlatformNotSupportedException("ECDSA signing keys are not supported on this platform.");
             }
@@ -645,9 +642,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AppendLine("A signature algorithm cannot be automatically inferred from the signing key.")
                 .Append("Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.")
                 .ToString());
-
-            static bool IsAlgorithmSupported(SecurityKey key, string algorithm) =>
-                key.CryptoProviderFactory.IsSupportedAlgorithm(algorithm, key);
         }
 
         /// <summary>

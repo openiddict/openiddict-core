@@ -169,6 +169,24 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void AddEncryptionKey_EncryptingKeyIsCorrectlyAdded()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            var key = Mock.Of<SecurityKey>(mock => mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
+
+            // Act
+            builder.AddEncryptionKey(key);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Same(key, options.EncryptionCredentials[0].Key);
+        }
+
+        [Fact]
         public void RemoveEventHandler_ThrowsAnExceptionWhenDescriptorIsNull()
         {
             // Arrange
@@ -336,27 +354,6 @@ namespace OpenIddict.Server.Tests
             Assert.Equal(algorithm, credentials.Algorithm);
         }
 
-        //[Fact]
-        //public void AddEncryptingKey_EncryptingKeyIsCorrectlyAdded()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    var factory = Mock.Of<CryptoProviderFactory>(mock =>
-        //        mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW, It.IsAny<SecurityKey>()));
-
-        //    var key = Mock.Of<SecurityKey>(mock => mock.CryptoProviderFactory == factory);
-
-        //    // Act
-        //    builder.AddEncryptingKey(key);
-
-        //    var options = GetOptions(services);
-
-        //    // Assert
-        //    Assert.Same(key, options.EncryptingCredentials[0].Key);
-        //}
-
         [Theory]
         [InlineData(SecurityAlgorithms.HmacSha256)]
         [InlineData(SecurityAlgorithms.RsaSha256)]
@@ -371,10 +368,7 @@ namespace OpenIddict.Server.Tests
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
-            var factory = Mock.Of<CryptoProviderFactory>(mock =>
-                mock.IsSupportedAlgorithm(algorithm, It.IsAny<SecurityKey>()));
-
-            var key = Mock.Of<SecurityKey>(mock => mock.CryptoProviderFactory == factory);
+            var key = Mock.Of<SecurityKey>(mock => mock.IsSupportedAlgorithm(algorithm));
 
             // Act
             builder.AddSigningKey(key);
@@ -1035,22 +1029,6 @@ namespace OpenIddict.Server.Tests
             Assert.Contains(new Uri("http://localhost/endpoint-path"), options.LogoutEndpointUris);
         }
 
-        //[Fact]
-        //public void EnableRequestCaching_RequestCachingIsEnabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    // Act
-        //    builder.EnableRequestCaching();
-
-        //    var options = GetOptions(services);
-
-        //    // Assert
-        //    Assert.True(options.EnableRequestCaching);
-        //}
-
         [Fact]
         public void SetRevocationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
         {
@@ -1493,73 +1471,6 @@ namespace OpenIddict.Server.Tests
             // Assert
             Assert.Null(options.RefreshTokenLifetime);
         }
-
-        //[Fact]
-        //public void SetRequestCachingPolicy_ThrowsAnExceptionForNullPolicy()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    // Act and assert
-        //    var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRequestCachingPolicy(null));
-
-        //    Assert.Equal("policy", exception.ParamName);
-        //}
-
-        //[Fact]
-        //public void SetRequestCachingPolicy_PolicyIsUpdated()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    var policy = new DistributedCacheEntryOptions
-        //    {
-        //        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(42),
-        //        SlidingExpiration = TimeSpan.FromSeconds(42)
-        //    };
-
-        //    // Act
-        //    builder.SetRequestCachingPolicy(policy);
-
-        //    var options = GetOptions(services);
-
-        //    // Assert
-        //    Assert.Same(policy, options.RequestCachingPolicy);
-        //}
-
-        //[Fact]
-        //public void UseDataProtectionProvider_DefaultProviderIsReplaced()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    // Act
-        //    builder.UseDataProtectionProvider(new EphemeralDataProtectionProvider());
-
-        //    var options = GetOptions(services);
-
-        //    // Assert
-        //    Assert.IsType<EphemeralDataProtectionProvider>(options.DataProtectionProvider);
-        //}
-
-        //[Fact]
-        //public void UseJsonWebTokens_AccessTokenHandlerIsCorrectlySet()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    // Act
-        //    builder.UseJsonWebTokens();
-
-        //    var options = GetOptions(services);
-
-        //    // Assert
-        //    Assert.IsType<JwtSecurityTokenHandler>(options.AccessTokenHandler);
-        //}
 
         [Fact]
         public void SetIssuer_ThrowsAnExceptionForNullIssuer()
