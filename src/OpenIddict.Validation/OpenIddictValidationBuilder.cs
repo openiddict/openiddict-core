@@ -164,13 +164,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new InvalidOperationException("The asymmetric encryption key doesn't contain the required private key.");
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.Aes256KW))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW))
             {
                 return AddEncryptionCredentials(new EncryptingCredentials(key,
                     SecurityAlgorithms.Aes256KW, SecurityAlgorithms.Aes256CbcHmacSha512));
             }
 
-            if (IsAlgorithmSupported(key, SecurityAlgorithms.RsaOAEP))
+            if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaOAEP))
             {
                 return AddEncryptionCredentials(new EncryptingCredentials(key,
                     SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512));
@@ -180,9 +180,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AppendLine("An encryption algorithm cannot be automatically inferred from the encrypting key.")
                 .Append("Consider using 'options.AddEncryptionCredentials(EncryptingCredentials)' instead.")
                 .ToString());
-
-            static bool IsAlgorithmSupported(SecurityKey key, string algorithm) =>
-                key.CryptoProviderFactory.IsSupportedAlgorithm(algorithm, key);
         }
 
         /// <summary>

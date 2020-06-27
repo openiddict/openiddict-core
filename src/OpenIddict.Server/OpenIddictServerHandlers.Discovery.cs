@@ -1249,11 +1249,11 @@ namespace OpenIddict.Server
                     foreach (var credentials in context.Options.SigningCredentials)
                     {
 #if SUPPORTS_ECDSA
-                        if (!IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha384) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha512))
+                        if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
                         {
                             context.Logger.LogInformation("An unsupported signing key of type '{Type}' was ignored and excluded " +
                                                           "from the key set. Only RSA and ECDSA asymmetric security keys can be " +
@@ -1262,8 +1262,8 @@ namespace OpenIddict.Server
                             continue;
                         }
 #else
-                        if (!IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256))
+                        if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
                         {
                             context.Logger.LogInformation("An unsupported signing key of type '{Type}' was ignored and excluded " +
                                                           "from the key set. Only RSA asymmetric security keys can be exposed " +
@@ -1309,8 +1309,8 @@ namespace OpenIddict.Server
                             Kid = credentials.Kid
                         };
 
-                        if (IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) ||
-                            IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256))
+                        if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) ||
+                            credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
                         {
                             // Note: IdentityModel 5 doesn't expose a method allowing to retrieve the underlying algorithm
                             // from a generic asymmetric security key. To work around this limitation, try to cast
@@ -1351,9 +1351,9 @@ namespace OpenIddict.Server
                         }
 
 #if SUPPORTS_ECDSA
-                        else if (IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha256) ||
-                                 IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha384) ||
-                                 IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha512))
+                        else if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
+                                 credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
+                                 credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
                         {
                             var parameters = credentials.Key switch
                             {
@@ -1416,9 +1416,6 @@ namespace OpenIddict.Server
                     }
 
                     return default;
-
-                    static bool IsAlgorithmSupported(SecurityKey key, string algorithm) =>
-                        key.CryptoProviderFactory.IsSupportedAlgorithm(algorithm, key);
 
 #if SUPPORTS_ECDSA
                     static bool IsCurve(ECParameters parameters, ECCurve curve) =>

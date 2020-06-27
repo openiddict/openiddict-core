@@ -1213,8 +1213,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleCryptographyRequest_UnsupportedSecurityKeysAreIgnored(string algorithm)
         {
             // Arrange
-            var factory = Mock.Of<CryptoProviderFactory>(mock => !mock.IsSupportedAlgorithm(algorithm, It.IsAny<SecurityKey>()));
-            var key = Mock.Of<SecurityKey>(mock => mock.CryptoProviderFactory == factory);
+            var key = Mock.Of<SecurityKey>(mock => !mock.IsSupportedAlgorithm(algorithm));
 
             await using var server = await CreateServerAsync(options =>
             {
