@@ -1815,8 +1815,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// one is automatically revoked unless token storage was explicitly disabled).
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder UseRollingTokens()
-            => Configure(options => options.UseRollingTokens = true);
+        public OpenIddictServerBuilder UseRollingRefreshTokens()
+            => Configure(options => options.UseRollingRefreshTokens = true);
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.

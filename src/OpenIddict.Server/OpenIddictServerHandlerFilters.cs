@@ -235,14 +235,14 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(!context.Options.UseRollingTokens);
+                return new ValueTask<bool>(!context.Options.UseRollingRefreshTokens);
             }
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if rolling tokens were not enabled.
+        /// Represents a filter that excludes the associated handlers if rolling refresh tokens were not enabled.
         /// </summary>
-        public class RequireRollingTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        public class RequireRollingRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
             public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
@@ -251,7 +251,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Options.UseRollingTokens);
+                return new ValueTask<bool>(context.Options.UseRollingRefreshTokens);
             }
         }
 

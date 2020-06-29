@@ -363,6 +363,6 @@ namespace OpenIddict.Server
         /// refresh token request (and the previous one is automatically revoked
         /// unless token storage was explicitly disabled in the options).
         /// </summary>
-        public bool UseRollingTokens { get; set; }
+        public bool UseRollingRefreshTokens { get; set; }
     }
 }
