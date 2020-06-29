@@ -30,23 +30,6 @@ namespace OpenIddict.MongoDb.Tests
         }
 
         [Fact]
-        public void DisableInitialization_InitializationIsCorrectlyDisabled()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.DisableInitialization();
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
-
-            Assert.True(options.DisableInitialization);
-        }
-
-        [Fact]
         public void ReplaceDefaultApplicationEntity_EntityIsCorrectlySet()
         {
             // Arrange
@@ -211,23 +194,6 @@ namespace OpenIddict.MongoDb.Tests
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
 
             Assert.Equal("custom_collection", options.ScopesCollectionName);
-        }
-
-        [Fact]
-        public void SetInitializationTimeout_TimeoutIsCorrectlySet()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetInitializationTimeout(TimeSpan.FromDays(42));
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
-
-            Assert.Equal(TimeSpan.FromDays(42), options.InitializationTimeout);
         }
 
         [Theory]

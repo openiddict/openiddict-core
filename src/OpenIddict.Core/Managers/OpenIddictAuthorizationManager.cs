@@ -26,6 +26,11 @@ namespace OpenIddict.Core
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in the store.
     /// </summary>
+    /// <remarks>
+    /// Applications that do not want to depend on a specific entity type can use the non-generic
+    /// <see cref="IOpenIddictAuthorizationManager"/> instead, for which the actual entity type
+    /// is resolved at runtime based on the default entity type registered in the core options.
+    /// </remarks>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
     public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthorizationManager where TAuthorization : class
     {
