@@ -38,6 +38,11 @@ namespace OpenIddict.Core
     /// <summary>
     /// Provides methods allowing to manage the applications stored in the store.
     /// </summary>
+    /// <remarks>
+    /// Applications that do not want to depend on a specific entity type can use the non-generic
+    /// <see cref="IOpenIddictApplicationManager"/> instead, for which the actual entity type
+    /// is resolved at runtime based on the default entity type registered in the core options.
+    /// </remarks>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
     public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplicationManager where TApplication : class
     {

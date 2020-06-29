@@ -24,6 +24,11 @@ namespace OpenIddict.Core
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in the store.
     /// </summary>
+    /// <remarks>
+    /// Applications that do not want to depend on a specific entity type can use the non-generic
+    /// <see cref="IOpenIddictScopeManager"/> instead, for which the actual entity type
+    /// is resolved at runtime based on the default entity type registered in the core options.
+    /// </remarks>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TScope : class
     {

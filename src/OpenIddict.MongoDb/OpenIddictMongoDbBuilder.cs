@@ -51,14 +51,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Disables initialization so that the MongoDB indexes used by OpenIddict
-        /// are not automatically created the first time the stores are invoked.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder DisableInitialization()
-            => Configure(options => options.DisableInitialization = true);
-
-        /// <summary>
         /// Configures OpenIddict to use the specified entity as the default application entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
@@ -135,15 +127,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return Configure(options => options.AuthorizationsCollectionName = name);
         }
-
-        /// <summary>
-        /// Sets the maximal duration given to the MongoDB client to initialize
-        /// the database and register the indexes used by the OpenIddict entities.
-        /// </summary>
-        /// <param name="timeout">The timeout.</param>
-        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetInitializationTimeout(TimeSpan timeout)
-            => Configure(options => options.InitializationTimeout = timeout);
 
         /// <summary>
         /// Replaces the default scopes collection name (by default, openiddict.scopes).
