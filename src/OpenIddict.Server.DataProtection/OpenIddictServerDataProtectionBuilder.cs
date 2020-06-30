@@ -81,11 +81,39 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures OpenIddict to use the default token format (JWT) when issuing new tokens.
+        /// Configures OpenIddict to use the default token format (JWT) when issuing new access tokens.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-        public OpenIddictServerDataProtectionBuilder PreferDefaultTokenFormat()
-            => Configure(options => options.PreferDefaultTokenFormat = true);
+        public OpenIddictServerDataProtectionBuilder PreferDefaultAccessTokenFormat()
+            => Configure(options => options.PreferDefaultAccessTokenFormat = true);
+
+        /// <summary>
+        /// Configures OpenIddict to use the default token format (JWT) when issuing new authorization codes.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+        public OpenIddictServerDataProtectionBuilder PreferDefaultAuthorizationCodeFormat()
+            => Configure(options => options.PreferDefaultAuthorizationCodeFormat = true);
+
+        /// <summary>
+        /// Configures OpenIddict to use the default token format (JWT) when issuing new device codes.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+        public OpenIddictServerDataProtectionBuilder PreferDefaultDeviceCodeFormat()
+            => Configure(options => options.PreferDefaultDeviceCodeFormat = true);
+
+        /// <summary>
+        /// Configures OpenIddict to use the default token format (JWT) when issuing new refresh tokens.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+        public OpenIddictServerDataProtectionBuilder PreferDefaultRefreshTokenFormat()
+            => Configure(options => options.PreferDefaultRefreshTokenFormat = true);
+
+        /// <summary>
+        /// Configures OpenIddict to use the default token format (JWT) when issuing new user codes.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+        public OpenIddictServerDataProtectionBuilder PreferDefaultUserCodeFormat()
+            => Configure(options => options.PreferDefaultUserCodeFormat = true);
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.

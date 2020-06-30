@@ -1217,8 +1217,6 @@ namespace OpenIddict.Server.FunctionalTests
 
             await using var server = await CreateServerAsync(options =>
             {
-                options.UseReferenceTokens();
-
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -1329,7 +1327,6 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
 
                 options.DisableAuthorizationStorage();
-                options.UseReferenceTokens();
             });
 
             await using var client = await server.CreateClientAsync();
@@ -1420,8 +1417,6 @@ namespace OpenIddict.Server.FunctionalTests
                 }));
 
                 options.Services.AddSingleton(manager);
-
-                options.UseReferenceTokens();
 
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
@@ -1521,8 +1516,6 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
 
-                options.UseReferenceTokens();
-
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
 
@@ -1607,8 +1600,6 @@ namespace OpenIddict.Server.FunctionalTests
                 }));
 
                 options.Services.AddSingleton(manager);
-
-                options.UseReferenceTokens();
 
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });

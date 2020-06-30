@@ -35,7 +35,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Action<OpenIddictServerHandlerDescriptor.Builder<CustomContext>> configuration = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEventHandler(configuration));
             Assert.Equal(nameof(configuration), exception.ParamName);
         }
@@ -48,7 +48,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             OpenIddictServerHandlerDescriptor descriptor = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEventHandler(descriptor));
             Assert.Equal(nameof(descriptor), exception.ParamName);
         }
@@ -136,7 +136,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             EncryptingCredentials credentials = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionCredentials(credentials));
             Assert.Equal(nameof(credentials), exception.ParamName);
         }
@@ -149,7 +149,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             SecurityKey key = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionKey(key));
             Assert.Equal(nameof(key), exception.ParamName);
         }
@@ -163,7 +163,7 @@ namespace OpenIddict.Server.Tests
             var key = new Mock<AsymmetricSecurityKey>();
             key.SetupGet(x => x.PrivateKeyStatus).Returns(PrivateKeyStatus.DoesNotExist); 
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionKey(key.Object));
             Assert.Equal("The asymmetric encryption key doesn't contain the required private key.", exception.Message);
         }
@@ -194,7 +194,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             OpenIddictServerHandlerDescriptor descriptor = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.RemoveEventHandler(descriptor));
             Assert.Equal(nameof(descriptor), exception.ParamName);
         }
@@ -242,7 +242,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Action<OpenIddictServerOptions> configuration = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.Configure(configuration));
             Assert.Equal(nameof(configuration), exception.ParamName);
         }
@@ -271,7 +271,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             X500DistinguishedName subject = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddDevelopmentEncryptionCertificate(subject));
             Assert.Equal(nameof(subject), exception.ParamName);
         }
@@ -455,7 +455,7 @@ namespace OpenIddict.Server.Tests
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.AllowCustomFlow(type));
             Assert.Equal(nameof(type), exception.ParamName);
             Assert.Contains("The grant type cannot be null or empty.", exception.Message);
@@ -533,7 +533,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -546,7 +546,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -562,7 +562,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -608,7 +608,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -621,7 +621,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -635,7 +635,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -697,7 +697,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -710,7 +710,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -724,7 +724,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -818,7 +818,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -831,7 +831,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -845,7 +845,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -891,7 +891,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -904,7 +904,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -918,7 +918,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetIntrospectionEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -964,7 +964,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -977,7 +977,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -991,7 +991,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetLogoutEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -1037,7 +1037,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1050,7 +1050,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1064,7 +1064,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetRevocationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -1126,7 +1126,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1139,7 +1139,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1153,7 +1153,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetTokenEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -1199,7 +1199,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1212,7 +1212,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1226,7 +1226,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = {new Uri(uri), };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetUserinfoEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);
@@ -1526,7 +1526,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] claims = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterClaims(claims));
             Assert.Equal(nameof(claims), exception.ParamName);
         }
@@ -1541,7 +1541,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] claims = { claim };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.RegisterClaims(claims));
             Assert.Equal(nameof(claims), exception.ParamName);
             Assert.Contains("Claims cannot be null or empty.", exception.Message);
@@ -1572,7 +1572,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] scopes = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterScopes(scopes));
             Assert.Equal(nameof(scopes), exception.ParamName);
         }
@@ -1587,26 +1587,58 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] scopes = { scope };
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.RegisterScopes(scopes));
             Assert.Equal(nameof(scopes), exception.ParamName);
             Assert.Contains("Scopes cannot be null or empty.", exception.Message);
         }
 
         [Fact]
-        public void UseReferenceTokens_ReferenceTokensAreEnabled()
+        public void UseReferenceAccessTokens_ReferenceAccessTokensAreEnabled()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.UseReferenceTokens();
+            builder.UseReferenceAccessTokens();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.UseReferenceTokens);
+            Assert.True(options.UseReferenceAccessTokens);
+        }
+
+        [Fact]
+        public void UseReferenceRefreshTokens_ReferenceRefreshTokensAreEnabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.UseReferenceRefreshTokens();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.UseReferenceRefreshTokens);
+        }
+
+        [Fact]
+        public void UseRollingRefreshTokens_RollingRefreshTokensAreEnabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.UseRollingRefreshTokens();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.UseRollingRefreshTokens);
         }
 
         [Fact]
@@ -1617,7 +1649,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1630,7 +1662,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             string[] addresses = null;
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
@@ -1661,7 +1693,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
             Uri[] addresses = { new Uri(uri)};
 
-            // Act & Assert
+            // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetVerificationEndpointUris(addresses));
             Assert.Equal(nameof(addresses), exception.ParamName);
             Assert.Contains("One of the specified addresses is not valid.", exception.Message);

@@ -29,9 +29,33 @@ namespace OpenIddict.Server.DataProtection
             = new OpenIddictServerDataProtectionFormatter();
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether the default token format should be
-        /// used when issuing new tokens. This property is set to <c>false</c> by default.
+        /// Gets or sets a boolean indicating whether the default access token format should be
+        /// used when issuing new access tokens. This property is set to <c>false</c> by default.
         /// </summary>
-        public bool PreferDefaultTokenFormat { get; set; }
+        public bool PreferDefaultAccessTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default authorization code format should be
+        /// used when issuing new authorization codes. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultAuthorizationCodeFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default device code format should be
+        /// used when issuing new device codes. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultDeviceCodeFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default refresh token format should be
+        /// used when issuing new refresh tokens. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultRefreshTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default user code format should be
+        /// used when issuing new user codes. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultUserCodeFormat { get; set; }
     }
 }

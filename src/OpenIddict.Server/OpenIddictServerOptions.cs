@@ -334,15 +334,26 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether reference tokens should be used.
-        /// When set to <c>true</c>, token and code payloads are stored in the database
-        /// and a crypto-secure random identifier is returned to the client application.
+        /// Gets or sets a boolean indicating whether reference access tokens should be used.
+        /// When set to <c>true</c>, the token payload is stored in the database and a
+        /// crypto-secure random identifier is returned to the client application.
         /// Enabling this option is useful when storing a very large number of claims
         /// in the tokens, but it is RECOMMENDED to enable column encryption
         /// in the database or use the ASP.NET Core Data Protection integration,
         /// that provides additional protection against token leakage.
         /// </summary>
-        public bool UseReferenceTokens { get; set; }
+        public bool UseReferenceAccessTokens { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether reference refresh tokens should be used.
+        /// When set to <c>true</c>, the token payload is stored in the database and a
+        /// crypto-secure random identifier is returned to the client application.
+        /// Enabling this option is useful when storing a very large number of claims
+        /// in the tokens, but it is RECOMMENDED to enable column encryption
+        /// in the database or use the ASP.NET Core Data Protection integration,
+        /// that provides additional protection against token leakage.
+        /// </summary>
+        public bool UseReferenceRefreshTokens { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether rolling tokens should be used.
@@ -352,6 +363,6 @@ namespace OpenIddict.Server
         /// refresh token request (and the previous one is automatically revoked
         /// unless token storage was explicitly disabled in the options).
         /// </summary>
-        public bool UseRollingTokens { get; set; }
+        public bool UseRollingRefreshTokens { get; set; }
     }
 }

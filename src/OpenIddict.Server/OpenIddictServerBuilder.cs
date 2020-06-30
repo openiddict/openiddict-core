@@ -1782,15 +1782,26 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures OpenIddict to use reference tokens, so that the token and code payloads
+        /// Configures OpenIddict to use reference tokens, so that the access token payloads
         /// are stored in the database (only an identifier is returned to the client application).
         /// Enabling this option is useful when storing a very large number of claims in the tokens,
         /// but it is RECOMMENDED to enable column encryption in the database or use the ASP.NET Core
         /// Data Protection integration, that provides additional protection against token leakage.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder UseReferenceTokens()
-            => Configure(options => options.UseReferenceTokens = true);
+        public OpenIddictServerBuilder UseReferenceAccessTokens()
+            => Configure(options => options.UseReferenceAccessTokens = true);
+
+        /// <summary>
+        /// Configures OpenIddict to use reference tokens, so that the refresh token payloads
+        /// are stored in the database (only an identifier is returned to the client application).
+        /// Enabling this option is useful when storing a very large number of claims in the tokens,
+        /// but it is RECOMMENDED to enable column encryption in the database or use the ASP.NET Core
+        /// Data Protection integration, that provides additional protection against token leakage.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder UseReferenceRefreshTokens()
+            => Configure(options => options.UseReferenceRefreshTokens = true);
 
         /// <summary>
         /// Configures OpenIddict to use rolling refresh tokens. When this option is enabled,
@@ -1798,8 +1809,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// one is automatically revoked unless token storage was explicitly disabled).
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder UseRollingTokens()
-            => Configure(options => options.UseRollingTokens = true);
+        public OpenIddictServerBuilder UseRollingRefreshTokens()
+            => Configure(options => options.UseRollingRefreshTokens = true);
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.

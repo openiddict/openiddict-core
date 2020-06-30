@@ -42,7 +42,11 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
             // Register the built-in filter used by the default OpenIddict Data Protection event handlers.
-            builder.Services.TryAddSingleton<RequireDataProtectionFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionAccessTokenFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionAuthorizationCodeFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionDeviceCodeFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionRefreshTokenFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionUserCodeFormatEnabled>();
 
             // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
             builder.Services.TryAddEnumerable(new[]

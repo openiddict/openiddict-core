@@ -96,12 +96,12 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
                 }
 
-                if (options.UseReferenceTokens)
+                if (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens)
                 {
                     throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
                 }
 
-                if (options.UseSlidingExpiration && !options.UseRollingTokens)
+                if (options.UseSlidingExpiration && !options.UseRollingRefreshTokens)
                 {
                     throw new InvalidOperationException(new StringBuilder()
                         .Append("Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.")

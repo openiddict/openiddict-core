@@ -1764,7 +1764,8 @@ namespace OpenIddict.Server
                     OpenIddictServerEndpointType.Token when !context.Principal.HasScope(Scopes.OfflineAccess) => false,
 
                     // For grant_type=refresh_token token requests, only return a refresh token if rolling tokens are enabled.
-                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() => context.Options.UseRollingTokens,
+                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                        => context.Options.UseRollingRefreshTokens,
 
                     // For token requests that don't meet the previous criteria, allow a refresh token to be returned.
                     OpenIddictServerEndpointType.Token => true,
@@ -2547,7 +2548,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (context.Request.IsRefreshTokenGrantType() && !context.Options.UseRollingTokens)
+                    if (context.Request.IsRefreshTokenGrantType() && !context.Options.UseRollingRefreshTokens)
                     {
                         return;
                     }
@@ -2615,7 +2616,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireRollingTokensEnabled>()
+                    .AddFilter<RequireRollingRefreshTokensEnabled>()
                     .UseScopedHandler<RevokeExistingTokenEntries>()
                     .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2980,7 +2981,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireReferenceTokensEnabled>()
+                    .AddFilter<RequireReferenceAccessTokensEnabled>()
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseScopedHandler<ConvertReferenceAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order + 1_000)
@@ -3266,7 +3267,6 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireReferenceTokensEnabled>()
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .UseScopedHandler<ConvertReferenceAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order + 1_000)
@@ -3945,7 +3945,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireReferenceTokensEnabled>()
+                    .AddFilter<RequireReferenceRefreshTokensEnabled>()
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .UseScopedHandler<ConvertReferenceRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order + 1_000)
