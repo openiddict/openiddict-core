@@ -18,7 +18,8 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Device request extraction:
                  */
-                ExtractGetOrPostRequest<ExtractDeviceRequestContext>.Descriptor,
+                ExtractPostRequest<ExtractDeviceRequestContext>.Descriptor,
+                ExtractBasicAuthenticationCredentials<ExtractDeviceRequestContext>.Descriptor,
 
                 /*
                  * Device response processing:

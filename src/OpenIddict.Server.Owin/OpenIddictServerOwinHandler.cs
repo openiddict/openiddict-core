@@ -30,7 +30,7 @@ namespace OpenIddict.Server.Owin
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerOwinHandler"/> class.
         /// </summary>
-        /// <param name="dispatcher">The OpenIddict server provider used by this instance.</param>
+        /// <param name="dispatcher">The OpenIddict server dispatcher used by this instance.</param>
         /// <param name="factory">The OpenIddict server factory used by this instance.</param>
         public OpenIddictServerOwinHandler(
             [NotNull] IOpenIddictServerDispatcher dispatcher,
