@@ -229,20 +229,21 @@ namespace OpenIddict.Validation
                 parameters.IssuerSigningKeys =
                     parameters.IssuerSigningKeys?.Concat(configuration.SigningKeys) ?? configuration.SigningKeys;
 
-                // If a specific token type is expected, override the default valid types to reject
-                // security tokens whose actual token type doesn't match the expected token type.
-                if (!string.IsNullOrEmpty(context.TokenType))
+                parameters.ValidTypes = context.TokenType switch
                 {
-                    parameters.ValidTypes = new[]
-                    {
-                        context.TokenType switch
-                        {
-                            TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
+                    // If no specific token type is expected, accept all token types at this stage.
+                    // Additional filtering can be made based on the resolved/actual token type.
+                    var type when string.IsNullOrEmpty(type) => Array.Empty<string>(),
 
-                            _ => throw new InvalidOperationException("The token type is not supported.")
-                        }
-                    };
-                }
+                    // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
+                    TokenTypeHints.AccessToken => new[]
+                    {
+                        JsonWebTokenTypes.AccessToken,
+                        JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
+                    },
+
+                    _ => throw new InvalidOperationException("The token type is not supported.")
+                };
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
@@ -266,7 +267,10 @@ namespace OpenIddict.Validation
                 // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal.SetTokenType(result.TokenType switch
                 {
-                    JsonWebTokenTypes.AccessToken => TokenTypeHints.AccessToken,
+                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException("The token type cannot be resolved"),
+
+                    JsonWebTokenTypes.AccessToken                                          => TokenTypeHints.AccessToken,
+                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken => TokenTypeHints.AccessToken,
 
                     _ => throw new InvalidOperationException("The token type is not supported.")
                 });
@@ -333,13 +337,14 @@ namespace OpenIddict.Validation
 
                 try
                 {
-                    var principal = await _service.IntrospectTokenAsync(address, context.Token, TokenTypeHints.AccessToken) ??
+                    var principal = await _service.IntrospectTokenAsync(address, context.Token, context.TokenType) ??
                         throw new InvalidOperationException("An unknown error occurred while introspecting the access token.");
 
-                    // Note: tokens that are considered valid at this point are assumed to be access tokens,
+                    // Note: tokens that are considered valid at this point are assumed to be of the given type,
                     // as the introspection handlers ensure the introspected token type matches the expected
                     // type when a "token_usage" claim was returned as part of the introspection response.
-                    context.Principal = principal.SetTokenType(TokenTypeHints.AccessToken);
+                    // If no token type can be inferred, the token is assumed to be an access token.
+                    context.Principal = principal.SetTokenType(context.TokenType ?? TokenTypeHints.AccessToken);
 
                     context.Logger.LogTrace("The token '{Token}' was successfully introspected and the following claims " +
                                             "could be extracted: {Claims}.", context.Token, context.Principal.Claims);

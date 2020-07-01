@@ -214,6 +214,11 @@ namespace OpenIddict.Abstractions
             public const string AccessToken = "at+jwt";
             public const string IdentityToken = "JWT";
 
+            public static class Prefixes
+            {
+                public const string Application = "application/";
+            }
+
             public static class Private
             {
                 public const string AuthorizationCode = "oi_auc+jwt";
