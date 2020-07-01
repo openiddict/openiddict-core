@@ -126,9 +126,8 @@ namespace OpenIddict.Server
                     throw new SecurityTokenInvalidTypeException("The 'typ' header of the JWT token cannot be null or empty.");
                 }
 
-                // If the generic type of the token is "JWT", try to resolve the actual type from the "token_usage" claim.
-                if (string.Equals(type, JwtConstants.HeaderType, StringComparison.OrdinalIgnoreCase) &&
-                   ((JsonWebToken) token).TryGetPayloadValue(OpenIddictConstants.Claims.TokenUsage, out string usage))
+                // If available, try to resolve the actual type from the "token_usage" claim.
+                if (((JsonWebToken) token).TryGetPayloadValue(OpenIddictConstants.Claims.TokenUsage, out string usage))
                 {
                     type = usage switch
                     {
@@ -139,27 +138,21 @@ namespace OpenIddict.Server
                     };
                 }
 
+                // Unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
                 if (parameters.ValidTypes != null && parameters.ValidTypes.Any() &&
-                   !parameters.ValidTypes.Contains(type, StringComparer.Ordinal))
+                   !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new SecurityTokenInvalidTypeException("The type of the JWT token doesn't match the expected type.");
+                    throw new SecurityTokenInvalidTypeException("The type of the JWT token doesn't match the expected type.")
+                    {
+                        InvalidType = type
+                    };
                 }
 
                 return type;
             },
             // Note: audience and lifetime are manually validated by OpenIddict itself.
             ValidateAudience = false,
-            ValidateLifetime = false,
-            // Note: valid types can be overriden by OpenIddict depending on the received request.
-            ValidTypes = new[]
-            {
-                JsonWebTokenTypes.AccessToken,
-                JsonWebTokenTypes.IdentityToken,
-                JsonWebTokenTypes.Private.AuthorizationCode,
-                JsonWebTokenTypes.Private.DeviceCode,
-                JsonWebTokenTypes.Private.RefreshToken,
-                JsonWebTokenTypes.Private.UserCode
-            }
+            ValidateLifetime = false
         };
 
         /// <summary>

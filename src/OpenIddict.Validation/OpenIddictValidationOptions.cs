@@ -123,9 +123,8 @@ namespace OpenIddict.Validation
                     throw new SecurityTokenInvalidTypeException("The 'typ' header of the JWT token cannot be null or empty.");
                 }
 
-                // If the generic type of the token is "JWT", try to resolve the actual type from the "token_usage" claim.
-                if (string.Equals(type, JwtConstants.HeaderType, StringComparison.OrdinalIgnoreCase) &&
-                   ((JsonWebToken) token).TryGetPayloadValue(Claims.TokenUsage, out string usage))
+                // If available, try to resolve the actual type from the "token_usage" claim.
+                if (((JsonWebToken) token).TryGetPayloadValue(Claims.TokenUsage, out string usage))
                 {
                     type = usage switch
                     {
@@ -136,18 +135,21 @@ namespace OpenIddict.Validation
                     };
                 }
 
+                // Unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
                 if (parameters.ValidTypes != null && parameters.ValidTypes.Any() &&
-                   !parameters.ValidTypes.Contains(type, StringComparer.Ordinal))
+                   !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new SecurityTokenInvalidTypeException("The type of the JWT token doesn't match the expected type.");
+                    throw new SecurityTokenInvalidTypeException("The type of the JWT token doesn't match the expected type.")
+                    {
+                        InvalidType = type
+                    };
                 }
 
                 return type;
             },
             // Note: audience and lifetime are manually validated by OpenIddict itself.
             ValidateAudience = false,
-            ValidateLifetime = false,
-            ValidTypes = new[] { JsonWebTokenTypes.AccessToken }
+            ValidateLifetime = false
         };
     }
 }

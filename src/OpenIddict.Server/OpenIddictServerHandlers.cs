@@ -446,27 +446,40 @@ namespace OpenIddict.Server
 
                 var parameters = context.Options.TokenValidationParameters.Clone();
                 parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
-
-                // If a specific token type is expected, override the default valid types to reject
-                // security tokens whose actual token type doesn't match the expected token type.
-                if (!string.IsNullOrEmpty(context.TokenType))
+                parameters.ValidTypes = context.TokenType switch
                 {
-                    parameters.ValidTypes = new[]
+                    // If no specific token type is expected, accept all token types at this stage.
+                    // Additional filtering can be made based on the resolved/actual token type.
+                    var type when string.IsNullOrEmpty(type) => Array.Empty<string>(),
+
+                    // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
+                    TokenTypeHints.AccessToken => new[]
                     {
-                        context.TokenType switch
-                        {
-                            TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
-                            TokenTypeHints.IdToken     => JsonWebTokenTypes.IdentityToken,
+                        JsonWebTokenTypes.AccessToken,
+                        JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
+                    },
 
-                            TokenTypeHints.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
-                            TokenTypeHints.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
-                            TokenTypeHints.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
-                            TokenTypeHints.UserCode          => JsonWebTokenTypes.Private.UserCode,
+                    // For identity tokens, both "JWT" and "application/jwt" are valid.
+                    TokenTypeHints.IdToken => new[]
+                    {
+                        JsonWebTokenTypes.IdentityToken,
+                        JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IdentityToken
+                    },
 
-                            _ => throw new InvalidOperationException("The token type is not supported.")
-                        }
-                    };
-                }
+                    // For authorization codes, only the short "oi_auc+jwt" form is valid.
+                    TokenTypeHints.AuthorizationCode => new[] { JsonWebTokenTypes.Private.AuthorizationCode },
+
+                    // For device codes, only the short "oi_dvc+jwt" form is valid.
+                    TokenTypeHints.DeviceCode => new[] { JsonWebTokenTypes.Private.DeviceCode },
+
+                    // For refresh tokens, only the short "oi_reft+jwt" form is valid.
+                    TokenTypeHints.RefreshToken => new[] { JsonWebTokenTypes.Private.RefreshToken },
+
+                    // For user codes, only the short "oi_usrc+jwt" form is valid.
+                    TokenTypeHints.UserCode => new[] { JsonWebTokenTypes.Private.UserCode },
+
+                    _ => throw new InvalidOperationException("The token type is not supported.")
+                };
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
@@ -490,8 +503,13 @@ namespace OpenIddict.Server
                 // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal.SetTokenType(result.TokenType switch
                 {
-                    JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
-                    JsonWebTokenTypes.IdentityToken => TokenTypeHints.IdToken,
+                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException("The token type cannot be resolved"),
+
+                    JsonWebTokenTypes.AccessToken                                            => TokenTypeHints.AccessToken,
+                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
+
+                    JsonWebTokenTypes.IdentityToken                                          => TokenTypeHints.IdToken,
+                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IdentityToken => TokenTypeHints.IdToken,
 
                     JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeHints.AuthorizationCode,
                     JsonWebTokenTypes.Private.DeviceCode        => TokenTypeHints.DeviceCode,
