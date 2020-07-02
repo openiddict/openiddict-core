@@ -1263,9 +1263,9 @@ namespace OpenIddict.Core
                 // Write the hashing algorithm version.
                 BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(1, 4), algorithm switch
                 {
-                    { Name: nameof(SHA1)   } => 0,
-                    { Name: nameof(SHA256) } => 1,
-                    { Name: nameof(SHA512) } => 2,
+                    var name when name == HashAlgorithmName.SHA1   => 0,
+                    var name when name == HashAlgorithmName.SHA256 => 1,
+                    var name when name == HashAlgorithmName.SHA512 => 2,
 
                     _ => throw new InvalidOperationException("The specified HMAC algorithm is not valid.")
                 });
@@ -1394,9 +1394,10 @@ namespace OpenIddict.Core
 #else
             var generator = new Pkcs5S2ParametersGenerator(algorithm switch
             {
-                { Name: nameof(SHA1)   } => (IDigest) new Sha1Digest(),
-                { Name: nameof(SHA256) } => new Sha256Digest(),
-                { Name: nameof(SHA512) } => new Sha512Digest(),
+                var name when name == HashAlgorithmName.SHA1   => new Sha1Digest(),
+                var name when name == HashAlgorithmName.SHA256 => new Sha256Digest(),
+                var name when name == HashAlgorithmName.SHA512 => new Sha512Digest(),
+
                 _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
             });
 

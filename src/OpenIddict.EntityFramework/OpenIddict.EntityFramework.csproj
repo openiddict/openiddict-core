@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="EntityFramework" />
-    <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
