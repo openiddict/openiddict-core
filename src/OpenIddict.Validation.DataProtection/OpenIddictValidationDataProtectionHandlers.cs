@@ -75,7 +75,6 @@ namespace OpenIddict.Validation.DataProtection
 
                 // Note: ASP.NET Core Data Protection tokens always start with "CfDJ8", that corresponds
                 // to the base64 representation of the magic "09 F0 C9 F0" header identifying DP payloads.
-                // As an optimization, always ignore tokens that don't start with the "CfDJ8" string.
                 if (string.IsNullOrEmpty(context.Token) || !context.Token.StartsWith("CfDJ8", StringComparison.Ordinal))
                 {
                     return default;
@@ -109,9 +108,12 @@ namespace OpenIddict.Validation.DataProtection
                     context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", context.Token);
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 if (context.Principal == null)
                 {
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: "The specified token is not valid.");
+
                     return default;
                 }
 
