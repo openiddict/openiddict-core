@@ -438,7 +438,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handler to validate it.
+                // If the token cannot be read, don't return an error to allow another handler to validate it.
                 if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Token))
                 {
                     return default;
@@ -481,11 +481,36 @@ namespace OpenIddict.Server
                     _ => throw new InvalidOperationException("The token type is not supported.")
                 };
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
                 if (!result.IsValid)
                 {
                     context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
+
+                    context.Reject(
+                        error: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
+                            _                                  => Errors.InvalidToken
+                        },
+                        description: (result.Exception, context.EndpointType) switch
+                        {
+                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
+                                when context.Request.IsAuthorizationCodeGrantType()
+                                => "The specified token is not an authorization code.",
+
+                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
+                                when context.Request.IsDeviceCodeGrantType()
+                                => "The specified token is not an device code.",
+
+                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
+                                when context.Request.IsRefreshTokenGrantType()
+                                => "The specified token is not a refresh token.",
+
+                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Userinfo)
+                                => "The specified token is not an access token.",
+
+                            _ => "The specified token is not valid."
+                        });
 
                     return default;
                 }

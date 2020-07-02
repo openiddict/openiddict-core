@@ -210,7 +210,7 @@ namespace OpenIddict.Validation
                     return;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handler to validate it.
+                // If the token cannot be read, don't return an error to allow another handler to validate it.
                 if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Token))
                 {
                     return;
@@ -245,7 +245,6 @@ namespace OpenIddict.Validation
                     _ => throw new InvalidOperationException("The token type is not supported.")
                 };
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
                 if (!result.IsValid)
                 {
@@ -257,6 +256,22 @@ namespace OpenIddict.Validation
                     }
 
                     context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: result.Exception switch
+                        {
+                            SecurityTokenInvalidIssuerException _
+                                => "The issuer associated to the specified token is not valid.",
+                            SecurityTokenInvalidTypeException _
+                                => "The specified token is not of the expected type.",
+                            SecurityTokenSignatureKeyNotFoundException _
+                                => "The signing key associated to the specified token was not found.",
+                            SecurityTokenInvalidSignatureException _
+                                => "The signature associated to the specified token is not valid.",
+
+                            _ => "The specified token is not valid."
+                        });
 
                     return;
                 }

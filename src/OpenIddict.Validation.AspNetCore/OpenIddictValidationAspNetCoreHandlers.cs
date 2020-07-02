@@ -547,7 +547,7 @@ namespace OpenIddict.Validation.AspNetCore
                     return default;
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as an empty challenge response.");
+                context.Logger.LogInformation("The response was successfully returned as a challenge response: {Response}.", context.Response);
                 context.HandleRequest();
 
                 return default;
