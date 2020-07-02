@@ -22,9 +22,4 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_GENERATION</DefineConstants>
-  </PropertyGroup>
-
 </Project>
