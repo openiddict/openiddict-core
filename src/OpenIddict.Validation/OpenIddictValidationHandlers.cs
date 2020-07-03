@@ -30,7 +30,7 @@ namespace OpenIddict.Validation
             /*
              * Authentication processing:
              */
-            ValidateAccessTokenParameter.Descriptor,
+            ValidateToken.Descriptor,
             ValidateReferenceTokenIdentifier.Descriptor,
             ValidateIdentityModelToken.Descriptor,
             IntrospectToken.Descriptor,
@@ -52,16 +52,16 @@ namespace OpenIddict.Validation
             .AddRange(Introspection.DefaultHandlers);
 
         /// <summary>
-        /// Contains the logic responsible of validating the access token resolved from the current request.
+        /// Contains the logic responsible of ensuring a token was correctly resolved from the context.
         /// </summary>
-        public class ValidateAccessTokenParameter : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        public class ValidateToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .UseSingletonHandler<ValidateAccessTokenParameter>()
+                    .UseSingletonHandler<ValidateToken>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
@@ -80,17 +80,21 @@ namespace OpenIddict.Validation
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Request.AccessToken))
+                // Note: unlike the equivalent event in the server stack, authentication can be triggered for
+                // arbitrary requests (typically, API endpoints that are not owned by the validation stack).
+                // As such, the token is not directly resolved from the request, that may be null at this stage.
+                // Instead, the token is expected to be populated by one or multiple handlers provided by the host.
+                //
+                // Note: this event can also be triggered by the validation service to validate an arbitrary token.
+
+                if (string.IsNullOrEmpty(context.Token))
                 {
                     context.Reject(
                         error: Errors.MissingToken,
-                        description: "The access token is missing.");
+                        description: "The security token is missing.");
 
                     return default;
                 }
-
-                context.Token = context.Request.AccessToken;
-                context.TokenType = TokenTypeHints.AccessToken;
 
                 return default;
             }
@@ -121,7 +125,7 @@ namespace OpenIddict.Validation
                     .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
-                    .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateToken.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -223,6 +227,7 @@ namespace OpenIddict.Validation
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
                 var parameters = context.Options.TokenValidationParameters.Clone();
                 parameters.ValidIssuer ??= configuration.Issuer ?? context.Issuer?.AbsoluteUri;
+                parameters.ValidateIssuer = !string.IsNullOrEmpty(parameters.ValidIssuer);
 
                 // Combine the signing keys registered statically in the token validation parameters
                 // with the signing keys resolved from the OpenID Connect server configuration.

@@ -17,7 +17,6 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security;
-using OpenIddict.Abstractions;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
@@ -34,8 +33,13 @@ namespace OpenIddict.Validation.Owin
              * Request top-level processing:
              */
             InferIssuerFromHost.Descriptor,
-            ExtractGetOrPostRequest.Descriptor,
-            ExtractAccessToken.Descriptor,
+
+            /*
+             * Authentication processing:
+             */
+            ExtractAccessTokenFromAuthorizationHeader.Descriptor,
+            ExtractAccessTokenFromBodyForm.Descriptor,
+            ExtractAccessTokenFromQueryString.Descriptor,
 
             /*
              * Challenge processing:
@@ -129,19 +133,19 @@ namespace OpenIddict.Validation.Owin
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting OpenID Connect requests from GET or POST HTTP requests.
+        /// Contains the logic responsible of extracting the access token from the standard HTTP Authorization header.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class ExtractGetOrPostRequest : IOpenIddictValidationHandler<ProcessRequestContext>
+        public class ExtractAccessTokenFromAuthorizationHeader : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireOwinRequest>()
-                    .UseSingletonHandler<ExtractGetOrPostRequest>()
-                    .SetOrder(InferIssuerFromHost.Descriptor.Order + 1_000)
+                    .UseSingletonHandler<ExtractAccessTokenFromAuthorizationHeader>()
+                    .SetOrder(int.MinValue + 50_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -152,11 +156,17 @@ namespace OpenIddict.Validation.Owin
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // If a token was already resolved, don't overwrite it.
+                if (!string.IsNullOrEmpty(context.Token))
+                {
+                    return default;
                 }
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -167,39 +177,100 @@ namespace OpenIddict.Validation.Owin
                     throw new InvalidOperationException("The OWIN request cannot be resolved.");
                 }
 
-                if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+                // Resolve the access token from the standard Authorization header.
+                // See https://tools.ietf.org/html/rfc6750#section-2.1 for more information.
+                string header = request.Headers["Authorization"];
+                if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Request = new OpenIddictRequest(request.Query);
+                    context.Token = header.Substring("Bearer ".Length);
+                    context.TokenType = TokenTypeHints.AccessToken;
+
+                    return default;
                 }
 
-                else if (string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase) &&
-                        !string.IsNullOrEmpty(request.ContentType) &&
-                         request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of extracting the access token from the standard access_token form parameter.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class ExtractAccessTokenFromBodyForm : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<ExtractAccessTokenFromBodyForm>()
+                    .SetOrder(ExtractAccessTokenFromAuthorizationHeader.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
                 {
-                    context.Request = new OpenIddictRequest(await request.ReadFormAsync());
+                    throw new ArgumentNullException(nameof(context));
                 }
 
-                else
+                // If a token was already resolved, don't overwrite it.
+                if (!string.IsNullOrEmpty(context.Token))
                 {
-                    context.Request = new OpenIddictRequest();
+                    return;
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var request = context.Transaction.GetOwinRequest();
+                if (request == null)
+                {
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                }
+
+                if (string.IsNullOrEmpty(request.ContentType) ||
+                    !request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                // Resolve the access token from the standard access_token form parameter.
+                // See https://tools.ietf.org/html/rfc6750#section-2.2 for more information.
+                var form = await request.ReadFormAsync();
+                string token = form[Parameters.AccessToken];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                    context.TokenType = TokenTypeHints.AccessToken;
+
+                    return;
                 }
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting an access token from the standard HTTP Authorization header.
+        /// Contains the logic responsible of extracting the access token from the standard access_token query parameter.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class ExtractAccessToken : IOpenIddictValidationHandler<ProcessRequestContext>
+        public class ExtractAccessTokenFromQueryString : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireOwinRequest>()
-                    .UseSingletonHandler<ExtractAccessToken>()
-                    .SetOrder(ExtractGetOrPostRequest.Descriptor.Order + 1_000)
+                    .UseSingletonHandler<ExtractAccessTokenFromQueryString>()
+                    .SetOrder(ExtractAccessTokenFromBodyForm.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -210,11 +281,17 @@ namespace OpenIddict.Validation.Owin
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // If a token was already resolved, don't overwrite it.
+                if (!string.IsNullOrEmpty(context.Token))
+                {
+                    return default;
                 }
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -225,14 +302,16 @@ namespace OpenIddict.Validation.Owin
                     throw new InvalidOperationException("The OWIN request cannot be resolved.");
                 }
 
-                string header = request.Headers["Authorization"];
-                if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                // Resolve the access token from the standard access_token query parameter.
+                // See https://tools.ietf.org/html/rfc6750#section-2.3 for more information.
+                string token = request.Query[Parameters.AccessToken];
+                if (!string.IsNullOrEmpty(token))
                 {
+                    context.Token = token;
+                    context.TokenType = TokenTypeHints.AccessToken;
+
                     return default;
                 }
-
-                // Attach the access token to the request message.
-                context.Request.AccessToken = header.Substring("Bearer ".Length);
 
                 return default;
             }
