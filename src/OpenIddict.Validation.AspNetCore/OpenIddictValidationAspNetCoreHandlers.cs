@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -20,8 +19,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlerFilters;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
@@ -37,8 +36,13 @@ namespace OpenIddict.Validation.AspNetCore
              * Request top-level processing:
              */
             InferIssuerFromHost.Descriptor,
-            ExtractGetOrPostRequest.Descriptor,
-            ExtractAccessToken.Descriptor,
+
+            /*
+             * Authentication processing:
+             */
+            ExtractAccessTokenFromAuthorizationHeader.Descriptor,
+            ExtractAccessTokenFromBodyForm.Descriptor,
+            ExtractAccessTokenFromQueryString.Descriptor,
 
             /*
              * Challenge processing:
@@ -132,19 +136,19 @@ namespace OpenIddict.Validation.AspNetCore
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting OpenID Connect requests from GET or POST HTTP requests.
+        /// Contains the logic responsible of extracting the access token from the standard HTTP Authorization header.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ExtractGetOrPostRequest : IOpenIddictValidationHandler<ProcessRequestContext>
+        public class ExtractAccessTokenFromAuthorizationHeader : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireHttpRequest>()
-                    .UseSingletonHandler<ExtractGetOrPostRequest>()
-                    .SetOrder(InferIssuerFromHost.Descriptor.Order + 1_000)
+                    .UseSingletonHandler<ExtractAccessTokenFromAuthorizationHeader>()
+                    .SetOrder(int.MinValue + 50_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -155,11 +159,17 @@ namespace OpenIddict.Validation.AspNetCore
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // If a token was already resolved, don't overwrite it.
+                if (!string.IsNullOrEmpty(context.Token))
+                {
+                    return default;
                 }
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -170,38 +180,99 @@ namespace OpenIddict.Validation.AspNetCore
                     throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
                 }
 
-                if (HttpMethods.IsGet(request.Method))
+                // Resolve the access token from the standard Authorization header.
+                // See https://tools.ietf.org/html/rfc6750#section-2.1 for more information.
+                string header = request.Headers[HeaderNames.Authorization];
+                if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Request = new OpenIddictRequest(request.Query);
+                    context.Token = header.Substring("Bearer ".Length);
+                    context.TokenType = TokenTypeHints.AccessToken;
+
+                    return default;
                 }
 
-                else if (HttpMethods.IsPost(request.Method) && !string.IsNullOrEmpty(request.ContentType) &&
-                    request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of extracting the access token from the standard access_token form parameter.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ExtractAccessTokenFromBodyForm : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ExtractAccessTokenFromBodyForm>()
+                    .SetOrder(ExtractAccessTokenFromAuthorizationHeader.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
                 {
-                    context.Request = new OpenIddictRequest(await request.ReadFormAsync(request.HttpContext.RequestAborted));
+                    throw new ArgumentNullException(nameof(context));
                 }
 
-                else
+                // If a token was already resolved, don't overwrite it.
+                if (!string.IsNullOrEmpty(context.Token))
                 {
-                    context.Request = new OpenIddictRequest();
+                    return;
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var request = context.Transaction.GetHttpRequest();
+                if (request == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                if (string.IsNullOrEmpty(request.ContentType) ||
+                    !request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                // Resolve the access token from the standard access_token form parameter.
+                // See https://tools.ietf.org/html/rfc6750#section-2.2 for more information.
+                var form = await request.ReadFormAsync(request.HttpContext.RequestAborted);
+                if (form.TryGetValue(Parameters.AccessToken, out StringValues token))
+                {
+                    context.Token = token;
+                    context.TokenType = TokenTypeHints.AccessToken;
+
+                    return;
                 }
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting an access token from the standard HTTP Authorization header.
+        /// Contains the logic responsible of extracting the access token from the standard access_token query parameter.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ExtractAccessToken : IOpenIddictValidationHandler<ProcessRequestContext>
+        public class ExtractAccessTokenFromQueryString : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireHttpRequest>()
-                    .UseSingletonHandler<ExtractAccessToken>()
-                    .SetOrder(ExtractGetOrPostRequest.Descriptor.Order + 1_000)
+                    .UseSingletonHandler<ExtractAccessTokenFromQueryString>()
+                    .SetOrder(ExtractAccessTokenFromBodyForm.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -212,11 +283,17 @@ namespace OpenIddict.Validation.AspNetCore
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // If a token was already resolved, don't overwrite it.
+                if (!string.IsNullOrEmpty(context.Token))
+                {
+                    return default;
                 }
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -227,14 +304,15 @@ namespace OpenIddict.Validation.AspNetCore
                     throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
                 }
 
-                string header = request.Headers[HeaderNames.Authorization];
-                if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                // Resolve the access token from the standard access_token query parameter.
+                // See https://tools.ietf.org/html/rfc6750#section-2.3 for more information.
+                if (request.Query.TryGetValue(Parameters.AccessToken, out StringValues token))
                 {
+                    context.Token = token;
+                    context.TokenType = TokenTypeHints.AccessToken;
+
                     return default;
                 }
-
-                // Attach the access token to the request message.
-                context.Request.AccessToken = header.Substring("Bearer ".Length);
 
                 return default;
             }

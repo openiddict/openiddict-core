@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
@@ -553,6 +554,75 @@ namespace OpenIddict.Validation
 
                     return context.Principal;
                 }
+            }
+
+            finally
+            {
+                if (scope is IAsyncDisposable disposable)
+                {
+                    await disposable.DisposeAsync();
+                }
+
+                else
+                {
+                    scope.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates the specified access token and returns the principal extracted from the token.
+        /// </summary>
+        /// <param name="token">The access token to validate.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>The principal containing the claims extracted from the token.</returns>
+        public async ValueTask<ClaimsPrincipal> ValidateAccessTokenAsync(
+            [NotNull] string token, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new ArgumentException("The access token cannot be null or empty.", nameof(token));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Note: this service is registered as a singleton service. As such, it cannot
+            // directly depend on scoped services like the validation provider. To work around
+            // this limitation, a scope is manually created for each method to this service.
+            var scope = _provider.CreateScope();
+
+            // Note: a try/finally block is deliberately used here to ensure the service scope
+            // can be disposed of asynchronously if it implements IAsyncDisposable.
+            try
+            {
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+                var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+                var transaction = await factory.CreateTransactionAsync();
+
+                var context = new ProcessAuthenticationContext(transaction)
+                {
+                    Token = token,
+                    TokenType = TokenTypeHints.AccessToken
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    var message = new StringBuilder()
+                        .AppendLine("An error occurred while validating the access token.")
+                        .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                        .AppendLine()
+                        .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                        .AppendLine()
+                        .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
+                        .ToString();
+
+                    throw new OpenIddictExceptions.GenericException(message,
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Principal;
             }
 
             finally

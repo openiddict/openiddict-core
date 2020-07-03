@@ -446,6 +446,7 @@ namespace OpenIddict.Server
 
                 var parameters = context.Options.TokenValidationParameters.Clone();
                 parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
+                parameters.ValidateIssuer = !string.IsNullOrEmpty(parameters.ValidIssuer);
                 parameters.ValidTypes = context.TokenType switch
                 {
                     // If no specific token type is expected, accept all token types at this stage.
