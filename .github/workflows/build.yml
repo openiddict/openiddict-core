@@ -58,6 +58,10 @@ jobs:
         name: testresults-${{ matrix.os_name }}
         path: ./artifacts/TestResults/Release
 
+    - name: Push NuGet packages to GitHub Packages
+      run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/openiddict/index.json
+      if: ${{ github.repository_owner == 'openiddict' && (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && runner.os == 'Windows' }}
+
     - name: Push NuGet packages to MyGet.org
       run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.MYGET_API_KEY }} --skip-duplicate --source https://www.myget.org/F/openiddict/ --symbol-source https://www.myget.org/F/openiddict/
       if: ${{ github.repository_owner == 'openiddict' && (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && runner.os == 'Windows' }}
