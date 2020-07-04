@@ -70,8 +70,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{F6F3C8E0-B
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		.travis.yml = .travis.yml
-		appveyor.yml = appveyor.yml
 		Build.cmd = Build.cmd
 		build.sh = build.sh
 		Directory.Build.props = Directory.Build.props
@@ -103,6 +101,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.Owin.IntegrationTests", "test\OpenIddict.Server.Owin.IntegrationTests\OpenIddict.Server.Owin.IntegrationTests.csproj", "{E62124D4-3660-4590-B4D1-787168BBBEDD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.Tests", "test\OpenIddict.Server.Tests\OpenIddict.Server.Tests.csproj", "{D94B10D3-3DD3-4829-B305-17C48833AB33}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C5E38924-35AF-48E3-B629-A56BCBC02F04}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
