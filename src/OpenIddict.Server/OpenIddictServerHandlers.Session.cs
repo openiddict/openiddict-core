@@ -242,39 +242,44 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    var @event = new ProcessSignOutContext(context.Transaction)
+                    if (notification.IsSignOutTriggered)
                     {
-                        Response = new OpenIddictResponse()
-                    };
+                        var @event = new ProcessSignOutContext(context.Transaction)
+                        {
+                            Response = new OpenIddictResponse()
+                        };
 
-                    await _dispatcher.DispatchAsync(@event);
+                        await _dispatcher.DispatchAsync(@event);
 
-                    if (@event.IsRequestHandled)
-                    {
-                        context.HandleRequest();
-                        return;
-                    }
+                        if (@event.IsRequestHandled)
+                        {
+                            context.HandleRequest();
+                            return;
+                        }
 
-                    else if (@event.IsRequestSkipped)
-                    {
-                        context.SkipRequest();
-                        return;
-                    }
+                        else if (@event.IsRequestSkipped)
+                        {
+                            context.SkipRequest();
+                            return;
+                        }
 
-                    else if (@event.IsRejected)
-                    {
-                        context.Reject(
-                            error: @event.Error ?? Errors.InvalidRequest,
-                            description: @event.ErrorDescription,
-                            uri: @event.ErrorUri);
-                        return;
+                        else if (@event.IsRejected)
+                        {
+                            context.Reject(
+                                error: @event.Error ?? Errors.InvalidRequest,
+                                description: @event.ErrorDescription,
+                                uri: @event.ErrorUri);
+                            return;
+                        }
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The logout request was not handled. To handle logout requests, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<HandleLogoutRequestContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .Append("Alternatively, enable the pass-through mode to handle them at a later stage.")
+                        .Append("The logout request was not handled. To handle logout requests in a controller, ")
+                        .Append("create a custom controller action with the same route as the logout endpoint ")
+                        .Append("and enable the pass-through mode in the server ASP.NET Core or OWIN options using ")
+                        .AppendLine("'services.AddOpenIddict().AddServer().UseAspNetCore().EnableLogoutEndpointPassthrough()'.")
+                        .Append("Alternatively, create a class implementing 'IOpenIddictServerHandler<HandleLogoutRequestContext>' ")
+                        .Append("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());
                 }
             }

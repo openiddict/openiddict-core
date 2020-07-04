@@ -91,6 +91,12 @@ namespace OpenIddict.Server
                 : base(transaction)
             {
             }
+
+            /// <summary>
+            /// Allows OpenIddict to return a sign-in response using the specified principal.
+            /// </summary>
+            /// <param name="principal">The claims principal.</param>
+            public void SignIn(ClaimsPrincipal principal) => Principal = principal;
         }
 
         /// <summary>

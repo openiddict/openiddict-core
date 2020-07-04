@@ -256,20 +256,20 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    var @event = new ProcessSignInContext(context.Transaction)
-                    {
-                        Principal = notification.Principal,
-                        Response = new OpenIddictResponse()
-                    };
-
-                    if (@event.Principal == null)
+                    if (notification.Principal == null)
                     {
                         // Note: no authentication type is deliberately specified to represent an unauthenticated identity.
                         var principal = new ClaimsPrincipal(new ClaimsIdentity());
                         principal.SetScopes(context.Request.GetScopes());
 
-                        @event.Principal = principal;
+                        notification.Principal = principal;
                     }
+
+                    var @event = new ProcessSignInContext(context.Transaction)
+                    {
+                        Principal = notification.Principal,
+                        Response = new OpenIddictResponse()
+                    };
 
                     await _dispatcher.DispatchAsync(@event);
 
@@ -293,13 +293,6 @@ namespace OpenIddict.Server
                             uri: @event.ErrorUri);
                         return;
                     }
-
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The device request was not handled. To handle device requests, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<HandleDeviceRequestContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .Append("Alternatively, enable the pass-through mode to handle them at a later stage.")
-                        .ToString());
                 }
             }
 
@@ -1066,10 +1059,12 @@ namespace OpenIddict.Server
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The verification request was not handled. To handle verification requests, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<HandleVerificationRequestContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .Append("Alternatively, enable the pass-through mode to handle them at a later stage.")
+                        .Append("The verification request was not handled. To handle verification requests in a controller, ")
+                        .Append("create a custom controller action with the same route as the verification endpoint ")
+                        .Append("and enable the pass-through mode in the server ASP.NET Core or OWIN options using ")
+                        .AppendLine("'services.AddOpenIddict().AddServer().UseAspNetCore().EnableVerificationEndpointPassthrough()'.")
+                        .Append("Alternatively, create a class implementing 'IOpenIddictServerHandler<HandleVerificationRequestContext>' ")
+                        .Append("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());
                 }
             }
