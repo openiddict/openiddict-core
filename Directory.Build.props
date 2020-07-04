@@ -48,24 +48,6 @@
     <Serviceable>false</Serviceable>
   </PropertyGroup>
 
-  <!--
-    Arcade only allows the revision to contain up to two characters, and GitHub Actions does not roll-over
-    build numbers every day like Azure DevOps does. To balance these two requirements, set the official
-    build ID to be the same format as the built-in default from Arcade, except with the revision number
-    being the number of the quarter hour of the current time of day (24 * 4 = 96, which is less than 100).
-    So a build between 00:00 and 00:14 would have a revision of 1, and a build between 23:45 and 23:59:59
-    would have a revision of 97.
-  -->
-  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' AND '$(GITHUB_REF.StartsWith(`refs/pull/`))' == 'false' ">
-    <_Hours>$([MSBuild]::Multiply($([System.DateTime]::Now.ToString(HH)), 4))</_Hours>
-    <_QuarterHours>$([MSBuild]::Divide($([System.DateTime]::Now.ToString(mm)), 15))</_QuarterHours>
-    <_QuarterHours>$([System.Math]::Floor($(_QuarterHours)))</_QuarterHours>
-    <_GitHubActionsBuildRevision>$([MSBuild]::Add($(_Hours), $(_QuarterHours)))</_GitHubActionsBuildRevision>
-    <_GitHubActionsBuildRevision>$([MSBuild]::Add($(_GitHubActionsBuildRevision), 1))</_GitHubActionsBuildRevision>
-    <OfficialBuild>true</OfficialBuild>
-    <OfficialBuildId>$([System.DateTime]::Now.ToString(yyyyMMdd)).$(_GitHubActionsBuildRevision)</OfficialBuildId>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
