@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Security.Claims;
 using JetBrains.Annotations;
 
 namespace OpenIddict.Server
@@ -86,11 +85,14 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets or sets the security principal extracted from the id_token_hint, if available.
-            /// Note: the principal may not represent the user currently logged in,
-            /// so additional validation is strongly encouraged when using this property.
+            /// Gets a boolean indicating whether a sign-out should be triggered.
             /// </summary>
-            public ClaimsPrincipal IdentityTokenHintPrincipal { get; set; }
+            public bool IsSignOutTriggered { get; private set; }
+
+            /// <summary>
+            /// Allows OpenIddict to return a sign-out response.
+            /// </summary>
+            public void SignOut() => IsSignOutTriggered = true;
         }
 
         /// <summary>

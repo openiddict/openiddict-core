@@ -188,6 +188,14 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
             {
                 options.EnableDegradedMode();
 
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SignOut();
+
+                        return default;
+                    }));
+
                 options.AddEventHandler<ProcessRequestContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
@@ -220,6 +228,14 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SignOut();
+
+                        return default;
+                    }));
 
                 options.AddEventHandler<ProcessRequestContext>(builder =>
                 {

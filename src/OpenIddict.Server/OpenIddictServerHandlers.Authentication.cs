@@ -300,10 +300,12 @@ namespace OpenIddict.Server
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The authorization request was not handled. To handle authorization requests, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<HandleAuthorizationRequestContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .Append("Alternatively, enable the pass-through mode to handle them at a later stage.")
+                        .Append("The authorization request was not handled. To handle authorization requests in a controller, ")
+                        .Append("create a custom controller action with the same route as the authorization endpoint ")
+                        .Append("and enable the pass-through mode in the server ASP.NET Core or OWIN options using ")
+                        .AppendLine("'services.AddOpenIddict().AddServer().UseAspNetCore().EnableAuthorizationEndpointPassthrough()'.")
+                        .Append("Alternatively, create a class implementing 'IOpenIddictServerHandler<HandleAuthorizationRequestContext>' ")
+                        .Append("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());
                 }
             }
