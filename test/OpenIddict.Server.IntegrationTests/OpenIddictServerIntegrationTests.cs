@@ -4303,7 +4303,7 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeCache<OpenIddictScope>>(),
                 Mock.Of<IOpenIddictScopeStoreResolver>(),
-                OutputHelper.ToLogger < OpenIddictScopeManager<OpenIddictScope>>(),
+                OutputHelper.ToLogger<OpenIddictScopeManager<OpenIddictScope>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);

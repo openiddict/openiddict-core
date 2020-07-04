@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.FunctionalTests;
 using Xunit;
+using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlers;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -30,7 +31,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
 {
     public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServerIntegrationTests
     {
-        public OpenIddictServerAspNetCoreIntegrationTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
+        public OpenIddictServerAspNetCoreIntegrationTests(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
         }
