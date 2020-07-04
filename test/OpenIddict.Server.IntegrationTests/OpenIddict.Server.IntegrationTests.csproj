@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" />
+    <PackageReference Include="MartinCostello.Logging.XUnit" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Moq" />
     <PackageReference Include="System.Linq.Async" />

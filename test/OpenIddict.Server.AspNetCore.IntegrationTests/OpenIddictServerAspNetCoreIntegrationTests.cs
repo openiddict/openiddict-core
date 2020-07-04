@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.FunctionalTests;
 using Xunit;
@@ -29,6 +30,11 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
 {
     public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServerIntegrationTests
     {
+        public OpenIddictServerAspNetCoreIntegrationTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         [Fact]
         public async Task ProcessChallenge_ReturnsParametersFromAuthenticationProperties()
         {
@@ -430,6 +436,11 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
             var builder = new WebHostBuilder();
 #endif
             builder.UseEnvironment("Testing");
+
+            builder.ConfigureLogging(builder =>
+            {
+                builder.AddXUnit(OutputHelper);
+            });
 
             builder.ConfigureServices(ConfigureServices);
             builder.ConfigureServices(services =>

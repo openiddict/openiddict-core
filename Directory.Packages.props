@@ -4,6 +4,7 @@
     <PackageVersion Include="AngleSharp" Version="0.14.0" />
     <PackageVersion Include="EntityFramework" Version="6.4.0" />
     <PackageVersion Include="JetBrains.Annotations" Version="2019.1.3" />
+    <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.1.0" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.7.0" />

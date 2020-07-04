@@ -27,6 +27,11 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
+        public OpenIddictServerOwinIntegrationTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         [Fact]
         public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
         {
