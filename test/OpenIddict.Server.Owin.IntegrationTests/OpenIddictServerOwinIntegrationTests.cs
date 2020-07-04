@@ -19,6 +19,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.Server.FunctionalTests;
 using Owin;
 using Xunit;
+using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlers;
@@ -27,6 +28,11 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
+        public OpenIddictServerOwinIntegrationTests(ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         [Fact]
         public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
         {

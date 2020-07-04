@@ -12,12 +12,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using Xunit;
+using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
@@ -26,6 +26,13 @@ namespace OpenIddict.Server.FunctionalTests
 {
     public abstract partial class OpenIddictServerIntegrationTests
     {
+        protected OpenIddictServerIntegrationTests(ITestOutputHelper outputHelper)
+        {
+            OutputHelper = outputHelper;
+        }
+
+        protected ITestOutputHelper OutputHelper { get; }
+
         [Fact]
         public async Task ProcessAuthentication_UnknownEndpointCausesAnException()
         {
@@ -4268,7 +4275,7 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationCache<OpenIddictApplication>>(),
                 Mock.Of<IOpenIddictApplicationStoreResolver>(),
-                Mock.Of<ILogger<OpenIddictApplicationManager<OpenIddictApplication>>>(),
+                OutputHelper.ToLogger<OpenIddictApplicationManager<OpenIddictApplication>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
@@ -4282,7 +4289,7 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
                 Mock.Of<IOpenIddictAuthorizationStoreResolver>(),
-                Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>(),
+                OutputHelper.ToLogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
@@ -4296,7 +4303,7 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeCache<OpenIddictScope>>(),
                 Mock.Of<IOpenIddictScopeStoreResolver>(),
-                Mock.Of<ILogger<OpenIddictScopeManager<OpenIddictScope>>>(),
+                OutputHelper.ToLogger<OpenIddictScopeManager<OpenIddictScope>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
@@ -4310,7 +4317,7 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),
                 Mock.Of<IOpenIddictTokenStoreResolver>(),
-                Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>(),
+                OutputHelper.ToLogger<OpenIddictTokenManager<OpenIddictToken>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
