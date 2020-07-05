@@ -901,7 +901,7 @@ namespace OpenIddict.MongoDb
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == authorization.Id &&
-                entity.ConcurrencyToken == timestamp, authorization, null, cancellationToken)).MatchedCount == 0)
+                entity.ConcurrencyToken == timestamp, authorization, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")

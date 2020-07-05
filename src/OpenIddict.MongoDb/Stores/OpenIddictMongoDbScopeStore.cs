@@ -615,7 +615,7 @@ namespace OpenIddict.MongoDb
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == scope.Id &&
-                entity.ConcurrencyToken == timestamp, scope, null, cancellationToken)).MatchedCount == 0)
+                entity.ConcurrencyToken == timestamp, scope, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
