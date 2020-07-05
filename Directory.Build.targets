@@ -15,6 +15,59 @@
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' Or
+                            ('$(TargetFrameworkIdentifier)' == '.NETFramework' And
+                              $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7'))) Or
+                            ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                              $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '1.6'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0'))) Or
+                             ('$(TargetFrameworkIdentifier)' == '.NETFramework' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7.2'))) Or
+                             ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_GENERATION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_DIRECT_KEY_CREATION_WITH_SPECIFIED_SIZE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_EPHEMERAL_KEY_SETS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) Or
+                             ('$(TargetFrameworkIdentifier)' == '.NETFramework' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.8'))) Or
+                             ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_HASHING_WITH_SPECIFIED_ALGORITHM</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) Or
+                             ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_BASE64_SPAN_CONVERSION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.2'))) Or
+                             ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_GENERIC_HOST</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0'))) Or
+                             ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_BCL_ASYNC_ENUMERABLE</DefineConstants>
+  </PropertyGroup>
+
   <!--
     Note: Entity Framework Core 2.x references System.Interactive.Async 3.x, that includes
     its own IAsyncEnumerable. To work around collisions between this type and the new type

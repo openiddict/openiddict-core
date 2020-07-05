@@ -24,8 +24,12 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or
-                         '$(TargetFramework)' == 'netstandard2.0' Or
-                         '$(TargetFramework)' == 'netcoreapp2.1'">
+                        ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                          $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
+                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
+                        ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                          $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
+                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication" Version="2.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="2.1.0" />
@@ -45,7 +49,11 @@
     <PackageVersion Include="Microsoft.Extensions.WebEncoders" Version="2.1.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' Or '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+                           $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0')) And
+                           $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
+                         ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                           $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="3.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.0" />
