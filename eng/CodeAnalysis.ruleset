@@ -69,7 +69,7 @@
       <Rule Id="CA1720" Action="None" />             <!-- Identifier contains type name -->
       <Rule Id="CA1721" Action="None" />             <!-- Property names should not match get methods -->
       <Rule Id="CA1724" Action="None" />             <!-- Type names should not match namespaces -->
-      <Rule Id="CA1725" Action="Info" />             <!-- Parameter names should match base declaration -->
+      <Rule Id="CA1725" Action="Warning" />          <!-- Parameter names should match base declaration -->
       <Rule Id="CA1801" Action="None" />             <!-- Review unused parameters -->
       <Rule Id="CA1802" Action="Warning" />          <!-- Use literals where appropriate -->
       <Rule Id="CA1806" Action="None" />             <!-- Do not ignore method results -->

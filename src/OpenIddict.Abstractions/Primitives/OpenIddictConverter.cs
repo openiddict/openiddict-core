@@ -19,40 +19,40 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Determines whether the specified type is supported by this converter.
         /// </summary>
-        /// <param name="type">The type to convert.</param>
+        /// <param name="typeToConvert">The type to convert.</param>
         /// <returns><c>true</c> if the type is supported, <c>false</c> otherwise.</returns>
-        public override bool CanConvert([NotNull] Type type)
+        public override bool CanConvert([NotNull] Type typeToConvert)
         {
-            if (type == null)
+            if (typeToConvert == null)
             {
-                throw new ArgumentNullException(nameof(type));
+                throw new ArgumentNullException(nameof(typeToConvert));
             }
 
-            return type == typeof(OpenIddictMessage) ||
-                   type == typeof(OpenIddictRequest) ||
-                   type == typeof(OpenIddictResponse);
+            return typeToConvert == typeof(OpenIddictMessage) ||
+                   typeToConvert == typeof(OpenIddictRequest) ||
+                   typeToConvert == typeof(OpenIddictResponse);
         }
 
         /// <summary>
         /// Deserializes an <see cref="OpenIddictMessage"/> instance.
         /// </summary>
         /// <param name="reader">The JSON reader.</param>
-        /// <param name="type">The type of the deserialized instance.</param>
+        /// <param name="typeToConvert">The type of the deserialized instance.</param>
         /// <param name="options">The JSON serializer options.</param>
         /// <returns>The deserialized <see cref="OpenIddictMessage"/> instance.</returns>
-        public override OpenIddictMessage Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+        public override OpenIddictMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (type == null)
+            if (typeToConvert == null)
             {
-                throw new ArgumentNullException(nameof(type));
+                throw new ArgumentNullException(nameof(typeToConvert));
             }
 
             using var document = JsonDocument.ParseValue(ref reader);
 
-            return type == typeof(OpenIddictMessage)  ? new OpenIddictMessage(document.RootElement.Clone()) :
-                   type == typeof(OpenIddictRequest)  ? new OpenIddictRequest(document.RootElement.Clone()) :
-                   type == typeof(OpenIddictResponse) ? (OpenIddictMessage) new OpenIddictResponse(document.RootElement.Clone()) :
-                   throw new ArgumentException("The specified type is not supported.", nameof(type));
+            return typeToConvert == typeof(OpenIddictMessage)  ? new OpenIddictMessage(document.RootElement.Clone()) :
+                   typeToConvert == typeof(OpenIddictRequest)  ? new OpenIddictRequest(document.RootElement.Clone()) :
+                   typeToConvert == typeof(OpenIddictResponse) ? (OpenIddictMessage) new OpenIddictResponse(document.RootElement.Clone()) :
+                   throw new ArgumentException("The specified type is not supported.", nameof(typeToConvert));
         }
 
         /// <summary>

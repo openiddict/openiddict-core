@@ -88,11 +88,11 @@ namespace OpenIddict.Abstractions
         /// Determines whether the current <see cref="OpenIddictParameter"/>
         /// instance is equal to the specified <see cref="OpenIddictParameter"/>.
         /// </summary>
-        /// <param name="parameter">The other object to which to compare this instance.</param>
+        /// <param name="other">The other object to which to compare this instance.</param>
         /// <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
-        public bool Equals(OpenIddictParameter parameter)
+        public bool Equals(OpenIddictParameter other)
         {
-            return (left: Value, right: parameter.Value) switch
+            return (left: Value, right: other.Value) switch
             {
                 // If the two parameters reference the same instance, return true.
                 // Note: true will also be returned if the two parameters are null.
@@ -200,10 +200,9 @@ namespace OpenIddict.Abstractions
         /// Determines whether the current <see cref="OpenIddictParameter"/>
         /// instance is equal to the specified <see cref="object"/>.
         /// </summary>
-        /// <param name="value">The other object to which to compare this instance.</param>
+        /// <param name="obj">The other object to which to compare this instance.</param>
         /// <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
-        public override bool Equals(object value)
-            => value is OpenIddictParameter parameter && Equals(parameter);
+        public override bool Equals(object obj) => obj is OpenIddictParameter parameter && Equals(parameter);
 
         /// <summary>
         /// Returns the hash code of the current <see cref="OpenIddictParameter"/> instance.

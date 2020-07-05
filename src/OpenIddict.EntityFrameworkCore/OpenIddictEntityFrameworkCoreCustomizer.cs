@@ -28,11 +28,11 @@ namespace OpenIddict.EntityFrameworkCore
         {
         }
 
-        public override void Customize([NotNull] ModelBuilder builder, [NotNull] DbContext context)
+        public override void Customize([NotNull] ModelBuilder modelBuilder, [NotNull] DbContext context)
         {
-            if (builder == null)
+            if (modelBuilder == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(modelBuilder));
             }
 
             if (context == null)
@@ -41,9 +41,9 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             // Register the OpenIddict entity sets.
-            builder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
+            modelBuilder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
 
-            base.Customize(builder, context);
+            base.Customize(modelBuilder, context);
         }
     }
 }
