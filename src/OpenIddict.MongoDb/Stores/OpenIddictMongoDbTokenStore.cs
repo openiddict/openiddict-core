@@ -991,7 +991,7 @@ namespace OpenIddict.MongoDb
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == token.Id &&
-                entity.ConcurrencyToken == timestamp, token, null, cancellationToken)).MatchedCount == 0)
+                entity.ConcurrencyToken == timestamp, token, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The token was concurrently updated and cannot be persisted in its current state.")
