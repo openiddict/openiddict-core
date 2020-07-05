@@ -21,9 +21,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => converter.CanConvert(type: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => converter.CanConvert(typeToConvert: null));
 
-            Assert.Equal("type", exception.ParamName);
+            Assert.Equal("typeToConvert", exception.ParamName);
         }
 
         [Theory]
@@ -58,10 +58,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
                 var reader = new Utf8JsonReader();
-                return converter.Read(ref reader, type: null, options: null);
+                return converter.Read(ref reader, typeToConvert: null, options: null);
             });
 
-            Assert.Equal("type", exception.ParamName);
+            Assert.Equal("typeToConvert", exception.ParamName);
         }
 
         [Theory]
@@ -87,7 +87,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.StartsWith("The specified type is not supported.", exception.Message);
-            Assert.Equal("type", exception.ParamName);
+            Assert.Equal("typeToConvert", exception.ParamName);
         }
 
         [Theory]
