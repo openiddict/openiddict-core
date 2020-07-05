@@ -454,10 +454,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
 #endif
             builder.UseEnvironment("Testing");
 
-            builder.ConfigureLogging(builder =>
-            {
-                builder.AddXUnit(OutputHelper);
-            });
+            builder.ConfigureLogging(options => options.AddXUnit(OutputHelper));
 
             builder.ConfigureServices(ConfigureServices);
             builder.ConfigureServices(services =>
