@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
@@ -327,6 +328,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         {
             var services = new ServiceCollection();
             ConfigureServices(services);
+
+            services.AddLogging(options => options.AddXUnit(OutputHelper));
 
             services.AddOpenIddict()
                 .AddServer(options =>
