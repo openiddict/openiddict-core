@@ -15,7 +15,9 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or
+                        ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
     <PackageReference Include="Microsoft.Bcl.HashCode" />
   </ItemGroup>
 

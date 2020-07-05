@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;net472;netcoreapp2.1;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net461;net472;net48;netcoreapp2.1;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,9 +21,9 @@ To use the server feature on ASP.NET Core or OWIN/Katana, reference the OpenIddi
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' Or
-                         '$(TargetFramework)' == 'net472' Or
-                         '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or
+                        ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
+                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
     <PackageReference Include="Portable.BouncyCastle" />
   </ItemGroup>
 
