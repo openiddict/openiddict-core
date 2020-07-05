@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.DataProtection;
 namespace OpenIddict.Validation.DataProtection
 {
     /// <summary>
-    /// Provides various settings needed to configure the OpenIddict validation handler.
+    /// Provides various settings needed to configure the OpenIddict
+    /// ASP.NET Core Data Protection validation integration.
     /// </summary>
     public class OpenIddictValidationDataProtectionOptions
     {
@@ -22,8 +23,7 @@ namespace OpenIddict.Validation.DataProtection
         public IDataProtectionProvider DataProtectionProvider { get; set; }
 
         /// <summary>
-        /// Gets or sets the formatter used to read and write Data Protection tokens,
-        /// serialized using the same format as the ASP.NET Core authentication tickets.
+        /// Gets or sets the formatter used to read Data Protection tokens.
         /// </summary>
         public IOpenIddictValidationDataProtectionFormatter Formatter { get; set; }
             = new OpenIddictValidationDataProtectionFormatter();

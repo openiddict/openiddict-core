@@ -10,7 +10,7 @@ using OpenIddict.Validation;
 namespace System.Net.Http
 {
     /// <summary>
-    /// Exposes companion extensions for the OpenIddict/ASP.NET Core integration.
+    /// Exposes companion extensions for the OpenIddict/System.Net.Http integration.
     /// </summary>
     public static class OpenIddictValidationSystemNetHttpHelpers
     {

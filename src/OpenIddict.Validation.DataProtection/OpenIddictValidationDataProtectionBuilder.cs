@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
         /// </summary>
-        /// <param name="formatter">The formatter used to read and write tokens.</param>
+        /// <param name="formatter">The formatter used to read tokens.</param>
         /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
         public OpenIddictValidationDataProtectionBuilder UseFormatter([NotNull] IOpenIddictValidationDataProtectionFormatter formatter)
         {
