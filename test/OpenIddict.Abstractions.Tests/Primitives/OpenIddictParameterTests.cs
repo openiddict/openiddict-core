@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using Xunit;
 
@@ -17,6 +16,82 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 {
     public class OpenIddictParameterTests
     {
+        [Fact]
+        public void Count_ReturnsZeroForNullValue()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter();
+
+            // Act and assert
+            Assert.Equal(0, parameter.Count);
+        }
+
+        [Fact]
+        public void Count_ReturnsZeroForBoolean()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(true);
+
+            // Act and assert
+            Assert.Equal(0, parameter.Count);
+        }
+
+        [Fact]
+        public void Count_ReturnsZeroForInteger()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(42);
+
+            // Act and assert
+            Assert.Equal(0, parameter.Count);
+        }
+
+        [Fact]
+        public void Count_ReturnsZeroForString()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter("Fabrikam");
+
+            // Act and assert
+            Assert.Equal(0, parameter.Count);
+        }
+
+        [Fact]
+        public void Count_ReturnsExpectedValueForArray()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(new[]
+            {
+                "Fabrikam",
+                "Contoso"
+            });
+
+            // Act and assert
+            Assert.Equal(2, parameter.Count);
+        }
+
+        [Fact]
+        public void Count_ReturnsExpectedValueForJsonArray()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
+
+            // Act and assert
+            Assert.Equal(2, parameter.Count);
+        }
+
+        [Fact]
+        public void Count_ReturnsZeroForJsonObjects()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}"));
+
+            // Act and assert
+            Assert.Equal(0, parameter.Count);
+        }
+
         [Fact]
         public void Equals_ReturnsTrueWhenBothParametersAreNull()
         {

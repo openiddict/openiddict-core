@@ -78,6 +78,22 @@ namespace OpenIddict.Abstractions
         public OpenIddictParameter? this[string name] => GetNamedParameter(name);
 
         /// <summary>
+        /// Gets the number of unnamed child items contained in the current parameter or
+        /// <c>0</c> if the parameter doesn't represent an array of strings or a JSON array.
+        /// </summary>
+        public int Count => Value switch
+        {
+            // If the parameter is a primitive array of strings, return its length.
+            string[] value => value.Length,
+
+            // If the parameter is a JSON array, return its length.
+            JsonElement value when value.ValueKind == JsonValueKind.Array => value.GetArrayLength(),
+
+            // Otherwise, return 0.
+            _ => 0
+        };
+
+        /// <summary>
         /// Gets the associated value, that can be either a primitive CLR type
         /// (e.g bool, string, long), an array of strings or a complex JSON object.
         /// </summary>
