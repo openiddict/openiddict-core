@@ -39,6 +39,15 @@
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
   </PropertyGroup>
 
+  <!--
+    These are set per-project so versioning is applied correctly, but are not set globally otherwise
+    the Arcade SDK will attempt to publish artifacts such as symbols to Microsoft's servers.
+  -->
+  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' And '$(GITHUB_REF.StartsWith(`refs/pull/`))' == 'false' ">
+    <OfficialBuild>true</OfficialBuild>
+    <OfficialBuildId>$(_ComputedOfficialBuildId)</OfficialBuildId>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSource>true</IncludeSource>
