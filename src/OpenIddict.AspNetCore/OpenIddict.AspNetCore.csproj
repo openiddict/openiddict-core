@@ -19,4 +19,10 @@
     <ProjectReference Include="..\OpenIddict.Validation.DataProtection\OpenIddict.Validation.DataProtection.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\netcoreapp2.1\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\netcoreapp3.1\_._" />
+  </ItemGroup>
+
 </Project>
