@@ -17,4 +17,8 @@
     <ProjectReference Include="..\OpenIddict.Validation.Owin\OpenIddict.Validation.Owin.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
+  </ItemGroup>
+
 </Project>
