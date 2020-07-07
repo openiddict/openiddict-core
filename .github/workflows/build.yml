@@ -59,6 +59,7 @@ jobs:
 
     - name: Publish logs
       uses: actions/upload-artifact@v1
+      if: ${{ always() }}
       with:
         name: logs-${{ matrix.os_name }}
         path: ./artifacts/log/Release
@@ -71,6 +72,7 @@ jobs:
 
     - name: Publish test results
       uses: actions/upload-artifact@v1
+      if: ${{ always() }}
       with:
         name: testresults-${{ matrix.os_name }}
         path: ./artifacts/TestResults/Release
