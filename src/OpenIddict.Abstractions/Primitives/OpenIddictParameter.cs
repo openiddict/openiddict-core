@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -361,17 +362,19 @@ namespace OpenIddict.Abstractions
         /// <returns>A dictionary of all the parameters associated with the current instance.</returns>
         public IReadOnlyDictionary<string, OpenIddictParameter> GetNamedParameters()
         {
-            var parameters = new Dictionary<string, OpenIddictParameter>();
-
             if (Value is JsonElement element && element.ValueKind == JsonValueKind.Object)
             {
+                var parameters = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
+
                 foreach (var property in element.EnumerateObject())
                 {
                     parameters[property.Name] = property.Value;
                 }
+
+                return parameters;
             }
 
-            return parameters;
+            return ImmutableDictionary.Create<string, OpenIddictParameter>();
         }
 
         /// <summary>
@@ -381,25 +384,31 @@ namespace OpenIddict.Abstractions
         /// <returns>An enumeration of all the unnamed parameters associated with the current instance.</returns>
         public IReadOnlyList<OpenIddictParameter> GetUnnamedParameters()
         {
-            var parameters = new List<OpenIddictParameter>();
-
             if (Value is string[] array)
             {
+                var parameters = new List<OpenIddictParameter>();
+
                 for (var index = 0; index < array.Length; index++)
                 {
                     parameters.Add(array[index]);
                 }
+
+                return parameters;
             }
 
             else if (Value is JsonElement element && element.ValueKind == JsonValueKind.Array)
             {
+                var parameters = new List<OpenIddictParameter>();
+
                 foreach (var value in element.EnumerateArray())
                 {
                     parameters.Add(value);
                 }
+
+                return parameters;
             }
 
-            return parameters;
+            return ImmutableList.Create<OpenIddictParameter>();
         }
 
         /// <summary>
