@@ -49,17 +49,25 @@ jobs:
         Write-Host "::set-env name=_ComputedOfficialBuildId::${BuildId}"
 
     - name: Build, test and pack
-      run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest
       if: ${{ runner.os == 'Windows' }}
+      run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest
+      env:
+        DOTNET_MULTILEVEL_LOOKUP: 0
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+        NUGET_XMLDOC_MODE: skip
 
     - name: Build, test and pack
+      if: ${{ runner.os != 'Windows' }}
       shell: pwsh
       run: ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest
-      if: ${{ runner.os != 'Windows' }}
+      env:
+        DOTNET_MULTILEVEL_LOOKUP: 0
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+        NUGET_XMLDOC_MODE: skip
 
     - name: Publish logs
-      uses: actions/upload-artifact@v1
       if: ${{ always() }}
+      uses: actions/upload-artifact@v1
       with:
         name: logs-${{ matrix.os_name }}
         path: ./artifacts/log/Release
@@ -71,16 +79,16 @@ jobs:
         path: ./artifacts/packages/Release/Shipping
 
     - name: Publish test results
-      uses: actions/upload-artifact@v1
       if: ${{ always() }}
+      uses: actions/upload-artifact@v1
       with:
         name: testresults-${{ matrix.os_name }}
         path: ./artifacts/TestResults/Release
 
     - name: Push NuGet packages to MyGet.org
+      if: ${{ github.repository_owner == 'openiddict' && (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/heads/rel/') || startsWith(github.ref, 'refs/tags/')) && runner.os == 'Windows' }}
       run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.MYGET_API_KEY }} --skip-duplicate --source https://www.myget.org/F/openiddict/ --symbol-source https://www.myget.org/F/openiddict/
-      if: ${{ github.repository_owner == 'openiddict' && (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && runner.os == 'Windows' }}
 
     - name: Push NuGet packages to NuGet.org
-      run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --source https://api.nuget.org/v3/index.json
       if: ${{ github.repository_owner == 'openiddict' && startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
+      run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --source https://api.nuget.org/v3/index.json
