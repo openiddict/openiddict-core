@@ -374,7 +374,11 @@ namespace OpenIddict.Validation
                 {
                     context.Logger.LogDebug(exception, "An error occurred while introspecting the access token.");
 
-                    // If an error occurred while introspecting the token, allow other handlers to validate it.
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: "The specified token is not valid.");
+
+                    return;
                 }
             }
         }
