@@ -118,11 +118,6 @@ namespace OpenIddict.Validation
             // This validator overrides the default logic used by IdentityModel to resolve the type from this claim.
             TypeValidator = (type, token, parameters) =>
             {
-                if (string.IsNullOrEmpty(type))
-                {
-                    throw new SecurityTokenInvalidTypeException("The 'typ' header of the JWT token cannot be null or empty.");
-                }
-
                 // If available, try to resolve the actual type from the "token_usage" claim.
                 if (((JsonWebToken) token).TryGetPayloadValue(Claims.TokenUsage, out string usage))
                 {
@@ -135,7 +130,14 @@ namespace OpenIddict.Validation
                     };
                 }
 
-                // Unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
+                // At this point, throw an exception if the type cannot be resolved from the "typ" header
+                // (provided via the type delegate parameter) or inferred from the token_usage claim.
+                if (string.IsNullOrEmpty(type))
+                {
+                    throw new SecurityTokenInvalidTypeException("The type of the JWT token cannot be resolved or inferred.");
+                }
+
+                // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
                 if (parameters.ValidTypes != null && parameters.ValidTypes.Any() &&
                    !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
                 {
