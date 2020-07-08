@@ -451,7 +451,7 @@ namespace OpenIddict.Server
                 {
                     // If no specific token type is expected, accept all token types at this stage.
                     // Additional filtering can be made based on the resolved/actual token type.
-                    var type when string.IsNullOrEmpty(type) => Array.Empty<string>(),
+                    var type when string.IsNullOrEmpty(type) => null,
 
                     // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
                     TokenTypeHints.AccessToken => new[]
