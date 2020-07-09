@@ -2315,7 +2315,7 @@ namespace OpenIddict.Server
                 // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
                 // and must exactly match the expiration date of the refresh token used in the token request.
                 if (context.EndpointType == OpenIddictServerEndpointType.Token &&
-                    context.Request.IsRefreshTokenGrantType() && !context.Options.UseSlidingExpiration)
+                    context.Request.IsRefreshTokenGrantType() && !context.Options.DisableSlidingRefreshTokenExpiration)
                 {
                     var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                         typeof(ProcessAuthenticationContext).FullName) ??
@@ -2736,7 +2736,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireSlidingExpirationEnabled>()
+                    .AddFilter<RequireSlidingRefreshTokenExpirationEnabled>()
                     .AddFilter<RequireRollingTokensDisabled>()
                     .UseScopedHandler<ExtendRefreshTokenEntry>()
                     .SetOrder(RevokeExistingTokenEntries.Descriptor.Order + 1_000)

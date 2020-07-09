@@ -1595,13 +1595,21 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.DisableAuthorizationStorage = true);
 
         /// <summary>
+        /// Allows processing authorization and token requests that specify scopes that have not
+        /// been registered using <see cref="RegisterScopes(string[])"/> or the scope manager.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder DisableScopeValidation()
+            => Configure(options => options.DisableScopeValidation = true);
+
+        /// <summary>
         /// Disables sliding expiration. When using this option, refresh tokens
         /// are issued with a fixed expiration date: when they expire, a complete
         /// authorization flow must be started to retrieve a new refresh token.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder DisableSlidingExpiration()
-            => Configure(options => options.UseSlidingExpiration = false);
+        public OpenIddictServerBuilder DisableSlidingRefreshTokenExpiration()
+            => Configure(options => options.DisableSlidingRefreshTokenExpiration = true);
 
         /// <summary>
         /// Disables token storage, so that no database entry is created
@@ -1614,14 +1622,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder DisableTokenStorage()
             => Configure(options => options.DisableTokenStorage = true);
-
-        /// <summary>
-        /// Allows processing authorization and token requests that specify scopes that have not
-        /// been registered using <see cref="RegisterScopes(string[])"/> or the scope manager.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder DisableScopeValidation()
-            => Configure(options => options.DisableScopeValidation = true);
 
         /// <summary>
         /// Enables the degraded mode. When the degraded mode is enabled, all the security checks that

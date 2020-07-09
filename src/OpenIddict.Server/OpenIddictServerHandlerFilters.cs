@@ -400,9 +400,9 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if sliding expiration was disabled.
+        /// Represents a filter that excludes the associated handlers if sliding refresh token expiration was disabled.
         /// </summary>
-        public class RequireSlidingExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        public class RequireSlidingRefreshTokenExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
             public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
@@ -411,7 +411,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Options.UseSlidingExpiration);
+                return new ValueTask<bool>(!context.Options.DisableSlidingRefreshTokenExpiration);
             }
         }
 
