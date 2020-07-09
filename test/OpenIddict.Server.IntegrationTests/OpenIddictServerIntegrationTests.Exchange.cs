@@ -1201,7 +1201,7 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RegisterScopes("scope_registered_in_options");
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.Services.AddSingleton(manager);
 
@@ -1764,7 +1764,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
             });
 
             await using var client = await server.CreateClientAsync();
@@ -1832,7 +1832,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
             });
 
             await using var client = await server.CreateClientAsync();
@@ -2008,7 +2008,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
             });
 
             await using var client = await server.CreateClientAsync();
@@ -2061,7 +2061,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
             });
 
             await using var client = await server.CreateClientAsync();

@@ -763,19 +763,35 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void DisableSlidingExpiration_SlidingExpirationIsDisabled()
+        public void DisableScopeValidation_ScopeValidationIsDisabled()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.DisableSlidingExpiration();
+            builder.DisableScopeValidation();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.False(options.UseSlidingExpiration);
+            Assert.True(options.DisableScopeValidation);
+        }
+
+        [Fact]
+        public void DisableSlidingRefreshTokenExpiration_SlidingExpirationIsDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableSlidingRefreshTokenExpiration();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.DisableSlidingRefreshTokenExpiration);
         }
 
         [Fact]
@@ -1100,22 +1116,6 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Contains(new Uri("http://localhost/endpoint-path"), options.RevocationEndpointUris);
-        }
-
-        [Fact]
-        public void DisableScopeValidation_ScopeValidationIsDisabled()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.DisableScopeValidation();
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.True(options.DisableScopeValidation);
         }
 
         [Fact]

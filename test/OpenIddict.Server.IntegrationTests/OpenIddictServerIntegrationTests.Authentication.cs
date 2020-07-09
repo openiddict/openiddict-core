@@ -619,7 +619,7 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RegisterScopes("registered_scope");
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -689,7 +689,7 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RegisterScopes("scope_registered_in_options");
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -1418,7 +1418,7 @@ namespace OpenIddict.Server.FunctionalTests
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableAuthorizationStorage();
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.Services.AddSingleton(manager);
 
@@ -1476,7 +1476,7 @@ namespace OpenIddict.Server.FunctionalTests
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableAuthorizationStorage();
                 options.DisableTokenStorage();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.Services.AddSingleton(manager);
 

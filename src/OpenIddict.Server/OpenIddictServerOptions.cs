@@ -218,13 +218,6 @@ namespace OpenIddict.Server
             new List<OpenIddictServerHandlerDescriptor>(OpenIddictServerHandlers.DefaultHandlers);
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether new refresh tokens should be issued during a refresh token request.
-        /// Set this property to <c>true</c> to issue a new refresh token, <c>false</c> to prevent OpenIddict
-        /// from issuing new refresh tokens when receiving a grant_type=refresh_token request.
-        /// </summary>
-        public bool UseSlidingExpiration { get; set; } = true;
-
-        /// <summary>
         /// Gets or sets a boolean determining whether client identification is optional.
         /// Enabling this option allows client applications to communicate with the token,
         /// introspection and revocation endpoints without having to send their client identifier.
@@ -258,6 +251,14 @@ namespace OpenIddict.Server
         /// refresh token is issued and can't be revoked to prevent associated tokens from being used.
         /// </summary>
         public bool DisableAuthorizationStorage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether sliding expiration is disabled
+        /// for refresh tokens. When this option is set to <c>true</c>, refresh tokens
+        /// are issued with a fixed expiration date: when they expire, a complete
+        /// authorization flow must be started to retrieve a new refresh token.
+        /// </summary>
+        public bool DisableSlidingRefreshTokenExpiration { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether token storage should be disabled.

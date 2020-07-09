@@ -2279,7 +2279,7 @@ namespace OpenIddict.Server.FunctionalTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -3697,7 +3697,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             await using var server = await CreateServerAsync(options =>
             {
-                options.DisableSlidingExpiration();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
