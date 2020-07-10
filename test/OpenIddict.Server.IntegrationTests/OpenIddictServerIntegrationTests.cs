@@ -2192,7 +2192,7 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
-        public async Task ProcessSignIn_NoRefreshTokenIsReturnedForRefreshTokenGrantRequests()
+        public async Task ProcessSignIn_ARefreshTokenIsReturnedForRefreshTokenGrantRequests()
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
@@ -2221,7 +2221,7 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.False(context.IncludeRefreshToken);
+                        Assert.True(context.IncludeRefreshToken);
 
                         return default;
                     });
@@ -2240,60 +2240,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null(response.RefreshToken);
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_NoRefreshTokenIsReturnedWhenSlidingExpirationIsDisabled()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-                options.DisableSlidingRefreshTokenExpiration();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OfflineAccess)
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<ProcessSignInContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.False(context.IncludeRefreshToken);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
+            Assert.NotNull(response.RefreshToken);
         }
 
         [Fact]
@@ -3003,6 +2950,7 @@ namespace OpenIddict.Server.IntegrationTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {

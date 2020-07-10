@@ -396,12 +396,6 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
   <data name="ID1079" xml:space="preserve">
     <value>The verification endpoint must be enabled to use the device flow.</value>
   </data>
-  <data name="ID1080" xml:space="preserve">
-    <value>The device and verification endpoints cannot be enabled when token storage is disabled.</value>
-  </data>
-  <data name="ID1081" xml:space="preserve">
-    <value>The revocation endpoint cannot be enabled when token storage is disabled.</value>
-  </data>
   <data name="ID1082" xml:space="preserve">
     <value>Reference tokens cannot be used when disabling token storage.</value>
   </data>
