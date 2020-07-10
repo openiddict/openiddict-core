@@ -34,6 +34,20 @@ namespace OpenIddict.Server
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (options.EnableDegradedMode)
+            {
+                // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
+                options.DisableAuthorizationStorage = options.DisableTokenStorage = true;
+                options.IgnoreEndpointPermissions = options.IgnoreGrantTypePermissions = options.IgnoreScopePermissions = true;
+                options.UseReferenceAccessTokens = options.UseReferenceRefreshTokens = false;
+
+                // When the degraded mode is enabled (and the token storage disabled), OpenIddict is not able to dynamically
+                // update the expiration date of a token. As such, either rolling tokens MUST be enabled or sliding token
+                // expiration MUST be disabled to always issue new refresh tokens with the same fixed expiration date.
+                // By default, OpenIddict will automatically force the rolling tokens option when using the degraded mode.
+                options.UseRollingRefreshTokens |= !options.UseRollingRefreshTokens && !options.DisableSlidingRefreshTokenExpiration;
+            }
+
             if (options.JsonWebTokenHandler == null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1074));
@@ -78,16 +92,6 @@ namespace OpenIddict.Server
 
             if (options.DisableTokenStorage)
             {
-                if (options.DeviceEndpointUris.Count != 0 || options.VerificationEndpointUris.Count != 0)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1080));
-                }
-
-                if (options.RevocationEndpointUris.Count != 0)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1081));
-                }
-
                 if (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1082));
