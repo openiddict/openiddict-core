@@ -27,18 +27,35 @@ namespace OpenIddict.Server
         public Uri Issuer { get; set; }
 
         /// <summary>
-        /// Gets the list of credentials used to encrypt the tokens issued by the
-        /// OpenIddict server services. Note: the encryption credentials are not
-        /// used to protect/unprotect tokens issued by ASP.NET Core Data Protection.
+        /// Gets the list of encryption credentials used by the OpenIddict server services.
+        /// Multiple credentials can be added to support key rollover, but if X.509 keys
+        /// are used, at least one of them must have a valid creation/expiration date.
+        /// Note: the encryption credentials are not used to protect/unprotect tokens issued
+        /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
         /// </summary>
+        /// <remarks>
+        /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
+        /// <para>• Symmetric keys are always preferred when they can be used for the operation (e.g token encryption).</para>
+        /// <para>• X.509 keys are always preferred to non-X.509 asymmetric keys.</para>
+        /// <para>• X.509 keys with the furthest expiration date are preferred.</para>
+        /// <para>• X.509 keys whose backing certificate is not yet valid are never preferred.</para>
+        /// </remarks>
         public List<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
 
         /// <summary>
-        /// Gets the list of credentials used to sign the tokens issued by the OpenIddict server services.
-        /// Both asymmetric and symmetric keys are supported, but only asymmetric keys can be used to sign identity tokens.
-        /// Note that only asymmetric RSA and ECDSA keys can be exposed by the JWKS metadata endpoint and that the
-        /// signing credentials are not used to protect/unprotect tokens issued by ASP.NET Core Data Protection.
+        /// Gets the list of signing credentials used by the OpenIddict server services.
+        /// Multiple credentials can be added to support key rollover, but if X.509 keys
+        /// are used, at least one of them must have a valid creation/expiration date.
+        /// Note: the signing credentials are not used to protect/unprotect tokens issued
+        /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
         /// </summary>
+        /// <remarks>
+        /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
+        /// <para>• Symmetric keys are always preferred when they can be used for the operation (e.g token signing).</para>
+        /// <para>• X.509 keys are always preferred to non-X.509 asymmetric keys.</para>
+        /// <para>• X.509 keys with the furthest expiration date are preferred.</para>
+        /// <para>• X.509 keys whose backing certificate is not yet valid are never preferred.</para>
+        /// </remarks>
         public List<SigningCredentials> SigningCredentials { get; } = new List<SigningCredentials>();
 
         /// <summary>

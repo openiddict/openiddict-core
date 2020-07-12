@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
@@ -94,6 +95,17 @@ namespace OpenIddict.Validation
                 {
                     throw new InvalidOperationException("Token validation cannot be enabled when using introspection.");
                 }
+            }
+
+            // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.EncryptionCredentials.Count != 0 &&
+                options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                    (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("When using X.509 encryption credentials, at least one of the registered certificates must be valid.")
+                    .Append("To use key rollover, register both the new certificate and the old one in the credentials collection.")
+                    .ToString());
             }
 
             if (options.Configuration == null && options.ConfigurationManager == null)

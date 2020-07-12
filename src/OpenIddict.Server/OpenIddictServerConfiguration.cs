@@ -129,6 +129,26 @@ namespace OpenIddict.Server
                     .ToString());
             }
 
+            // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                   (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("When using X.509 encryption credentials, at least one of the registered certificates must be valid.")
+                    .Append("To use key rollover, register both the new certificate and the old one in the credentials collection.")
+                    .ToString());
+            }
+
+            // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.SigningCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                   (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("When using X.509 signing credentials, at least one of the registered certificates must be valid.")
+                    .Append("To use key rollover, register both the new certificate and the old one in the credentials collection.")
+                    .ToString());
+            }
+
             if (options.EnableDegradedMode)
             {
                 // If the degraded mode was enabled, ensure custom validation handlers
@@ -252,6 +272,10 @@ namespace OpenIddict.Server
             // Sort the handlers collection using the order associated with each handler.
             options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
+            // Sort the encryption and signing credentials.
+            options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+            options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+
             // Automatically add the offline_access scope if the refresh token grant has been enabled.
             if (options.GrantTypes.Contains(GrantTypes.RefreshToken))
             {
@@ -311,6 +335,31 @@ namespace OpenIddict.Server
             options.TokenValidationParameters.TokenDecryptionKeys =
                 from credentials in options.EncryptionCredentials
                 select credentials.Key;
+
+            static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+            {
+                // If the two keys refer to the same instances, return 0.
+                (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
+
+                // If one of the keys is a symmetric key, prefer it to the other one.
+                (SymmetricSecurityKey _, SymmetricSecurityKey _) => 0,
+                (SymmetricSecurityKey _, SecurityKey _)          => -1,
+                (SecurityKey _, SymmetricSecurityKey _)          => 1,
+
+                // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
+                (X509SecurityKey first, SecurityKey _)  when first.Certificate.NotBefore  > DateTime.Now => 1,
+                (SecurityKey _, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => 1,
+
+                // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
+                (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),
+
+                // If one of the keys is backed by a X.509 certificate, prefer the X.509 security key.
+                (X509SecurityKey _, SecurityKey _) => -1,
+                (SecurityKey _, X509SecurityKey _) => 1,
+
+                // If the two keys are not backed by a X.509 certificate, none should be preferred to the other.
+                (SecurityKey _, SecurityKey _) => 0
+            };
 
             static string GetKeyIdentifier(SecurityKey key)
             {

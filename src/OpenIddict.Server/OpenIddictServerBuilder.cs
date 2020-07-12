@@ -141,7 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.AcceptAnonymousClients = true);
 
         /// <summary>
-        /// Registers the <see cref="EncryptingCredentials"/> used to encrypt the tokens issued by OpenIddict.
+        /// Registers encryption credentials.
         /// </summary>
         /// <param name="credentials">The encrypting credentials.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="SecurityKey"/> used to encrypt the access tokens issued by OpenIddict.
+        /// Registers an encryption key.
         /// </summary>
         /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -193,16 +193,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers (and generates if necessary) a user-specific development
-        /// certificate used to encrypt the tokens issued by OpenIddict.
+        /// Registers (and generates if necessary) a user-specific development encryption certificate.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate()
             => AddDevelopmentEncryptionCertificate(new X500DistinguishedName("CN=OpenIddict Server Encryption Certificate"));
 
         /// <summary>
-        /// Registers (and generates if necessary) a user-specific development
-        /// certificate used to encrypt the tokens issued by OpenIddict.
+        /// Registers (and generates if necessary) a user-specific development encryption certificate.
         /// </summary>
         /// <param name="subject">The subject name associated with the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -284,8 +282,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a new ephemeral key used to encrypt the tokens issued by OpenIddict: the key
-        /// is discarded when the application shuts down and tokens encrypted using this key are
+        /// Registers a new ephemeral encryption key. Ephemeral encryption keys are automatically
+        /// discarded when the application shuts down and payloads encrypted using this key are
         /// automatically invalidated. This method should only be used during development.
         /// On production, using a X.509 certificate stored in the machine store is recommended.
         /// </summary>
@@ -294,8 +292,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddEphemeralEncryptionKey(SecurityAlgorithms.RsaOAEP);
 
         /// <summary>
-        /// Registers a new ephemeral key used to encrypt the tokens issued by OpenIddict: the key
-        /// is discarded when the application shuts down and tokens encrypted using this key are
+        /// Registers a new ephemeral encryption key. Ephemeral encryption keys are automatically
+        /// discarded when the application shuts down and payloads encrypted using this key are
         /// automatically invalidated. This method should only be used during development.
         /// On production, using a X.509 certificate stored in the machine store is recommended.
         /// </summary>
@@ -370,9 +368,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> that is used to encrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate.
         /// </summary>
-        /// <param name="certificate">The certificate used to encrypt the security tokens issued by the server.</param>
+        /// <param name="certificate">The encryption certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionCertificate([NotNull] X509Certificate2 certificate)
         {
@@ -381,14 +379,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            if (certificate.NotBefore > DateTime.Now)
+            // If the certificate is a X.509v3 certificate that specifies at least one
+            // key usage, ensure that the certificate key can be used for key encryption.
+            if (certificate.Version >= 3)
             {
-                throw new InvalidOperationException("The specified certificate is not yet valid.");
-            }
-
-            if (certificate.NotAfter < DateTime.Now)
-            {
-                throw new InvalidOperationException("The specified certificate is no longer valid.");
+                var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
+                if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
+                {
+                    throw new InvalidOperationException("The specified certificate is not a key encryption certificate.");
+                }
             }
 
             if (!certificate.HasPrivateKey)
@@ -400,8 +399,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from an
-        /// embedded resource and used to encrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from an embedded resource.
         /// </summary>
         /// <param name="assembly">The assembly containing the certificate.</param>
         /// <param name="resource">The name of the embedded resource.</param>
@@ -419,8 +417,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from an
-        /// embedded resource and used to encrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from an embedded resource.
         /// </summary>
         /// <param name="assembly">The assembly containing the certificate.</param>
         /// <param name="resource">The name of the embedded resource.</param>
@@ -456,8 +453,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to encrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate extracted from a stream.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -473,8 +469,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to encrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate extracted from a stream.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -505,8 +500,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the X.509
-        /// machine store and used to encrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from the X.509 user or machine store.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -537,8 +531,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the given
-        /// X.509 store and used to encrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from the specified X.509 store.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <param name="name">The name of the X.509 store.</param>
@@ -568,8 +561,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the <see cref="SigningCredentials"/> used to sign the tokens issued by OpenIddict.
-        /// Note: using <see cref="RsaSecurityKey"/> asymmetric keys is recommended on production.
+        /// Registers signing credentials.
         /// </summary>
         /// <param name="credentials">The signing credentials.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -584,8 +576,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="SecurityKey"/> used to sign the tokens issued by OpenIddict.
-        /// Note: using <see cref="RsaSecurityKey"/> asymmetric keys is recommended on production.
+        /// Registers a signing key.
         /// </summary>
         /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -645,16 +636,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers (and generates if necessary) a user-specific development
-        /// certificate used to sign the tokens issued by OpenIddict.
+        /// Registers (and generates if necessary) a user-specific development signing certificate.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddDevelopmentSigningCertificate()
             => AddDevelopmentSigningCertificate(new X500DistinguishedName("CN=OpenIddict Server Signing Certificate"));
 
         /// <summary>
-        /// Registers (and generates if necessary) a user-specific development
-        /// certificate used to sign the tokens issued by OpenIddict.
+        /// Registers (and generates if necessary) a user-specific development signing certificate.
         /// </summary>
         /// <param name="subject">The subject name associated with the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -736,8 +725,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a new ephemeral key used to sign the tokens issued by OpenIddict: the key
-        /// is discarded when the application shuts down and tokens signed using this key are
+        /// Registers a new ephemeral signing key. Ephemeral signing keys are automatically
+        /// discarded when the application shuts down and payloads signed using this key are
         /// automatically invalidated. This method should only be used during development.
         /// On production, using a X.509 certificate stored in the machine store is recommended.
         /// </summary>
@@ -746,8 +735,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddEphemeralSigningKey(SecurityAlgorithms.RsaSha256);
 
         /// <summary>
-        /// Registers a new ephemeral key used to sign the tokens issued by OpenIddict: the key
-        /// is discarded when the application shuts down and tokens signed using this key are
+        /// Registers a new ephemeral signing key. Ephemeral signing keys are automatically
+        /// discarded when the application shuts down and payloads signed using this key are
         /// automatically invalidated. This method should only be used during development.
         /// On production, using a X.509 certificate stored in the machine store is recommended.
         /// </summary>
@@ -841,9 +830,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> that is used to sign the tokens issued by OpenIddict.
+        /// Registers a signing certificate.
         /// </summary>
-        /// <param name="certificate">The certificate used to sign the security tokens issued by the server.</param>
+        /// <param name="certificate">The signing certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddSigningCertificate([NotNull] X509Certificate2 certificate)
         {
@@ -852,14 +841,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            if (certificate.NotBefore > DateTime.Now)
+            // If the certificate is a X.509v3 certificate that specifies at least
+            // one key usage, ensure that the certificate key can be used for signing.
+            if (certificate.Version >= 3)
             {
-                throw new InvalidOperationException("The specified certificate is not yet valid.");
-            }
-
-            if (certificate.NotAfter < DateTime.Now)
-            {
-                throw new InvalidOperationException("The specified certificate is no longer valid.");
+                var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
+                if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
+                {
+                    throw new InvalidOperationException("The specified certificate is not a signing certificate.");
+                }
             }
 
             if (!certificate.HasPrivateKey)
@@ -871,8 +861,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from an
-        /// embedded resource and used to sign the tokens issued by OpenIddict.
+        /// Registers a signing certificate retrieved from an embedded resource.
         /// </summary>
         /// <param name="assembly">The assembly containing the certificate.</param>
         /// <param name="resource">The name of the embedded resource.</param>
@@ -890,8 +879,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from an
-        /// embedded resource and used to sign the tokens issued by OpenIddict.
+        /// Registers a signing certificate retrieved from an embedded resource.
         /// </summary>
         /// <param name="assembly">The assembly containing the certificate.</param>
         /// <param name="resource">The name of the embedded resource.</param>
@@ -927,8 +915,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to sign the tokens issued by OpenIddict.
+        /// Registers a signing certificate extracted from a stream.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -944,8 +931,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to sign the tokens issued by OpenIddict.
+        /// Registers a signing certificate extracted from a stream.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -976,8 +962,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the X.509
-        /// machine store and used to sign the tokens issued by OpenIddict.
+        /// Registers a signing certificate retrieved from the X.509 user or machine store.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -1008,8 +993,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the given
-        /// X.509 store and used to sign the tokens issued by OpenIddict.
+        /// Registers a signing certificate retrieved from the specified X.509 store.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <param name="name">The name of the X.509 store.</param>
@@ -1144,11 +1128,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.AuthorizationEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.AuthorizationEndpointUris.Add(address);
-                }
+                options.AuthorizationEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1191,11 +1171,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.ConfigurationEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.ConfigurationEndpointUris.Add(address);
-                }
+                options.ConfigurationEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1238,11 +1214,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.CryptographyEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.CryptographyEndpointUris.Add(address);
-                }
+                options.CryptographyEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1285,11 +1257,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.DeviceEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.DeviceEndpointUris.Add(address);
-                }
+                options.DeviceEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1332,11 +1300,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.IntrospectionEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.IntrospectionEndpointUris.Add(address);
-                }
+                options.IntrospectionEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1379,11 +1343,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.LogoutEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.LogoutEndpointUris.Add(address);
-                }
+                options.LogoutEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1426,11 +1386,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.RevocationEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.RevocationEndpointUris.Add(address);
-                }
+                options.RevocationEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1473,11 +1429,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.TokenEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.TokenEndpointUris.Add(address);
-                }
+                options.TokenEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1520,11 +1472,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.UserinfoEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.UserinfoEndpointUris.Add(address);
-                }
+                options.UserinfoEndpointUris.AddRange(addresses);
             });
         }
 
@@ -1567,11 +1515,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options =>
             {
                 options.VerificationEndpointUris.Clear();
-
-                foreach (var address in addresses)
-                {
-                    options.VerificationEndpointUris.Add(address);
-                }
+                options.VerificationEndpointUris.AddRange(addresses);
             });
         }
 

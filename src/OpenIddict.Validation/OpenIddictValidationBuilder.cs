@@ -131,7 +131,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the <see cref="EncryptingCredentials"/> used to decrypt the tokens issued by OpenIddict.
+        /// Registers encryption credentials.
         /// </summary>
         /// <param name="credentials">The encrypting credentials.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="SecurityKey"/> used to decrypt the access tokens issued by OpenIddict.
+        /// Registers an encryption key.
         /// </summary>
         /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
@@ -183,9 +183,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> that is used to decrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate.
         /// </summary>
-        /// <param name="certificate">The certificate used to decrypt the security tokens issued by the validation.</param>
+        /// <param name="certificate">The encryption certificate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCertificate([NotNull] X509Certificate2 certificate)
         {
@@ -194,14 +194,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            if (certificate.NotBefore > DateTime.Now)
+            // If the certificate is a X.509v3 certificate that specifies at least one
+            // key usage, ensure that the certificate key can be used for key encryption.
+            if (certificate.Version >= 3)
             {
-                throw new InvalidOperationException("The specified certificate is not yet valid.");
-            }
-
-            if (certificate.NotAfter < DateTime.Now)
-            {
-                throw new InvalidOperationException("The specified certificate is no longer valid.");
+                var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
+                if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
+                {
+                    throw new InvalidOperationException("The specified certificate is not a key encryption certificate.");
+                }
             }
 
             if (!certificate.HasPrivateKey)
@@ -213,8 +214,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from an
-        /// embedded resource and used to decrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from an embedded resource.
         /// </summary>
         /// <param name="assembly">The assembly containing the certificate.</param>
         /// <param name="resource">The name of the embedded resource.</param>
@@ -232,8 +232,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from an
-        /// embedded resource and used to decrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from an embedded resource.
         /// </summary>
         /// <param name="assembly">The assembly containing the certificate.</param>
         /// <param name="resource">The name of the embedded resource.</param>
@@ -269,8 +268,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to decrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate extracted from a stream.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -286,8 +284,7 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to decrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate extracted from a stream.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -318,8 +315,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the X.509
-        /// machine store and used to decrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from the X.509 user or machine store.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
@@ -350,8 +346,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the given
-        /// X.509 store and used to decrypt the tokens issued by OpenIddict.
+        /// Registers an encryption certificate retrieved from the specified X.509 store.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <param name="name">The name of the X.509 store.</param>
