@@ -21,9 +21,17 @@ namespace OpenIddict.Validation
     public class OpenIddictValidationOptions
     {
         /// <summary>
-        /// Gets the list of credentials used to encrypt the tokens issued by the
-        /// OpenIddict validation services. Note: only symmetric credentials are supported.
+        /// Gets the list of encryption credentials used by the OpenIddict validation services.
+        /// Note: the encryption credentials are not used to protect/unprotect tokens issued
+        /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
         /// </summary>
+        /// <remarks>
+        /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
+        /// <para>• Symmetric keys are always preferred when they can be used for the operation (e.g token decryption).</para>
+        /// <para>• X.509 keys are always preferred to non-X.509 asymmetric keys.</para>
+        /// <para>• X.509 keys with the furthest expiration date are preferred.</para>
+        /// <para>• X.509 keys whose backing certificate is not yet valid are never preferred.</para>
+        /// </remarks>
         public List<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
 
         /// <summary>

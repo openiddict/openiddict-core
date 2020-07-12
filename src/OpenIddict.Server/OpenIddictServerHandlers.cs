@@ -2973,8 +2973,7 @@ namespace OpenIddict.Server
                     Expires = context.AccessTokenPrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.AccessTokenPrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    SigningCredentials = context.Options.SigningCredentials.First(),
                     Subject = (ClaimsIdentity) principal.Identity
                 };
 
@@ -2983,9 +2982,7 @@ namespace OpenIddict.Server
                 if (!context.Options.DisableAccessTokenEncryption)
                 {
                     token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                        encryptingCredentials: context.Options.EncryptionCredentials.FirstOrDefault(
-                            credentials => credentials.Key is SymmetricSecurityKey) ??
-                            context.Options.EncryptionCredentials.First(),
+                        encryptingCredentials: context.Options.EncryptionCredentials.First(),
                         additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
                 }
 
@@ -3251,8 +3248,7 @@ namespace OpenIddict.Server
                     Expires = context.AuthorizationCodePrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.AuthorizationCodePrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    SigningCredentials = context.Options.SigningCredentials.First(),
                     Subject = (ClaimsIdentity) principal.Identity
                 };
 
@@ -3270,9 +3266,7 @@ namespace OpenIddict.Server
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.FirstOrDefault(
-                        credentials => credentials.Key is SymmetricSecurityKey) ??
-                        context.Options.EncryptionCredentials.First(),
+                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
                 context.Response.Code = token;
@@ -3541,8 +3535,7 @@ namespace OpenIddict.Server
                     Expires = context.DeviceCodePrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.DeviceCodePrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    SigningCredentials = context.Options.SigningCredentials.First(),
                     Subject = (ClaimsIdentity) principal.Identity
                 };
 
@@ -3560,9 +3553,7 @@ namespace OpenIddict.Server
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.FirstOrDefault(
-                        credentials => credentials.Key is SymmetricSecurityKey) ??
-                        context.Options.EncryptionCredentials.First(),
+                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
                 context.Response.DeviceCode = token;
@@ -3929,8 +3920,7 @@ namespace OpenIddict.Server
                     Expires = context.RefreshTokenPrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.RefreshTokenPrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    SigningCredentials = context.Options.SigningCredentials.First(),
                     Subject = (ClaimsIdentity) principal.Identity
                 };
 
@@ -3948,9 +3938,7 @@ namespace OpenIddict.Server
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.FirstOrDefault(
-                        credentials => credentials.Key is SymmetricSecurityKey) ??
-                        context.Options.EncryptionCredentials.First(),
+                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
                 context.Response.RefreshToken = token;
@@ -4262,8 +4250,7 @@ namespace OpenIddict.Server
                     Expires = context.UserCodePrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.UserCodePrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    SigningCredentials = context.Options.SigningCredentials.First(),
                     Subject = (ClaimsIdentity) principal.Identity
                 };
 
@@ -4271,9 +4258,7 @@ namespace OpenIddict.Server
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.FirstOrDefault(
-                        credentials => credentials.Key is SymmetricSecurityKey) ??
-                        context.Options.EncryptionCredentials.First(),
+                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
                 context.Response.UserCode = token;
@@ -4699,6 +4684,8 @@ namespace OpenIddict.Server
                     Expires = context.IdentityTokenPrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.IdentityTokenPrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
+                    // Note: unlike other tokens, identity tokens can only be signed using an asymmetric key
+                    // as they are meant to be validated by clients using the public keys exposed by the server.
                     SigningCredentials = context.Options.SigningCredentials.First(credentials =>
                         credentials.Key is AsymmetricSecurityKey),
                     Subject = (ClaimsIdentity) principal.Identity

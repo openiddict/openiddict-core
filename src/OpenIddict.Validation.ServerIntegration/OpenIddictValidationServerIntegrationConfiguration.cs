@@ -54,10 +54,7 @@ namespace OpenIddict.Validation.ServerIntegration
             }
 
             // Import the encryption keys from the server configuration.
-            foreach (var credentials in _options.CurrentValue.EncryptionCredentials)
-            {
-                options.EncryptionCredentials.Add(credentials);
-            }
+            options.EncryptionCredentials.AddRange(_options.CurrentValue.EncryptionCredentials);
 
             // Note: token entry validation must be enabled to be able to validate reference access tokens.
             options.EnableTokenEntryValidation = _options.CurrentValue.UseReferenceAccessTokens;
