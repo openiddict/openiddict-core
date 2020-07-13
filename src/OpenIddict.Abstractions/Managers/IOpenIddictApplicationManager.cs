@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -199,6 +200,17 @@ namespace OpenIddict.Abstractions
         ValueTask<string> GetDisplayNameAsync([NotNull] object application, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieves the localized display names associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the application.
+        /// </returns>
+        ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] object application, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Retrieves the unique identifier associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -208,6 +220,33 @@ namespace OpenIddict.Abstractions
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
         ValueTask<string> GetIdAsync([NotNull] object application, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an application
+        /// and corresponding to the current UI culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized display name associated with the application.
+        /// </returns>
+        ValueTask<string> GetLocalizedDisplayNameAsync([NotNull] object application, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an application
+        /// and corresponding to the specified culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="culture">The culture (typically <see cref="CultureInfo.CurrentUICulture"/>).</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized display name associated with the application.
+        /// </returns>
+        ValueTask<string> GetLocalizedDisplayNameAsync([NotNull] object application, [NotNull] CultureInfo culture, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the permissions associated with an application.

@@ -39,10 +39,23 @@ namespace OpenIddict.EntityFramework.Models
         public virtual string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the localized public descriptions associated
+        /// with the current scope, serialized as a JSON object.
+        /// </summary>
+        public virtual string Descriptions { get; set; }
+
+        /// <summary>
         /// Gets or sets the display name
         /// associated with the current scope.
         /// </summary>
         public virtual string DisplayName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the localized display names
+        /// associated with the current application,
+        /// serialized as a JSON object.
+        /// </summary>
+        public virtual string DisplayNames { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier

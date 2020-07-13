@@ -64,6 +64,13 @@ namespace OpenIddict.EntityFramework.Models
         public virtual string DisplayName { get; set; }
 
         /// <summary>
+        /// Gets or sets the localized display names
+        /// associated with the current application,
+        /// serialized as a JSON object.
+        /// </summary>
+        public virtual string DisplayNames { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique identifier
         /// associated with the current application.
         /// </summary>

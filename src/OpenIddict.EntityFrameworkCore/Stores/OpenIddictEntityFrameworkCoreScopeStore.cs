@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -328,6 +330,42 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Retrieves the localized descriptions associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized descriptions associated with the specified scope.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (string.IsNullOrEmpty(scope.Descriptions))
+            {
+                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+            }
+
+            // Note: parsing the stringified descriptions is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("42891062-8f69-43ba-9111-db7e8ded2553", "\x1e", scope.Descriptions);
+            var descriptions = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JsonSerializer.Deserialize<Dictionary<string, string>>(scope.Descriptions)
+                    .ToImmutableDictionary(description => CultureInfo.GetCultureInfo(description.Key), description => description.Value);
+            });
+
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(descriptions);
+        }
+
+        /// <summary>
         /// Retrieves the display name associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -344,6 +382,42 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return new ValueTask<string>(scope.DisplayName);
+        }
+
+        /// <summary>
+        /// Retrieves the localized display names associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the scope.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (string.IsNullOrEmpty(scope.DisplayNames))
+            {
+                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+            }
+
+            // Note: parsing the stringified display names is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("e17d437b-bdd2-43f3-974e-46d524f4bae1", "\x1e", scope.DisplayNames);
+            var names = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JsonSerializer.Deserialize<Dictionary<string, string>>(scope.DisplayNames)
+                    .ToImmutableDictionary(name => CultureInfo.GetCultureInfo(name.Key), name => name.Value);
+            });
+
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(names);
         }
 
         /// <summary>
@@ -546,6 +620,51 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Sets the localized descriptions associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="descriptions">The localized descriptions associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDescriptionsAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (descriptions == null || descriptions.IsEmpty)
+            {
+                scope.Descriptions = null;
+
+                return default;
+            }
+
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Indented = false
+            });
+
+            writer.WriteStartObject();
+
+            foreach (var description in descriptions)
+            {
+                writer.WritePropertyName(description.Key.Name);
+                writer.WriteStringValue(description.Value);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            scope.Descriptions = Encoding.UTF8.GetString(stream.ToArray());
+
+            return default;
+        }
+
+        /// <summary>
         /// Sets the display name associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -560,6 +679,51 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             scope.DisplayName = name;
+
+            return default;
+        }
+
+        /// <summary>
+        /// Sets the localized display names associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="names">The localized display names associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDisplayNamesAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (names == null || names.IsEmpty)
+            {
+                scope.DisplayNames = null;
+
+                return default;
+            }
+
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Indented = false
+            });
+
+            writer.WriteStartObject();
+
+            foreach (var name in names)
+            {
+                writer.WritePropertyName(name.Key.Name);
+                writer.WriteStringValue(name.Value);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            scope.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }

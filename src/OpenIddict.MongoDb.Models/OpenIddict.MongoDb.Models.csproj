@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="MongoDB.Bson" />
+    <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
 </Project>

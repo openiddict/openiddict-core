@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -150,6 +151,17 @@ namespace OpenIddict.Abstractions
         ValueTask<string> GetDescriptionAsync([NotNull] object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieves the localized descriptions associated with an scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized descriptions associated with the scope.
+        /// </returns>
+        ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Retrieves the display name associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -161,6 +173,17 @@ namespace OpenIddict.Abstractions
         ValueTask<string> GetDisplayNameAsync([NotNull] object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieves the localized display names associated with an scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the scope.
+        /// </returns>
+        ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Retrieves the unique identifier associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -170,6 +193,60 @@ namespace OpenIddict.Abstractions
         /// whose result returns the unique identifier associated with the scope.
         /// </returns>
         ValueTask<string> GetIdAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the localized description associated with an scope
+        /// and corresponding to the current UI culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized description associated with the scope.
+        /// </returns>
+        ValueTask<string> GetLocalizedDescriptionAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the localized description associated with an scope
+        /// and corresponding to the specified culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="culture">The culture (typically <see cref="CultureInfo.CurrentUICulture"/>).</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized description associated with the scope.
+        /// </returns>
+        ValueTask<string> GetLocalizedDescriptionAsync([NotNull] object scope, [NotNull] CultureInfo culture, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an scope
+        /// and corresponding to the current UI culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the scope.
+        /// </returns>
+        ValueTask<string> GetLocalizedDisplayNameAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an scope
+        /// and corresponding to the specified culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="culture">The culture (typically <see cref="CultureInfo.CurrentUICulture"/>).</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the scope.
+        /// </returns>
+        ValueTask<string> GetLocalizedDisplayNameAsync([NotNull] object scope, [NotNull] CultureInfo culture, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the name associated with a scope.

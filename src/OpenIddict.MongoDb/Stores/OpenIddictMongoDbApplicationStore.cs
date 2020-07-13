@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -371,6 +372,30 @@ namespace OpenIddict.MongoDb
         }
 
         /// <summary>
+        /// Retrieves the localized display names associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the application.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (application.DisplayNames == null || application.DisplayNames.Count == 0)
+            {
+                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+            }
+
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(application.DisplayNames.ToImmutableDictionary());
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -406,7 +431,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (application.Permissions == null || application.Permissions.Length == 0)
+            if (application.Permissions == null || application.Permissions.Count == 0)
             {
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
@@ -431,7 +456,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (application.PostLogoutRedirectUris == null || application.PostLogoutRedirectUris.Length == 0)
+            if (application.PostLogoutRedirectUris == null || application.PostLogoutRedirectUris.Count == 0)
             {
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
@@ -481,7 +506,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (application.RedirectUris == null || application.RedirectUris.Length == 0)
+            if (application.RedirectUris == null || application.RedirectUris.Count == 0)
             {
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
@@ -505,7 +530,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (application.Requirements == null || application.Requirements.Length == 0)
+            if (application.Requirements == null || application.Requirements.Count == 0)
             {
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
@@ -700,6 +725,26 @@ namespace OpenIddict.MongoDb
             }
 
             application.DisplayName = name;
+
+            return default;
+        }
+
+        /// <summary>
+        /// Sets the localized display names associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="names">The localized display names associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDisplayNamesAsync([NotNull] TApplication application,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            application.DisplayNames = names;
 
             return default;
         }

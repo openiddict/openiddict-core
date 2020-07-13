@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -284,6 +285,30 @@ namespace OpenIddict.MongoDb
         }
 
         /// <summary>
+        /// Retrieves the localized descriptions associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized descriptions associated with the specified scope.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (scope.Descriptions == null || scope.Descriptions.Count == 0)
+            {
+                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+            }
+
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(scope.Descriptions.ToImmutableDictionary());
+        }
+
+        /// <summary>
         /// Retrieves the display name associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -300,6 +325,30 @@ namespace OpenIddict.MongoDb
             }
 
             return new ValueTask<string>(scope.DisplayName);
+        }
+
+        /// <summary>
+        /// Retrieves the localized display names associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the scope.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (scope.DisplayNames == null || scope.DisplayNames.Count == 0)
+            {
+                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+            }
+
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(scope.DisplayNames.ToImmutableDictionary());
         }
 
         /// <summary>
@@ -381,7 +430,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (scope.Resources == null || scope.Resources.Length == 0)
+            if (scope.Resources == null || scope.Resources.Count == 0)
             {
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
@@ -493,6 +542,46 @@ namespace OpenIddict.MongoDb
             }
 
             scope.Description = description;
+
+            return default;
+        }
+
+        /// <summary>
+        /// Sets the localized descriptions associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="descriptions">The localized descriptions associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDescriptionsAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.Descriptions = descriptions;
+
+            return default;
+        }
+
+        /// <summary>
+        /// Sets the localized display names associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="names">The localized display names associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDisplayNamesAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.DisplayNames = names;
 
             return default;
         }

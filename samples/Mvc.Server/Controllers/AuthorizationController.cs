@@ -216,7 +216,7 @@ namespace Mvc.Server
                 // In every other case, render the consent form.
                 default: return View(new AuthorizeViewModel
                 {
-                    ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
+                    ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
                     Scope = request.Scope
                 });
             }
@@ -325,7 +325,7 @@ namespace Mvc.Server
                 // Render a form asking the user to confirm the authorization demand.
                 return View(new VerifyViewModel
                 {
-                    ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
+                    ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
                     Scope = string.Join(" ", result.Principal.GetScopes()),
                     UserCode = request.UserCode
                 });
