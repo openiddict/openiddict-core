@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using System.Text.Json;
+using System.Globalization;
 
 namespace OpenIddict.Abstractions
 {
@@ -125,6 +126,17 @@ namespace OpenIddict.Abstractions
         ValueTask<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the localized descriptions associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized descriptions associated with the specified scope.
+        /// </returns>
+        ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the display name associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -134,6 +146,17 @@ namespace OpenIddict.Abstractions
         /// whose result returns the display name associated with the scope.
         /// </returns>
         ValueTask<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the localized display names associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the scope.
+        /// </returns>
+        ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the unique identifier associated with a scope.
@@ -221,6 +244,16 @@ namespace OpenIddict.Abstractions
         ValueTask SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sets the localized descriptions associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="descriptions">The localized descriptions associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetDescriptionsAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Sets the display name associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -228,6 +261,16 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         ValueTask SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the localized display names associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="names">The localized display names associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetDisplayNamesAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the name associated with a scope.

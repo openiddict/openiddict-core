@@ -5,7 +5,10 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -31,11 +34,27 @@ namespace OpenIddict.MongoDb.Models
         public virtual string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the localized public descriptions
+        /// associated with the current scope.
+        /// </summary>
+        [BsonElement("descriptions"), BsonIgnoreIfNull]
+        public virtual IReadOnlyDictionary<CultureInfo, string> Descriptions { get; set; }
+            = ImmutableDictionary.Create<CultureInfo, string>();
+
+        /// <summary>
         /// Gets or sets the display name
         /// associated with the current scope.
         /// </summary>
         [BsonElement("display_name"), BsonIgnoreIfNull]
         public virtual string DisplayName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the localized display names
+        /// associated with the current scope.
+        /// </summary>
+        [BsonElement("display_names"), BsonIgnoreIfNull]
+        public virtual IReadOnlyDictionary<CultureInfo, string> DisplayNames { get; set; }
+            = ImmutableDictionary.Create<CultureInfo, string>();
 
         /// <summary>
         /// Gets or sets the unique identifier
@@ -61,6 +80,6 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the resources associated with the current scope.
         /// </summary>
         [BsonElement("resources"), BsonIgnoreIfDefault]
-        public virtual string[] Resources { get; set; } = Array.Empty<string>();
+        public virtual IReadOnlyList<string> Resources { get; set; } = ImmutableArray.Create<string>();
     }
 }

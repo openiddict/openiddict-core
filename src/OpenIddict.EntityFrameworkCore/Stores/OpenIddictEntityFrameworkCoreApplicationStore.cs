@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -529,6 +531,42 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Retrieves the localized display names associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the application.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(application.DisplayNames))
+            {
+                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+            }
+
+            // Note: parsing the stringified display names is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("7762c378-c113-4564-b14b-1402b3949aaa", "\x1e", application.DisplayNames);
+            var names = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JsonSerializer.Deserialize<Dictionary<string, string>>(application.DisplayNames)
+                    .ToImmutableDictionary(name => CultureInfo.GetCultureInfo(name.Key), name => name.Value);
+            });
+
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(names);
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -892,6 +930,51 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             application.DisplayName = name;
+
+            return default;
+        }
+
+        /// <summary>
+        /// Sets the localized display names associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="names">The localized display names associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDisplayNamesAsync([NotNull] TApplication application,
+            [CanBeNull] ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (names == null || names.IsEmpty)
+            {
+                application.DisplayNames = null;
+
+                return default;
+            }
+
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Indented = false
+            });
+
+            writer.WriteStartObject();
+            
+            foreach (var pair in names)
+            {
+                writer.WritePropertyName(pair.Key.Name);
+                writer.WriteStringValue(pair.Value);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            application.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -421,6 +422,32 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the localized descriptions associated with an scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized descriptions associated with the scope.
+        /// </returns>
+        public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(
+            [NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
+            if (descriptions == null || descriptions.Count == 0)
+            {
+                return ImmutableDictionary.Create<CultureInfo, string>();
+            }
+
+            return descriptions;
+        }
+
+        /// <summary>
         /// Retrieves the display name associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -440,6 +467,32 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the localized display names associated with an scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the scope.
+        /// </returns>
+        public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(
+            [NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
+            if (names == null || names.Count == 0)
+            {
+                return ImmutableDictionary.Create<CultureInfo, string>();
+            }
+
+            return names;
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -456,6 +509,126 @@ namespace OpenIddict.Core
             }
 
             return Store.GetIdAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an scope
+        /// and corresponding to the current UI culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching display name associated with the scope.
+        /// </returns>
+        public virtual ValueTask<string> GetLocalizedDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+            => GetLocalizedDisplayNameAsync(scope, CultureInfo.CurrentUICulture, cancellationToken);
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an scope
+        /// and corresponding to the specified culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="culture">The culture (typically <see cref="CultureInfo.CurrentUICulture"/>).</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching display name associated with the scope.
+        /// </returns>
+        public virtual async ValueTask<string> GetLocalizedDisplayNameAsync(
+            [NotNull] TScope scope, [NotNull] CultureInfo culture, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (culture == null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
+            var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
+            if (names == null || names.IsEmpty)
+            {
+                return await Store.GetDisplayNameAsync(scope, cancellationToken);
+            }
+
+            do
+            {
+                if (names.TryGetValue(culture, out var name))
+                {
+                    return name;
+                }
+
+                culture = culture.Parent;
+            }
+
+            while (culture != CultureInfo.InvariantCulture);
+
+            return await Store.GetDisplayNameAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the localized description associated with an scope
+        /// and corresponding to the current UI culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized description associated with the scope.
+        /// </returns>
+        public virtual ValueTask<string> GetLocalizedDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+            => GetLocalizedDescriptionAsync(scope, CultureInfo.CurrentUICulture, cancellationToken);
+
+        /// <summary>
+        /// Retrieves the localized description associated with an scope
+        /// and corresponding to the specified culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="culture">The culture (typically <see cref="CultureInfo.CurrentUICulture"/>).</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized description associated with the scope.
+        /// </returns>
+        public virtual async ValueTask<string> GetLocalizedDescriptionAsync(
+            [NotNull] TScope scope, [NotNull] CultureInfo culture, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (culture == null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
+            var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
+            if (descriptions == null || descriptions.IsEmpty)
+            {
+                return await Store.GetDescriptionAsync(scope, cancellationToken);
+            }
+
+            do
+            {
+                if (descriptions.TryGetValue(culture, out var description))
+                {
+                    return description;
+                }
+
+                culture = culture.Parent;
+            }
+
+            while (culture != CultureInfo.InvariantCulture);
+
+            return await Store.GetDescriptionAsync(scope, cancellationToken);
         }
 
         /// <summary>
@@ -592,7 +765,9 @@ namespace OpenIddict.Core
             }
 
             await Store.SetDescriptionAsync(scope, descriptor.Description, cancellationToken);
+            await Store.SetDescriptionsAsync(scope, descriptor.Descriptions.ToImmutableDictionary(), cancellationToken);
             await Store.SetDisplayNameAsync(scope, descriptor.DisplayName, cancellationToken);
+            await Store.SetDisplayNamesAsync(scope, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
             await Store.SetNameAsync(scope, descriptor.Name, cancellationToken);
             await Store.SetResourcesAsync(scope, descriptor.Resources.ToImmutableArray(), cancellationToken);
         }
@@ -625,6 +800,18 @@ namespace OpenIddict.Core
             descriptor.Name = await Store.GetNameAsync(scope, cancellationToken);
             descriptor.Resources.Clear();
             descriptor.Resources.UnionWith(await Store.GetResourcesAsync(scope, cancellationToken));
+
+            descriptor.DisplayNames.Clear();
+            foreach (var pair in await Store.GetDisplayNamesAsync(scope, cancellationToken))
+            {
+                descriptor.DisplayNames.Add(pair.Key, pair.Value);
+            }
+
+            descriptor.Descriptions.Clear();
+            foreach (var pair in await Store.GetDescriptionsAsync(scope, cancellationToken))
+            {
+                descriptor.Descriptions.Add(pair.Key, pair.Value);
+            }
         }
 
         /// <summary>
@@ -784,11 +971,29 @@ namespace OpenIddict.Core
         ValueTask<string> IOpenIddictScopeManager.GetDescriptionAsync(object scope, CancellationToken cancellationToken)
             => GetDescriptionAsync((TScope) scope, cancellationToken);
 
+        ValueTask<ImmutableDictionary<CultureInfo, string>> IOpenIddictScopeManager.GetDescriptionsAsync(object scope, CancellationToken cancellationToken)
+            => GetDescriptionsAsync((TScope) scope, cancellationToken);
+
         ValueTask<string> IOpenIddictScopeManager.GetDisplayNameAsync(object scope, CancellationToken cancellationToken)
             => GetDisplayNameAsync((TScope) scope, cancellationToken);
 
+        ValueTask<ImmutableDictionary<CultureInfo, string>> IOpenIddictScopeManager.GetDisplayNamesAsync(object scope, CancellationToken cancellationToken)
+            => GetDisplayNamesAsync((TScope) scope, cancellationToken);
+
         ValueTask<string> IOpenIddictScopeManager.GetIdAsync(object scope, CancellationToken cancellationToken)
             => GetIdAsync((TScope) scope, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetLocalizedDescriptionAsync(object scope, CancellationToken cancellationToken)
+            => GetLocalizedDescriptionAsync((TScope) scope, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetLocalizedDescriptionAsync(object scope, CultureInfo culture, CancellationToken cancellationToken)
+            => GetLocalizedDescriptionAsync((TScope) scope, culture, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetLocalizedDisplayNameAsync(object scope, CancellationToken cancellationToken)
+            => GetLocalizedDisplayNameAsync((TScope) scope, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetLocalizedDisplayNameAsync(object scope, CultureInfo culture, CancellationToken cancellationToken)
+            => GetLocalizedDisplayNameAsync((TScope) scope, culture, cancellationToken);
 
         ValueTask<string> IOpenIddictScopeManager.GetNameAsync(object scope, CancellationToken cancellationToken)
             => GetNameAsync((TScope) scope, cancellationToken);

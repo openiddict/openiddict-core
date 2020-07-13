@@ -515,7 +515,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (authorization.Scopes == null || authorization.Scopes.Length == 0)
+            if (authorization.Scopes == null || authorization.Scopes.Count == 0)
             {
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }

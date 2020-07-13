@@ -5,6 +5,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -47,7 +49,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the scopes associated with the current authorization.
         /// </summary>
         [BsonElement("scopes"), BsonIgnoreIfDefault]
-        public virtual string[] Scopes { get; set; } = Array.Empty<string>();
+        public virtual IReadOnlyList<string> Scopes { get; set; } = ImmutableArray.Create<string>();
 
         /// <summary>
         /// Gets or sets the status of the current authorization.

@@ -374,7 +374,7 @@ namespace OpenIddict.Abstractions
                 return parameters;
             }
 
-            return ImmutableDictionary.Create<string, OpenIddictParameter>();
+            return ImmutableDictionary.Create<string, OpenIddictParameter>(StringComparer.Ordinal);
         }
 
         /// <summary>

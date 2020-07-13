@@ -38,6 +38,6 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets or sets the type of the authorization.
         /// </summary>
-        public virtual string Type { get; set; }
+        public string Type { get; set; }
     }
 }

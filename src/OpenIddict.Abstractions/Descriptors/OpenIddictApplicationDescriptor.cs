@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace OpenIddict.Abstractions
 {
@@ -25,13 +26,19 @@ namespace OpenIddict.Abstractions
         /// Gets or sets the consent type
         /// associated with the application.
         /// </summary>
-        public virtual string ConsentType { get; set; }
+        public string ConsentType { get; set; }
 
         /// <summary>
         /// Gets or sets the display name
         /// associated with the application.
         /// </summary>
         public string DisplayName { get; set; }
+
+        /// <summary>
+        /// Gets the localized display names associated with the application.
+        /// </summary>
+        public Dictionary<CultureInfo, string> DisplayNames { get; }
+            = new Dictionary<CultureInfo, string>();
 
         /// <summary>
         /// Gets the permissions associated with the application.

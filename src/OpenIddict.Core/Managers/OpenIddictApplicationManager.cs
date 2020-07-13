@@ -9,6 +9,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -552,6 +553,32 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the localized display names associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the application.
+        /// </returns>
+        public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
+            if (names == null || names.Count == 0)
+            {
+                return ImmutableDictionary.Create<CultureInfo, string>();
+            }
+
+            return names;
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -568,6 +595,67 @@ namespace OpenIddict.Core
             }
 
             return Store.GetIdAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an application
+        /// and corresponding to the current UI culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized display name associated with the application.
+        /// </returns>
+        public virtual ValueTask<string> GetLocalizedDisplayNameAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+            => GetLocalizedDisplayNameAsync(application, CultureInfo.CurrentUICulture, cancellationToken);
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an application
+        /// and corresponding to the specified culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="culture">The culture (typically <see cref="CultureInfo.CurrentUICulture"/>).</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized display name associated with the application.
+        /// </returns>
+        public virtual async ValueTask<string> GetLocalizedDisplayNameAsync(
+            [NotNull] TApplication application, [NotNull] CultureInfo culture, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (culture == null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
+            var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
+            if (names == null || names.IsEmpty)
+            {
+                return await Store.GetDisplayNameAsync(application, cancellationToken);
+            }
+
+            do
+            {
+                if (names.TryGetValue(culture, out var name))
+                {
+                    return name;
+                }
+
+                culture = culture.Parent;
+            }
+
+            while (culture != CultureInfo.InvariantCulture);
+
+            return await Store.GetDisplayNameAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -819,12 +907,13 @@ namespace OpenIddict.Core
             await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
             await Store.SetConsentTypeAsync(application, descriptor.ConsentType, cancellationToken);
             await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
-            await Store.SetPermissionsAsync(application, ImmutableArray.CreateRange(descriptor.Permissions), cancellationToken);
+            await Store.SetDisplayNamesAsync(application, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
+            await Store.SetPermissionsAsync(application, descriptor.Permissions.ToImmutableArray(), cancellationToken);
             await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
             await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
-            await Store.SetRequirementsAsync(application, ImmutableArray.CreateRange(descriptor.Requirements), cancellationToken);
+            await Store.SetRequirementsAsync(application, descriptor.Requirements.ToImmutableArray(), cancellationToken);
         }
 
         /// <summary>
@@ -859,6 +948,12 @@ namespace OpenIddict.Core
             descriptor.Permissions.UnionWith(await Store.GetPermissionsAsync(application, cancellationToken));
             descriptor.Requirements.Clear();
             descriptor.Requirements.UnionWith(await Store.GetRequirementsAsync(application, cancellationToken));
+
+            descriptor.DisplayNames.Clear();
+            foreach (var pair in await Store.GetDisplayNamesAsync(application, cancellationToken))
+            {
+                descriptor.DisplayNames.Add(pair.Key, pair.Value);
+            }
 
             descriptor.PostLogoutRedirectUris.Clear();
             foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
@@ -1456,8 +1551,17 @@ namespace OpenIddict.Core
         ValueTask<string> IOpenIddictApplicationManager.GetDisplayNameAsync(object application, CancellationToken cancellationToken)
             => GetDisplayNameAsync((TApplication) application, cancellationToken);
 
+        ValueTask<ImmutableDictionary<CultureInfo, string>> IOpenIddictApplicationManager.GetDisplayNamesAsync(object application, CancellationToken cancellationToken)
+            => GetDisplayNamesAsync((TApplication) application, cancellationToken);
+
         ValueTask<string> IOpenIddictApplicationManager.GetIdAsync(object application, CancellationToken cancellationToken)
             => GetIdAsync((TApplication) application, cancellationToken);
+
+        ValueTask<string> IOpenIddictApplicationManager.GetLocalizedDisplayNameAsync(object application, CancellationToken cancellationToken)
+            => GetLocalizedDisplayNameAsync((TApplication) application, cancellationToken);
+
+        ValueTask<string> IOpenIddictApplicationManager.GetLocalizedDisplayNameAsync(object application, CultureInfo culture, CancellationToken cancellationToken)
+            => GetLocalizedDisplayNameAsync((TApplication) application, culture, cancellationToken);
 
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetPermissionsAsync(object application, CancellationToken cancellationToken)
             => GetPermissionsAsync((TApplication) application, cancellationToken);
