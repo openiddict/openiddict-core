@@ -426,7 +426,17 @@ namespace OpenIddict.Validation
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    var identity = new ClaimsIdentity(context.Options.TokenValidationParameters.AuthenticationType);
+                    // Create a new claims-based identity using the same authentication type
+                    // and the name/role claims as the one used by IdentityModel for JWT tokens.
+                    var identity = new ClaimsIdentity(
+                        context.Options.TokenValidationParameters.AuthenticationType,
+                        context.Options.TokenValidationParameters.NameClaimType,
+                        context.Options.TokenValidationParameters.RoleClaimType);
+
+                    // Resolve the issuer that will be attached to the claims created by this handler.
+                    // Note: at this stage, the optional issuer extracted from the response is assumed
+                    // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
+                    var issuer = (string) context.Response[Claims.Issuer] ?? context.Issuer?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
 
                     foreach (var parameter in context.Response.GetParameters())
                     {
@@ -457,12 +467,14 @@ namespace OpenIddict.Validation
                             case (var name, JsonElement value) when value.ValueKind == JsonValueKind.Array:
                                 foreach (var element in value.EnumerateArray())
                                 {
-                                    identity.AddClaim(new Claim(name, element.ToString(), GetClaimValueType(value.ValueKind)));
+                                    identity.AddClaim(new Claim(name, element.ToString(),
+                                        GetClaimValueType(value.ValueKind), issuer, issuer, identity));
                                 }
                                 break;
 
                             case (var name, JsonElement value):
-                                identity.AddClaim(new Claim(name, value.ToString(), GetClaimValueType(value.ValueKind)));
+                                identity.AddClaim(new Claim(name, value.ToString(),
+                                    GetClaimValueType(value.ValueKind), issuer, issuer, identity));
                                 break;
 
                             // Note: in the typical case, the introspection parameters should be deserialized from
@@ -471,22 +483,23 @@ namespace OpenIddict.Validation
                             // by the application using the events model, the CLR primitive types are also supported.
 
                             case (var name, bool value):
-                                identity.AddClaim(new Claim(name, value.ToString(), ClaimValueTypes.Boolean));
+                                identity.AddClaim(new Claim(name, value.ToString(), ClaimValueTypes.Boolean, issuer, issuer, identity));
                                 break;
 
                             case (var name, long value):
-                                identity.AddClaim(new Claim(name, value.ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64));
+                                identity.AddClaim(new Claim(name, value.ToString(CultureInfo.InvariantCulture),
+                                    ClaimValueTypes.Integer64, issuer, issuer, identity));
                                 break;
 
                             case (var name, string value):
-                                identity.AddClaim(new Claim(name, value, ClaimValueTypes.String));
+                                identity.AddClaim(new Claim(name, value, ClaimValueTypes.String, issuer, issuer, identity));
                                 break;
 
                             // Claims represented as arrays are split and mapped to multiple CLR claims.
                             case (var name, string[] value):
                                 for (var index = 0; index < value.Length; index++)
                                 {
-                                    identity.AddClaim(new Claim(name, value[index], ClaimValueTypes.String));
+                                    identity.AddClaim(new Claim(name, value[index], ClaimValueTypes.String, issuer, issuer, identity));
                                 }
                                 break;
                         }
