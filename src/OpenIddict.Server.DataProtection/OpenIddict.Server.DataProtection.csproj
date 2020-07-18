@@ -13,13 +13,13 @@
     <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
-                          $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.1')) ">
+  <ItemGroup
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.1')) ">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' Or
-                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.1')) ">
+  <ItemGroup
+    Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' Or $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.1')) ">
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
   </ItemGroup>
 
