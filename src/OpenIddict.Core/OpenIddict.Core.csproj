@@ -23,9 +23,9 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or
-                        ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
-                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
     <PackageReference Include="Portable.BouncyCastle" />
   </ItemGroup>
 

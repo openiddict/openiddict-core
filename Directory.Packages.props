@@ -23,13 +23,12 @@
     <PackageVersion Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or
-                        ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
-                          $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
-                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
-                        ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
-                          $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
-                          $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
+                                                                      $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
+                                                                      $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication" Version="2.1.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.1.2" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="2.1.1" />
@@ -49,26 +48,25 @@
     <PackageVersion Include="Microsoft.Extensions.WebEncoders" Version="2.1.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
-                           $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0')) And
-                           $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
-                         ('$(TargetFrameworkIdentifier)' == '.NETStandard' And
-                           $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.Extensions.WebEncoders" Version="3.1.5" />
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0')) And
+                                                                      $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.WebEncoders" Version="3.1.6" />
   </ItemGroup>
 
 </Project>
