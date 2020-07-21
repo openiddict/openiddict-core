@@ -208,7 +208,7 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID3081]);
+                        description: context.Localizer[SR.ID3081, "Host"]);
 
                     return default;
                 }
@@ -218,7 +218,7 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID3082]);
+                        description: context.Localizer[SR.ID3082, "Host"]);
 
                     return default;
                 }
