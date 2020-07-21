@@ -468,7 +468,7 @@ namespace OpenIddict.Server
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
                 if (!result.IsValid)
                 {
-                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
+                    context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID7000), context.Token);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -530,8 +530,7 @@ namespace OpenIddict.Server
                     context.Principal.SetDestinations(destinations);
                 }
 
-                context.Logger.LogTrace("The token '{Token}' was successfully validated and the following claims " +
-                                        "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7001), context.Token, context.Principal.Claims);
 
                 return default;
             }
@@ -923,7 +922,7 @@ namespace OpenIddict.Server
                         // Then, try to revoke the authorization and the associated token entries.
                         await TryRevokeAuthorizationChainAsync(context.Principal.GetAuthorizationId());
 
-                        context.Logger.LogError("The token '{Identifier}' has already been redeemed.", identifier);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7002), identifier);
 
                         context.Reject(
                             error: context.EndpointType switch
@@ -951,7 +950,7 @@ namespace OpenIddict.Server
                         // If the device code is not marked as valid yet, return an authorization_pending error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Inactive))
                         {
-                            context.Logger.LogError("The token '{Identifier}' is not active yet.", identifier);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7003), identifier);
 
                             context.Reject(
                                 error: Errors.AuthorizationPending,
@@ -963,7 +962,7 @@ namespace OpenIddict.Server
                         // If the device code is marked as rejected, return an authorization_pending error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Rejected))
                         {
-                            context.Logger.LogError("The token '{Identifier}' was marked as rejected.", identifier);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7004), identifier);
 
                             context.Reject(
                                 error: Errors.AccessDenied,
@@ -976,7 +975,7 @@ namespace OpenIddict.Server
 
                 if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogError("The token '{Identifier}' was no longer valid.", identifier);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7005), identifier);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -1078,7 +1077,7 @@ namespace OpenIddict.Server
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
                 if (authorization == null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogError("The authorization '{Identifier}' was no longer valid.", identifier);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7006), identifier);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -1856,15 +1855,12 @@ namespace OpenIddict.Server
 
                 if (string.IsNullOrEmpty(context.Request.ClientId))
                 {
-                    context.Logger.LogInformation("An ad hoc authorization was automatically created and " +
-                                                  "associated with an unknown application: {Identifier}.", identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7007), identifier);
                 }
 
                 else
                 {
-                    context.Logger.LogInformation("An ad hoc authorization was automatically created and " +
-                                                  "associated with the '{ClientId}' application: {Identifier}.",
-                                                  context.Request.ClientId, identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7008), context.Request.ClientId, identifier);
                 }
 
                 // Attach the unique identifier of the ad hoc authorization to the authentication principal
@@ -1949,7 +1945,7 @@ namespace OpenIddict.Server
                     // contain "access_token" are not included in the access token.
                     if (!claim.HasDestination(Destinations.AccessToken))
                     {
-                        context.Logger.LogDebug("'{Claim}' was excluded from the access token claims.", claim.Type);
+                        context.Logger.LogDebug(SR.GetResourceString(SR.ID7009), claim.Type);
 
                         return false;
                     }
@@ -1987,8 +1983,7 @@ namespace OpenIddict.Server
                     var scopes = context.Request.GetScopes();
                     principal.SetScopes(scopes.Intersect(context.Principal.GetScopes()));
 
-                    context.Logger.LogDebug("The access token scopes will be limited to the scopes " +
-                                            "requested by the client application: {Scopes}.", scopes);
+                    context.Logger.LogDebug(SR.GetResourceString(SR.ID7010), scopes);
                 }
 
                 context.AccessTokenPrincipal = principal;
@@ -2327,7 +2322,7 @@ namespace OpenIddict.Server
                     // contain "id_token" are not included in the identity token.
                     if (!claim.HasDestination(Destinations.IdentityToken))
                     {
-                        context.Logger.LogDebug("'{Claim}' was excluded from the identity token claims.", claim.Type);
+                        context.Logger.LogDebug(SR.GetResourceString(SR.ID7011), claim.Type);
 
                         return false;
                     }
@@ -2778,7 +2773,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace("The token entry for access token '{Identifier}' was successfully created.", identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7012), identifier);
             }
         }
 
@@ -2884,9 +2879,7 @@ namespace OpenIddict.Server
 
                 context.Response.AccessToken = token;
 
-                context.Logger.LogTrace("The access token '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7013), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -2977,8 +2970,7 @@ namespace OpenIddict.Server
 
                 context.Response.AccessToken = descriptor.ReferenceId;
 
-                context.Logger.LogTrace("The token entry for access token '{Identifier}' was successfully converted to a " +
-                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7014), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3068,7 +3060,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace("The token entry for authorization code '{Identifier}' was successfully created.", identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7015), identifier);
             }
         }
 
@@ -3155,9 +3147,7 @@ namespace OpenIddict.Server
 
                 context.Response.Code = token;
 
-                context.Logger.LogTrace("The authorization code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7016), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -3247,8 +3237,7 @@ namespace OpenIddict.Server
 
                 context.Response.Code = descriptor.ReferenceId;
 
-                context.Logger.LogTrace("The token entry for authorization code '{Identifier}' was successfully converted to a " +
-                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7017), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3343,7 +3332,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace("The token entry for device code '{Identifier}' was successfully created.", identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7018), identifier);
             }
         }
 
@@ -3430,9 +3419,7 @@ namespace OpenIddict.Server
 
                 context.Response.DeviceCode = token;
 
-                context.Logger.LogTrace("The device code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7019), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -3528,8 +3515,7 @@ namespace OpenIddict.Server
 
                 context.Response.DeviceCode = descriptor.ReferenceId;
 
-                context.Logger.LogTrace("The token entry for device code '{Identifier}' was successfully converted to a " +
-                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7020), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3619,8 +3605,7 @@ namespace OpenIddict.Server
                 // Don't return the prepared device code directly from the verification endpoint.
                 context.Response.DeviceCode = null;
 
-                context.Logger.LogTrace("The reference token entry for device code '{Identifier}' was successfully updated'.",
-                                        await _tokenManager.GetIdAsync(token));
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7021), await _tokenManager.GetIdAsync(token));
             }
         }
 
@@ -3710,7 +3695,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace("The token entry for refresh token '{Identifier}' was successfully created.", identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7022), identifier);
             }
         }
 
@@ -3797,9 +3782,7 @@ namespace OpenIddict.Server
 
                 context.Response.RefreshToken = token;
 
-                context.Logger.LogTrace("The refresh token '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7023), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -3890,8 +3873,7 @@ namespace OpenIddict.Server
 
                 context.Response.RefreshToken = descriptor.ReferenceId;
 
-                context.Logger.LogTrace("The token entry for refresh token '{Identifier}' was successfully converted to a " +
-                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7024), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -4028,7 +4010,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace("The token entry for user code '{Identifier}' was successfully created.", identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7025), identifier);
             }
         }
 
@@ -4105,9 +4087,7 @@ namespace OpenIddict.Server
 
                 context.Response.UserCode = token;
 
-                context.Logger.LogTrace("The user code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7026), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -4210,8 +4190,7 @@ namespace OpenIddict.Server
 
                 context.Response.UserCode = descriptor.ReferenceId;
 
-                context.Logger.LogTrace("The token entry for user code '{Identifier}' was successfully converted to a " +
-                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7027), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -4434,7 +4413,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace("The token entry for identity token '{Identifier}' was successfully created.", identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7028), identifier);
             }
         }
 
@@ -4526,9 +4505,7 @@ namespace OpenIddict.Server
 
                 context.Response.IdToken = token;
 
-                context.Logger.LogTrace("The identity token '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7029), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }

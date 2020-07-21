@@ -114,8 +114,7 @@ namespace OpenIddict.Server.AspNetCore
                     var token = await _cache.GetStringAsync(Cache.AuthorizationRequest + context.Request.RequestId);
                     if (token == null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                     {
-                        context.Logger.LogError("The authorization request was rejected because an unknown " +
-                                                "or invalid request_id parameter was specified.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7146), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -132,8 +131,7 @@ namespace OpenIddict.Server.AspNetCore
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
                     {
-                        context.Logger.LogError("The authorization request was rejected because an unknown " +
-                                                "or invalid request_id parameter was specified.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7146), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -381,9 +379,7 @@ namespace OpenIddict.Server.AspNetCore
                         return;
                     }
 
-                    context.Logger.LogInformation("The authorization response was successfully returned to " +
-                                                  "'{RedirectUri}' using the form post response mode: {Response}.",
-                                                  context.RedirectUri, context.Response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7147), context.RedirectUri, context.Response);
 
                     using (var buffer = new MemoryStream())
                     using (var writer = new StreamWriter(buffer))
@@ -478,9 +474,7 @@ namespace OpenIddict.Server.AspNetCore
                         return default;
                     }
 
-                    context.Logger.LogInformation("The authorization response was successfully returned to " +
-                                                  "'{RedirectUri}' using the query response mode: {Response}.",
-                                                  context.RedirectUri, context.Response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7148), context.RedirectUri, context.Response);
 
                     var location = context.RedirectUri;
 
@@ -549,9 +543,7 @@ namespace OpenIddict.Server.AspNetCore
                         return default;
                     }
 
-                    context.Logger.LogInformation("The authorization response was successfully returned to " +
-                                                  "'{RedirectUri}' using the fragment response mode: {Response}.",
-                                                  context.RedirectUri, context.Response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7149), context.RedirectUri, context.Response);
 
                     var builder = new StringBuilder(context.RedirectUri);
 

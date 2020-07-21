@@ -119,7 +119,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1047));
                     }
 
-                    context.Logger.LogInformation("The revocation request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7109), notification.Request);
                 }
             }
 
@@ -186,7 +186,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The revocation request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7110));
                 }
             }
 
@@ -339,7 +339,7 @@ namespace OpenIddict.Server
                     // Reject revocation requests missing the mandatory token parameter.
                     if (string.IsNullOrEmpty(context.Request.Token))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the token was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7111), Parameters.Token);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -384,7 +384,7 @@ namespace OpenIddict.Server
                     // At this stage, reject the revocation request unless the client identification requirement was disabled.
                     if (!context.Options.AcceptAnonymousClients && string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the mandatory 'client_id' was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7111), Parameters.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -441,8 +441,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        context.Logger.LogError("The revocation request was rejected because the client " +
-                                                "application was not found: '{ClientId}'.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7112), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -504,8 +503,7 @@ namespace OpenIddict.Server
                         // Reject revocation requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
                         {
-                            context.Logger.LogError("The revocation request was rejected because the public application '{ClientId}' " +
-                                                    "was not allowed to send a client secret.", context.ClientId);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7113), context.ClientId);
 
                             context.Reject(
                                 error: Errors.InvalidClient,
@@ -520,8 +518,7 @@ namespace OpenIddict.Server
                     // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
                     if (string.IsNullOrEmpty(context.ClientSecret))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify a client secret.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7114), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -581,8 +578,7 @@ namespace OpenIddict.Server
                     if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
                         !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7115), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -643,8 +639,7 @@ namespace OpenIddict.Server
                     // Reject the request if the application is not allowed to use the revocation endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Revocation))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the revocation endpoint.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7116), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -751,8 +746,7 @@ namespace OpenIddict.Server
                         !context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode) &&
                         !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
                     {
-                        context.Logger.LogError("The revocation request was rejected because " +
-                                                "the received token was of an unsupported type.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7117));
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
@@ -810,8 +804,7 @@ namespace OpenIddict.Server
 
                         if (!context.Principal.HasPresenter(context.ClientId))
                         {
-                            context.Logger.LogError("The revocation request was rejected because the " +
-                                                    "authorization code was issued to a different client.");
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7118));
 
                             context.Reject(
                                 error: Errors.InvalidToken,
@@ -831,8 +824,7 @@ namespace OpenIddict.Server
                         context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId) &&
                         context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the access token " +
-                                                "was issued to a different client or for another resource server.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7119));
 
                         context.Reject(
                             error: Errors.InvalidToken,
@@ -848,8 +840,7 @@ namespace OpenIddict.Server
                     if (context.Principal.HasTokenType(TokenTypeHints.IdToken) &&
                         context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the " +
-                                                "identity token was issued to a different client.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7120));
 
                         context.Reject(
                             error: Errors.InvalidToken,
@@ -865,8 +856,7 @@ namespace OpenIddict.Server
                     if (context.Principal.HasTokenType(TokenTypeHints.RefreshToken) &&
                         context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the " +
-                                                "refresh token was issued to a different client.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7121));
 
                         context.Reject(
                             error: Errors.InvalidToken,
@@ -961,7 +951,7 @@ namespace OpenIddict.Server
                     var identifier = context.Principal.GetTokenId();
                     if (string.IsNullOrEmpty(identifier))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the token had no internal identifier.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7122));
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
@@ -973,7 +963,7 @@ namespace OpenIddict.Server
                     var token = await _tokenManager.FindByIdAsync(identifier);
                     if (token == null)
                     {
-                        context.Logger.LogInformation("The token '{Identifier}' was not revoked because it couldn't be found.", identifier);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID7123), identifier);
 
                         context.Reject(
                             error: Errors.InvalidToken,

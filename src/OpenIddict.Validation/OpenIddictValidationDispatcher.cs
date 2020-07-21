@@ -50,16 +50,14 @@ namespace OpenIddict.Validation
 
                 catch (Exception exception) when (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug(exception, "An exception was thrown by {FullName} while handling the {Event} event.",
-                        handler.GetType().FullName, typeof(TContext).FullName);
+                    _logger.LogDebug(exception, SR.GetResourceString(SR.ID7132), handler.GetType().FullName, typeof(TContext).FullName);
 
                     throw;
                 }
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("The event {Event} was successfully processed by {FullName}.",
-                        typeof(TContext).FullName, handler.GetType().FullName);
+                    _logger.LogDebug(SR.GetResourceString(SR.ID7133), typeof(TContext).FullName, handler.GetType().FullName);
                 }
 
                 switch (context)
@@ -67,24 +65,21 @@ namespace OpenIddict.Validation
                     case BaseRequestContext notification when notification.IsRequestHandled:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug("The event {Event} was marked as handled by {FullName}.",
-                                typeof(TContext).FullName, handler.GetType().FullName);
+                            _logger.LogDebug(SR.GetResourceString(SR.ID7134), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
                     case BaseRequestContext notification when notification.IsRequestSkipped:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug("The event {Event} was marked as skipped by {FullName}.",
-                                typeof(TContext).FullName, handler.GetType().FullName);
+                            _logger.LogDebug(SR.GetResourceString(SR.ID7135), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
                     case BaseValidatingContext notification when notification.IsRejected:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug("The event {Event} was marked as rejected by {FullName}.",
-                                typeof(TContext).FullName, handler.GetType().FullName);
+                            _logger.LogDebug(SR.GetResourceString(SR.ID7136), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 

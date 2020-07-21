@@ -1248,7 +1248,7 @@ namespace OpenIddict.Core
 
             if (await HasClientTypeAsync(application, ClientTypes.Public, cancellationToken))
             {
-                Logger.LogWarning("Client authentication cannot be enforced for public applications.");
+                Logger.LogWarning(SR.GetResourceString(SR.ID7159));
 
                 return false;
             }
@@ -1256,17 +1256,14 @@ namespace OpenIddict.Core
             var value = await Store.GetClientSecretAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(value))
             {
-                Logger.LogError("Client authentication failed for {Client} because " +
-                                "no client secret was associated with the application.",
-                                await GetClientIdAsync(application, cancellationToken));
+                Logger.LogError(SR.GetResourceString(SR.ID7160), await GetClientIdAsync(application, cancellationToken));
 
                 return false;
             }
 
             if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
             {
-                Logger.LogWarning("Client authentication failed for {Client}.",
-                    await GetClientIdAsync(application, cancellationToken));
+                Logger.LogWarning(SR.GetResourceString(SR.ID7161), await GetClientIdAsync(application, cancellationToken));
 
                 return false;
             }
@@ -1307,8 +1304,7 @@ namespace OpenIddict.Core
                 }
             }
 
-            Logger.LogWarning("Client validation failed because '{RedirectUri}' was not a valid redirect_uri " +
-                              "for {Client}.", address, await GetClientIdAsync(application, cancellationToken));
+            Logger.LogWarning(SR.GetResourceString(SR.ID7162), address, await GetClientIdAsync(application, cancellationToken));
 
             return false;
         }
@@ -1421,8 +1417,7 @@ namespace OpenIddict.Core
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An error occurred while trying to verify a client secret. " +
-                                             "This may indicate that the hashed entry is corrupted or malformed.");
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7163));
 
                 return new ValueTask<bool>(false);
             }

@@ -253,7 +253,7 @@ namespace OpenIddict.Validation
                         context.Options.ConfigurationManager.RequestRefresh();
                     }
 
-                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
+                    context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID7000), context.Token);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -284,8 +284,7 @@ namespace OpenIddict.Validation
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
                 });
 
-                context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
-                                        "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7001), context.Token, context.Principal.Claims);
             }
         }
 
@@ -355,13 +354,12 @@ namespace OpenIddict.Validation
                     // If no token type can be inferred, the token is assumed to be an access token.
                     context.Principal = principal.SetTokenType(context.TokenType ?? TokenTypeHints.AccessToken);
 
-                    context.Logger.LogTrace("The token '{Token}' was successfully introspected and the following claims " +
-                                            "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                    context.Logger.LogTrace(SR.GetResourceString(SR.ID7154), context.Token, context.Principal.Claims);
                 }
 
                 catch (Exception exception)
                 {
-                    context.Logger.LogDebug(exception, "An error occurred while introspecting the access token.");
+                    context.Logger.LogDebug(exception, SR.GetResourceString(SR.ID7155));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -682,7 +680,7 @@ namespace OpenIddict.Validation
                 var date = context.Principal.GetExpirationDate();
                 if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
                 {
-                    context.Logger.LogError("The authentication demand was rejected because the token was expired.");
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7156));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -736,7 +734,7 @@ namespace OpenIddict.Validation
                 var audiences = context.Principal.GetAudiences();
                 if (audiences.IsDefaultOrEmpty)
                 {
-                    context.Logger.LogError("The authentication demand was rejected because the token had no audience attached.");
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7157));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -748,7 +746,7 @@ namespace OpenIddict.Validation
                 // If the access token doesn't include any registered audience, return an error.
                 if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
                 {
-                    context.Logger.LogError("The authentication demand was rejected because the token had no valid audience.");
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7158));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -803,7 +801,7 @@ namespace OpenIddict.Validation
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null || !await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogError("The token '{Identifier}' was no longer valid.", identifier);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7005), identifier);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -863,7 +861,7 @@ namespace OpenIddict.Validation
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
                 if (authorization == null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogError("The authorization '{Identifier}' was no longer valid.", identifier);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7006), identifier);
 
                     context.Reject(
                         error: Errors.InvalidToken,

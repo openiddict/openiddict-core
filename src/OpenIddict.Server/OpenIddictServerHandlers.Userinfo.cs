@@ -110,7 +110,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1052));
                     }
 
-                    context.Logger.LogInformation("The userinfo request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7129), notification.Request);
                 }
             }
 
@@ -177,7 +177,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The userinfo request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7130));
                 }
             }
 
@@ -364,7 +364,7 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(context.Request.AccessToken))
                     {
-                        context.Logger.LogError("The userinfo request was rejected because the access token was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7131), Parameters.AccessToken);
 
                         context.Reject(
                             error: Errors.MissingToken,

@@ -116,8 +116,7 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Principal = principal;
 
-                context.Logger.LogTrace("The DP token '{Token}' was successfully validated and the following claims " +
-                                        "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7152), context.Token, context.Principal.Claims);
 
                 return default;
 
@@ -162,7 +161,7 @@ namespace OpenIddict.Server.DataProtection
 
                     catch (Exception exception)
                     {
-                        context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", token);
+                        context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID7153), token);
 
                         return null;
                     }
@@ -226,10 +225,9 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.AccessToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The access token '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7013),
+                    context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
+                    context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
 
                 return default;
             }
@@ -291,10 +289,9 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.Code = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The authorization code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.Code, context.AuthorizationCodePrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7016),
+                    context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
+                    context.Response.Code, context.AuthorizationCodePrincipal.Claims);
 
                 return default;
             }
@@ -356,10 +353,9 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.DeviceCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The device code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.DeviceCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.DeviceCode, context.DeviceCodePrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7019),
+                    context.DeviceCodePrincipal.GetClaim(Claims.JwtId),
+                    context.Response.DeviceCode, context.DeviceCodePrincipal.Claims);
 
                 return default;
             }
@@ -421,10 +417,9 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.RefreshToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The refresh token '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7023),
+                    context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
+                    context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
 
                 return default;
             }
@@ -486,10 +481,9 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.UserCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The user code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.UserCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.UserCode, context.UserCodePrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7026),
+                    context.UserCodePrincipal.GetClaim(Claims.JwtId),
+                    context.Response.UserCode, context.UserCodePrincipal.Claims);
 
                 return default;
             }

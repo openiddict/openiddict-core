@@ -320,8 +320,7 @@ namespace OpenIddict.Server
                     {
                         parameters = rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false);
 
-                        Debug.Assert(parameters.Modulus != null,
-                            "A null modulus shouldn't be returned by RSA.ExportParameters().");
+                        Debug.Assert(parameters.Modulus != null, SR.GetResourceString(SR.ID5003));
                     }
 
                     // Only use the 40 first chars of the base64url-encoded modulus.
@@ -335,8 +334,7 @@ namespace OpenIddict.Server
                     // Extract the ECDSA parameters from the signing credentials.
                     var parameters = ecsdaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false);
 
-                    Debug.Assert(parameters.Q.X != null,
-                        "Invalid coordinates shouldn't be returned by ECDsa.ExportParameters().");
+                    Debug.Assert(parameters.Q.X != null, SR.GetResourceString(SR.ID5004));
 
                     // Only use the 40 first chars of the base64url-encoded X coordinate.
                     var identifier = Base64UrlEncoder.Encode(parameters.Q.X);

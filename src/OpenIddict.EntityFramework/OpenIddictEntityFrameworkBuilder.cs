@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
@@ -71,11 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (typeof(TApplication).IsGenericType || typeof(TAuthorization).IsGenericType ||
                 typeof(TScope).IsGenericType || typeof(TToken).IsGenericType)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The Entity Framework 6.x stores cannot be used with generic types.")
-                    .Append("Consider creating non-generic classes derived from the default entities ")
-                    .Append("for the application, authorization, scope and token entities.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1276));
             }
 
             Services.Configure<OpenIddictCoreOptions>(options =>
