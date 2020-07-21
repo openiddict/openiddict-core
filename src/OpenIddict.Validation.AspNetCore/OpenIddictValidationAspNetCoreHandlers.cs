@@ -115,7 +115,7 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID3081]);
+                        description: context.Localizer[SR.ID3081, HeaderNames.Host]);
 
                     return default;
                 }
@@ -125,7 +125,7 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID3082]);
+                        description: context.Localizer[SR.ID3082, HeaderNames.Host]);
 
                     return default;
                 }
