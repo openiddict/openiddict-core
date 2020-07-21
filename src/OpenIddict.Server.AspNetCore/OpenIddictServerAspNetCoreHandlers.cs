@@ -119,6 +119,11 @@ namespace OpenIddict.Server.AspNetCore
                     Matches(request, context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
                                                                                   OpenIddictServerEndpointType.Unknown;
 
+                if (context.EndpointType != OpenIddictServerEndpointType.Unknown)
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7053), context.EndpointType);
+                }
+
                 return default;
 
                 static bool Matches(HttpRequest request, IReadOnlyList<Uri> addresses)
@@ -449,8 +454,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 else
                 {
-                    context.Logger.LogError("The request was rejected because an invalid " +
-                                            "HTTP method was specified: {Method}.", request.Method);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -512,7 +516,7 @@ namespace OpenIddict.Server.AspNetCore
                     // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
                     if (string.IsNullOrEmpty(request.ContentType))
                     {
-                        context.Logger.LogError("The request was rejected because the mandatory 'Content-Type' header was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7138), HeaderNames.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -524,8 +528,7 @@ namespace OpenIddict.Server.AspNetCore
                     // May have media/type; charset=utf-8, allow partial match.
                     if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Logger.LogError("The request was rejected because an invalid 'Content-Type' " +
-                                                "header was specified: {ContentType}.", request.ContentType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7139), HeaderNames.ContentType, request.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -539,8 +542,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 else
                 {
-                    context.Logger.LogError("The request was rejected because an invalid " +
-                                            "HTTP method was specified: {Method}.", request.Method);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -595,7 +597,7 @@ namespace OpenIddict.Server.AspNetCore
                     // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
                     if (string.IsNullOrEmpty(request.ContentType))
                     {
-                        context.Logger.LogError("The request was rejected because the mandatory 'Content-Type' header was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7138), HeaderNames.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -607,8 +609,7 @@ namespace OpenIddict.Server.AspNetCore
                     // May have media/type; charset=utf-8, allow partial match.
                     if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Logger.LogError("The request was rejected because an invalid 'Content-Type' " +
-                                                "header was specified: {ContentType}.", request.ContentType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7139), HeaderNames.ContentType, request.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -622,8 +623,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 else
                 {
-                    context.Logger.LogError("The request was rejected because an invalid " +
-                                            "HTTP method was specified: {Method}.", request.Method);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -684,7 +684,7 @@ namespace OpenIddict.Server.AspNetCore
                 // See https://tools.ietf.org/html/rfc6749#section-2.3 for more information.
                 if (!string.IsNullOrEmpty(context.Request.ClientAssertion) || !string.IsNullOrEmpty(context.Request.ClientSecret))
                 {
-                    context.Logger.LogError("The request was rejected because multiple client credentials were specified.");
+                    context.Logger.LogError(SR.GetResourceString(SR.ID7140));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1109,7 +1109,7 @@ namespace OpenIddict.Server.AspNetCore
                     return default;
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as a challenge response: {Response}.", context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7141), context.Response);
                 context.HandleRequest();
 
                 return default;
@@ -1155,7 +1155,7 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Response);
 
                 using var stream = new MemoryStream();
                 await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions
@@ -1341,8 +1341,7 @@ namespace OpenIddict.Server.AspNetCore
                 // Don't return the state originally sent by the client application.
                 context.Response.State = null;
 
-                context.Logger.LogInformation("The authorization response was successfully returned " +
-                                              "as a plain-text document: {Response}.", context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7143), context.Response);
 
                 using var stream = new MemoryStream();
                 using var writer = new StreamWriter(stream);
@@ -1420,7 +1419,7 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     response.Redirect(properties.RedirectUri);
 
-                    context.Logger.LogInformation("The response was successfully returned as a 302 response.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7144));
                     context.HandleRequest();
                 }
 
@@ -1460,7 +1459,7 @@ namespace OpenIddict.Server.AspNetCore
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as an empty 200 response.");
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7145));
                 context.HandleRequest();
 
                 return default;

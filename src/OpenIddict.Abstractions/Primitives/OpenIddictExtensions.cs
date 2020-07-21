@@ -1670,8 +1670,8 @@ namespace OpenIddict.Abstractions
 
         private static IEnumerable<string> GetValues(string source, char[] separators)
         {
-            Debug.Assert(!string.IsNullOrEmpty(source), "The source string shouldn't be null or empty.");
-            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+            Debug.Assert(!string.IsNullOrEmpty(source), SR.GetResourceString(SR.ID5000));
+            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
 
             foreach (var element in new StringTokenizer(source, separators))
             {
@@ -1694,8 +1694,8 @@ namespace OpenIddict.Abstractions
                 return false;
             }
 
-            Debug.Assert(!string.IsNullOrEmpty(value), "The value string shouldn't be null or empty.");
-            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+            Debug.Assert(!string.IsNullOrEmpty(value), SR.GetResourceString(SR.ID5002));
+            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
 
             foreach (var element in new StringTokenizer(source, separators))
             {
@@ -1716,7 +1716,7 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment TrimStart(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
 
             var index = segment.Offset;
 
@@ -1735,7 +1735,7 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment TrimEnd(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
 
             var index = segment.Offset + segment.Length - 1;
 
@@ -1754,14 +1754,14 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment Trim(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
 
             return TrimEnd(TrimStart(segment, separators), separators);
         }
 
         private static bool IsSeparator(char character, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
 
             for (var index = 0; index < separators.Length; index++)
             {

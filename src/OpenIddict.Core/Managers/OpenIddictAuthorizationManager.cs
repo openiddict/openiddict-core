@@ -1015,24 +1015,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(authorization, cancellationToken);
 
-                Logger.LogInformation("The authorization '{Identifier}' was successfully revoked.",
-                                      await Store.GetIdAsync(authorization, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID7164), await Store.GetIdAsync(authorization, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, "A concurrency exception occurred while trying to revoke the authorization '{Identifier}'.",
-                                           await Store.GetIdAsync(authorization, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7165), await Store.GetIdAsync(authorization, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to revoke the authorization '{Identifier}'.",
-                                             await Store.GetIdAsync(authorization, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7166), await Store.GetIdAsync(authorization, cancellationToken));
 
                 return false;
             }

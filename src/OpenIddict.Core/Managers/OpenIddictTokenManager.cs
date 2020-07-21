@@ -1065,13 +1065,12 @@ namespace OpenIddict.Core
 
                 if (date != null)
                 {
-                    Logger.LogInformation("The expiration date of the refresh token '{Identifier}' was successfully updated: {Date}.",
-                                          await Store.GetIdAsync(token, cancellationToken), date);
+                    Logger.LogInformation(SR.GetResourceString(SR.ID7167), await Store.GetIdAsync(token, cancellationToken), date);
                 }
 
                 else
                 {
-                    Logger.LogInformation("The expiration date of the refresh token '{Identifier}' was successfully removed.",
+                    Logger.LogInformation(SR.GetResourceString(SR.ID7168),
                                           await Store.GetIdAsync(token, cancellationToken));
                 }
 
@@ -1080,18 +1079,14 @@ namespace OpenIddict.Core
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, "A concurrency exception occurred while trying to update the " +
-                                           "expiration date of the token '{Identifier}'.",
-                                           await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7169), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to update the " +
-                                             "expiration date of the token '{Identifier}'.",
-                                             await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7170), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1122,24 +1117,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation("The token '{Identifier}' was successfully marked as redeemed.",
-                                      await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID7171), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, "A concurrency exception occurred while trying to redeem the token '{Identifier}'.",
-                                           await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7172), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to redeem the token '{Identifier}'.",
-                                             await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7173), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1170,24 +1162,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation("The token '{Identifier}' was successfully marked as rejected.",
-                                      await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID7174), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, "A concurrency exception occurred while trying to reject the token '{Identifier}'.",
-                                           await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7175), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to reject the token '{Identifier}'.",
-                                             await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7176), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1218,24 +1207,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation("The token '{Identifier}' was successfully revoked.",
-                                      await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID7177), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, "A concurrency exception occurred while trying to revoke the token '{Identifier}'.",
-                                           await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7178), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to revoke the token '{Identifier}'.",
-                                             await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7179), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }

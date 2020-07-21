@@ -134,7 +134,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1039));
                     }
 
-                    context.Logger.LogInformation("The token request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7075), notification.Request);
                 }
             }
 
@@ -201,7 +201,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The token request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7076));
                 }
             }
 
@@ -386,7 +386,7 @@ namespace OpenIddict.Server
                     // Reject token requests missing the mandatory grant_type parameter.
                     if (string.IsNullOrEmpty(context.Request.GrantType))
                     {
-                        context.Logger.LogError("The token request was rejected because the grant type was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7077), Parameters.GrantType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -398,8 +398,7 @@ namespace OpenIddict.Server
                     // Reject token requests that don't specify a supported grant type.
                     if (!context.Options.GrantTypes.Contains(context.Request.GrantType))
                     {
-                        context.Logger.LogError("The token request was rejected because the '{GrantType}' " +
-                                                "grant type is not supported.", context.Request.GrantType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7078), context.Request.GrantType);
 
                         context.Reject(
                             error: Errors.UnsupportedGrantType,
@@ -464,7 +463,7 @@ namespace OpenIddict.Server
                     // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
                     if (!context.Options.AcceptAnonymousClients || context.Request.IsAuthorizationCodeGrantType())
                     {
-                        context.Logger.LogError("The token request was rejected because the mandatory 'client_id' was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7077), Parameters.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -511,7 +510,7 @@ namespace OpenIddict.Server
                     // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
                     if (context.Request.IsAuthorizationCodeGrantType() && string.IsNullOrEmpty(context.Request.Code))
                     {
-                        context.Logger.LogError("The token request was rejected because the authorization code was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7077), Parameters.Code);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -649,7 +648,7 @@ namespace OpenIddict.Server
                     // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                     if (context.Request.IsRefreshTokenGrantType() && string.IsNullOrEmpty(context.Request.RefreshToken))
                     {
-                        context.Logger.LogError("The token request was rejected because the refresh token was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7077), Parameters.RefreshToken);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -697,7 +696,7 @@ namespace OpenIddict.Server
                     if (context.Request.IsPasswordGrantType() && (string.IsNullOrEmpty(context.Request.Username) ||
                                                                   string.IsNullOrEmpty(context.Request.Password)))
                     {
-                        context.Logger.LogError("The token request was rejected because the resource owner credentials were missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7079));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -764,8 +763,7 @@ namespace OpenIddict.Server
                     // If at least one scope was not recognized, return an error.
                     if (scopes.Count != 0)
                     {
-                        context.Logger.LogError("The token request was rejected because " +
-                                                "invalid scopes were specified: {Scopes}.", scopes);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7080), scopes);
 
                         context.Reject(
                             error: Errors.InvalidScope,
@@ -820,8 +818,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        context.Logger.LogError("The token request was rejected because the client " +
-                                                "application was not found: '{ClientId}'.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7081), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -883,8 +880,7 @@ namespace OpenIddict.Server
                         // Public applications are not allowed to use the client credentials grant.
                         if (context.Request.IsClientCredentialsGrantType())
                         {
-                            context.Logger.LogError("The token request was rejected because the public client application '{ClientId}' " +
-                                                    "was not allowed to use the client credentials grant.", context.Request.ClientId);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7082), context.Request.ClientId);
 
                             context.Reject(
                                 error: Errors.UnauthorizedClient,
@@ -896,8 +892,7 @@ namespace OpenIddict.Server
                         // Reject token requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
                         {
-                            context.Logger.LogError("The token request was rejected because the public application '{ClientId}' " +
-                                                    "was not allowed to send a client secret.", context.ClientId);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7083), context.ClientId);
 
                             context.Reject(
                                 error: Errors.InvalidClient,
@@ -912,8 +907,7 @@ namespace OpenIddict.Server
                     // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
                     if (string.IsNullOrEmpty(context.ClientSecret))
                     {
-                        context.Logger.LogError("The token request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify a client secret.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7084), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -973,8 +967,7 @@ namespace OpenIddict.Server
                     if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
                         !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
-                        context.Logger.LogError("The token request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7085), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -1035,8 +1028,7 @@ namespace OpenIddict.Server
                     // Reject the request if the application is not allowed to use the token endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Token))
                     {
-                        context.Logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the token endpoint.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7086), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -1097,8 +1089,7 @@ namespace OpenIddict.Server
                     // Reject the request if the application is not allowed to use the specified grant type.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.GrantType + context.Request.GrantType))
                     {
-                        context.Logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
-                                                "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7087), context.ClientId, context.Request.GrantType);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -1112,8 +1103,7 @@ namespace OpenIddict.Server
                     if (context.Request.HasScope(Scopes.OfflineAccess) &&
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                     {
-                        context.Logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to request the 'offline_access' scope.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7088), context.ClientId, Scopes.OfflineAccess);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1183,8 +1173,7 @@ namespace OpenIddict.Server
                         // Reject the request if the application is not allowed to use the iterated scope.
                         if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                         {
-                            context.Logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7089), context.ClientId, scope);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
@@ -1256,8 +1245,7 @@ namespace OpenIddict.Server
 
                     if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                     {
-                        context.Logger.LogError("The token request was rejected because the " +
-                                                "required 'code_verifier' parameter was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7077), Parameters.CodeVerifier);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1402,9 +1390,7 @@ namespace OpenIddict.Server
                     // reject the request if the client_id of the caller cannot be retrieved or inferred.
                     if (string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError("The token request was rejected because the client identifier of the application " +
-                                                "was not available and could not be compared to the presenters list stored " +
-                                                "in the authorization code, the device code or the refresh token.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7090));
 
                         context.Reject(
                             error: Errors.InvalidGrant,
@@ -1421,8 +1407,7 @@ namespace OpenIddict.Server
                     // and http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken.
                     if (!presenters.Contains(context.ClientId))
                     {
-                        context.Logger.LogError("The token request was rejected because the authorization code, the device code " +
-                                                "or the refresh token was issued to a different client application.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7091));
 
                         context.Reject(
                             error: Errors.InvalidGrant,
@@ -1486,8 +1471,7 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(context.Request.RedirectUri))
                     {
-                        context.Logger.LogError("The token request was rejected because the mandatory 'redirect_uri' " +
-                                                "parameter was missing from the grant_type=authorization_code request.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7077), Parameters.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1498,8 +1482,7 @@ namespace OpenIddict.Server
 
                     if (!string.Equals(address, context.Request.RedirectUri, StringComparison.Ordinal))
                     {
-                        context.Logger.LogError("The token request was rejected because the 'redirect_uri' " +
-                                                "parameter didn't correspond to the expected value.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7092), Parameters.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidGrant,
@@ -1559,9 +1542,7 @@ namespace OpenIddict.Server
                         // when code_challenge private claim was attached to the authorization code.
                         if (!string.IsNullOrEmpty(context.Request.CodeVerifier))
                         {
-                            context.Logger.LogError("The token request was rejected because a 'code_verifier' parameter " +
-                                                    "was presented with an authorization code to which no code challenge " +
-                                                    "was attached when processing the initial authorization request.");
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7093), Parameters.CodeVerifier);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
@@ -1576,8 +1557,7 @@ namespace OpenIddict.Server
                     // Get the code verifier from the token request. If it cannot be found, return an invalid_grant error.
                     if (string.IsNullOrEmpty(context.Request.CodeVerifier))
                     {
-                        context.Logger.LogError("The token request was rejected because the required 'code_verifier' " +
-                                                "parameter was missing from the grant_type=authorization_code request.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7077), Parameters.CodeVerifier);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -1621,7 +1601,7 @@ namespace OpenIddict.Server
                     if (!Arrays.ConstantTimeAreEqual(data, Encoding.ASCII.GetBytes(challenge)))
 #endif
                     {
-                        context.Logger.LogError("The token request was rejected because the 'code_verifier' was invalid.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7092), Parameters.CodeVerifier);
 
                         context.Reject(
                             error: Errors.InvalidGrant,
@@ -1673,7 +1653,7 @@ namespace OpenIddict.Server
                     var scopes = new HashSet<string>(context.Principal.GetScopes(), StringComparer.Ordinal);
                     if (scopes.Count == 0)
                     {
-                        context.Logger.LogError("The token request was rejected because the 'scope' parameter was not allowed.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7094), Parameters.Scope);
 
                         context.Reject(
                             error: Errors.InvalidGrant,
@@ -1688,7 +1668,7 @@ namespace OpenIddict.Server
                     // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                     else if (!scopes.IsSupersetOf(context.Request.GetScopes()))
                     {
-                        context.Logger.LogError("The token request was rejected because the 'scope' parameter was not valid.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7095), Parameters.Scope);
 
                         context.Reject(
                             error: Errors.InvalidGrant,

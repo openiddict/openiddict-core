@@ -1066,6 +1066,30 @@ To configure the OpenIddict MongoDB stores to use a specific database, use 'serv
   <data name="ID1270" xml:space="preserve">
     <value>The type of the JWT token doesn't match the expected type.</value>
   </data>
+  <data name="ID1271" xml:space="preserve">
+    <value>The configuration response was not correctly applied.
+To apply configuration responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyConfigurationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+  </data>
+  <data name="ID1272" xml:space="preserve">
+    <value>No default application entity type was configured in the OpenIddict core options, which generally indicates that no application store was registered in the DI container.
+To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
+  </data>
+  <data name="ID1273" xml:space="preserve">
+    <value>No default authorization entity type was configured in the OpenIddict core options, which generally indicates that no authorization store was registered in the DI container.
+To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
+  </data>
+  <data name="ID1274" xml:space="preserve">
+    <value>No default scope entity type was configured in the OpenIddict core options, which generally indicates that no scope store was registered in the DI container.
+To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
+  </data>
+  <data name="ID1275" xml:space="preserve">
+    <value>No default token entity type was configured in the OpenIddict core options, which generally indicates that no token store was registered in the DI container.
+To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
+  </data>
+  <data name="ID1276" xml:space="preserve">
+    <value>The Entity Framework 6.x stores cannot be used with generic types.
+Consider creating non-generic classes derived from the default entities for the application, authorization, scope and token entities.</value>
+  </data>
   <data name="ID3000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1215,9 +1239,6 @@ To configure the OpenIddict MongoDB stores to use a specific database, use 'serv
   </data>
   <data name="ID3049" xml:space="preserve">
     <value>The client application is not allowed to use the hybrid flow.</value>
-  </data>
-  <data name="ID3050" xml:space="preserve">
-    <value>The client application is not allowed to use the 'offline_access' scope.</value>
   </data>
   <data name="ID3051" xml:space="preserve">
     <value>This client application is not allowed to use the specified scope.</value>
@@ -1428,5 +1449,570 @@ To configure the OpenIddict MongoDB stores to use a specific database, use 'serv
   </data>
   <data name="ID3120" xml:space="preserve">
     <value>Callback URLs must be valid absolute URLs.</value>
+  </data>
+  <data name="ID5000" xml:space="preserve">
+    <value>The source string shouldn't be null or empty.</value>
+  </data>
+  <data name="ID5001" xml:space="preserve">
+    <value>The separators collection shouldn't be null or empty.</value>
+  </data>
+  <data name="ID5002" xml:space="preserve">
+    <value>The value string shouldn't be null or empty.</value>
+  </data>
+  <data name="ID5003" xml:space="preserve">
+    <value>RSA.ExportParameters() shouldn't return invalid values.</value>
+  </data>
+  <data name="ID5004" xml:space="preserve">
+    <value>ECDsa.ExportParameters() shouldn't return invalid values.</value>
+  </data>
+  <data name="ID5005" xml:space="preserve">
+    <value>ECDsa.ExportParameters() shouldn't return an unnamed curve.</value>
+  </data>
+  <data name="ID7000" xml:space="preserve">
+    <value>An error occurred while validating the token '{Token}'.</value>
+  </data>
+  <data name="ID7001" xml:space="preserve">
+    <value>The token '{Token}' was successfully validated and the following claims could be extracted: {Claims}.</value>
+  </data>
+  <data name="ID7002" xml:space="preserve">
+    <value>The token '{Identifier}' has already been redeemed.</value>
+  </data>
+  <data name="ID7003" xml:space="preserve">
+    <value>The token '{Identifier}' is not active yet.</value>
+  </data>
+  <data name="ID7004" xml:space="preserve">
+    <value>The token '{Identifier}' was marked as rejected.</value>
+  </data>
+  <data name="ID7005" xml:space="preserve">
+    <value>The token '{Identifier}' was no longer valid.</value>
+  </data>
+  <data name="ID7006" xml:space="preserve">
+    <value>The authorization '{Identifier}' was no longer valid.</value>
+  </data>
+  <data name="ID7007" xml:space="preserve">
+    <value>An ad hoc authorization was automatically created and associated with an unknown application: {Identifier}.</value>
+  </data>
+  <data name="ID7008" xml:space="preserve">
+    <value>An ad hoc authorization was automatically created and associated with the '{ClientId}' application: {Identifier}.</value>
+  </data>
+  <data name="ID7009" xml:space="preserve">
+    <value>'{Claim}' was excluded from the access token claims.</value>
+  </data>
+  <data name="ID7010" xml:space="preserve">
+    <value>The access token scopes will be limited to the scopes requested by the client application: {Scopes}.</value>
+  </data>
+  <data name="ID7011" xml:space="preserve">
+    <value>'{Claim}' was excluded from the identity token claims.</value>
+  </data>
+  <data name="ID7012" xml:space="preserve">
+    <value>The token entry for access token '{Identifier}' was successfully created.</value>
+  </data>
+  <data name="ID7013" xml:space="preserve">
+    <value>The access token '{Identifier}' was successfully created: {Payload}.
+The principal used to create the token contained the following claims: {Claims}.</value>
+  </data>
+  <data name="ID7014" xml:space="preserve">
+    <value>The token entry for access token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
+  </data>
+  <data name="ID7015" xml:space="preserve">
+    <value>The token entry for authorization code '{Identifier}' was successfully created.</value>
+  </data>
+  <data name="ID7016" xml:space="preserve">
+    <value>The authorization code '{Identifier}' was successfully created: {Payload}.
+The principal used to create the token contained the following claims: {Claims}.</value>
+  </data>
+  <data name="ID7017" xml:space="preserve">
+    <value>The token entry for authorization code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
+  </data>
+  <data name="ID7018" xml:space="preserve">
+    <value>The token entry for device code '{Identifier}' was successfully created.</value>
+  </data>
+  <data name="ID7019" xml:space="preserve">
+    <value>The device code '{Identifier}' was successfully created: {Payload}.
+The principal used to create the token contained the following claims: {Claims}.</value>
+  </data>
+  <data name="ID7020" xml:space="preserve">
+    <value>The token entry for device code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
+  </data>
+  <data name="ID7021" xml:space="preserve">
+    <value>The reference token entry for device code '{Identifier}' was successfully updated'.</value>
+  </data>
+  <data name="ID7022" xml:space="preserve">
+    <value>The token entry for refresh token '{Identifier}' was successfully created.</value>
+  </data>
+  <data name="ID7023" xml:space="preserve">
+    <value>The refresh token '{Identifier}' was successfully created: {Payload}.
+The principal used to create the token contained the following claims: {Claims}.</value>
+  </data>
+  <data name="ID7024" xml:space="preserve">
+    <value>The token entry for refresh token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
+  </data>
+  <data name="ID7025" xml:space="preserve">
+    <value>The token entry for user code '{Identifier}' was successfully created.</value>
+  </data>
+  <data name="ID7026" xml:space="preserve">
+    <value>The user code '{Identifier}' was successfully created: {Payload}.
+The principal used to create the token contained the following claims: {Claims}.</value>
+  </data>
+  <data name="ID7027" xml:space="preserve">
+    <value>The token entry for user code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
+  </data>
+  <data name="ID7028" xml:space="preserve">
+    <value>The token entry for identity token '{Identifier}' was successfully created.</value>
+  </data>
+  <data name="ID7029" xml:space="preserve">
+    <value>The identity token '{Identifier}' was successfully created: {Payload}.
+The principal used to create the token contained the following claims: {Claims}.</value>
+  </data>
+  <data name="ID7030" xml:space="preserve">
+    <value>The authorization request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7031" xml:space="preserve">
+    <value>The authorization request was successfully validated.</value>
+  </data>
+  <data name="ID7032" xml:space="preserve">
+    <value>The authorization request was rejected because it contained an unsupported parameter: {Parameter}.</value>
+  </data>
+  <data name="ID7033" xml:space="preserve">
+    <value>The authorization request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID7034" xml:space="preserve">
+    <value>The authorization request was rejected because the '{Parameter}' parameter wasn't a valid absolute URL: {RedirectUri}.</value>
+  </data>
+  <data name="ID7035" xml:space="preserve">
+    <value>The authorization request was rejected because the '{Parameter}' contained a URL fragment: {RedirectUri}.</value>
+  </data>
+  <data name="ID7036" xml:space="preserve">
+    <value>The authorization request was rejected because the '{ResponseType}' response type is not supported.</value>
+  </data>
+  <data name="ID7037" xml:space="preserve">
+    <value>The authorization request was rejected because the 'response_type'/'response_mode' combination was invalid: {ResponseType} ; {ResponseMode}.</value>
+  </data>
+  <data name="ID7038" xml:space="preserve">
+    <value>The authorization request was rejected because the '{ResponseMode}' response mode is not supported.</value>
+  </data>
+  <data name="ID7039" xml:space="preserve">
+    <value>The authorization request was rejected because the '{Scope}' scope was missing.</value>
+  </data>
+  <data name="ID7040" xml:space="preserve">
+    <value>The authorization request was rejected because an invalid prompt parameter was specified.</value>
+  </data>
+  <data name="ID7041" xml:space="preserve">
+    <value>The authorization request was rejected because the specified code challenge method was not supported.</value>
+  </data>
+  <data name="ID7042" xml:space="preserve">
+    <value>The authorization request was rejected because the response type was not compatible with 'code_challenge'/'code_challenge_method'.</value>
+  </data>
+  <data name="ID7043" xml:space="preserve">
+    <value>The authorization request was rejected because the specified response type was not compatible with PKCE.</value>
+  </data>
+  <data name="ID7044" xml:space="preserve">
+    <value>The authorization request was rejected because the client application was not found: '{ClientId}'.</value>
+  </data>
+  <data name="ID7045" xml:space="preserve">
+    <value>The authorization request was rejected because the confidential application '{ClientId}' was not allowed to retrieve an access token from the authorization endpoint.</value>
+  </data>
+  <data name="ID7046" xml:space="preserve">
+    <value>The authorization request was rejected because the redirect_uri was invalid: '{RedirectUri}'.</value>
+  </data>
+  <data name="ID7047" xml:space="preserve">
+    <value>The authentication request was rejected because invalid scopes were specified: {Scopes}.</value>
+  </data>
+  <data name="ID7048" xml:space="preserve">
+    <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the authorization endpoint.</value>
+  </data>
+  <data name="ID7049" xml:space="preserve">
+    <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the authorization code flow.</value>
+  </data>
+  <data name="ID7050" xml:space="preserve">
+    <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the implicit flow.</value>
+  </data>
+  <data name="ID7051" xml:space="preserve">
+    <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the hybrid flow.</value>
+  </data>
+  <data name="ID7052" xml:space="preserve">
+    <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the '{Scope}' scope.</value>
+  </data>
+  <data name="ID7053" xml:space="preserve">
+    <value>The request address matched a server endpoint: {Endpoint}.</value>
+  </data>
+  <data name="ID7054" xml:space="preserve">
+    <value>The device request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7055" xml:space="preserve">
+    <value>The device request was successfully validated.</value>
+  </data>
+  <data name="ID7056" xml:space="preserve">
+    <value>The device request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID7057" xml:space="preserve">
+    <value>The device request was rejected because invalid scopes were specified: {Scopes}.</value>
+  </data>
+  <data name="ID7058" xml:space="preserve">
+    <value>The device request was rejected because the client application was not found: '{ClientId}'.</value>
+  </data>
+  <data name="ID7059" xml:space="preserve">
+    <value>The device request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
+  </data>
+  <data name="ID7060" xml:space="preserve">
+    <value>The device request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+  </data>
+  <data name="ID7061" xml:space="preserve">
+    <value>The device request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+  </data>
+  <data name="ID7062" xml:space="preserve">
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device endpoint.</value>
+  </data>
+  <data name="ID7063" xml:space="preserve">
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the scope {Scope}.</value>
+  </data>
+  <data name="ID7064" xml:space="preserve">
+    <value>The verification request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7065" xml:space="preserve">
+    <value>The verification request was successfully validated.</value>
+  </data>
+  <data name="ID7066" xml:space="preserve">
+    <value>The configuration request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7067" xml:space="preserve">
+    <value>The configuration request was successfully validated.</value>
+  </data>
+  <data name="ID7068" xml:space="preserve">
+    <value>The cryptography request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7069" xml:space="preserve">
+    <value>The cryptography request was successfully validated.</value>
+  </data>
+  <data name="ID7070" xml:space="preserve">
+    <value>A JSON Web Key was excluded from the key set because it didn't contain the mandatory '{Parameter}' parameter.</value>
+  </data>
+  <data name="ID7071" xml:space="preserve">
+    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA and ECDSA asymmetric security keys can be exposed via the JWKS endpoint.</value>
+  </data>
+  <data name="ID7072" xml:space="preserve">
+    <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA asymmetric security keys can be exposed via the JWKS endpoint.</value>
+  </data>
+  <data name="ID7073" xml:space="preserve">
+    <value>A signing key of type '{Type}' was ignored because its RSA public parameters couldn't be extracted.</value>
+  </data>
+  <data name="ID7074" xml:space="preserve">
+    <value>A signing key of type '{Type}' was ignored because its EC public parameters couldn't be extracted.</value>
+  </data>
+  <data name="ID7075" xml:space="preserve">
+    <value>The token request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7076" xml:space="preserve">
+    <value>The token request was successfully validated.</value>
+  </data>
+  <data name="ID7077" xml:space="preserve">
+    <value>The token request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID7078" xml:space="preserve">
+    <value>The token request was rejected because the '{GrantType}' grant type is not supported.</value>
+  </data>
+  <data name="ID7079" xml:space="preserve">
+    <value>The token request was rejected because the resource owner credentials were missing.</value>
+  </data>
+  <data name="ID7080" xml:space="preserve">
+    <value>The token request was rejected because invalid scopes were specified: {Scopes}.</value>
+  </data>
+  <data name="ID7081" xml:space="preserve">
+    <value>The token request was rejected because the client application was not found: '{ClientId}'.</value>
+  </data>
+  <data name="ID7082" xml:space="preserve">
+    <value>The token request was rejected because the public client application '{ClientId}' was not allowed to use the client credentials grant.</value>
+  </data>
+  <data name="ID7083" xml:space="preserve">
+    <value>The token request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
+  </data>
+  <data name="ID7084" xml:space="preserve">
+    <value>The token request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+  </data>
+  <data name="ID7085" xml:space="preserve">
+    <value>The token request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+  </data>
+  <data name="ID7086" xml:space="preserve">
+    <value>The token request was rejected because the application '{ClientId}' was not allowed to use the token endpoint.</value>
+  </data>
+  <data name="ID7087" xml:space="preserve">
+    <value>The token request was rejected because the application '{ClientId}' was not allowed to use the specified grant type: {GrantType}.</value>
+  </data>
+  <data name="ID7088" xml:space="preserve">
+    <value>The token request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
+  </data>
+  <data name="ID7089" xml:space="preserve">
+    <value>The token request was rejected because the application '{ClientId}' was not allowed to use the scope {Scope}.</value>
+  </data>
+  <data name="ID7090" xml:space="preserve">
+    <value>The token request was rejected because the client identifier of the application was not available and could not be compared to the presenters list stored in the authorization code, the device code or the refresh token.</value>
+  </data>
+  <data name="ID7091" xml:space="preserve">
+    <value>The token request was rejected because the authorization code, the device code or the refresh token was issued to a different client application.</value>
+  </data>
+  <data name="ID7092" xml:space="preserve">
+    <value>The token request was rejected because the '{Parameter}' parameter didn't correspond to the expected value.</value>
+  </data>
+  <data name="ID7093" xml:space="preserve">
+    <value>The token request was rejected because a '{0}' parameter was presented with an authorization code to which no code challenge was attached when processing the initial authorization request.</value>
+  </data>
+  <data name="ID7094" xml:space="preserve">
+    <value>The token request was rejected because the '{Parameter}' parameter was not allowed.</value>
+  </data>
+  <data name="ID7095" xml:space="preserve">
+    <value>The token request was rejected because the '{Parameter}' parameter was not valid.</value>
+  </data>
+  <data name="ID7096" xml:space="preserve">
+    <value>The introspection request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7097" xml:space="preserve">
+    <value>The introspection request was successfully validated.</value>
+  </data>
+  <data name="ID7098" xml:space="preserve">
+    <value>The introspection request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID7099" xml:space="preserve">
+    <value>The introspection request was rejected because the client application was not found: '{ClientId}'.</value>
+  </data>
+  <data name="ID7100" xml:space="preserve">
+    <value>The introspection request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
+  </data>
+  <data name="ID7101" xml:space="preserve">
+    <value>The introspection request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+  </data>
+  <data name="ID7102" xml:space="preserve">
+    <value>The introspection request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+  </data>
+  <data name="ID7103" xml:space="preserve">
+    <value>The introspection request was rejected because the application '{ClientId}' was not allowed to use the introspection endpoint.</value>
+  </data>
+  <data name="ID7104" xml:space="preserve">
+    <value>The introspection request was rejected because the received token was of an unsupported type.</value>
+  </data>
+  <data name="ID7105" xml:space="preserve">
+    <value>The introspection request was rejected because the authorization code was issued to a different client.</value>
+  </data>
+  <data name="ID7106" xml:space="preserve">
+    <value>The introspection request was rejected because the access token was issued to a different client or for another resource server.</value>
+  </data>
+  <data name="ID7107" xml:space="preserve">
+    <value>The introspection request was rejected because the identity token was issued to a different client.</value>
+  </data>
+  <data name="ID7108" xml:space="preserve">
+    <value>The introspection request was rejected because the refresh token was issued to a different client.</value>
+  </data>
+  <data name="ID7109" xml:space="preserve">
+    <value>The revocation request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7110" xml:space="preserve">
+    <value>The revocation request was successfully validated.</value>
+  </data>
+  <data name="ID7111" xml:space="preserve">
+    <value>The revocation request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID7112" xml:space="preserve">
+    <value>The revocation request was rejected because the client application was not found: '{ClientId}'.</value>
+  </data>
+  <data name="ID7113" xml:space="preserve">
+    <value>The revocation request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
+  </data>
+  <data name="ID7114" xml:space="preserve">
+    <value>The revocation request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+  </data>
+  <data name="ID7115" xml:space="preserve">
+    <value>The revocation request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+  </data>
+  <data name="ID7116" xml:space="preserve">
+    <value>The revocation request was rejected because the application '{ClientId}' was not allowed to use the revocation endpoint.</value>
+  </data>
+  <data name="ID7117" xml:space="preserve">
+    <value>The revocation request was rejected because the received token was of an unsupported type.</value>
+  </data>
+  <data name="ID7118" xml:space="preserve">
+    <value>The revocation request was rejected because the authorization code was issued to a different client.</value>
+  </data>
+  <data name="ID7119" xml:space="preserve">
+    <value>The revocation request was rejected because the access token was issued to a different client or for another resource server.</value>
+  </data>
+  <data name="ID7120" xml:space="preserve">
+    <value>The revocation request was rejected because the identity token was issued to a different client.</value>
+  </data>
+  <data name="ID7121" xml:space="preserve">
+    <value>The revocation request was rejected because the refresh token was issued to a different client.</value>
+  </data>
+  <data name="ID7122" xml:space="preserve">
+    <value>The revocation request was rejected because the token had no internal identifier.</value>
+  </data>
+  <data name="ID7123" xml:space="preserve">
+    <value>The token '{Identifier}' was not revoked because it couldn't be found.</value>
+  </data>
+  <data name="ID7124" xml:space="preserve">
+    <value>The logout request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7125" xml:space="preserve">
+    <value>The logout request was successfully validated.</value>
+  </data>
+  <data name="ID7126" xml:space="preserve">
+    <value>The logout request was rejected because the '{Parameter}' parameter wasn't a valid absolute URL: {PostLogoutRedirectUri}.</value>
+  </data>
+  <data name="ID7127" xml:space="preserve">
+    <value>The logout request was rejected because the '{Parameter}' contained a URL fragment: {PostLogoutRedirectUri}.</value>
+  </data>
+  <data name="ID7128" xml:space="preserve">
+    <value>The logout request was rejected because the specified post_logout_redirect_uri was invalid: {PostLogoutRedirectUri}.</value>
+  </data>
+  <data name="ID7129" xml:space="preserve">
+    <value>The userinfo request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID7130" xml:space="preserve">
+    <value>The userinfo request was successfully validated.</value>
+  </data>
+  <data name="ID7131" xml:space="preserve">
+    <value>The userinfo request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
+  </data>
+  <data name="ID7132" xml:space="preserve">
+    <value>An exception was thrown by {HandlerName} while handling the {EventName} event.</value>
+  </data>
+  <data name="ID7133" xml:space="preserve">
+    <value>The event {EventName} was successfully processed by {HandlerName}.</value>
+  </data>
+  <data name="ID7134" xml:space="preserve">
+    <value>The event {EventName} was marked as handled by {HandlerName}.</value>
+  </data>
+  <data name="ID7135" xml:space="preserve">
+    <value>The event {EventName} was marked as skipped by {HandlerName}.</value>
+  </data>
+  <data name="ID7136" xml:space="preserve">
+    <value>The event {EventName} was marked as rejected by {HandlerName}.</value>
+  </data>
+  <data name="ID7137" xml:space="preserve">
+    <value>The request was rejected because an invalid HTTP method was specified: {Method}.</value>
+  </data>
+  <data name="ID7138" xml:space="preserve">
+    <value>The request was rejected because the mandatory '{Header}' header was missing.</value>
+  </data>
+  <data name="ID7139" xml:space="preserve">
+    <value>The request was rejected because an invalid '{Header}' header was specified: {Value}.</value>
+  </data>
+  <data name="ID7140" xml:space="preserve">
+    <value>The request was rejected because multiple client credentials were specified.</value>
+  </data>
+  <data name="ID7141" xml:space="preserve">
+    <value>The response was successfully returned as a challenge response: {Response}.</value>
+  </data>
+  <data name="ID7142" xml:space="preserve">
+    <value>The response was successfully returned as a JSON document: {Response}.</value>
+  </data>
+  <data name="ID7143" xml:space="preserve">
+    <value>The response was successfully returned as a plain-text document: {Response}.</value>
+  </data>
+  <data name="ID7144" xml:space="preserve">
+    <value>The response was successfully returned as a 302 response.</value>
+  </data>
+  <data name="ID7145" xml:space="preserve">
+    <value>The response was successfully returned as an empty 200 response.</value>
+  </data>
+  <data name="ID7146" xml:space="preserve">
+    <value>The authorization request was rejected because an unknown or invalid '{Parameter}' was specified.</value>
+  </data>
+  <data name="ID7147" xml:space="preserve">
+    <value>The authorization response was successfully returned to '{RedirectUri}' using the form post response mode: {Response}.</value>
+  </data>
+  <data name="ID7148" xml:space="preserve">
+    <value>The authorization response was successfully returned to '{RedirectUri}' using the query response mode: {Response}.</value>
+  </data>
+  <data name="ID7149" xml:space="preserve">
+    <value>The authorization response was successfully returned to '{RedirectUri}' using the fragment response mode: {Response}.</value>
+  </data>
+  <data name="ID7150" xml:space="preserve">
+    <value>The logout request was rejected because an unknown or invalid '{Parameter}' was specified.</value>
+  </data>
+  <data name="ID7151" xml:space="preserve">
+    <value>The logout response was successfully returned to '{PostLogoutRedirectUri}': {Response}.</value>
+  </data>
+  <data name="ID7152" xml:space="preserve">
+    <value>The ASP.NET Core Data Protection token '{Token}' was successfully validated and the following claims could be extracted: {Claims}.</value>
+  </data>
+  <data name="ID7153" xml:space="preserve">
+    <value>An exception occured while deserializing the token '{Token}'.</value>
+  </data>
+  <data name="ID7154" xml:space="preserve">
+    <value>The token '{Token}' was successfully introspected and the following claims could be extracted: {Claims}.</value>
+  </data>
+  <data name="ID7155" xml:space="preserve">
+    <value>An error occurred while introspecting the token.</value>
+  </data>
+  <data name="ID7156" xml:space="preserve">
+    <value>The authentication demand was rejected because the token was expired.</value>
+  </data>
+  <data name="ID7157" xml:space="preserve">
+    <value>The authentication demand was rejected because the token had no audience attached.</value>
+  </data>
+  <data name="ID7158" xml:space="preserve">
+    <value>The authentication demand was rejected because the token had no valid audience.</value>
+  </data>
+  <data name="ID7159" xml:space="preserve">
+    <value>Client authentication cannot be enforced for public applications.</value>
+  </data>
+  <data name="ID7160" xml:space="preserve">
+    <value>Client authentication failed for {Client} because no client secret was associated with the application.</value>
+  </data>
+  <data name="ID7161" xml:space="preserve">
+    <value>Client authentication failed for {Client}.</value>
+  </data>
+  <data name="ID7162" xml:space="preserve">
+    <value>Client validation failed because '{RedirectUri}' was not a valid redirect_uri for {Client}.</value>
+  </data>
+  <data name="ID7163" xml:space="preserve">
+    <value>An error occurred while trying to verify a client secret.
+This may indicate that the hashed entry is corrupted or malformed.</value>
+  </data>
+  <data name="ID7164" xml:space="preserve">
+    <value>The authorization '{Identifier}' was successfully revoked.</value>
+  </data>
+  <data name="ID7165" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to revoke the authorization '{Identifier}'.</value>
+  </data>
+  <data name="ID7166" xml:space="preserve">
+    <value>An exception occurred while trying to revoke the authorization '{Identifier}'.</value>
+  </data>
+  <data name="ID7167" xml:space="preserve">
+    <value>The expiration date of the refresh token '{Identifier}' was successfully updated: {Date}.</value>
+  </data>
+  <data name="ID7168" xml:space="preserve">
+    <value>The expiration date of the refresh token '{Identifier}' was successfully removed.</value>
+  </data>
+  <data name="ID7169" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to update the expiration date of the token '{Identifier}'.</value>
+  </data>
+  <data name="ID7170" xml:space="preserve">
+    <value>An exception occurred while trying to update the expiration date of the token '{Identifier}'.</value>
+  </data>
+  <data name="ID7171" xml:space="preserve">
+    <value>The token '{Identifier}' was successfully marked as redeemed.</value>
+  </data>
+  <data name="ID7172" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to redeem the token '{Identifier}'.</value>
+  </data>
+  <data name="ID7173" xml:space="preserve">
+    <value>An exception occurred while trying to redeem the token '{Identifier}'.</value>
+  </data>
+  <data name="ID7174" xml:space="preserve">
+    <value>The token '{Identifier}' was successfully marked as rejected.</value>
+  </data>
+  <data name="ID7175" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to reject the token '{Identifier}'.</value>
+  </data>
+  <data name="ID7176" xml:space="preserve">
+    <value>An exception occurred while trying to reject the token '{Identifier}'.</value>
+  </data>
+  <data name="ID7177" xml:space="preserve">
+    <value>The token '{Identifier}' was successfully revoked.</value>
+  </data>
+  <data name="ID7178" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to revoke the token '{Identifier}'.</value>
+  </data>
+  <data name="ID7179" xml:space="preserve">
+    <value>An exception occurred while trying to revoke the token '{Identifier}'.</value>
   </data>
 </root>

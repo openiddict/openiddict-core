@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -132,7 +131,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1036));
                     }
 
-                    context.Logger.LogInformation("The configuration request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7066), notification.Request);
                 }
             }
 
@@ -195,7 +194,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The configuration request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7067));
                 }
             }
 
@@ -341,11 +340,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The configuration response was not correctly applied. To apply configuration responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyConfigurationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1271));
                 }
             }
 
@@ -919,7 +914,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1037));
                     }
 
-                    context.Logger.LogInformation("The cryptography request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7068), notification.Request);
                 }
             }
 
@@ -982,7 +977,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The cryptography request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7069));
                 }
             }
 
@@ -1056,8 +1051,7 @@ namespace OpenIddict.Server
                         // See https://tools.ietf.org/html/rfc7517#section-4.1
                         if (string.IsNullOrEmpty(key.Kty))
                         {
-                            context.Logger.LogError("A JSON Web Key was excluded from the key set because " +
-                                                    "it didn't contain the mandatory 'kid' parameter.");
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7070), JsonWebKeyParameterNames.Kty);
 
                             continue;
                         }
@@ -1213,9 +1207,7 @@ namespace OpenIddict.Server
                             !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
                             !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
                         {
-                            context.Logger.LogInformation("An unsupported signing key of type '{Type}' was ignored and excluded " +
-                                                          "from the key set. Only RSA and ECDSA asymmetric security keys can be " +
-                                                          "exposed via the JWKS endpoint.", credentials.Key.GetType().Name);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID7071), credentials.Key.GetType().Name);
 
                             continue;
                         }
@@ -1223,9 +1215,7 @@ namespace OpenIddict.Server
                         if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
                             !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
                         {
-                            context.Logger.LogInformation("An unsupported signing key of type '{Type}' was ignored and excluded " +
-                                                          "from the key set. Only RSA asymmetric security keys can be exposed " +
-                                                          "via the JWKS endpoint.", credentials.Key.GetType().Name);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID7072), credentials.Key.GetType().Name);
 
                             continue;
                         }
@@ -1290,15 +1280,13 @@ namespace OpenIddict.Server
 
                             if (parameters == null)
                             {
-                                context.Logger.LogWarning("A signing key of type '{Type}' was ignored because its RSA public " +
-                                                          "parameters couldn't be extracted.", credentials.Key.GetType().Name);
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID7073), credentials.Key.GetType().Name);
 
                                 continue;
                             }
 
                             Debug.Assert(parameters.Value.Exponent != null &&
-                                         parameters.Value.Modulus != null,
-                                "RSA.ExportParameters() shouldn't return a null exponent/modulus.");
+                                         parameters.Value.Modulus != null, SR.GetResourceString(SR.ID5003));
 
                             key.Kty = JsonWebAlgorithmsKeyTypes.RSA;
 
@@ -1326,18 +1314,15 @@ namespace OpenIddict.Server
 
                             if (parameters == null)
                             {
-                                context.Logger.LogWarning("A signing key of type '{Type}' was ignored because its EC public " +
-                                                          "parameters couldn't be extracted.", credentials.Key.GetType().Name);
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID7074), credentials.Key.GetType().Name);
 
                                 continue;
                             }
 
                             Debug.Assert(parameters.Value.Q.X != null &&
-                                         parameters.Value.Q.Y != null,
-                                "ECDsa.ExportParameters() shouldn't return null coordinates.");
+                                         parameters.Value.Q.Y != null, SR.GetResourceString(SR.ID5004));
 
-                            Debug.Assert(parameters.Value.Curve.IsNamed,
-                                "ECDsa.ExportParameters() shouldn't return an unnamed curve.");
+                            Debug.Assert(parameters.Value.Curve.IsNamed, SR.GetResourceString(SR.ID5005));
 
                             key.Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
                             key.Crv = IsCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :

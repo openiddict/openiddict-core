@@ -5,13 +5,13 @@
  */
 
 using System;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core.Tests
 {
@@ -143,12 +143,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictApplicationManager>();
             });
 
-            Assert.Equal(new StringBuilder()
-                .Append("No default application entity type was configured in the OpenIddict core options, ")
-                .AppendLine("which generally indicates that no application store was registered in the DI container.")
-                .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1272), exception.Message);
         }
 
         [Fact]
@@ -169,12 +164,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictAuthorizationManager>();
             });
 
-            Assert.Equal(new StringBuilder()
-                .Append("No default authorization entity type was configured in the OpenIddict core options, ")
-                .AppendLine("which generally indicates that no authorization store was registered in the DI container.")
-                .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1273), exception.Message);
         }
 
         [Fact]
@@ -195,12 +185,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictScopeManager>();
             });
 
-            Assert.Equal(new StringBuilder()
-                .Append("No default scope entity type was configured in the OpenIddict core options, ")
-                .AppendLine("which generally indicates that no scope store was registered in the DI container.")
-                .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1274), exception.Message);
         }
 
         [Fact]
@@ -221,12 +206,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictTokenManager>();
             });
 
-            Assert.Equal(new StringBuilder()
-                .Append("No default token entity type was configured in the OpenIddict core options, ")
-                .AppendLine("which generally indicates that no token store was registered in the DI container.")
-                .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1275), exception.Message);
         }
 
         [Fact]

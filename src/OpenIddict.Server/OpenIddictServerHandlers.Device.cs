@@ -126,7 +126,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1030));
                     }
 
-                    context.Logger.LogInformation("The device request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7054), notification.Request);
                 }
             }
 
@@ -189,7 +189,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The device request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7055));
                 }
             }
 
@@ -379,7 +379,7 @@ namespace OpenIddict.Server
                     // See https://tools.ietf.org/html/rfc8628#section-3.1 for more information.
                     if (string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError("The device request was rejected because the mandatory 'client_id' was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7056));
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -446,8 +446,7 @@ namespace OpenIddict.Server
                     // If at least one scope was not recognized, return an error.
                     if (scopes.Count != 0)
                     {
-                        context.Logger.LogError("The device request was rejected because " +
-                                                "invalid scopes were specified: {Scopes}.", scopes);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7057), scopes);
 
                         context.Reject(
                             error: Errors.InvalidScope,
@@ -502,8 +501,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        context.Logger.LogError("The device request was rejected because the client " +
-                                                "application was not found: '{ClientId}'.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7058), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -565,8 +563,7 @@ namespace OpenIddict.Server
                         // Reject device requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
                         {
-                            context.Logger.LogError("The device request was rejected because the public application '{ClientId}' " +
-                                                    "was not allowed to send a client secret.", context.ClientId);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7059), context.ClientId);
 
                             context.Reject(
                                 error: Errors.InvalidClient,
@@ -581,8 +578,7 @@ namespace OpenIddict.Server
                     // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
                     if (string.IsNullOrEmpty(context.ClientSecret))
                     {
-                        context.Logger.LogError("The device request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify a client secret.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7060), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -642,8 +638,7 @@ namespace OpenIddict.Server
                     if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
                         !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
-                        context.Logger.LogError("The device request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7061), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -704,8 +699,7 @@ namespace OpenIddict.Server
                     // Reject the request if the application is not allowed to use the device endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Device))
                     {
-                        context.Logger.LogError("The device request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the device endpoint.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7062), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -775,8 +769,7 @@ namespace OpenIddict.Server
                         // Reject the request if the application is not allowed to use the iterated scope.
                         if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                         {
-                            context.Logger.LogError("The device request was rejected because the application '{ClientId}' " +
-                                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID7063), context.ClientId, scope);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
@@ -852,7 +845,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1033));
                     }
 
-                    context.Logger.LogInformation("The verification request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7064), notification.Request);
                 }
             }
 
@@ -915,7 +908,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The verification request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7065));
                 }
             }
 

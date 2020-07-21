@@ -633,7 +633,7 @@ namespace OpenIddict.Validation.Owin
                     return default;
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as a challenge response: {Response}.", context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7141), context.Response);
                 context.HandleRequest();
 
                 return default;
@@ -679,7 +679,7 @@ namespace OpenIddict.Validation.Owin
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Response);
 
                 using var stream = new MemoryStream();
                 await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions

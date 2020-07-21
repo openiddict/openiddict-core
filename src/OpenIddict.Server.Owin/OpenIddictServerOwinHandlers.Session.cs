@@ -110,8 +110,7 @@ namespace OpenIddict.Server.Owin
                     var token = await _cache.GetStringAsync(Cache.LogoutRequest + context.Request.RequestId);
                     if (token == null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                     {
-                        context.Logger.LogError("The logout request was rejected because an unknown " +
-                                                "or invalid request_id parameter was specified.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7150), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -128,8 +127,7 @@ namespace OpenIddict.Server.Owin
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
                     {
-                        context.Logger.LogError("The logout request was rejected because an unknown " +
-                                                "or invalid request_id parameter was specified.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID7150), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -366,8 +364,7 @@ namespace OpenIddict.Server.Owin
                         return default;
                     }
 
-                    context.Logger.LogInformation("The logout response was successfully returned to '{PostLogoutRedirectUri}': {Response}.",
-                                                  context.PostLogoutRedirectUri, response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7151), context.PostLogoutRedirectUri, response);
 
                     var location = context.PostLogoutRedirectUri;
 

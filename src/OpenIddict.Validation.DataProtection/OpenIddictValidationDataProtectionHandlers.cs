@@ -106,7 +106,7 @@ namespace OpenIddict.Validation.DataProtection
 
                 catch (Exception exception)
                 {
-                    context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", context.Token);
+                    context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID7153), context.Token);
                 }
 
                 if (context.Principal == null)
@@ -118,8 +118,7 @@ namespace OpenIddict.Validation.DataProtection
                     return default;
                 }
 
-                context.Logger.LogTrace("The DP token '{Token}' was successfully validated and the following claims " +
-                                        "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID7152), context.Token, context.Principal.Claims);
 
                 return default;
             }

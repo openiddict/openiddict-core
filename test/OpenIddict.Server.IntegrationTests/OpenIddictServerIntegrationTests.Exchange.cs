@@ -1611,7 +1611,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3050), response.ErrorDescription);
+            Assert.Equal(SR.FormatID3065(Scopes.OfflineAccess), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
