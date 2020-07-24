@@ -1070,8 +1070,7 @@ namespace OpenIddict.Core
 
                 else
                 {
-                    Logger.LogInformation(SR.GetResourceString(SR.ID7168),
-                                          await Store.GetIdAsync(token, cancellationToken));
+                    Logger.LogInformation(SR.GetResourceString(SR.ID7168), await Store.GetIdAsync(token, cancellationToken));
                 }
 
                 return true;

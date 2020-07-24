@@ -2535,7 +2535,7 @@ namespace OpenIddict.Server
                             OpenIddictServerEndpointType.Verification
                                 => context.Localizer[SR.ID3026],
 
-                            _ => context.Localizer["The specified token is no longer valid."]
+                            _ => context.Localizer[SR.ID3019]
                         });
 
                     return;
