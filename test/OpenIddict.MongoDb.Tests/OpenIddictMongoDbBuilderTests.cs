@@ -12,7 +12,7 @@ using Moq;
 using OpenIddict.Core;
 using OpenIddict.MongoDb.Models;
 using Xunit;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests
 {

@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Abstractions.Resources;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {

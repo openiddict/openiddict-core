@@ -16,7 +16,7 @@ using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions
 {

@@ -9,7 +9,7 @@ using System.ComponentModel;
 using JetBrains.Annotations;
 using Microsoft.Owin.Security;
 using OpenIddict.Validation.Owin;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

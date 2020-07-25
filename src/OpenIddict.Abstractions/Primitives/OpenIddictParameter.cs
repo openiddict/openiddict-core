@@ -13,7 +13,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using JetBrains.Annotations;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions
 {

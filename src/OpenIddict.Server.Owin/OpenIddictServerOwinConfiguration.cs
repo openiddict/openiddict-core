@@ -8,7 +8,7 @@ using System;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {
