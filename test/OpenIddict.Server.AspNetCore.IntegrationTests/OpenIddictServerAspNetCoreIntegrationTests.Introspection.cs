@@ -12,7 +12,7 @@ using OpenIddict.Server.FunctionalTests;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore.FunctionalTests
 {

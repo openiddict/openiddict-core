@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
 {

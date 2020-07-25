@@ -24,7 +24,7 @@ using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerHandlers;
 using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 using Schemes = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Purposes.Schemes;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.DataProtection
 {

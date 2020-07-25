@@ -10,7 +10,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging.Abstractions;
-using OpenIddict.Abstractions.Resources;
+using OpenIddict.Abstractions;
 using OpenIddict.Validation;
 using static OpenIddict.Validation.OpenIddictValidationHandlerFilters;
 using static OpenIddict.Validation.OpenIddictValidationHandlers;

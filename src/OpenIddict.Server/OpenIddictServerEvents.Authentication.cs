@@ -7,7 +7,7 @@
 using System;
 using System.Security.Claims;
 using JetBrains.Annotations;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
 {

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
 using Xunit;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFrameworkCore.Tests
 {

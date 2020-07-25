@@ -25,7 +25,7 @@ using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {

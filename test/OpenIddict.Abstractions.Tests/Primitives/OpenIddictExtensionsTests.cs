@@ -12,7 +12,7 @@ using System.Linq;
 using System.Security.Claims;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {

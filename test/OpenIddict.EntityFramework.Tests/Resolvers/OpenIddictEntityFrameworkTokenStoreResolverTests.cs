@@ -14,7 +14,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
 using static OpenIddict.EntityFramework.OpenIddictEntityFrameworkTokenStoreResolver;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework.Tests
 {

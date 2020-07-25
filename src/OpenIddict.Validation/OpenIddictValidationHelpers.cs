@@ -6,7 +6,7 @@
 
 using System;
 using JetBrains.Annotations;
-using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
