@@ -17,7 +17,7 @@ using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 
-namespace OpenIddict.Server.FunctionalTests
+namespace OpenIddict.Server.IntegrationTests
 {
     /// <summary>
     /// Exposes methods that allow sending OpenID Connect

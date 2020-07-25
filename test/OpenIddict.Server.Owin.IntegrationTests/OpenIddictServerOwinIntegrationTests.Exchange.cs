@@ -6,14 +6,14 @@
 
 using System.Threading.Tasks;
 using OpenIddict.Abstractions;
-using OpenIddict.Server.FunctionalTests;
+using OpenIddict.Server.IntegrationTests;
 using Owin;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Owin.FunctionalTests
+namespace OpenIddict.Server.Owin.IntegrationTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
