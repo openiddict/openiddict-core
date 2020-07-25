@@ -8,9 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using OpenIddict.Server.FunctionalTests;
+using OpenIddict.Server.IntegrationTests;
 
-namespace OpenIddict.Server.AspNetCore.FunctionalTests
+namespace OpenIddict.Server.AspNetCore.IntegrationTests
 {
     /// <summary>
     /// Represents a test host used by the server integration tests.

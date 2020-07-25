@@ -7,7 +7,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace OpenIddict.Server.FunctionalTests
+namespace OpenIddict.Server.IntegrationTests
 {
     /// <summary>
     /// Represents a test host used by the server integration tests.
