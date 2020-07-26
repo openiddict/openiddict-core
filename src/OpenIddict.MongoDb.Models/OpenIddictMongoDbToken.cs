@@ -32,8 +32,8 @@ namespace OpenIddict.MongoDb.Models
         /// <summary>
         /// Gets or sets the concurrency token.
         /// </summary>
-        [BsonElement("concurrency_token"), BsonRequired]
-        public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
+        [BsonElement("concurrency_token"), BsonIgnoreIfNull]
+        public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the date on which the token
@@ -62,13 +62,13 @@ namespace OpenIddict.MongoDb.Models
         /// and may be encrypted for security reasons.
         /// </summary>
         [BsonElement("payload"), BsonIgnoreIfNull]
-        public virtual string Payload { get; set; }
+        public virtual string? Payload { get; set; }
 
         /// <summary>
         /// Gets or sets the additional properties associated with the current token.
         /// </summary>
         [BsonElement("properties"), BsonIgnoreIfNull]
-        public virtual BsonDocument Properties { get; set; }
+        public virtual BsonDocument? Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the reference identifier associated
@@ -77,24 +77,24 @@ namespace OpenIddict.MongoDb.Models
         /// and may be hashed or encrypted for security reasons.
         /// </summary>
         [BsonElement("reference_id"), BsonIgnoreIfNull]
-        public virtual string ReferenceId { get; set; }
+        public virtual string? ReferenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the current token.
         /// </summary>
-        [BsonElement("status"), BsonRequired]
-        public virtual string Status { get; set; }
+        [BsonElement("status"), BsonIgnoreIfNull]
+        public virtual string? Status { get; set; }
 
         /// <summary>
         /// Gets or sets the subject associated with the current token.
         /// </summary>
         [BsonElement("subject"), BsonIgnoreIfDefault]
-        public virtual string Subject { get; set; }
+        public virtual string? Subject { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the current token.
         /// </summary>
-        [BsonElement("type"), BsonRequired]
-        public virtual string Type { get; set; }
+        [BsonElement("type"), BsonIgnoreIfNull]
+        public virtual string? Type { get; set; }
     }
 }
