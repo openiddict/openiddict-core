@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
 
 namespace OpenIddict.Abstractions
@@ -46,7 +45,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
-        public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
+        public OpenIddictResponse(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
             : base(parameters)
         {
         }
@@ -55,7 +54,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
-        public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, string>> parameters)
+        public OpenIddictResponse(IEnumerable<KeyValuePair<string, string?>> parameters)
             : base(parameters)
         {
         }
@@ -64,7 +63,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
-        public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, string[]>> parameters)
+        public OpenIddictResponse(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
             : base(parameters)
         {
         }
@@ -73,7 +72,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
-        public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, StringValues>> parameters)
+        public OpenIddictResponse(IEnumerable<KeyValuePair<string, StringValues>> parameters)
             : base(parameters)
         {
         }
@@ -81,54 +80,54 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets or sets the "access_token" parameter.
         /// </summary>
-        public string AccessToken
+        public string? AccessToken
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.AccessToken);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.AccessToken);
             set => SetParameter(OpenIddictConstants.Parameters.AccessToken, value);
         }
 
         /// <summary>
         /// Gets or sets the "code" parameter.
         /// </summary>
-        public string Code
+        public string? Code
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.Code);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.Code);
             set => SetParameter(OpenIddictConstants.Parameters.Code, value);
         }
 
         /// <summary>
         /// Gets or sets the "device_code" parameter.
         /// </summary>
-        public string DeviceCode
+        public string? DeviceCode
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.DeviceCode);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.DeviceCode);
             set => SetParameter(OpenIddictConstants.Parameters.DeviceCode, value);
         }
 
         /// <summary>
         /// Gets or sets the "error" parameter.
         /// </summary>
-        public string Error
+        public string? Error
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.Error);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.Error);
             set => SetParameter(OpenIddictConstants.Parameters.Error, value);
         }
 
         /// <summary>
         /// Gets or sets the "error_description" parameter.
         /// </summary>
-        public string ErrorDescription
+        public string? ErrorDescription
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.ErrorDescription);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.ErrorDescription);
             set => SetParameter(OpenIddictConstants.Parameters.ErrorDescription, value);
         }
 
         /// <summary>
         /// Gets or sets the "error_uri" parameter.
         /// </summary>
-        public string ErrorUri
+        public string? ErrorUri
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.ErrorUri);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.ErrorUri);
             set => SetParameter(OpenIddictConstants.Parameters.ErrorUri, value);
         }
 
@@ -144,54 +143,54 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets or sets the "id_token" parameter.
         /// </summary>
-        public string IdToken
+        public string? IdToken
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.IdToken);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.IdToken);
             set => SetParameter(OpenIddictConstants.Parameters.IdToken, value);
         }
 
         /// <summary>
         /// Gets or sets the "refresh_token" parameter.
         /// </summary>
-        public string RefreshToken
+        public string? RefreshToken
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.RefreshToken);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.RefreshToken);
             set => SetParameter(OpenIddictConstants.Parameters.RefreshToken, value);
         }
 
         /// <summary>
         /// Gets or sets the "scope" parameter.
         /// </summary>
-        public string Scope
+        public string? Scope
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.Scope);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.Scope);
             set => SetParameter(OpenIddictConstants.Parameters.Scope, value);
         }
 
         /// <summary>
         /// Gets or sets the "state" parameter.
         /// </summary>
-        public string State
+        public string? State
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.State);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.State);
             set => SetParameter(OpenIddictConstants.Parameters.State, value);
         }
 
         /// <summary>
         /// Gets or sets the "token_type" parameter.
         /// </summary>
-        public string TokenType
+        public string? TokenType
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.TokenType);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.TokenType);
             set => SetParameter(OpenIddictConstants.Parameters.TokenType, value);
         }
 
         /// <summary>
         /// Gets or sets the "user_code" parameter.
         /// </summary>
-        public string UserCode
+        public string? UserCode
         {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.UserCode);
+            get => (string?) GetParameter(OpenIddictConstants.Parameters.UserCode);
             set => SetParameter(OpenIddictConstants.Parameters.UserCode, value);
         }
     }

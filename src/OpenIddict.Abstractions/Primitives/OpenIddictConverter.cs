@@ -7,7 +7,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions
@@ -22,7 +21,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="typeToConvert">The type to convert.</param>
         /// <returns><c>true</c> if the type is supported, <c>false</c> otherwise.</returns>
-        public override bool CanConvert([NotNull] Type typeToConvert)
+        public override bool CanConvert(Type typeToConvert)
         {
             if (typeToConvert == null)
             {

@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace OpenIddict.Abstractions
 {
@@ -24,7 +23,7 @@ namespace OpenIddict.Abstractions
         /// <param name="scope">The scope to add to the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask AddAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask AddAsync(TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a scope using its unique identifier.
@@ -35,7 +34,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        ValueTask<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a scope using its name.
@@ -46,7 +45,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        ValueTask<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken);
+        ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a list of scopes using their name.
@@ -62,7 +61,7 @@ namespace OpenIddict.Abstractions
         /// <param name="resource">The resource associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The scopes associated with the specified resource.</returns>
-        IAsyncEnumerable<TScope> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken);
+        IAsyncEnumerable<TScope> FindByResourceAsync(string resource, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the specified scope from the cache.
@@ -70,6 +69,6 @@ namespace OpenIddict.Abstractions
         /// <param name="scope">The scope to remove from the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask RemoveAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask RemoveAsync(TScope scope, CancellationToken cancellationToken);
     }
 }

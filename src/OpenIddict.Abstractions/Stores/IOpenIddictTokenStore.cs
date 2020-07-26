@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace OpenIddict.Abstractions
 {
@@ -41,7 +40,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of tokens that match the specified query.
         /// </returns>
-        ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        ValueTask<long> CountAsync<TResult>(Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a new token.
@@ -49,7 +48,7 @@ namespace OpenIddict.Abstractions
         /// <param name="token">The token to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask CreateAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask CreateAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes a token.
@@ -57,7 +56,7 @@ namespace OpenIddict.Abstractions
         /// <param name="token">The token to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask DeleteAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the tokens corresponding to the specified
@@ -67,7 +66,7 @@ namespace OpenIddict.Abstractions
         /// <param name="client">The client associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the subject/client.</returns>
-        IAsyncEnumerable<TToken> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindAsync(string subject, string client, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the tokens matching the specified parameters.
@@ -78,8 +77,8 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the criteria.</returns>
         IAsyncEnumerable<TToken> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, CancellationToken cancellationToken);
+            string subject, string client,
+            string status, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the tokens matching the specified parameters.
@@ -91,8 +90,8 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the criteria.</returns>
         IAsyncEnumerable<TToken> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken);
+            string subject, string client,
+            string status, string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified application identifier.
@@ -100,7 +99,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The application identifier associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the specified application.</returns>
-        IAsyncEnumerable<TToken> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified authorization identifier.
@@ -108,7 +107,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The authorization identifier associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the specified authorization.</returns>
-        IAsyncEnumerable<TToken> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a token using its unique identifier.
@@ -119,7 +118,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        ValueTask<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified reference identifier.
@@ -131,7 +130,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified reference identifier.
         /// </returns>
-        ValueTask<TToken> FindByReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified subject.
@@ -139,7 +138,7 @@ namespace OpenIddict.Abstractions
         /// <param name="subject">The subject associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the specified subject.</returns>
-        IAsyncEnumerable<TToken> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindBySubjectAsync(string subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the optional application identifier associated with a token.
@@ -150,7 +149,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the token.
         /// </returns>
-        ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetApplicationIdAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query and returns the first element.
@@ -165,8 +164,8 @@ namespace OpenIddict.Abstractions
         /// whose result returns the first element returned when executing the query.
         /// </returns>
         ValueTask<TResult> GetAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken);
+            Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the optional authorization identifier associated with a token.
@@ -177,7 +176,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization identifier associated with the token.
         /// </returns>
-        ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetAuthorizationIdAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the creation date associated with a token.
@@ -188,7 +187,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the creation date associated with the specified token.
         /// </returns>
-        ValueTask<DateTimeOffset?> GetCreationDateAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<DateTimeOffset?> GetCreationDateAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the expiration date associated with a token.
@@ -199,7 +198,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the expiration date associated with the specified token.
         /// </returns>
-        ValueTask<DateTimeOffset?> GetExpirationDateAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<DateTimeOffset?> GetExpirationDateAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the unique identifier associated with a token.
@@ -210,7 +209,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
-        ValueTask<string> GetIdAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetIdAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the payload associated with a token.
@@ -221,7 +220,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the payload associated with the specified token.
         /// </returns>
-        ValueTask<string> GetPayloadAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetPayloadAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the additional properties associated with a token.
@@ -232,7 +231,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the token.
         /// </returns>
-        ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the reference identifier associated with a token.
@@ -245,7 +244,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the reference identifier associated with the specified token.
         /// </returns>
-        ValueTask<string> GetReferenceIdAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetReferenceIdAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the status associated with a token.
@@ -256,7 +255,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the status associated with the specified token.
         /// </returns>
-        ValueTask<string> GetStatusAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetStatusAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the subject associated with a token.
@@ -267,7 +266,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the subject associated with the specified token.
         /// </returns>
-        ValueTask<string> GetSubjectAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetSubjectAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the token type associated with a token.
@@ -278,7 +277,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token type associated with the specified token.
         /// </returns>
-        ValueTask<string> GetTypeAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string?> GetTypeAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Instantiates a new token.
@@ -297,7 +296,7 @@ namespace OpenIddict.Abstractions
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>All the elements returned when executing the specified query.</returns>
-        IAsyncEnumerable<TToken> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> ListAsync(int? count, int? offset, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -309,8 +308,8 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>All the elements returned when executing the specified query.</returns>
         IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken);
+            Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the tokens that are marked as expired or invalid.
@@ -326,7 +325,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The unique identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetApplicationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
+        ValueTask SetApplicationIdAsync(TToken token, string? identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the authorization identifier associated with a token.
@@ -335,7 +334,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The unique identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetAuthorizationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
+        ValueTask SetAuthorizationIdAsync(TToken token, string? identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the creation date associated with a token.
@@ -344,7 +343,7 @@ namespace OpenIddict.Abstractions
         /// <param name="date">The creation date.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetCreationDateAsync([NotNull] TToken token, [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken);
+        ValueTask SetCreationDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the expiration date associated with a token.
@@ -353,7 +352,7 @@ namespace OpenIddict.Abstractions
         /// <param name="date">The expiration date.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetExpirationDateAsync([NotNull] TToken token, [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken);
+        ValueTask SetExpirationDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the payload associated with a token.
@@ -362,7 +361,7 @@ namespace OpenIddict.Abstractions
         /// <param name="payload">The payload associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetPayloadAsync([NotNull] TToken token, [CanBeNull] string payload, CancellationToken cancellationToken);
+        ValueTask SetPayloadAsync(TToken token, string? payload, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the additional properties associated with a token.
@@ -371,8 +370,8 @@ namespace OpenIddict.Abstractions
         /// <param name="properties">The additional properties associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetPropertiesAsync([NotNull] TToken token,
-            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken);
+        ValueTask SetPropertiesAsync(TToken token,
+            ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the reference identifier associated with a token.
@@ -383,7 +382,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The reference identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetReferenceIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
+        ValueTask SetReferenceIdAsync(TToken token, string? identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the status associated with a token.
@@ -392,7 +391,7 @@ namespace OpenIddict.Abstractions
         /// <param name="status">The status associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetStatusAsync([NotNull] TToken token, [CanBeNull] string status, CancellationToken cancellationToken);
+        ValueTask SetStatusAsync(TToken token, string? status, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the subject associated with a token.
@@ -401,7 +400,7 @@ namespace OpenIddict.Abstractions
         /// <param name="subject">The subject associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetSubjectAsync([NotNull] TToken token, [CanBeNull] string subject, CancellationToken cancellationToken);
+        ValueTask SetSubjectAsync(TToken token, string? subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the token type associated with a token.
@@ -410,7 +409,7 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The token type associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetTypeAsync([NotNull] TToken token, [CanBeNull] string type, CancellationToken cancellationToken);
+        ValueTask SetTypeAsync(TToken token, string? type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing token.
@@ -418,6 +417,6 @@ namespace OpenIddict.Abstractions
         /// <param name="token">The token to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask UpdateAsync(TToken token, CancellationToken cancellationToken);
     }
 }

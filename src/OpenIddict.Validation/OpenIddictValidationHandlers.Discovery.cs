@@ -304,7 +304,7 @@ namespace OpenIddict.Validation
                         key.X5t = (string) keys[index][JsonWebKeyParameterNames.X5t];
                         key.X5tS256 = (string) keys[index][JsonWebKeyParameterNames.X5tS256];
 
-                        if (keys[index].TryGetParameter(JsonWebKeyParameterNames.X5c, out var chain))
+                        if (keys[index].TryGetNamedParameter(JsonWebKeyParameterNames.X5c, out var chain))
                         {
                             foreach (var certificate in chain.GetNamedParameters())
                             {

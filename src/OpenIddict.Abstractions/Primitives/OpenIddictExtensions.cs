@@ -13,7 +13,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -30,76 +29,56 @@ namespace OpenIddict.Abstractions
         /// Extracts the authentication context class values from an <see cref="OpenIddictRequest"/>.
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-        public static ImmutableArray<string> GetAcrValues([NotNull] this OpenIddictRequest request)
+        public static ImmutableArray<string> GetAcrValues(this OpenIddictRequest request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (string.IsNullOrEmpty(request.AcrValues))
-            {
-                return ImmutableArray.Create<string>();
-            }
-
-            return GetValues(request.AcrValues, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
+            return GetValues(request.AcrValues, Separators.Space);
         }
 
         /// <summary>
         /// Extracts the prompt values from an <see cref="OpenIddictRequest"/>.
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-        public static ImmutableArray<string> GetPrompts([NotNull] this OpenIddictRequest request)
+        public static ImmutableArray<string> GetPrompts(this OpenIddictRequest request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (string.IsNullOrEmpty(request.Prompt))
-            {
-                return ImmutableArray.Create<string>();
-            }
-
-            return GetValues(request.Prompt, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
+            return GetValues(request.Prompt, Separators.Space);
         }
 
         /// <summary>
         /// Extracts the response types from an <see cref="OpenIddictRequest"/>.
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-        public static ImmutableArray<string> GetResponseTypes([NotNull] this OpenIddictRequest request)
+        public static ImmutableArray<string> GetResponseTypes(this OpenIddictRequest request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (string.IsNullOrEmpty(request.ResponseType))
-            {
-                return ImmutableArray.Create<string>();
-            }
-
-            return GetValues(request.ResponseType, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
+            return GetValues(request.ResponseType, Separators.Space);
         }
 
         /// <summary>
         /// Extracts the scopes from an <see cref="OpenIddictRequest"/>.
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-        public static ImmutableArray<string> GetScopes([NotNull] this OpenIddictRequest request)
+        public static ImmutableArray<string> GetScopes(this OpenIddictRequest request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (string.IsNullOrEmpty(request.Scope))
-            {
-                return ImmutableArray.Create<string>();
-            }
-
-            return GetValues(request.Scope, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
+            return GetValues(request.Scope, Separators.Space);
         }
 
         /// <summary>
@@ -107,7 +86,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <param name="value">The component to look for in the parameter.</param>
-        public static bool HasAcrValue([NotNull] this OpenIddictRequest request, [NotNull] string value)
+        public static bool HasAcrValue(this OpenIddictRequest request, string value)
         {
             if (request == null)
             {
@@ -127,7 +106,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <param name="prompt">The component to look for in the parameter.</param>
-        public static bool HasPrompt([NotNull] this OpenIddictRequest request, [NotNull] string prompt)
+        public static bool HasPrompt(this OpenIddictRequest request, string prompt)
         {
             if (request == null)
             {
@@ -147,7 +126,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <param name="type">The component to look for in the parameter.</param>
-        public static bool HasResponseType([NotNull] this OpenIddictRequest request, [NotNull] string type)
+        public static bool HasResponseType(this OpenIddictRequest request, string type)
         {
             if (request == null)
             {
@@ -167,7 +146,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <param name="scope">The component to look for in the parameter.</param>
-        public static bool HasScope([NotNull] this OpenIddictRequest request, [NotNull] string scope)
+        public static bool HasScope(this OpenIddictRequest request, string scope)
         {
             if (request == null)
             {
@@ -188,7 +167,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is a response_type=none request, <c>false</c> otherwise.</returns>
-        public static bool IsNoneFlow([NotNull] this OpenIddictRequest request)
+        public static bool IsNoneFlow(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -215,7 +194,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is a code flow request, <c>false</c> otherwise.</returns>
-        public static bool IsAuthorizationCodeFlow([NotNull] this OpenIddictRequest request)
+        public static bool IsAuthorizationCodeFlow(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -243,7 +222,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is an implicit flow request, <c>false</c> otherwise.</returns>
-        public static bool IsImplicitFlow([NotNull] this OpenIddictRequest request)
+        public static bool IsImplicitFlow(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -297,7 +276,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is an hybrid flow request, <c>false</c> otherwise.</returns>
-        public static bool IsHybridFlow([NotNull] this OpenIddictRequest request)
+        public static bool IsHybridFlow(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -364,7 +343,7 @@ namespace OpenIddict.Abstractions
         /// <c>true</c> if the request specified the fragment response mode or if
         /// it's the default value for the requested flow, <c>false</c> otherwise.
         /// </returns>
-        public static bool IsFragmentResponseMode([NotNull] this OpenIddictRequest request)
+        public static bool IsFragmentResponseMode(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -397,7 +376,7 @@ namespace OpenIddict.Abstractions
         /// <c>true</c> if the request specified the query response mode or if
         /// it's the default value for the requested flow, <c>false</c> otherwise.
         /// </returns>
-        public static bool IsQueryResponseMode([NotNull] this OpenIddictRequest request)
+        public static bool IsQueryResponseMode(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -429,7 +408,7 @@ namespace OpenIddict.Abstractions
         /// <c>true</c> if the request specified the form post response mode or if
         /// it's the default value for the requested flow, <c>false</c> otherwise.
         /// </returns>
-        public static bool IsFormPostResponseMode([NotNull] this OpenIddictRequest request)
+        public static bool IsFormPostResponseMode(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -445,7 +424,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is a code grant request, <c>false</c> otherwise.</returns>
-        public static bool IsAuthorizationCodeGrantType([NotNull] this OpenIddictRequest request)
+        public static bool IsAuthorizationCodeGrantType(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -461,7 +440,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is a client credentials grant request, <c>false</c> otherwise.</returns>
-        public static bool IsClientCredentialsGrantType([NotNull] this OpenIddictRequest request)
+        public static bool IsClientCredentialsGrantType(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -477,7 +456,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is a device code grant request, <c>false</c> otherwise.</returns>
-        public static bool IsDeviceCodeGrantType([NotNull] this OpenIddictRequest request)
+        public static bool IsDeviceCodeGrantType(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -493,7 +472,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is a password grant request, <c>false</c> otherwise.</returns>
-        public static bool IsPasswordGrantType([NotNull] this OpenIddictRequest request)
+        public static bool IsPasswordGrantType(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -509,7 +488,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         /// <returns><c>true</c> if the request is a refresh token grant request, <c>false</c> otherwise.</returns>
-        public static bool IsRefreshTokenGrantType([NotNull] this OpenIddictRequest request)
+        public static bool IsRefreshTokenGrantType(this OpenIddictRequest request)
         {
             if (request == null)
             {
@@ -524,14 +503,14 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="claim">The <see cref="Claim"/> instance.</param>
         /// <returns>The destinations associated with the claim.</returns>
-        public static ImmutableArray<string> GetDestinations([NotNull] this Claim claim)
+        public static ImmutableArray<string> GetDestinations(this Claim claim)
         {
             if (claim == null)
             {
                 throw new ArgumentNullException(nameof(claim));
             }
 
-            claim.Properties.TryGetValue(Properties.Destinations, out string destinations);
+            claim.Properties.TryGetValue(Properties.Destinations, out string? destinations);
 
             if (string.IsNullOrEmpty(destinations))
             {
@@ -548,7 +527,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="claim">The <see cref="Claim"/> instance.</param>
         /// <param name="destination">The required destination.</param>
-        public static bool HasDestination([NotNull] this Claim claim, [NotNull] string destination)
+        public static bool HasDestination(this Claim claim, string destination)
         {
             if (claim == null)
             {
@@ -560,7 +539,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException(SR.GetResourceString(SR.ID1180), nameof(destination));
             }
 
-            claim.Properties.TryGetValue(Properties.Destinations, out string destinations);
+            claim.Properties.TryGetValue(Properties.Destinations, out string? destinations);
 
             if (string.IsNullOrEmpty(destinations))
             {
@@ -576,7 +555,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="claim">The <see cref="Claim"/> instance.</param>
         /// <param name="destinations">The destinations.</param>
-        public static Claim SetDestinations([NotNull] this Claim claim, ImmutableArray<string> destinations)
+        public static Claim SetDestinations(this Claim claim, ImmutableArray<string> destinations)
         {
             if (claim == null)
             {
@@ -610,7 +589,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="claim">The <see cref="Claim"/> instance.</param>
         /// <param name="destinations">The destinations.</param>
-        public static Claim SetDestinations([NotNull] this Claim claim, [CanBeNull] IEnumerable<string> destinations)
+        public static Claim SetDestinations(this Claim claim, IEnumerable<string>? destinations)
             => claim.SetDestinations(destinations?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -618,7 +597,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="claim">The <see cref="Claim"/> instance.</param>
         /// <param name="destinations">The destinations.</param>
-        public static Claim SetDestinations([NotNull] this Claim claim, [CanBeNull] params string[] destinations)
+        public static Claim SetDestinations(this Claim claim, params string[]? destinations)
             => claim.SetDestinations(destinations?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -626,7 +605,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The principal.</param>
         /// <returns>The destinations, returned as a flattened dictionary.</returns>
-        public static ImmutableDictionary<string, string[]> GetDestinations([NotNull] this ClaimsPrincipal principal)
+        public static ImmutableDictionary<string, string[]> GetDestinations(this ClaimsPrincipal principal)
         {
             if (principal == null)
             {
@@ -664,9 +643,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The principal.</param>
         /// <param name="destinations">The destinations, as a flattened dictionary.</param>
         /// <returns>The principal.</returns>
-        public static ClaimsPrincipal SetDestinations(
-            [NotNull] this ClaimsPrincipal principal,
-            [NotNull] ImmutableDictionary<string, string[]> destinations)
+        public static ClaimsPrincipal SetDestinations(this ClaimsPrincipal principal, ImmutableDictionary<string, string[]> destinations)
         {
             if (principal == null)
             {
@@ -697,9 +674,7 @@ namespace OpenIddict.Abstractions
         /// The delegate filtering the claims: return <c>true</c>
         /// to accept the claim, <c>false</c> to remove it.
         /// </param>
-        public static ClaimsIdentity Clone(
-            [NotNull] this ClaimsIdentity identity,
-            [NotNull] Func<Claim, bool> filter)
+        public static ClaimsIdentity Clone(this ClaimsIdentity identity, Func<Claim, bool> filter)
         {
             if (identity == null)
             {
@@ -739,9 +714,7 @@ namespace OpenIddict.Abstractions
         /// The delegate filtering the claims: return <c>true</c>
         /// to accept the claim, <c>false</c> to remove it.
         /// </param>
-        public static ClaimsPrincipal Clone(
-            [NotNull] this ClaimsPrincipal principal,
-            [NotNull] Func<Claim, bool> filter)
+        public static ClaimsPrincipal Clone(this ClaimsPrincipal principal, Func<Claim, bool> filter)
         {
             if (principal == null)
             {
@@ -769,9 +742,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identity">The identity.</param>
         /// <param name="type">The type associated with the claim.</param>
         /// <param name="value">The value associated with the claim.</param>
-        public static ClaimsIdentity AddClaim(
-            [NotNull] this ClaimsIdentity identity,
-            [NotNull] string type, [NotNull] string value)
+        public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, string value)
         {
             if (identity == null)
             {
@@ -799,10 +770,7 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The type associated with the claim.</param>
         /// <param name="value">The value associated with the claim.</param>
         /// <param name="destinations">The destinations associated with the claim.</param>
-        public static ClaimsIdentity AddClaim(
-            [NotNull] this ClaimsIdentity identity,
-            [NotNull] string type, [NotNull] string value,
-            [NotNull] ImmutableArray<string> destinations)
+        public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, string value, ImmutableArray<string> destinations)
         {
             if (identity == null)
             {
@@ -835,10 +803,7 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The type associated with the claim.</param>
         /// <param name="value">The value associated with the claim.</param>
         /// <param name="destinations">The destinations associated with the claim.</param>
-        public static ClaimsIdentity AddClaim(
-            [NotNull] this ClaimsIdentity identity,
-            [NotNull] string type, [NotNull] string value,
-            [NotNull] params string[] destinations)
+        public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, string value, params string[]? destinations)
             => identity.AddClaim(type, value, destinations?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -847,7 +812,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identity">The identity.</param>
         /// <param name="type">The type associated with the claim.</param>
         /// <returns>The claim value.</returns>
-        public static string GetClaim([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        public static string? GetClaim(this ClaimsIdentity identity, string type)
         {
             if (identity == null)
             {
@@ -868,7 +833,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The principal.</param>
         /// <param name="type">The type associated with the claim.</param>
         /// <returns>The claim value.</returns>
-        public static string GetClaim([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        public static string? GetClaim(this ClaimsPrincipal principal, string type)
         {
             if (principal == null)
             {
@@ -889,7 +854,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identity">The identity.</param>
         /// <param name="type">The type associated with the claims.</param>
         /// <returns>The claim values.</returns>
-        public static ImmutableArray<string> GetClaims([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        public static ImmutableArray<string> GetClaims(this ClaimsIdentity identity, string type)
         {
             if (identity == null)
             {
@@ -910,7 +875,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identity">The claims identity.</param>
         /// <param name="type">The claim type.</param>
         /// <returns><c>true</c> if the identity contains at least one claim of the specified type.</returns>
-        public static bool HasClaim([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        public static bool HasClaim(this ClaimsIdentity identity, string type)
         {
             if (identity == null)
             {
@@ -931,7 +896,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The principal.</param>
         /// <param name="type">The type associated with the claims.</param>
         /// <returns>The claim values.</returns>
-        public static ImmutableArray<string> GetClaims([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        public static ImmutableArray<string> GetClaims(this ClaimsPrincipal principal, string type)
         {
             if (principal == null)
             {
@@ -952,7 +917,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="type">The claim type.</param>
         /// <returns><c>true</c> if the principal contains at least one claim of the specified type.</returns>
-        public static bool HasClaim([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        public static bool HasClaim(this ClaimsPrincipal principal, string type)
         {
             if (principal == null)
             {
@@ -973,7 +938,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identity">The identity.</param>
         /// <param name="type">The type associated with the claims.</param>
         /// <returns>The claims identity.</returns>
-        public static ClaimsIdentity RemoveClaims([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        public static ClaimsIdentity RemoveClaims(this ClaimsIdentity identity, string type)
         {
             if (identity == null)
             {
@@ -999,7 +964,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The principal.</param>
         /// <param name="type">The type associated with the claims.</param>
         /// <returns>The claims identity.</returns>
-        public static ClaimsPrincipal RemoveClaims([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        public static ClaimsPrincipal RemoveClaims(this ClaimsPrincipal principal, string type)
         {
             if (principal == null)
             {
@@ -1029,9 +994,7 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The type associated with the claims.</param>
         /// <param name="value">The claim value.</param>
         /// <returns>The claims identity.</returns>
-        public static ClaimsIdentity SetClaims(
-            [NotNull] this ClaimsIdentity identity,
-            [NotNull] string type, [CanBeNull] string value)
+        public static ClaimsIdentity SetClaims(this ClaimsIdentity identity, string type, string? value)
         {
             if (identity == null)
             {
@@ -1060,9 +1023,7 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The type associated with the claims.</param>
         /// <param name="value">The claim value.</param>
         /// <returns>The claims identity.</returns>
-        public static ClaimsPrincipal SetClaim(
-            [NotNull] this ClaimsPrincipal principal,
-            [NotNull] string type, [CanBeNull] string value)
+        public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, string? value)
         {
             if (principal == null)
             {
@@ -1091,8 +1052,7 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The type associated with the claims.</param>
         /// <param name="values">The claim values.</param>
         /// <returns>The claims identity.</returns>
-        public static ClaimsIdentity SetClaims([NotNull] this ClaimsIdentity identity,
-            [NotNull] string type, [NotNull] ImmutableArray<string> values)
+        public static ClaimsIdentity SetClaims(this ClaimsIdentity identity, string type, ImmutableArray<string> values)
         {
             if (identity == null)
             {
@@ -1121,8 +1081,7 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The type associated with the claims.</param>
         /// <param name="values">The claim values.</param>
         /// <returns>The claims identity.</returns>
-        public static ClaimsPrincipal SetClaims([NotNull] this ClaimsPrincipal principal,
-            [NotNull] string type, [NotNull] ImmutableArray<string> values)
+        public static ClaimsPrincipal SetClaims(this ClaimsPrincipal principal, string type, ImmutableArray<string> values)
         {
             if (principal == null)
             {
@@ -1149,7 +1108,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The creation date or <c>null</c> if the claim cannot be found.</returns>
-        public static DateTimeOffset? GetCreationDate([NotNull] this ClaimsPrincipal principal)
+        public static DateTimeOffset? GetCreationDate(this ClaimsPrincipal principal)
         {
             if (principal == null)
             {
@@ -1175,7 +1134,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The expiration date or <c>null</c> if the claim cannot be found.</returns>
-        public static DateTimeOffset? GetExpirationDate([NotNull] this ClaimsPrincipal principal)
+        public static DateTimeOffset? GetExpirationDate(this ClaimsPrincipal principal)
         {
             if (principal == null)
             {
@@ -1201,7 +1160,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The audiences list or an empty set if the claims cannot be found.</returns>
-        public static ImmutableArray<string> GetAudiences([NotNull] this ClaimsPrincipal principal)
+        public static ImmutableArray<string> GetAudiences(this ClaimsPrincipal principal)
             => principal.GetClaims(Claims.Private.Audience);
 
         /// <summary>
@@ -1209,7 +1168,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The presenters list or an empty set if the claims cannot be found.</returns>
-        public static ImmutableArray<string> GetPresenters([NotNull] this ClaimsPrincipal principal)
+        public static ImmutableArray<string> GetPresenters(this ClaimsPrincipal principal)
             => principal.GetClaims(Claims.Private.Presenter);
 
         /// <summary>
@@ -1217,7 +1176,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The resources list or an empty set if the claims cannot be found.</returns>
-        public static ImmutableArray<string> GetResources([NotNull] this ClaimsPrincipal principal)
+        public static ImmutableArray<string> GetResources(this ClaimsPrincipal principal)
             => principal.GetClaims(Claims.Private.Resource);
 
         /// <summary>
@@ -1225,7 +1184,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The scopes list or an empty set if the claim cannot be found.</returns>
-        public static ImmutableArray<string> GetScopes([NotNull] this ClaimsPrincipal principal)
+        public static ImmutableArray<string> GetScopes(this ClaimsPrincipal principal)
             => principal.GetClaims(Claims.Private.Scope);
 
         /// <summary>
@@ -1233,7 +1192,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The access token lifetime or <c>null</c> if the claim cannot be found.</returns>
-        public static TimeSpan? GetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal)
+        public static TimeSpan? GetAccessTokenLifetime(this ClaimsPrincipal principal)
             => GetLifetime(principal, Claims.Private.AccessTokenLifetime);
 
         /// <summary>
@@ -1241,7 +1200,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The authorization code lifetime or <c>null</c> if the claim cannot be found.</returns>
-        public static TimeSpan? GetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal)
+        public static TimeSpan? GetAuthorizationCodeLifetime(this ClaimsPrincipal principal)
             => GetLifetime(principal, Claims.Private.AuthorizationCodeLifetime);
 
         /// <summary>
@@ -1249,7 +1208,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The device code lifetime or <c>null</c> if the claim cannot be found.</returns>
-        public static TimeSpan? GetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal)
+        public static TimeSpan? GetDeviceCodeLifetime(this ClaimsPrincipal principal)
             => GetLifetime(principal, Claims.Private.DeviceCodeLifetime);
 
         /// <summary>
@@ -1257,7 +1216,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The identity token lifetime or <c>null</c> if the claim cannot be found.</returns>
-        public static TimeSpan? GetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal)
+        public static TimeSpan? GetIdentityTokenLifetime(this ClaimsPrincipal principal)
             => GetLifetime(principal, Claims.Private.IdentityTokenLifetime);
 
         /// <summary>
@@ -1265,7 +1224,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The refresh token lifetime or <c>null</c> if the claim cannot be found.</returns>
-        public static TimeSpan? GetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal)
+        public static TimeSpan? GetRefreshTokenLifetime(this ClaimsPrincipal principal)
             => GetLifetime(principal, Claims.Private.RefreshTokenLifetime);
 
         /// <summary>
@@ -1273,7 +1232,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The user code lifetime or <c>null</c> if the claim cannot be found.</returns>
-        public static TimeSpan? GetUserCodeLifetime([NotNull] this ClaimsPrincipal principal)
+        public static TimeSpan? GetUserCodeLifetime(this ClaimsPrincipal principal)
             => GetLifetime(principal, Claims.Private.UserCodeLifetime);
 
         /// <summary>
@@ -1281,7 +1240,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetAuthorizationId([NotNull] this ClaimsPrincipal principal)
+        public static string? GetAuthorizationId(this ClaimsPrincipal principal)
             => principal.GetClaim(Claims.Private.AuthorizationId);
 
         /// <summary>
@@ -1289,7 +1248,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetTokenId([NotNull] this ClaimsPrincipal principal)
+        public static string? GetTokenId(this ClaimsPrincipal principal)
             => principal.GetClaim(Claims.Private.TokenId);
 
         /// <summary>
@@ -1297,7 +1256,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The token type or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetTokenType([NotNull] this ClaimsPrincipal principal)
+        public static string? GetTokenType(this ClaimsPrincipal principal)
             => principal.GetClaim(Claims.Private.TokenType);
 
         /// <summary>
@@ -1305,7 +1264,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one audience.</returns>
-        public static bool HasAudience([NotNull] this ClaimsPrincipal principal)
+        public static bool HasAudience(this ClaimsPrincipal principal)
             => principal.HasClaim(Claims.Private.Audience);
 
         /// <summary>
@@ -1314,7 +1273,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="audience">The audience.</param>
         /// <returns><c>true</c> if the principal contains the given audience.</returns>
-        public static bool HasAudience([NotNull] this ClaimsPrincipal principal, [NotNull] string audience)
+        public static bool HasAudience(this ClaimsPrincipal principal, string audience)
         {
             if (principal == null)
             {
@@ -1334,7 +1293,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one presenter.</returns>
-        public static bool HasPresenter([NotNull] this ClaimsPrincipal principal)
+        public static bool HasPresenter(this ClaimsPrincipal principal)
             => principal.HasClaim(Claims.Private.Presenter);
 
         /// <summary>
@@ -1343,7 +1302,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="presenter">The presenter.</param>
         /// <returns><c>true</c> if the principal contains the given presenter.</returns>
-        public static bool HasPresenter([NotNull] this ClaimsPrincipal principal, [NotNull] string presenter)
+        public static bool HasPresenter(this ClaimsPrincipal principal, string presenter)
         {
             if (principal == null)
             {
@@ -1363,7 +1322,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one resource.</returns>
-        public static bool HasResource([NotNull] this ClaimsPrincipal principal)
+        public static bool HasResource(this ClaimsPrincipal principal)
             => principal.HasClaim(Claims.Private.Resource);
 
         /// <summary>
@@ -1372,7 +1331,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="resource">The resource.</param>
         /// <returns><c>true</c> if the principal contains the given resource.</returns>
-        public static bool HasResource([NotNull] this ClaimsPrincipal principal, [NotNull] string resource)
+        public static bool HasResource(this ClaimsPrincipal principal, string resource)
         {
             if (principal == null)
             {
@@ -1392,7 +1351,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one scope.</returns>
-        public static bool HasScope([NotNull] this ClaimsPrincipal principal)
+        public static bool HasScope(this ClaimsPrincipal principal)
             => principal.HasClaim(Claims.Private.Scope);
 
         /// <summary>
@@ -1401,7 +1360,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="scope">The scope.</param>
         /// <returns><c>true</c> if the principal contains the given scope.</returns>
-        public static bool HasScope([NotNull] this ClaimsPrincipal principal, [NotNull] string scope)
+        public static bool HasScope(this ClaimsPrincipal principal, string scope)
         {
             if (principal == null)
             {
@@ -1422,7 +1381,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="type">The token type.</param>
         /// <returns><c>true</c> if the token type matches the specified type.</returns>
-        public static bool HasTokenType([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        public static bool HasTokenType(this ClaimsPrincipal principal, string type)
         {
             if (principal == null)
             {
@@ -1443,7 +1402,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="date">The creation date</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetCreationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
+        public static ClaimsPrincipal SetCreationDate(this ClaimsPrincipal principal, DateTimeOffset? date)
             => principal.SetClaim(Claims.Private.CreationDate, date?.ToString("r", CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1452,7 +1411,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="date">The expiration date</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetExpirationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
+        public static ClaimsPrincipal SetExpirationDate(this ClaimsPrincipal principal, DateTimeOffset? date)
             => principal.SetClaim(Claims.Private.ExpirationDate, date?.ToString("r", CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1462,8 +1421,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="audiences">The audiences to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetAudiences(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> audiences)
+        public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, ImmutableArray<string> audiences)
             => principal.SetClaims(Claims.Private.Audience, audiences);
 
         /// <summary>
@@ -1473,8 +1431,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="audiences">The audiences to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetAudiences(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> audiences)
+        public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, IEnumerable<string>? audiences)
             => principal.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1484,8 +1441,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="audiences">The audiences to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetAudiences(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] audiences)
+        public static ClaimsPrincipal SetAudiences(this ClaimsPrincipal principal, params string[]? audiences)
             => principal.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1495,8 +1451,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="presenters">The presenters to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetPresenters(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> presenters)
+        public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, ImmutableArray<string> presenters)
             => principal.SetClaims(Claims.Private.Presenter, presenters);
 
         /// <summary>
@@ -1506,8 +1461,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="presenters">The presenters to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetPresenters(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> presenters)
+        public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, IEnumerable<string>? presenters)
             => principal.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1517,8 +1471,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="presenters">The presenters to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetPresenters(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] presenters)
+        public static ClaimsPrincipal SetPresenters(this ClaimsPrincipal principal, params string[]? presenters)
             => principal.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1528,8 +1481,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="resources">The resources to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetResources(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> resources)
+        public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, ImmutableArray<string> resources)
             => principal.SetClaims(Claims.Private.Resource, resources);
 
         /// <summary>
@@ -1539,8 +1491,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="resources">The resources to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetResources(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> resources)
+        public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, IEnumerable<string>? resources)
             => principal.SetResources(resources?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1550,8 +1501,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="resources">The resources to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetResources(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] resources)
+        public static ClaimsPrincipal SetResources(this ClaimsPrincipal principal, params string[]? resources)
             => principal.SetResources(resources?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1561,8 +1511,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="scopes">The scopes to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetScopes(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> scopes)
+        public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, ImmutableArray<string> scopes)
             => principal.SetClaims(Claims.Private.Scope, scopes);
 
         /// <summary>
@@ -1572,8 +1521,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="scopes">The scopes to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetScopes(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> scopes)
+        public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, IEnumerable<string>? scopes)
             => principal.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1583,8 +1531,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="scopes">The scopes to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetScopes(
-            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] scopes)
+        public static ClaimsPrincipal SetScopes(this ClaimsPrincipal principal, params string[]? scopes)
             => principal.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
@@ -1593,7 +1540,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="lifetime">The access token lifetime to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        public static ClaimsPrincipal SetAccessTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
             => principal.SetClaim(Claims.Private.AccessTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1602,7 +1549,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="lifetime">The authorization code lifetime to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        public static ClaimsPrincipal SetAuthorizationCodeLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
             => principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1611,7 +1558,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="lifetime">The device code lifetime to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        public static ClaimsPrincipal SetDeviceCodeLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
             => principal.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1620,7 +1567,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="lifetime">The identity token lifetime to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        public static ClaimsPrincipal SetIdentityTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
             => principal.SetClaim(Claims.Private.IdentityTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1629,7 +1576,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="lifetime">The refresh token lifetime to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        public static ClaimsPrincipal SetRefreshTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
             => principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1638,7 +1585,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="lifetime">The user code lifetime to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetUserCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        public static ClaimsPrincipal SetUserCodeLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
             => principal.SetClaim(Claims.Private.UserCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
         /// <summary>
@@ -1647,7 +1594,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="identifier">The unique identifier to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetAuthorizationId([NotNull] this ClaimsPrincipal principal, string identifier)
+        public static ClaimsPrincipal SetAuthorizationId(this ClaimsPrincipal principal, string? identifier)
             => principal.SetClaim(Claims.Private.AuthorizationId, identifier);
 
         /// <summary>
@@ -1656,7 +1603,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="identifier">The unique identifier to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
+        public static ClaimsPrincipal SetTokenId(this ClaimsPrincipal principal, string? identifier)
             => principal.SetClaim(Claims.Private.TokenId, identifier);
 
         /// <summary>
@@ -1665,13 +1612,19 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="type">The token type to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetTokenType([NotNull] this ClaimsPrincipal principal, string type)
+        public static ClaimsPrincipal SetTokenType(this ClaimsPrincipal principal, string? type)
             => principal.SetClaim(Claims.Private.TokenType, type);
 
-        private static IEnumerable<string> GetValues(string source, char[] separators)
+        private static ImmutableArray<string> GetValues(string? source, char[] separators)
         {
-            Debug.Assert(!string.IsNullOrEmpty(source), SR.GetResourceString(SR.ID5000));
-            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators != null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+
+            if (string.IsNullOrEmpty(source))
+            {
+                return ImmutableArray.Create<string>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<string>();
 
             foreach (var element in new StringTokenizer(source, separators))
             {
@@ -1681,21 +1634,26 @@ namespace OpenIddict.Abstractions
                     continue;
                 }
 
-                yield return segment.Value;
+                if (builder.Contains(segment.Value, StringComparer.Ordinal))
+                {
+                    continue;
+                }
+
+                builder.Add(segment.Value);
             }
 
-            yield break;
+            return builder.ToImmutable();
         }
 
-        private static bool HasValue(string source, string value, char[] separators)
+        private static bool HasValue(string? source, string value, char[] separators)
         {
+            Debug.Assert(!string.IsNullOrEmpty(value), SR.GetResourceString(SR.ID5002));
+            Debug.Assert(separators != null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+
             if (string.IsNullOrEmpty(source))
             {
                 return false;
             }
-
-            Debug.Assert(!string.IsNullOrEmpty(value), SR.GetResourceString(SR.ID5002));
-            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
 
             foreach (var element in new StringTokenizer(source, separators))
             {
@@ -1716,7 +1674,7 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment TrimStart(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators != null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
 
             var index = segment.Offset;
 
@@ -1735,7 +1693,7 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment TrimEnd(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators != null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
 
             var index = segment.Offset + segment.Length - 1;
 
@@ -1754,16 +1712,16 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment Trim(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators != null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
 
             return TrimEnd(TrimStart(segment, separators), separators);
         }
 
         private static bool IsSeparator(char character, char[] separators)
         {
-            Debug.Assert(separators?.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators != null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
 
-            for (var index = 0; index < separators.Length; index++)
+            for (var index = 0; index < separators!.Length; index++)
             {
                 if (character == separators[index])
                 {

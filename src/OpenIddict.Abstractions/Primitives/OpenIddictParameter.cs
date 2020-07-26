@@ -12,7 +12,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using JetBrains.Annotations;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions
@@ -57,13 +56,13 @@ namespace OpenIddict.Abstractions
         /// Initializes a new parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
-        public OpenIddictParameter(string value) => Value = value;
+        public OpenIddictParameter(string? value) => Value = value;
 
         /// <summary>
         /// Initializes a new parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
-        public OpenIddictParameter(string[] value) => Value = value;
+        public OpenIddictParameter(string?[]? value) => Value = value;
 
         /// <summary>
         /// Gets the child item corresponding to the specified index.
@@ -86,7 +85,7 @@ namespace OpenIddict.Abstractions
         public int Count => Value switch
         {
             // If the parameter is a primitive array of strings, return its length.
-            string[] value => value.Length,
+            string?[] value => value.Length,
 
             // If the parameter is a JSON array, return its length.
             JsonElement value when value.ValueKind == JsonValueKind.Array => value.GetArrayLength(),
@@ -100,7 +99,7 @@ namespace OpenIddict.Abstractions
         /// (e.g bool, string, long), an array of strings or a complex JSON object.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public object Value { get; }
+        public object? Value { get; }
 
         /// <summary>
         /// Determines whether the current <see cref="OpenIddictParameter"/>
@@ -121,7 +120,7 @@ namespace OpenIddict.Abstractions
                 (_, null) => false,
 
                 // If the two parameters are string arrays, use SequenceEqual().
-                (string[] left, string[] right) => left.SequenceEqual(right),
+                (string?[] left, string?[] right) => left.SequenceEqual(right),
 
                 // If the two parameters are JsonElement instances, use the custom comparer.
                 (JsonElement left, JsonElement right) => Equals(left, right),
@@ -220,7 +219,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="obj">The other object to which to compare this instance.</param>
         /// <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
-        public override bool Equals(object obj) => obj is OpenIddictParameter parameter && Equals(parameter);
+        public override bool Equals(object? obj) => obj is OpenIddictParameter parameter && Equals(parameter);
 
         /// <summary>
         /// Returns the hash code of the current <see cref="OpenIddictParameter"/> instance.
@@ -295,7 +294,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="name">The name of the child item.</param>
         /// <returns>An <see cref="OpenIddictParameter"/> instance containing the item value.</returns>
-        public OpenIddictParameter? GetNamedParameter([NotNull] string name)
+        public OpenIddictParameter? GetNamedParameter(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -328,7 +327,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID1192));
             }
 
-            if (Value is string[] array)
+            if (Value is string?[] array)
             {
                 // If the specified index goes beyond the
                 // number of items in the array, return null.
@@ -385,7 +384,7 @@ namespace OpenIddict.Abstractions
         /// <returns>An enumeration of all the unnamed parameters associated with the current instance.</returns>
         public IReadOnlyList<OpenIddictParameter> GetUnnamedParameters()
         {
-            if (Value is string[] array)
+            if (Value is string?[] array)
             {
                 var parameters = new List<OpenIddictParameter>();
 
@@ -416,12 +415,12 @@ namespace OpenIddict.Abstractions
         /// Returns the <see cref="string"/> representation of the current instance.
         /// </summary>
         /// <returns>The <see cref="string"/> representation associated with the parameter value.</returns>
-        public override string ToString() => Value switch
+        public override string? ToString() => Value switch
         {
             null => string.Empty,
 
-            string value   => value,
-            string[] value => string.Join(", ", value),
+            string value    => value,
+            string?[] value => string.Join(", ", value),
 
             JsonElement value => value.ToString(),
 
@@ -434,17 +433,63 @@ namespace OpenIddict.Abstractions
         /// <param name="name">The name of the child item.</param>
         /// <param name="value">An <see cref="OpenIddictParameter"/> instance containing the item value.</param>
         /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
-        public bool TryGetParameter([NotNull] string name, out OpenIddictParameter value)
+        public bool TryGetNamedParameter(string name, out OpenIddictParameter value)
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1191), nameof(name));
             }
 
             if (Value is JsonElement element && element.ValueKind == JsonValueKind.Object &&
                 element.TryGetProperty(name, out JsonElement property))
             {
                 value = new OpenIddictParameter(property);
+
+                return true;
+            }
+
+            value = default;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the child item corresponding to the specified index.
+        /// </summary>
+        /// <param name="index">The index of the child item.</param>
+        /// <param name="value">An <see cref="OpenIddictParameter"/> instance containing the item value.</param>
+        /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
+        public bool TryGetUnnamedParameter(int index, out OpenIddictParameter value)
+        {
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID1192));
+            }
+
+            if (Value is string?[] array)
+            {
+                if (index >= array.Length)
+                {
+                    value = default;
+
+                    return false;
+                }
+
+                value = new OpenIddictParameter(array[index]);
+
+                return true;
+            }
+
+            if (Value is JsonElement element && element.ValueKind == JsonValueKind.Array)
+            {
+                if (index >= element.GetArrayLength())
+                {
+                    value = default;
+
+                    return false;
+                }
+
+                value = new OpenIddictParameter(element[index]);
 
                 return true;
             }
@@ -485,7 +530,7 @@ namespace OpenIddict.Abstractions
                     writer.WriteStringValue(value);
                     break;
 
-                case string[] value:
+                case string?[] value:
                     writer.WriteStartArray();
 
                     for (var index = 0; index < value.Length; index++)
@@ -654,7 +699,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="parameter">The parameter to convert.</param>
         /// <returns>The converted value.</returns>
-        public static explicit operator string(OpenIddictParameter? parameter) => parameter?.Value switch
+        public static explicit operator string?(OpenIddictParameter? parameter) => parameter?.Value switch
         {
             // When the parameter is a null value, return null.
             null => null,
@@ -692,7 +737,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="parameter">The parameter to convert.</param>
         /// <returns>The converted value.</returns>
-        public static explicit operator string[](OpenIddictParameter? parameter)
+        public static explicit operator string?[]?(OpenIddictParameter? parameter)
         {
             return parameter?.Value switch
             {
@@ -700,16 +745,16 @@ namespace OpenIddict.Abstractions
                 null => null,
 
                 // When the parameter is already an array of strings, return it as-is.
-                string[] value => value,
+                string?[] value => value,
 
                 // When the parameter is a string value, return an array with a single entry.
-                string value => new string[] { value },
+                string value => new string?[] { value },
 
                 // When the parameter is a boolean value, return an array with its string representation.
-                bool value => new string[] { value.ToString() },
+                bool value => new string?[] { value.ToString() },
 
                 // When the parameter is an integer, return an array with its string representation.
-                long value => new string[] { value.ToString(CultureInfo.InvariantCulture) },
+                long value => new string?[] { value.ToString(CultureInfo.InvariantCulture) },
 
                 // When the parameter is a JsonElement representing null, return null.
                 JsonElement value when value.ValueKind == JsonValueKind.Undefined => null,
@@ -717,15 +762,15 @@ namespace OpenIddict.Abstractions
 
                 // When the parameter is a JsonElement representing a string, return an array with a single entry.
                 JsonElement value when value.ValueKind == JsonValueKind.String
-                    => new string[] { value.GetString() },
+                    => new string?[] { value.GetString() },
 
                 // When the parameter is a JsonElement representing a number, return an array with a single entry.
                 JsonElement value when value.ValueKind == JsonValueKind.Number
-                    => new string[] { value.GetInt64().ToString(CultureInfo.InvariantCulture) },
+                    => new string?[] { value.GetInt64().ToString(CultureInfo.InvariantCulture) },
 
                 // When the parameter is a JsonElement representing a boolean, return an array with a single entry.
-                JsonElement value when value.ValueKind == JsonValueKind.False => new string[] { bool.FalseString },
-                JsonElement value when value.ValueKind == JsonValueKind.True  => new string[] { bool.TrueString },
+                JsonElement value when value.ValueKind == JsonValueKind.False => new string?[] { bool.FalseString },
+                JsonElement value when value.ValueKind == JsonValueKind.True  => new string?[] { bool.TrueString },
 
                 // When the parameter is a JsonElement representing an array of strings, return it.
                 JsonElement value when value.ValueKind == JsonValueKind.Array => CreateArray(value),
@@ -734,7 +779,7 @@ namespace OpenIddict.Abstractions
                 _ => null
             };
 
-            static string[] CreateArray(JsonElement value)
+            static string?[]? CreateArray(JsonElement value)
             {
                 var array = new string[value.GetArrayLength()];
                 using var enumerator = value.EnumerateArray();
@@ -794,14 +839,14 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="value">The value to convert</param>
         /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-        public static implicit operator OpenIddictParameter(string value) => new OpenIddictParameter(value);
+        public static implicit operator OpenIddictParameter(string? value) => new OpenIddictParameter(value);
 
         /// <summary>
         /// Converts an array of strings to an <see cref="OpenIddictParameter"/> instance.
         /// </summary>
         /// <param name="value">The value to convert</param>
         /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-        public static implicit operator OpenIddictParameter(string[] value) => new OpenIddictParameter(value);
+        public static implicit operator OpenIddictParameter(string?[]? value) => new OpenIddictParameter(value);
 
         /// <summary>
         /// Determines whether a parameter is null or empty.
@@ -814,8 +859,8 @@ namespace OpenIddict.Abstractions
             {
                 null => true,
 
-                string value   => string.IsNullOrEmpty(value),
-                string[] value => value.Length == 0,
+                string value    => string.IsNullOrEmpty(value),
+                string?[] value => value.Length == 0,
 
                 JsonElement value when value.ValueKind == JsonValueKind.Undefined => true,
                 JsonElement value when value.ValueKind == JsonValueKind.Null      => true,
