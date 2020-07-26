@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -23,7 +22,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TKey : IEquatable<TKey>
     {
-        public void Configure([NotNull] EntityTypeBuilder<TScope> builder)
+        public void Configure(EntityTypeBuilder<TScope> builder)
         {
             if (builder == null)
             {
@@ -46,12 +45,11 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
-            builder.Property(scope => scope.Id)
+            builder.Property(scope => scope.Id!)
                    .ValueGeneratedOnAdd();
 
             builder.Property(scope => scope.Name)
-                   .HasMaxLength(200)
-                   .IsRequired();
+                   .HasMaxLength(200);
 
             builder.ToTable("OpenIddictScopes");
         }

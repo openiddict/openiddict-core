@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -27,7 +26,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
         where TKey : IEquatable<TKey>
     {
-        public void Configure([NotNull] EntityTypeBuilder<TToken> builder)
+        public void Configure(EntityTypeBuilder<TToken> builder)
         {
             if (builder == null)
             {
@@ -56,22 +55,20 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
-            builder.Property(token => token.Id)
+            builder.Property(token => token.Id!)
                    .ValueGeneratedOnAdd();
 
             builder.Property(token => token.ReferenceId)
                    .HasMaxLength(100);
 
             builder.Property(token => token.Status)
-                   .HasMaxLength(25)
-                   .IsRequired();
+                   .HasMaxLength(25);
 
             builder.Property(token => token.Subject)
                    .HasMaxLength(450);
 
             builder.Property(token => token.Type)
-                   .HasMaxLength(25)
-                   .IsRequired();
+                   .HasMaxLength(25);
 
             builder.ToTable("OpenIddictTokens");
         }

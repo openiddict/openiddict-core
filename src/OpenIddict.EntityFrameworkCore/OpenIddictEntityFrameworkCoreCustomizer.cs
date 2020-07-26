@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -23,12 +22,12 @@ namespace OpenIddict.EntityFrameworkCore
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictEntityFrameworkCoreCustomizer([NotNull] ModelCustomizerDependencies dependencies)
+        public OpenIddictEntityFrameworkCoreCustomizer(ModelCustomizerDependencies dependencies)
             : base(dependencies)
         {
         }
 
-        public override void Customize([NotNull] ModelBuilder modelBuilder, [NotNull] DbContext context)
+        public override void Customize(ModelBuilder modelBuilder, DbContext context)
         {
             if (modelBuilder == null)
             {

@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -27,7 +26,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : IEquatable<TKey>
     {
-        public void Configure([NotNull] EntityTypeBuilder<TAuthorization> builder)
+        public void Configure(EntityTypeBuilder<TAuthorization> builder)
         {
             if (builder == null)
             {
@@ -50,22 +49,20 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
-            builder.Property(authorization => authorization.Id)
+            builder.Property(authorization => authorization.Id!)
                    .ValueGeneratedOnAdd();
 
             builder.Property(authorization => authorization.Status)
-                   .HasMaxLength(25)
-                   .IsRequired();
+                   .HasMaxLength(25);
 
             builder.Property(authorization => authorization.Subject)
                    .HasMaxLength(450);
 
             builder.Property(authorization => authorization.Type)
-                   .HasMaxLength(25)
-                   .IsRequired();
+                   .HasMaxLength(25);
 
             builder.HasMany(authorization => authorization.Tokens)
-                   .WithOne(token => token.Authorization)
+                   .WithOne(token => token.Authorization!)
                    .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreToken.Authorization) +
                                   nameof(OpenIddictEntityFrameworkCoreAuthorization.Id))
                    .IsRequired(required: false);
