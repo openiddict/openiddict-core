@@ -7,7 +7,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace OpenIddict.Abstractions
 {
@@ -23,7 +22,7 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application to add to the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask AddAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask AddAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its client identifier.
@@ -34,7 +33,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        ValueTask<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TApplication?> FindByClientIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its unique identifier.
@@ -45,7 +44,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        ValueTask<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
@@ -53,8 +52,7 @@ namespace OpenIddict.Abstractions
         /// <param name="address">The redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
-        IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-            [NotNull] string address, CancellationToken cancellationToken);
+        IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
@@ -62,8 +60,7 @@ namespace OpenIddict.Abstractions
         /// <param name="address">The redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
-        IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-            [NotNull] string address, CancellationToken cancellationToken);
+        IAsyncEnumerable<TApplication> FindByRedirectUriAsync(string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the specified application from the cache.
@@ -71,6 +68,6 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application to remove from the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask RemoveAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask RemoveAsync(TApplication application, CancellationToken cancellationToken);
     }
 }

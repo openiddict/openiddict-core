@@ -14,7 +14,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -67,7 +66,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
-        public OpenIddictMessage([NotNull] IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
+        public OpenIddictMessage(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
         {
             if (parameters == null)
             {
@@ -84,7 +83,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
-        public OpenIddictMessage([NotNull] IEnumerable<KeyValuePair<string, string>> parameters)
+        public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?>> parameters)
         {
             if (parameters == null)
             {
@@ -112,7 +111,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
-        public OpenIddictMessage([NotNull] IEnumerable<KeyValuePair<string, string[]>> parameters)
+        public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
         {
             if (parameters == null)
             {
@@ -139,7 +138,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
-        public OpenIddictMessage([NotNull] IEnumerable<KeyValuePair<string, StringValues>> parameters)
+        public OpenIddictMessage(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
             if (parameters == null)
             {
@@ -189,7 +188,7 @@ namespace OpenIddict.Abstractions
         /// <param name="name">The parameter name.</param>
         /// <param name="value">The parameter value.</param>
         /// <returns>The current instance, which allows chaining calls.</returns>
-        public OpenIddictMessage AddParameter([NotNull] string name, OpenIddictParameter value)
+        public OpenIddictMessage AddParameter(string name, OpenIddictParameter value)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -211,7 +210,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="name">The parameter name.</param>
         /// <returns>The parameter value, or <c>null</c> if it cannot be found.</returns>
-        public OpenIddictParameter? GetParameter([NotNull] string name)
+        public OpenIddictParameter? GetParameter(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -238,7 +237,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="name">The parameter name.</param>
         /// <returns><c>true</c> if the parameter is present, <c>false</c> otherwise.</returns>
-        public bool HasParameter([NotNull] string name)
+        public bool HasParameter(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -253,7 +252,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="name">The parameter name.</param>
         /// <returns>The current instance, which allows chaining calls.</returns>
-        public OpenIddictMessage RemoveParameter([NotNull] string name)
+        public OpenIddictMessage RemoveParameter(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -272,7 +271,7 @@ namespace OpenIddict.Abstractions
         /// <param name="name">The parameter name.</param>
         /// <param name="value">The parameter value.</param>
         /// <returns>The current instance, which allows chaining calls.</returns>
-        public OpenIddictMessage SetParameter([NotNull] string name, [CanBeNull] OpenIddictParameter? value)
+        public OpenIddictMessage SetParameter(string name, OpenIddictParameter? value)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -299,7 +298,7 @@ namespace OpenIddict.Abstractions
         /// <param name="name">The parameter name.</param>
         /// <param name="value">The parameter value.</param>
         /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
-        public bool TryGetParameter([NotNull] string name, out OpenIddictParameter value)
+        public bool TryGetParameter(string name, out OpenIddictParameter value)
         {
             if (string.IsNullOrEmpty(name))
             {

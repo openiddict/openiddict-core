@@ -1451,7 +1451,7 @@ Consider creating non-generic classes derived from the default entities for the 
     <value>Callback URLs must be valid absolute URLs.</value>
   </data>
   <data name="ID5000" xml:space="preserve">
-    <value>The source string shouldn't be null or empty.</value>
+    <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
   <data name="ID5001" xml:space="preserve">
     <value>The separators collection shouldn't be null or empty.</value>
@@ -1467,6 +1467,21 @@ Consider creating non-generic classes derived from the default entities for the 
   </data>
   <data name="ID5005" xml:space="preserve">
     <value>ECDsa.ExportParameters() shouldn't return an unnamed curve.</value>
+  </data>
+  <data name="ID5006" xml:space="preserve">
+    <value>The principal shouldn't be null at this point.</value>
+  </data>
+  <data name="ID5007" xml:space="preserve">
+    <value>The response shouldn't be null at this point.</value>
+  </data>
+  <data name="ID5008" xml:space="preserve">
+    <value>The request shouldn't be null at this point.</value>
+  </data>
+  <data name="ID5009" xml:space="preserve">
+    <value>The token type shouldn't be null or empty.</value>
+  </data>
+  <data name="ID5010" xml:space="preserve">
+    <value>The token shouldn't be null or empty at this point.</value>
   </data>
   <data name="ID7000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>

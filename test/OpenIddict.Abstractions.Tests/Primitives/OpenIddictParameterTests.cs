@@ -351,7 +351,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetParameter_ReturnsNullForOutOfRangeArrayIndex()
+        public void GetUnnamedParameter_ReturnsNullForOutOfRangeArrayIndex()
         {
             // Arrange
             var parameter = new OpenIddictParameter(new[]
@@ -689,40 +689,169 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void TryGetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+        public void TryGetNamedParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
         {
             // Arrange
             var parameter = new OpenIddictParameter();
 
             // Act
-            var exception = Assert.Throws<ArgumentException>(() => parameter.TryGetParameter(name, out var value));
+            var exception = Assert.Throws<ArgumentException>(() => parameter.TryGetNamedParameter(name, out _));
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1191), exception.Message);
         }
 
         [Fact]
-        public void TryGetParameter_ReturnsTrueAndExpectedParameter()
+        public void TryGetNamedParameter_ReturnsFalseForPrimitiveValues()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(42);
+
+            // Act and assert
+            Assert.False(parameter.TryGetNamedParameter("parameter", out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void TryGetNamedParameter_ReturnsFalseForArrays()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(new[]
+            {
+                "Fabrikam",
+                "Contoso"
+            });
+
+            // Act and assert
+            Assert.False(parameter.TryGetNamedParameter("Fabrikam", out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void TryGetNamedParameter_ReturnsFalseForNonexistentItem()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(new JsonElement());
+
+            // Act and assert
+            Assert.False(parameter.TryGetNamedParameter("parameter", out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void TryGetNamedParameter_ReturnsFalseForJsonArrays()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
+
+            // Act and assert
+            Assert.False(parameter.TryGetNamedParameter("Fabrikam", out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void TryGetNamedParameter_ReturnsExpectedParameterForJsonObject()
         {
             // Arrange
             var parameter = new OpenIddictParameter(
                 JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}"));
 
             // Act and assert
-            Assert.True(parameter.TryGetParameter("parameter", out var value));
+            Assert.True(parameter.TryGetNamedParameter("parameter", out var value));
             Assert.Equal("value", (string) value);
         }
 
         [Fact]
-        public void TryGetParameter_ReturnsFalse()
+        public void TryGetUnnamedParameter_ThrowsAnExceptionForNegativeIndex()
         {
             // Arrange
             var parameter = new OpenIddictParameter();
 
+            // Act
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => parameter.TryGetUnnamedParameter(-1, out _));
+
+            // Assert
+            Assert.Equal("index", exception.ParamName);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1192), exception.Message);
+        }
+
+        [Fact]
+        public void TryGetUnnamedParameter_ReturnsFalseForPrimitiveValues()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(42);
+
             // Act and assert
-            Assert.False(parameter.TryGetParameter("parameter", out var value));
-            Assert.Null(value.Value);
+            Assert.False(parameter.TryGetUnnamedParameter(0, out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void GetParameter_ReturnsFalseForOutOfRangeArrayIndex()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(new[]
+            {
+                "Fabrikam",
+                "Contoso"
+            });
+
+            // Act and assert
+            Assert.False(parameter.TryGetUnnamedParameter(2, out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void TryGetUnnamedParameter_ReturnsExpectedNodeForArray()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(new[]
+            {
+                "Fabrikam",
+                "Contoso"
+            });
+
+            // Act and assert
+            Assert.True(parameter.TryGetUnnamedParameter(0, out var value));
+            Assert.Equal("Fabrikam", (string) value);
+        }
+
+        [Fact]
+        public void TryGetUnnamedParameter_ReturnsFalseForOutOfRangeJsonArrayIndex()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
+
+            // Act and assert
+            Assert.False(parameter.TryGetUnnamedParameter(2, out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void TryGetUnnamedParameter_ReturnsFalseForJsonObjects()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}"));
+
+            // Act and assert
+            Assert.False(parameter.TryGetUnnamedParameter(0, out var value));
+            Assert.Equal(default, value);
+        }
+
+        [Fact]
+        public void TryGetUnnamedParameter_ReturnsExpectedNodeForJsonArray()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"));
+
+            // Act and assert
+            Assert.True(parameter.TryGetUnnamedParameter(0, out var value));
+            Assert.Equal("Fabrikam", (string) value);
         }
 
         [Fact]
