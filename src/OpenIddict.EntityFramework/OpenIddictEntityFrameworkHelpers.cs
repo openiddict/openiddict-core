@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
@@ -26,7 +25,7 @@ namespace System.Data.Entity
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbModelBuilder UseOpenIddict([NotNull] this DbModelBuilder builder)
+        public static DbModelBuilder UseOpenIddict(this DbModelBuilder builder)
             => builder.UseOpenIddict<OpenIddictEntityFrameworkApplication,
                                      OpenIddictEntityFrameworkAuthorization,
                                      OpenIddictEntityFrameworkScope,
@@ -42,7 +41,7 @@ namespace System.Data.Entity
         /// </remarks>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this DbModelBuilder builder)
+        public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this DbModelBuilder builder)
             where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
             where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkScope<TKey>
@@ -70,7 +69,7 @@ namespace System.Data.Entity
         /// <param name="source">The query source.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The non-streamed async enumeration containing the results.</returns>
-        internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>([NotNull] this IQueryable<T> source, CancellationToken cancellationToken)
+        internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
             {

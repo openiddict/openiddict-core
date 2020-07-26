@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
@@ -26,9 +25,9 @@ namespace OpenIddict.EntityFramework
         private readonly IServiceProvider _provider;
 
         public OpenIddictEntityFrameworkScopeStoreResolver(
-            [NotNull] TypeResolutionCache cache,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options,
-            [NotNull] IServiceProvider provider)
+            TypeResolutionCache cache,
+            IOptionsMonitor<OpenIddictEntityFrameworkOptions> options,
+            IServiceProvider provider)
         {
             _cache = cache;
             _options = options;
