@@ -38,18 +38,16 @@ namespace OpenIddict.EntityFramework
                 .IsConcurrencyToken();
 
             Property(authorization => authorization.Status)
-                .HasMaxLength(25)
-                .IsRequired();
+                .HasMaxLength(25);
 
             Property(authorization => authorization.Subject)
                 .HasMaxLength(450);
 
             Property(authorization => authorization.Type)
-                .HasMaxLength(25)
-                .IsRequired();
+                .HasMaxLength(25);
 
             HasMany(authorization => authorization.Tokens)
-                .WithOptional(token => token.Authorization)
+                .WithOptional(token => token.Authorization!)
                 .Map(association => association.MapKey(nameof(OpenIddictEntityFrameworkToken.Authorization) +
                                                        nameof(OpenIddictEntityFrameworkAuthorization.Id)))
                 .WillCascadeOnDelete();

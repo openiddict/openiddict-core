@@ -47,15 +47,13 @@ namespace OpenIddict.EntityFramework
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
             Property(token => token.Status)
-                .HasMaxLength(25)
-                .IsRequired();
+                .HasMaxLength(25);
 
             Property(token => token.Subject)
                 .HasMaxLength(450);
 
             Property(token => token.Type)
-                .HasMaxLength(25)
-                .IsRequired();
+                .HasMaxLength(25);
 
             ToTable("OpenIddictTokens");
         }

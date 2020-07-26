@@ -37,7 +37,6 @@ namespace OpenIddict.EntityFramework
 
             Property(application => application.ClientId)
                 .HasMaxLength(100)
-                .IsRequired()
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
                 {
                     IsUnique = true
@@ -48,11 +47,10 @@ namespace OpenIddict.EntityFramework
                 .IsConcurrencyToken();
 
             Property(application => application.Type)
-                .HasMaxLength(25)
-                .IsRequired();
+                .HasMaxLength(25);
 
             HasMany(application => application.Authorizations)
-                .WithOptional(authorization => authorization.Application)
+                .WithOptional(authorization => authorization.Application!)
                 .Map(association =>
                 {
                     association.MapKey(nameof(OpenIddictEntityFrameworkAuthorization.Application) +
@@ -60,7 +58,7 @@ namespace OpenIddict.EntityFramework
                 });
 
             HasMany(application => application.Tokens)
-                .WithOptional(token => token.Application)
+                .WithOptional(token => token.Application!)
                 .Map(association =>
                 {
                     association.MapKey(nameof(OpenIddictEntityFrameworkToken.Application) +

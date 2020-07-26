@@ -37,7 +37,6 @@ namespace OpenIddict.EntityFramework
 
             Property(scope => scope.Name)
                 .HasMaxLength(200)
-                .IsRequired()
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
                 {
                     IsUnique = true
