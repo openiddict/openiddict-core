@@ -55,6 +55,11 @@ namespace Mvc.Server
                     // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
                     options.UseEntityFrameworkCore()
                            .UseDbContext<ApplicationDbContext>();
+
+                    // Developers who prefer using MongoDB can remove the previous lines
+                    // and configure OpenIddict to use the specified MongoDB database:
+                    // options.UseMongoDb()
+                    //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
                 })
 
                 // Register the OpenIddict server components.
