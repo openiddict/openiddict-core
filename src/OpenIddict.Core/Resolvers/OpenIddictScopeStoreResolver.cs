@@ -1,5 +1,4 @@
 ﻿using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -13,7 +12,7 @@ namespace OpenIddict.Core
     {
         private readonly IServiceProvider _provider;
 
-        public OpenIddictScopeStoreResolver([NotNull] IServiceProvider provider)
+        public OpenIddictScopeStoreResolver(IServiceProvider provider)
             => _provider = provider;
 
         /// <summary>

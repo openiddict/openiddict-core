@@ -12,7 +12,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -32,8 +31,8 @@ namespace OpenIddict.Core
         private readonly IOpenIddictScopeStore<TScope> _store;
 
         public OpenIddictScopeCache(
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options,
-            [NotNull] IOpenIddictScopeStoreResolver resolver)
+            IOptionsMonitor<OpenIddictCoreOptions> options,
+            IOpenIddictScopeStoreResolver resolver)
         {
             _cache = new MemoryCache(new MemoryCacheOptions
             {
@@ -44,13 +43,8 @@ namespace OpenIddict.Core
             _store = resolver.Get<TScope>();
         }
 
-        /// <summary>
-        /// Add the specified scope to the cache.
-        /// </summary>
-        /// <param name="scope">The scope to add to the cache.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public async ValueTask AddAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public async ValueTask AddAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -91,9 +85,7 @@ namespace OpenIddict.Core
             }, scope, cancellationToken);
         }
 
-        /// <summary>
-        /// Disposes the resources held by this instance.
-        /// </summary>
+        /// <inheritdoc/>
         public void Dispose()
         {
             foreach (var signal in _signals)
@@ -104,16 +96,8 @@ namespace OpenIddict.Core
             _cache.Dispose();
         }
 
-        /// <summary>
-        /// Retrieves a scope using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scope corresponding to the identifier.
-        /// </returns>
-        public ValueTask<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -126,12 +110,14 @@ namespace OpenIddict.Core
                 Identifier = identifier
             };
 
-            if (_cache.TryGetValue(parameters, out TScope scope))
+            if (_cache.TryGetValue(parameters, out TScope? scope))
             {
-                return new ValueTask<TScope>(scope);
+                return new ValueTask<TScope?>(scope);
             }
 
-            async Task<TScope> ExecuteAsync()
+            return new ValueTask<TScope?>(ExecuteAsync());
+
+            async Task<TScope?> ExecuteAsync()
             {
                 if ((scope = await _store.FindByIdAsync(identifier, cancellationToken)) != null)
                 {
@@ -142,20 +128,10 @@ namespace OpenIddict.Core
 
                 return scope;
             }
-
-            return new ValueTask<TScope>(ExecuteAsync());
         }
 
-        /// <summary>
-        /// Retrieves a scope using its name.
-        /// </summary>
-        /// <param name="name">The name associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scope corresponding to the specified name.
-        /// </returns>
-        public ValueTask<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -168,12 +144,12 @@ namespace OpenIddict.Core
                 Name = name
             };
 
-            if (_cache.TryGetValue(parameters, out TScope scope))
+            if (_cache.TryGetValue(parameters, out TScope? scope))
             {
-                return new ValueTask<TScope>(scope);
+                return new ValueTask<TScope?>(scope);
             }
 
-            async Task<TScope> ExecuteAsync()
+            async Task<TScope?> ExecuteAsync()
             {
                 if ((scope = await _store.FindByNameAsync(name, cancellationToken)) != null)
                 {
@@ -185,15 +161,10 @@ namespace OpenIddict.Core
                 return scope;
             }
 
-            return new ValueTask<TScope>(ExecuteAsync());
+            return new ValueTask<TScope?>(ExecuteAsync());
         }
 
-        /// <summary>
-        /// Retrieves a list of scopes using their name.
-        /// </summary>
-        /// <param name="names">The names associated with the scopes.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The scopes corresponding to the specified names.</returns>
+        /// <inheritdoc/>
         public IAsyncEnumerable<TScope> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken)
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
@@ -216,13 +187,8 @@ namespace OpenIddict.Core
             }
         }
 
-        /// <summary>
-        /// Retrieves all the scopes that contain the specified resource.
-        /// </summary>
-        /// <param name="resource">The resource associated with the scopes.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The scopes associated with the specified resource.</returns>
-        public IAsyncEnumerable<TScope> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public IAsyncEnumerable<TScope> FindByResourceAsync(string resource, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(resource))
             {
@@ -262,13 +228,8 @@ namespace OpenIddict.Core
             }
         }
 
-        /// <summary>
-        /// Removes the specified scope from the cache.
-        /// </summary>
-        /// <param name="scope">The scope to remove from the cache.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public async ValueTask RemoveAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public async ValueTask RemoveAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -281,7 +242,7 @@ namespace OpenIddict.Core
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1195));
             }
 
-            if (_signals.TryRemove(identifier, out CancellationTokenSource signal))
+            if (_signals.TryRemove(identifier, out CancellationTokenSource? signal))
             {
                 signal.Cancel();
                 signal.Dispose();
@@ -295,8 +256,7 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope to store in the cache entry, if applicable.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        protected virtual async ValueTask CreateEntryAsync(
-            [NotNull] object key, [CanBeNull] TScope scope, CancellationToken cancellationToken)
+        protected virtual async ValueTask CreateEntryAsync(object key, TScope? scope, CancellationToken cancellationToken)
         {
             if (key == null)
             {
@@ -328,7 +288,7 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         protected virtual async ValueTask CreateEntryAsync(
-            [NotNull] object key, [CanBeNull] ImmutableArray<TScope> scopes, CancellationToken cancellationToken)
+            object key, ImmutableArray<TScope> scopes, CancellationToken cancellationToken)
         {
             if (key == null)
             {
@@ -362,7 +322,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns an expiration signal for the specified scope.
         /// </returns>
-        protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {

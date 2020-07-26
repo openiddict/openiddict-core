@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
@@ -24,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictCoreBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictCoreBuilder([NotNull] IServiceCollection services)
+        public OpenIddictCoreBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder Configure([NotNull] Action<OpenIddictCoreOptions> configuration)
+        public OpenIddictCoreBuilder Configure(Action<OpenIddictCoreOptions> configuration)
         {
             if (configuration == null)
             {
@@ -73,8 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddApplicationStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddApplicationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -130,8 +128,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddAuthorizationStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddAuthorizationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -187,8 +184,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddScopeStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddScopeStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -244,8 +240,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddTokenStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddTokenStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -299,7 +294,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceApplicationManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceApplicationManager(Type type)
         {
             if (type == null)
             {
@@ -356,7 +351,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceApplicationStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -393,7 +388,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceAuthorizationManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceAuthorizationManager(Type type)
         {
             if (type == null)
             {
@@ -450,7 +445,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -487,7 +482,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceScopeManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceScopeManager(Type type)
         {
             if (type == null)
             {
@@ -544,7 +539,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceScopeStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -581,7 +576,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceTokenManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceTokenManager(Type type)
         {
             if (type == null)
             {
@@ -638,7 +633,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceTokenStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -687,7 +682,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The application entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultApplicationEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultApplicationEntity(Type type)
         {
             if (type == null)
             {
@@ -714,7 +709,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The authorization entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity(Type type)
         {
             if (type == null)
             {
@@ -741,7 +736,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The scope entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultScopeEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultScopeEntity(Type type)
         {
             if (type == null)
             {
@@ -768,7 +763,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The token entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultTokenEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultTokenEntity(Type type)
         {
             if (type == null)
             {
@@ -805,7 +800,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -819,6 +814,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }
