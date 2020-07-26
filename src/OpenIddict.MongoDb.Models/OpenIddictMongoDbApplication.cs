@@ -24,8 +24,8 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the client identifier
         /// associated with the current application.
         /// </summary>
-        [BsonElement("client_id"), BsonRequired]
-        public virtual string ClientId { get; set; }
+        [BsonElement("client_id"), BsonIgnoreIfNull]
+        public virtual string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the client secret associated with the current application.
@@ -33,27 +33,27 @@ namespace OpenIddict.MongoDb.Models
         /// this property may be hashed or encrypted for security reasons.
         /// </summary>
         [BsonElement("client_secret"), BsonIgnoreIfNull]
-        public virtual string ClientSecret { get; set; }
+        public virtual string? ClientSecret { get; set; }
 
         /// <summary>
         /// Gets or sets the concurrency token.
         /// </summary>
-        [BsonElement("concurrency_token"), BsonRequired]
-        public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
+        [BsonElement("concurrency_token"), BsonIgnoreIfNull]
+        public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the consent type
         /// associated with the current application.
         /// </summary>
         [BsonElement("consent_type"), BsonIgnoreIfNull]
-        public virtual string ConsentType { get; set; }
+        public virtual string? ConsentType { get; set; }
 
         /// <summary>
         /// Gets or sets the display name
         /// associated with the current application.
         /// </summary>
         [BsonElement("display_name"), BsonIgnoreIfNull]
-        public virtual string DisplayName { get; set; }
+        public virtual string? DisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets the localized display names
@@ -86,7 +86,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the additional properties associated with the current application.
         /// </summary>
         [BsonElement("properties"), BsonIgnoreIfNull]
-        public virtual BsonDocument Properties { get; set; }
+        public virtual BsonDocument? Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the callback URLs associated with the current application.
@@ -104,7 +104,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the application type
         /// associated with the current application.
         /// </summary>
-        [BsonElement("type"), BsonRequired]
-        public virtual string Type { get; set; }
+        [BsonElement("type"), BsonIgnoreIfNull]
+        public virtual string? Type { get; set; }
     }
 }

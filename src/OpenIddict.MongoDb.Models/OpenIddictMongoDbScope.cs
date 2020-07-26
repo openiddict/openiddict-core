@@ -23,15 +23,15 @@ namespace OpenIddict.MongoDb.Models
         /// <summary>
         /// Gets or sets the concurrency token.
         /// </summary>
-        [BsonElement("concurrency_token"), BsonRequired]
-        public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
+        [BsonElement("concurrency_token"), BsonIgnoreIfNull]
+        public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the public description
         /// associated with the current scope.
         /// </summary>
         [BsonElement("description"), BsonIgnoreIfNull]
-        public virtual string Description { get; set; }
+        public virtual string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets the localized public descriptions
@@ -46,7 +46,7 @@ namespace OpenIddict.MongoDb.Models
         /// associated with the current scope.
         /// </summary>
         [BsonElement("display_name"), BsonIgnoreIfNull]
-        public virtual string DisplayName { get; set; }
+        public virtual string? DisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets the localized display names
@@ -67,14 +67,14 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the unique name
         /// associated with the current scope.
         /// </summary>
-        [BsonElement("name"), BsonRequired]
-        public virtual string Name { get; set; }
+        [BsonElement("name"), BsonIgnoreIfNull]
+        public virtual string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the additional properties associated with the current scope.
         /// </summary>
         [BsonElement("properties"), BsonIgnoreIfNull]
-        public virtual BsonDocument Properties { get; set; }
+        public virtual BsonDocument? Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the resources associated with the current scope.
