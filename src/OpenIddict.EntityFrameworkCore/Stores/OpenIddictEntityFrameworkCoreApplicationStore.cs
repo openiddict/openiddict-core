@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -18,7 +19,6 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -41,9 +41,9 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
     {
         public OpenIddictEntityFrameworkCoreApplicationStore(
-            [NotNull] IMemoryCache cache,
-            [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            IMemoryCache cache,
+            TContext context,
+            IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
             : base(cache, context, options)
         {
         }
@@ -62,9 +62,9 @@ namespace OpenIddict.EntityFrameworkCore
         where TKey : IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkCoreApplicationStore(
-            [NotNull] IMemoryCache cache,
-            [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            IMemoryCache cache,
+            TContext context,
+            IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
             : base(cache, context, options)
         {
         }
@@ -86,9 +86,9 @@ namespace OpenIddict.EntityFrameworkCore
         where TKey : IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkCoreApplicationStore(
-            [NotNull] IMemoryCache cache,
-            [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            IMemoryCache cache,
+            TContext context,
+            IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -136,17 +136,8 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
             => await Applications.AsQueryable().LongCountAsync(cancellationToken);
 
-        /// <summary>
-        /// Determines the number of applications that match the specified query.
-        /// </summary>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the number of applications that match the specified query.
-        /// </returns>
-        public virtual async ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -156,13 +147,8 @@ namespace OpenIddict.EntityFrameworkCore
             return await query(Applications).LongCountAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Creates a new application.
-        /// </summary>
-        /// <param name="application">The application to create.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask CreateAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -174,20 +160,15 @@ namespace OpenIddict.EntityFrameworkCore
             await Context.SaveChangesAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Removes an existing application.
-        /// </summary>
-        /// <param name="application">The application to delete.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask DeleteAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            async ValueTask<IDbContextTransaction> CreateTransactionAsync()
+            async ValueTask<IDbContextTransaction?> CreateTransactionAsync()
             {
                 // Note: transactions that specify an explicit isolation level are only supported by
                 // relational providers and trying to use them with a different provider results in
@@ -217,8 +198,8 @@ namespace OpenIddict.EntityFrameworkCore
 
             Task<List<TAuthorization>> ListAuthorizationsAsync()
                 => (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
-                    join element in Applications.AsTracking() on authorization.Application.Id equals element.Id
-                    where element.Id.Equals(application.Id)
+                    join element in Applications.AsTracking() on authorization.Application!.Id equals element.Id
+                    where element.Id!.Equals(application.Id)
                     select authorization).ToListAsync(cancellationToken);
 
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
@@ -229,8 +210,8 @@ namespace OpenIddict.EntityFrameworkCore
             Task<List<TToken>> ListTokensAsync()
                 => (from token in Tokens.AsTracking()
                     where token.Authorization == null
-                    join element in Applications.AsTracking() on token.Application.Id equals element.Id
-                    where element.Id.Equals(application.Id)
+                    join element in Applications.AsTracking() on token.Application!.Id equals element.Id
+                    where element.Id!.Equals(application.Id)
                     select token).ToListAsync(cancellationToken);
 
             // To prevent an SQL exception from being thrown if a new associated entity is
@@ -285,16 +266,8 @@ namespace OpenIddict.EntityFrameworkCore
             }
         }
 
-        /// <summary>
-        /// Retrieves an application using its client identifier.
-        /// </summary>
-        /// <param name="identifier">The client identifier associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client application corresponding to the identifier.
-        /// </returns>
-        public virtual async ValueTask<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask<TApplication?> FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -306,16 +279,8 @@ namespace OpenIddict.EntityFrameworkCore
                           select application).FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves an application using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client application corresponding to the identifier.
-        /// </returns>
-        public virtual async ValueTask<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -325,18 +290,13 @@ namespace OpenIddict.EntityFrameworkCore
             var key = ConvertIdentifierFromString(identifier);
 
             return await (from application in Applications.AsTracking()
-                          where application.Id.Equals(key)
+                          where application.Id!.Equals(key)
                           select application).FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
-        /// </summary>
-        /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-            [NotNull] string address, CancellationToken cancellationToken)
+            string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -354,7 +314,7 @@ namespace OpenIddict.EntityFrameworkCore
             async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var applications = (from application in Applications.AsTracking()
-                                    where application.PostLogoutRedirectUris.Contains(address)
+                                    where application.PostLogoutRedirectUris!.Contains(address)
                                     select application).AsAsyncEnumerable();
 
                 await foreach (var application in applications)
@@ -368,14 +328,9 @@ namespace OpenIddict.EntityFrameworkCore
             }
         }
 
-        /// <summary>
-        /// Retrieves all the applications associated with the specified redirect_uri.
-        /// </summary>
-        /// <param name="address">The redirect_uri associated with the applications.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-            [NotNull] string address, CancellationToken cancellationToken)
+            string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -393,7 +348,7 @@ namespace OpenIddict.EntityFrameworkCore
             async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var applications = (from application in Applications.AsTracking()
-                                    where application.RedirectUris.Contains(address)
+                                    where application.RedirectUris!.Contains(address)
                                     select application).AsAsyncEnumerable();
 
                 await foreach (var application in applications)
@@ -407,21 +362,10 @@ namespace OpenIddict.EntityFrameworkCore
             }
         }
 
-        /// <summary>
-        /// Executes the specified query and returns the first element.
-        /// </summary>
-        /// <typeparam name="TState">The state type.</typeparam>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="state">The optional state.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the first element returned when executing the query.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -431,113 +375,63 @@ namespace OpenIddict.EntityFrameworkCore
             return await query(Applications.AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves the client identifier associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client identifier associated with the application.
-        /// </returns>
-        public virtual ValueTask<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetClientIdAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return new ValueTask<string>(application.ClientId);
+            return new ValueTask<string?>(application.ClientId);
         }
 
-        /// <summary>
-        /// Retrieves the client secret associated with an application.
-        /// Note: depending on the manager used to create the application,
-        /// the client secret may be hashed for security reasons.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client secret associated with the application.
-        /// </returns>
-        public virtual ValueTask<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetClientSecretAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return new ValueTask<string>(application.ClientSecret);
+            return new ValueTask<string?>(application.ClientSecret);
         }
 
-        /// <summary>
-        /// Retrieves the client type associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client type of the application (by default, "public").
-        /// </returns>
-        public virtual ValueTask<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetClientTypeAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return new ValueTask<string>(application.Type);
+            return new ValueTask<string?>(application.Type);
         }
 
-        /// <summary>
-        /// Retrieves the consent type associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the consent type of the application (by default, "explicit").
-        /// </returns>
-        public virtual ValueTask<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetConsentTypeAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return new ValueTask<string>(application.ConsentType);
+            return new ValueTask<string?>(application.ConsentType);
         }
 
-        /// <summary>
-        /// Retrieves the display name associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the display name associated with the application.
-        /// </returns>
-        public virtual ValueTask<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return new ValueTask<string>(application.DisplayName);
+            return new ValueTask<string?>(application.DisplayName);
         }
 
-        /// <summary>
-        /// Retrieves the localized display names associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the localized display names associated with the application.
-        /// </returns>
-        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -564,35 +458,19 @@ namespace OpenIddict.EntityFrameworkCore
             return new ValueTask<ImmutableDictionary<CultureInfo, string>>(names);
         }
 
-        /// <summary>
-        /// Retrieves the unique identifier associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the unique identifier associated with the application.
-        /// </returns>
-        public virtual ValueTask<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetIdAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return new ValueTask<string>(ConvertIdentifierToString(application.Id));
+            return new ValueTask<string?>(ConvertIdentifierToString(application.Id));
         }
 
-        /// <summary>
-        /// Retrieves the permissions associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the permissions associated with the application.
-        /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -618,16 +496,8 @@ namespace OpenIddict.EntityFrameworkCore
             return new ValueTask<ImmutableArray<string>>(permissions);
         }
 
-        /// <summary>
-        /// Retrieves the logout callback addresses associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the post_logout_redirect_uri associated with the application.
-        /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -653,16 +523,8 @@ namespace OpenIddict.EntityFrameworkCore
             return new ValueTask<ImmutableArray<string>>(addresses);
         }
 
-        /// <summary>
-        /// Retrieves the additional properties associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the additional properties associated with the application.
-        /// </returns>
-        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -688,16 +550,8 @@ namespace OpenIddict.EntityFrameworkCore
             return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
         }
 
-        /// <summary>
-        /// Retrieves the callback addresses associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the redirect_uri associated with the application.
-        /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableArray<string>> GetRedirectUrisAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -723,16 +577,8 @@ namespace OpenIddict.EntityFrameworkCore
             return new ValueTask<ImmutableArray<string>>(addresses);
         }
 
-        /// <summary>
-        /// Retrieves the requirements associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the requirements associated with the application.
-        /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetRequirementsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableArray<string>> GetRequirementsAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -758,14 +604,7 @@ namespace OpenIddict.EntityFrameworkCore
             return new ValueTask<ImmutableArray<string>>(requirements);
         }
 
-        /// <summary>
-        /// Instantiates a new application.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the instantiated application, that can be persisted in the database.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken)
         {
             try
@@ -780,17 +619,10 @@ namespace OpenIddict.EntityFrameworkCore
             }
         }
 
-        /// <summary>
-        /// Executes the specified query and returns all the corresponding elements.
-        /// </summary>
-        /// <param name="count">The number of results to return.</param>
-        /// <param name="offset">The number of results to skip.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>All the elements returned when executing the specified query.</returns>
-        public virtual IAsyncEnumerable<TApplication> ListAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual IAsyncEnumerable<TApplication> ListAsync(int? count, int? offset, CancellationToken cancellationToken)
         {
-            var query = Applications.AsQueryable().OrderBy(application => application.Id).AsTracking();
+            var query = Applications.AsQueryable().OrderBy(application => application.Id!).AsTracking();
 
             if (offset.HasValue)
             {
@@ -805,18 +637,10 @@ namespace OpenIddict.EntityFrameworkCore
             return query.AsAsyncEnumerable();
         }
 
-        /// <summary>
-        /// Executes the specified query and returns all the corresponding elements.
-        /// </summary>
-        /// <typeparam name="TState">The state type.</typeparam>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="state">The optional state.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>All the elements returned when executing the specified query.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -826,15 +650,8 @@ namespace OpenIddict.EntityFrameworkCore
             return query(Applications.AsTracking(), state).AsAsyncEnumerable();
         }
 
-        /// <summary>
-        /// Sets the client identifier associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="identifier">The client identifier associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetClientIdAsync([NotNull] TApplication application,
-            [CanBeNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetClientIdAsync(TApplication application, string? identifier, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -846,17 +663,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the client secret associated with an application.
-        /// Note: depending on the manager used to create the application,
-        /// the client secret may be hashed for security reasons.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="secret">The client secret associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetClientSecretAsync([NotNull] TApplication application,
-            [CanBeNull] string secret, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetClientSecretAsync(TApplication application, string? secret, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -868,15 +676,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the client type associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="type">The client type associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetClientTypeAsync([NotNull] TApplication application,
-            [CanBeNull] string type, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetClientTypeAsync(TApplication application, string? type, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -888,15 +689,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the consent type associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="type">The consent type associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetConsentTypeAsync([NotNull] TApplication application,
-            [CanBeNull] string type, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetConsentTypeAsync(TApplication application, string? type, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -908,15 +702,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the display name associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="name">The display name associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetDisplayNameAsync([NotNull] TApplication application,
-            [CanBeNull] string name, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetDisplayNameAsync(TApplication application, string? name, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -928,15 +715,9 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the localized display names associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="names">The localized display names associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetDisplayNamesAsync([NotNull] TApplication application,
-            [CanBeNull] ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetDisplayNamesAsync(TApplication application,
+            ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -958,7 +739,7 @@ namespace OpenIddict.EntityFrameworkCore
             });
 
             writer.WriteStartObject();
-            
+
             foreach (var pair in names)
             {
                 writer.WritePropertyName(pair.Key.Name);
@@ -973,14 +754,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the permissions associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="permissions">The permissions associated with the application </param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetPermissionsAsync(TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -1003,14 +778,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the logout callback addresses associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="addresses">The logout callback addresses associated with the application </param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
+        /// <inheritdoc/>
+        public virtual ValueTask SetPostLogoutRedirectUrisAsync(TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -1034,15 +803,9 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the additional properties associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="properties">The additional properties associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application,
-            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetPropertiesAsync(TApplication application,
+            ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -1065,14 +828,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the callback addresses associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="addresses">The callback addresses associated with the application </param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetRedirectUrisAsync([NotNull] TApplication application,
+        /// <inheritdoc/>
+        public virtual ValueTask SetRedirectUrisAsync(TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -1096,14 +853,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Sets the requirements associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="requirements">The requirements associated with the application </param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetRequirementsAsync([NotNull] TApplication application, ImmutableArray<string> requirements, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetRequirementsAsync(TApplication application, ImmutableArray<string> requirements, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -1126,13 +877,8 @@ namespace OpenIddict.EntityFrameworkCore
             return default;
         }
 
-        /// <summary>
-        /// Updates an existing application.
-        /// </summary>
-        /// <param name="application">The application to update.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask UpdateAsync(TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -1166,7 +912,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
-        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier)
+        [return: MaybeNull]
+        public virtual TKey ConvertIdentifierFromString(string? identifier)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -1181,7 +928,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
-        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier)
+        public virtual string? ConvertIdentifierToString([AllowNull] TKey identifier)
         {
             if (Equals(identifier, default(TKey)))
             {

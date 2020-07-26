@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -27,7 +26,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : IEquatable<TKey>
     {
-        public void Configure([NotNull] EntityTypeBuilder<TApplication> builder)
+        public void Configure(EntityTypeBuilder<TApplication> builder)
         {
             if (builder == null)
             {
@@ -47,28 +46,26 @@ namespace OpenIddict.EntityFrameworkCore
                    .IsUnique();
 
             builder.Property(application => application.ClientId)
-                   .HasMaxLength(100)
-                   .IsRequired();
+                   .HasMaxLength(100);
 
             builder.Property(application => application.ConcurrencyToken)
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
-            builder.Property(application => application.Id)
+            builder.Property(application => application.Id!)
                    .ValueGeneratedOnAdd();
 
             builder.Property(application => application.Type)
-                   .HasMaxLength(25)
-                   .IsRequired();
+                   .HasMaxLength(25);
 
             builder.HasMany(application => application.Authorizations)
-                   .WithOne(authorization => authorization.Application)
+                   .WithOne(authorization => authorization.Application!)
                    .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreAuthorization.Application) +
                                   nameof(OpenIddictEntityFrameworkCoreApplication.Id))
                    .IsRequired(required: false);
 
             builder.HasMany(application => application.Tokens)
-                   .WithOne(token => token.Application)
+                   .WithOne(token => token.Application!)
                    .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreToken.Application) + nameof(OpenIddictEntityFrameworkCoreApplication.Id))
                    .IsRequired(required: false);
 

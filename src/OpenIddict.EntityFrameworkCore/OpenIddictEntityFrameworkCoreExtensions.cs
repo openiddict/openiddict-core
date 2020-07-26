@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -24,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
-        public static OpenIddictEntityFrameworkCoreBuilder UseEntityFrameworkCore([NotNull] this OpenIddictCoreBuilder builder)
+        public static OpenIddictEntityFrameworkCoreBuilder UseEntityFrameworkCore(this OpenIddictCoreBuilder builder)
         {
             if (builder == null)
             {
@@ -68,8 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public static OpenIddictCoreBuilder UseEntityFrameworkCore(
-            [NotNull] this OpenIddictCoreBuilder builder,
-            [NotNull] Action<OpenIddictEntityFrameworkCoreBuilder> configuration)
+            this OpenIddictCoreBuilder builder, Action<OpenIddictEntityFrameworkCoreBuilder> configuration)
         {
             if (builder == null)
             {

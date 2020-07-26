@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFrameworkCore;
@@ -28,7 +27,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbContextOptionsBuilder UseOpenIddict([NotNull] this DbContextOptionsBuilder builder)
+        public static DbContextOptionsBuilder UseOpenIddict(this DbContextOptionsBuilder builder)
             => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication,
                                      OpenIddictEntityFrameworkCoreAuthorization,
                                      OpenIddictEntityFrameworkCoreScope,
@@ -44,7 +43,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </remarks>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbContextOptionsBuilder UseOpenIddict<TKey>([NotNull] this DbContextOptionsBuilder builder)
+        public static DbContextOptionsBuilder UseOpenIddict<TKey>(this DbContextOptionsBuilder builder)
             where TKey : IEquatable<TKey>
             => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication<TKey>,
                                      OpenIddictEntityFrameworkCoreAuthorization<TKey>,
@@ -62,7 +61,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static DbContextOptionsBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(
-            [NotNull] this DbContextOptionsBuilder builder)
+            this DbContextOptionsBuilder builder)
             where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
             where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
@@ -84,7 +83,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict([NotNull] this ModelBuilder builder)
+        public static ModelBuilder UseOpenIddict(this ModelBuilder builder)
             => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication,
                                      OpenIddictEntityFrameworkCoreAuthorization,
                                      OpenIddictEntityFrameworkCoreScope,
@@ -100,7 +99,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </remarks>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict<TKey>([NotNull] this ModelBuilder builder) where TKey : IEquatable<TKey>
+        public static ModelBuilder UseOpenIddict<TKey>(this ModelBuilder builder) where TKey : IEquatable<TKey>
             => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication<TKey>,
                                      OpenIddictEntityFrameworkCoreAuthorization<TKey>,
                                      OpenIddictEntityFrameworkCoreScope<TKey>,
@@ -116,7 +115,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </remarks>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this ModelBuilder builder)
+        public static ModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this ModelBuilder builder)
             where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
             where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
@@ -144,7 +143,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The non-streamed async enumeration containing the results.</returns>
         internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(
-            [NotNull] this IQueryable<T> source, CancellationToken cancellationToken = default)
+            this IQueryable<T> source, CancellationToken cancellationToken = default)
         {
             if (source == null)
             {
