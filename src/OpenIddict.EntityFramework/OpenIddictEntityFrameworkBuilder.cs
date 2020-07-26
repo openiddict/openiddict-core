@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework;
@@ -25,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictEntityFrameworkBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictEntityFrameworkBuilder([NotNull] IServiceCollection services)
+        public OpenIddictEntityFrameworkBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-        public OpenIddictEntityFrameworkBuilder Configure([NotNull] Action<OpenIddictEntityFrameworkOptions> configuration)
+        public OpenIddictEntityFrameworkBuilder Configure(Action<OpenIddictEntityFrameworkOptions> configuration)
         {
             if (configuration == null)
             {
@@ -98,7 +97,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-        public OpenIddictEntityFrameworkBuilder UseDbContext([NotNull] Type type)
+        public OpenIddictEntityFrameworkBuilder UseDbContext(Type type)
         {
             if (type == null)
             {
@@ -121,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -135,6 +134,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }
