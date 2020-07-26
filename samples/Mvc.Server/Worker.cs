@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mvc.Server.Models;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
-using OpenIddict.EntityFrameworkCore.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server
@@ -30,7 +28,7 @@ namespace Mvc.Server
 
             static async Task RegisterApplicationsAsync(IServiceProvider provider)
             {
-                var manager = provider.GetRequiredService<OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication>>();
+                var manager = provider.GetRequiredService<IOpenIddictApplicationManager>();
 
                 if (await manager.FindByClientIdAsync("mvc") == null)
                 {
@@ -106,7 +104,7 @@ namespace Mvc.Server
 
             static async Task RegisterScopesAsync(IServiceProvider provider)
             {
-                var manager = provider.GetRequiredService<OpenIddictScopeManager<OpenIddictEntityFrameworkCoreScope>>();
+                var manager = provider.GetRequiredService<IOpenIddictScopeManager>();
 
                 if (await manager.FindByNameAsync("demo_api") == null)
                 {

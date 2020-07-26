@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.AspNetCore\OpenIddict.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.MongoDb\OpenIddict.MongoDb.csproj" />
   </ItemGroup>
 
   <ItemGroup>
