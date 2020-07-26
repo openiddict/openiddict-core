@@ -27,7 +27,7 @@ namespace OpenIddict.MongoDb
         /// Gets or sets the <see cref="IMongoDatabase"/> used by the OpenIddict stores.
         /// If no value is explicitly set, the database is resolved from the DI container.
         /// </summary>
-        public IMongoDatabase Database { get; set; }
+        public IMongoDatabase? Database { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the scopes collection (by default, openiddict.scopes).

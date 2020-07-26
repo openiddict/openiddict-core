@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
@@ -22,7 +21,7 @@ namespace OpenIddict.MongoDb
         private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
         private readonly IServiceProvider _provider;
 
-        public OpenIddictMongoDbApplicationStoreResolver([NotNull] IServiceProvider provider)
+        public OpenIddictMongoDbApplicationStoreResolver(IServiceProvider provider)
             => _provider = provider;
 
         /// <summary>

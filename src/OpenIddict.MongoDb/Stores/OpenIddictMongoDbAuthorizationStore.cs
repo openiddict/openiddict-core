@@ -13,7 +13,6 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -32,8 +31,8 @@ namespace OpenIddict.MongoDb
         where TAuthorization : OpenIddictMongoDbAuthorization
     {
         public OpenIddictMongoDbAuthorizationStore(
-            [NotNull] IOpenIddictMongoDbContext context,
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            IOpenIddictMongoDbContext context,
+            IOptionsMonitor<OpenIddictMongoDbOptions> options)
         {
             Context = context;
             Options = options;
@@ -49,14 +48,7 @@ namespace OpenIddict.MongoDb
         /// </summary>
         protected IOptionsMonitor<OpenIddictMongoDbOptions> Options { get; }
 
-        /// <summary>
-        /// Determines the number of authorizations that exist in the database.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the number of authorizations in the database.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -65,18 +57,9 @@ namespace OpenIddict.MongoDb
             return await collection.CountDocumentsAsync(FilterDefinition<TAuthorization>.Empty, null, cancellationToken);
         }
 
-        /// <summary>
-        /// Determines the number of authorizations that match the specified query.
-        /// </summary>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the number of authorizations that match the specified query.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync<TResult>(
-            [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -89,13 +72,8 @@ namespace OpenIddict.MongoDb
             return await ((IMongoQueryable<TAuthorization>) query(collection.AsQueryable())).LongCountAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Creates a new authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization to create.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask CreateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -108,13 +86,8 @@ namespace OpenIddict.MongoDb
             await collection.InsertOneAsync(authorization, null, cancellationToken);
         }
 
-        /// <summary>
-        /// Removes an existing authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization to delete.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask DeleteAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -136,16 +109,9 @@ namespace OpenIddict.MongoDb
                 .DeleteManyAsync(token => token.AuthorizationId == authorization.Id, cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves the authorizations corresponding to the specified
-        /// subject and associated with the application identifier.
-        /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The authorizations corresponding to the subject/client.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-            [NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
+            string subject, string client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -173,17 +139,10 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves the authorizations matching the specified parameters.
-        /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="status">The authorization status.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The authorizations corresponding to the criteria.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, CancellationToken cancellationToken)
+            string subject, string client,
+            string status, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -217,18 +176,10 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves the authorizations matching the specified parameters.
-        /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="status">The authorization status.</param>
-        /// <param name="type">The authorization type.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The authorizations corresponding to the criteria.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken)
+            string subject, string client,
+            string status, string type, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -268,19 +219,10 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves the authorizations matching the specified parameters.
-        /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="status">The authorization status.</param>
-        /// <param name="type">The authorization type.</param>
-        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The authorizations corresponding to the criteria.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TAuthorization> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, [NotNull] string type,
+            string subject, string client,
+            string status, string type,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
@@ -324,14 +266,9 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves the list of authorizations corresponding to the specified application identifier.
-        /// </summary>
-        /// <param name="identifier">The application identifier associated with the authorizations.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The authorizations corresponding to the specified application.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TAuthorization> FindByApplicationIdAsync(
-            [NotNull] string identifier, CancellationToken cancellationToken)
+            string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -353,16 +290,8 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves an authorization using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorization corresponding to the identifier.
-        /// </returns>
-        public virtual async ValueTask<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask<TAuthorization?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -376,14 +305,9 @@ namespace OpenIddict.MongoDb
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves all the authorizations corresponding to the specified subject.
-        /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The authorizations corresponding to the specified subject.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TAuthorization> FindBySubjectAsync(
-            [NotNull] string subject, CancellationToken cancellationToken)
+            string subject, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -405,40 +329,26 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves the optional application identifier associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the application identifier associated with the authorization.
-        /// </returns>
-        public virtual ValueTask<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetApplicationIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return new ValueTask<string>(authorization.ApplicationId.ToString());
+            if (authorization.ApplicationId == ObjectId.Empty)
+            {
+                return new ValueTask<string?>(result: null);
+            }
+
+            return new ValueTask<string?>(authorization.ApplicationId.ToString());
         }
 
-        /// <summary>
-        /// Executes the specified query and returns the first element.
-        /// </summary>
-        /// <typeparam name="TState">The state type.</typeparam>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="state">The optional state.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the first element returned when executing the query.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -451,35 +361,19 @@ namespace OpenIddict.MongoDb
             return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves the unique identifier associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the unique identifier associated with the authorization.
-        /// </returns>
-        public virtual ValueTask<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return new ValueTask<string>(authorization.Id.ToString());
+            return new ValueTask<string?>(authorization.Id.ToString());
         }
 
-        /// <summary>
-        /// Retrieves the additional properties associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the additional properties associated with the authorization.
-        /// </returns>
-        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -495,17 +389,8 @@ namespace OpenIddict.MongoDb
                 JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(authorization.Properties.ToJson()));
         }
 
-        /// <summary>
-        /// Retrieves the scopes associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes associated with the specified authorization.
-        /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(
-            [NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -520,71 +405,40 @@ namespace OpenIddict.MongoDb
             return new ValueTask<ImmutableArray<string>>(authorization.Scopes.ToImmutableArray());
         }
 
-        /// <summary>
-        /// Retrieves the status associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the status associated with the specified authorization.
-        /// </returns>
-        public virtual ValueTask<string> GetStatusAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetStatusAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return new ValueTask<string>(authorization.Status);
+            return new ValueTask<string?>(authorization.Status);
         }
 
-        /// <summary>
-        /// Retrieves the subject associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the subject associated with the specified authorization.
-        /// </returns>
-        public virtual ValueTask<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetSubjectAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return new ValueTask<string>(authorization.Subject);
+            return new ValueTask<string?>(authorization.Subject);
         }
 
-        /// <summary>
-        /// Retrieves the type associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the type associated with the specified authorization.
-        /// </returns>
-        public virtual ValueTask<string> GetTypeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetTypeAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return new ValueTask<string>(authorization.Type);
+            return new ValueTask<string?>(authorization.Type);
         }
 
-        /// <summary>
-        /// Instantiates a new authorization.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the instantiated authorization, that can be persisted in the database.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual ValueTask<TAuthorization> InstantiateAsync(CancellationToken cancellationToken)
         {
             try
@@ -599,15 +453,9 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Executes the specified query and returns all the corresponding elements.
-        /// </summary>
-        /// <param name="count">The number of results to return.</param>
-        /// <param name="offset">The number of results to skip.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>All the elements returned when executing the specified query.</returns>
+        /// <inheritdoc/>
         public virtual async IAsyncEnumerable<TAuthorization> ListAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, [EnumeratorCancellation] CancellationToken cancellationToken)
+            int? count, int? offset, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -630,18 +478,10 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Executes the specified query and returns all the corresponding elements.
-        /// </summary>
-        /// <typeparam name="TState">The state type.</typeparam>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="state">The optional state.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>All the elements returned when executing the specified query.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -662,11 +502,7 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <inheritdoc/>
         public virtual async ValueTask PruneAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -699,7 +535,7 @@ namespace OpenIddict.MongoDb
 
             static IEnumerable<List<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)
             {
-                List<TSource> buffer = null;
+                List<TSource>? buffer = null;
 
                 foreach (var element in source)
                 {
@@ -725,15 +561,9 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Sets the application identifier associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="identifier">The unique identifier associated with the client application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetApplicationIdAsync([NotNull] TAuthorization authorization,
-            [CanBeNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetApplicationIdAsync(TAuthorization authorization,
+            string? identifier, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -753,15 +583,9 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the additional properties associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="properties">The additional properties associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TAuthorization authorization,
-            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetPropertiesAsync(TAuthorization authorization,
+            ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -784,14 +608,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the scopes associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="scopes">The scopes associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetScopesAsync([NotNull] TAuthorization authorization,
+        /// <inheritdoc/>
+        public virtual ValueTask SetScopesAsync(TAuthorization authorization,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -801,7 +619,7 @@ namespace OpenIddict.MongoDb
 
             if (scopes.IsDefaultOrEmpty)
             {
-                authorization.Scopes = null;
+                authorization.Scopes = ImmutableArray.Create<string>();
 
                 return default;
             }
@@ -811,15 +629,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the status associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="status">The status associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetStatusAsync([NotNull] TAuthorization authorization,
-            [CanBeNull] string status, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetStatusAsync(TAuthorization authorization, string? status, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -831,15 +642,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the subject associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetSubjectAsync([NotNull] TAuthorization authorization,
-            [CanBeNull] string subject, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetSubjectAsync(TAuthorization authorization, string? subject, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -851,15 +655,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the type associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="type">The type associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetTypeAsync([NotNull] TAuthorization authorization,
-            [CanBeNull] string type, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetTypeAsync(TAuthorization authorization, string? type, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -871,13 +668,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Updates an existing authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization to update.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask UpdateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {

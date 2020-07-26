@@ -14,7 +14,6 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -33,8 +32,8 @@ namespace OpenIddict.MongoDb
         where TScope : OpenIddictMongoDbScope
     {
         public OpenIddictMongoDbScopeStore(
-            [NotNull] IOpenIddictMongoDbContext context,
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            IOpenIddictMongoDbContext context,
+            IOptionsMonitor<OpenIddictMongoDbOptions> options)
         {
             Context = context;
             Options = options;
@@ -50,14 +49,7 @@ namespace OpenIddict.MongoDb
         /// </summary>
         protected IOptionsMonitor<OpenIddictMongoDbOptions> Options { get; }
 
-        /// <summary>
-        /// Determines the number of scopes that exist in the database.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the number of scopes in the database.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -66,18 +58,9 @@ namespace OpenIddict.MongoDb
             return await collection.CountDocumentsAsync(FilterDefinition<TScope>.Empty, null, cancellationToken);
         }
 
-        /// <summary>
-        /// Determines the number of scopes that match the specified query.
-        /// </summary>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the number of scopes that match the specified query.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync<TResult>(
-            [NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -90,13 +73,8 @@ namespace OpenIddict.MongoDb
             return await ((IMongoQueryable<TScope>) query(collection.AsQueryable())).LongCountAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Creates a new scope.
-        /// </summary>
-        /// <param name="scope">The scope to create.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -109,13 +87,8 @@ namespace OpenIddict.MongoDb
             await collection.InsertOneAsync(scope, null, cancellationToken);
         }
 
-        /// <summary>
-        /// Removes an existing scope.
-        /// </summary>
-        /// <param name="scope">The scope to delete.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -133,16 +106,8 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves a scope using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scope corresponding to the identifier.
-        /// </returns>
-        public virtual async ValueTask<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -155,16 +120,8 @@ namespace OpenIddict.MongoDb
             return await collection.Find(scope => scope.Id == ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves a scope using its name.
-        /// </summary>
-        /// <param name="name">The name associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scope corresponding to the specified name.
-        /// </returns>
-        public virtual async ValueTask<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -177,14 +134,8 @@ namespace OpenIddict.MongoDb
             return await collection.Find(scope => scope.Name == name).FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves a list of scopes using their name.
-        /// </summary>
-        /// <param name="names">The names associated with the scopes.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The scopes corresponding to the specified names.</returns>
-        public virtual IAsyncEnumerable<TScope> FindByNamesAsync(
-            ImmutableArray<string> names, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual IAsyncEnumerable<TScope> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken)
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
@@ -207,14 +158,8 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Retrieves all the scopes that contain the specified resource.
-        /// </summary>
-        /// <param name="resource">The resource associated with the scopes.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The scopes associated with the specified resource.</returns>
-        public virtual IAsyncEnumerable<TScope> FindByResourceAsync(
-            [NotNull] string resource, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual IAsyncEnumerable<TScope> FindByResourceAsync(string resource, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(resource))
             {
@@ -235,21 +180,10 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Executes the specified query and returns the first element.
-        /// </summary>
-        /// <typeparam name="TState">The state type.</typeparam>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="state">The optional state.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the first element returned when executing the query.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -262,35 +196,19 @@ namespace OpenIddict.MongoDb
             return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieves the description associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the description associated with the specified scope.
-        /// </returns>
-        public virtual ValueTask<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return new ValueTask<string>(scope.Description);
+            return new ValueTask<string?>(scope.Description);
         }
 
-        /// <summary>
-        /// Retrieves the localized descriptions associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the localized descriptions associated with the specified scope.
-        /// </returns>
-        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -305,35 +223,19 @@ namespace OpenIddict.MongoDb
             return new ValueTask<ImmutableDictionary<CultureInfo, string>>(scope.Descriptions.ToImmutableDictionary());
         }
 
-        /// <summary>
-        /// Retrieves the display name associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the display name associated with the scope.
-        /// </returns>
-        public virtual ValueTask<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return new ValueTask<string>(scope.DisplayName);
+            return new ValueTask<string?>(scope.DisplayName);
         }
 
-        /// <summary>
-        /// Retrieves the localized display names associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the localized display names associated with the scope.
-        /// </returns>
-        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -348,54 +250,30 @@ namespace OpenIddict.MongoDb
             return new ValueTask<ImmutableDictionary<CultureInfo, string>>(scope.DisplayNames.ToImmutableDictionary());
         }
 
-        /// <summary>
-        /// Retrieves the unique identifier associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the unique identifier associated with the scope.
-        /// </returns>
-        public virtual ValueTask<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return new ValueTask<string>(scope.Id.ToString());
+            return new ValueTask<string?>(scope.Id.ToString());
         }
 
-        /// <summary>
-        /// Retrieves the name associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the name associated with the specified scope.
-        /// </returns>
-        public virtual ValueTask<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return new ValueTask<string>(scope.Name);
+            return new ValueTask<string?>(scope.Name);
         }
 
-        /// <summary>
-        /// Retrieves the additional properties associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the additional properties associated with the scope.
-        /// </returns>
-        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -411,16 +289,8 @@ namespace OpenIddict.MongoDb
                 JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(scope.Properties.ToJson()));
         }
 
-        /// <summary>
-        /// Retrieves the resources associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the resources associated with the scope.
-        /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -435,14 +305,7 @@ namespace OpenIddict.MongoDb
             return new ValueTask<ImmutableArray<string>>(scope.Resources.ToImmutableArray());
         }
 
-        /// <summary>
-        /// Instantiates a new scope.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the instantiated scope, that can be persisted in the database.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
         {
             try
@@ -457,15 +320,9 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Executes the specified query and returns all the corresponding elements.
-        /// </summary>
-        /// <param name="count">The number of results to return.</param>
-        /// <param name="offset">The number of results to skip.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>All the elements returned when executing the specified query.</returns>
+        /// <inheritdoc/>
         public virtual async IAsyncEnumerable<TScope> ListAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, [EnumeratorCancellation] CancellationToken cancellationToken)
+            int? count, int? offset, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
@@ -488,18 +345,10 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Executes the specified query and returns all the corresponding elements.
-        /// </summary>
-        /// <typeparam name="TState">The state type.</typeparam>
-        /// <typeparam name="TResult">The result type.</typeparam>
-        /// <param name="query">The query to execute.</param>
-        /// <param name="state">The optional state.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>All the elements returned when executing the specified query.</returns>
+        /// <inheritdoc/>
         public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -520,14 +369,8 @@ namespace OpenIddict.MongoDb
             }
         }
 
-        /// <summary>
-        /// Sets the description associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="description">The description associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetDescriptionAsync(TScope scope, string? description, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -539,15 +382,9 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the localized descriptions associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="descriptions">The localized descriptions associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetDescriptionsAsync([NotNull] TScope scope,
-            [CanBeNull] ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetDescriptionsAsync(TScope scope,
+            ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -559,15 +396,9 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the localized display names associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="names">The localized display names associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetDisplayNamesAsync([NotNull] TScope scope,
-            [CanBeNull] ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetDisplayNamesAsync(TScope scope,
+            ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -579,14 +410,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the display name associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="name">The display name associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetDisplayNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -598,14 +423,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the name associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="name">The name associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -617,15 +436,9 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the additional properties associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="properties">The additional properties associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope,
-            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetPropertiesAsync(TScope scope,
+            ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -648,14 +461,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Sets the resources associated with a scope.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="resources">The resources associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetResourcesAsync([NotNull] TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual ValueTask SetResourcesAsync(TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -664,7 +471,7 @@ namespace OpenIddict.MongoDb
 
             if (resources.IsDefaultOrEmpty)
             {
-                scope.Resources = null;
+                scope.Resources = ImmutableArray.Create<string>();
 
                 return default;
             }
@@ -674,13 +481,8 @@ namespace OpenIddict.MongoDb
             return default;
         }
 
-        /// <summary>
-        /// Updates an existing scope.
-        /// </summary>
-        /// <param name="scope">The scope to update.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {

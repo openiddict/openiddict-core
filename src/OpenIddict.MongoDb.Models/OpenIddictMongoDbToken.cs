@@ -36,22 +36,19 @@ namespace OpenIddict.MongoDb.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the date on which the token
-        /// will start to be considered valid.
+        /// Gets or sets the date on which the token will start to be considered valid.
         /// </summary>
         [BsonElement("creation_date"), BsonIgnoreIfNull]
         public virtual DateTime? CreationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date on which the token
-        /// will no longer be considered valid.
+        /// Gets or sets the date on which the token will no longer be considered valid.
         /// </summary>
         [BsonElement("expiration_date"), BsonIgnoreIfNull]
         public virtual DateTime? ExpirationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier
-        /// associated with the current token.
+        /// Gets or sets the unique identifier associated with the current token.
         /// </summary>
         [BsonId, BsonRequired]
         public virtual ObjectId Id { get; set; }
