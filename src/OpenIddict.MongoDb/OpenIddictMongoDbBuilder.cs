@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using MongoDB.Driver;
 using OpenIddict.Core;
 using OpenIddict.MongoDb;
@@ -24,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictMongoDbBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictMongoDbBuilder([NotNull] IServiceCollection services)
+        public OpenIddictMongoDbBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder Configure([NotNull] Action<OpenIddictMongoDbOptions> configuration)
+        public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration)
         {
             if (configuration == null)
             {
@@ -104,7 +103,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetApplicationsCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetApplicationsCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -119,7 +118,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetAuthorizationsCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetAuthorizationsCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -134,7 +133,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetScopesCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetScopesCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -149,7 +148,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetTokensCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetTokensCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -165,7 +164,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="database">The <see cref="IMongoDatabase"/>.</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder UseDatabase([NotNull] IMongoDatabase database)
+        public OpenIddictMongoDbBuilder UseDatabase(IMongoDatabase database)
         {
             if (database == null)
             {
@@ -181,7 +180,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -195,6 +194,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

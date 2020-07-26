@@ -21,8 +21,7 @@ namespace OpenIddict.MongoDb.Models
     public class OpenIddictMongoDbApplication
     {
         /// <summary>
-        /// Gets or sets the client identifier
-        /// associated with the current application.
+        /// Gets or sets the client identifier associated with the current application.
         /// </summary>
         [BsonElement("client_id"), BsonIgnoreIfNull]
         public virtual string? ClientId { get; set; }
@@ -42,30 +41,26 @@ namespace OpenIddict.MongoDb.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the consent type
-        /// associated with the current application.
+        /// Gets or sets the consent type associated with the current application.
         /// </summary>
         [BsonElement("consent_type"), BsonIgnoreIfNull]
         public virtual string? ConsentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the display name
-        /// associated with the current application.
+        /// Gets or sets the display name associated with the current application.
         /// </summary>
         [BsonElement("display_name"), BsonIgnoreIfNull]
         public virtual string? DisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the localized display names
-        /// associated with the current application.
+        /// Gets or sets the localized display names associated with the current application.
         /// </summary>
         [BsonElement("display_names"), BsonIgnoreIfNull]
         public virtual IReadOnlyDictionary<CultureInfo, string> DisplayNames { get; set; }
             = ImmutableDictionary.Create<CultureInfo, string>();
 
         /// <summary>
-        /// Gets or sets the unique identifier
-        /// associated with the current application.
+        /// Gets or sets the unique identifier associated with the current application.
         /// </summary>
         [BsonId, BsonRequired]
         public virtual ObjectId Id { get; set; }

@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.MongoDb;
 using OpenIddict.MongoDb.Models;
@@ -24,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public static OpenIddictMongoDbBuilder UseMongoDb([NotNull] this OpenIddictCoreBuilder builder)
+        public static OpenIddictMongoDbBuilder UseMongoDb(this OpenIddictCoreBuilder builder)
         {
             if (builder == null)
             {
@@ -66,8 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public static OpenIddictCoreBuilder UseMongoDb(
-            [NotNull] this OpenIddictCoreBuilder builder,
-            [NotNull] Action<OpenIddictMongoDbBuilder> configuration)
+            this OpenIddictCoreBuilder builder, Action<OpenIddictMongoDbBuilder> configuration)
         {
             if (builder == null)
             {

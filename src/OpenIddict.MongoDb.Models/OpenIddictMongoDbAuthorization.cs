@@ -20,8 +20,7 @@ namespace OpenIddict.MongoDb.Models
     public class OpenIddictMongoDbAuthorization
     {
         /// <summary>
-        /// Gets or sets the identifier of the application
-        /// associated with the current authorization.
+        /// Gets or sets the identifier of the application associated with the current authorization.
         /// </summary>
         [BsonElement("application_id"), BsonIgnoreIfDefault]
         public virtual ObjectId ApplicationId { get; set; }
@@ -33,8 +32,7 @@ namespace OpenIddict.MongoDb.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the unique identifier
-        /// associated with the current authorization.
+        /// Gets or sets the unique identifier associated with the current authorization.
         /// </summary>
         [BsonId, BsonRequired]
         public virtual ObjectId Id { get; set; }

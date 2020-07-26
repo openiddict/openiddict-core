@@ -7,7 +7,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -15,29 +14,21 @@ using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
 {
-    /// <summary>
-    /// Exposes the MongoDB database used by the OpenIddict stores.
-    /// </summary>
+    /// <inheritdoc/>
     public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
     {
         private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
         private readonly IServiceProvider _provider;
 
         public OpenIddictMongoDbContext(
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options,
-            [NotNull] IServiceProvider provider)
+            IOptionsMonitor<OpenIddictMongoDbOptions> options,
+            IServiceProvider provider)
         {
             _options = options;
             _provider = provider;
         }
 
-        /// <summary>
-        /// Gets the <see cref="IMongoDatabase"/>.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the
-        /// asynchronous operation, whose result returns the MongoDB database.
-        /// </returns>
+        /// <inheritdoc/>
         public ValueTask<IMongoDatabase> GetDatabaseAsync(CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
