@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -53,7 +52,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public ValidateDataProtectionToken([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -66,14 +65,8 @@ namespace OpenIddict.Server.DataProtection
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
@@ -120,7 +113,7 @@ namespace OpenIddict.Server.DataProtection
 
                 return default;
 
-                ClaimsPrincipal ValidateToken(string token, string type)
+                ClaimsPrincipal? ValidateToken(string token, string type)
                 {
                     // Create a Data Protection protector using the provider registered in the options.
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
@@ -176,7 +169,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionAccessToken([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionAccessToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -191,14 +184,8 @@ namespace OpenIddict.Server.DataProtection
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -209,6 +196,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.AccessToken))
                 {
                     return default;
+                }
+
+                if (context.AccessTokenPrincipal == null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -240,7 +232,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionAuthorizationCode([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionAuthorizationCode(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -255,14 +247,8 @@ namespace OpenIddict.Server.DataProtection
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -273,6 +259,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.Code))
                 {
                     return default;
+                }
+
+                if (context.AuthorizationCodePrincipal == null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -304,7 +295,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionDeviceCode([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionDeviceCode(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -319,14 +310,8 @@ namespace OpenIddict.Server.DataProtection
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -337,6 +322,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.DeviceCode))
                 {
                     return default;
+                }
+
+                if (context.DeviceCodePrincipal == null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -368,7 +358,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionRefreshToken([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionRefreshToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -383,14 +373,8 @@ namespace OpenIddict.Server.DataProtection
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -401,6 +385,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.RefreshToken))
                 {
                     return default;
+                }
+
+                if (context.RefreshTokenPrincipal == null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -432,7 +421,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionUserCode([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionUserCode(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -447,14 +436,8 @@ namespace OpenIddict.Server.DataProtection
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -465,6 +448,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.UserCode))
                 {
                     return default;
+                }
+
+                if (context.UserCodePrincipal == null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.

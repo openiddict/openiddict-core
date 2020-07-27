@@ -5,7 +5,7 @@
  */
 
 using System;
-using JetBrains.Annotations;
+using OpenIddict.Abstractions;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
@@ -21,9 +21,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractLogoutRequestContext"/> class.
             /// </summary>
-            public ExtractLogoutRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractLogoutRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -36,15 +45,24 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateLogoutRequestContext"/> class.
             /// </summary>
-            public ValidateLogoutRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateLogoutRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
                 // Infer the post_logout_redirect_uri from the value specified by the client application.
                 => PostLogoutRedirectUri = Request?.PostLogoutRedirectUri;
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets the post_logout_redirect_uri specified by the client application.
             /// </summary>
-            public string PostLogoutRedirectUri { get; private set; }
+            public string? PostLogoutRedirectUri { get; private set; }
 
             /// <summary>
             /// Populates the <see cref="PostLogoutRedirectUri"/> property with the specified redirect_uri.
@@ -59,7 +77,7 @@ namespace OpenIddict.Server
 
                 // Don't allow validation to alter the post_logout_redirect_uri parameter extracted
                 // from the request if the address was explicitly provided by the client application.
-                if (!string.IsNullOrEmpty(Request.PostLogoutRedirectUri) &&
+                if (!string.IsNullOrEmpty(Request?.PostLogoutRedirectUri) &&
                     !string.Equals(Request.PostLogoutRedirectUri, address, StringComparison.Ordinal))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1102));
@@ -78,9 +96,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleLogoutRequestContext"/> class.
             /// </summary>
-            public HandleLogoutRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleLogoutRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
 
             /// <summary>
@@ -102,9 +129,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyLogoutResponseContext"/> class.
             /// </summary>
-            public ApplyLogoutResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyLogoutResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -112,7 +157,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
 
             /// <summary>
             /// Gets or sets the callback URL the user agent will be redirected to, if applicable.
@@ -120,7 +165,7 @@ namespace OpenIddict.Server
             /// and extreme caution must be taken to ensure the user agent is not redirected to
             /// an untrusted address, which would result in an "open redirection" vulnerability.
             /// </summary>
-            public string PostLogoutRedirectUri { get; set; }
+            public string? PostLogoutRedirectUri { get; set; }
         }
     }
 }

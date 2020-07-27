@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
@@ -23,9 +22,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractIntrospectionRequestContext"/> class.
             /// </summary>
-            public ExtractIntrospectionRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractIntrospectionRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -38,21 +46,30 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateIntrospectionRequestContext"/> class.
             /// </summary>
-            public ValidateIntrospectionRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateIntrospectionRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
 
             /// <summary>
             /// Gets the optional token_type_hint parameter extracted from the
             /// introspection request, or <c>null</c> if it cannot be found.
             /// </summary>
-            public string TokenTypeHint => Request.TokenTypeHint;
+            public string? TokenTypeHint => Request?.TokenTypeHint;
 
             /// <summary>
             /// Gets or sets the security principal extracted from the introspected token, if available.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
         }
 
         /// <summary>
@@ -64,15 +81,24 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleIntrospectionRequestContext"/> class.
             /// </summary>
-            public HandleIntrospectionRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleIntrospectionRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets or sets the security principal extracted from the introspected token.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
 
             /// <summary>
             /// Gets the additional claims returned to the caller.
@@ -87,10 +113,9 @@ namespace OpenIddict.Server
             public HashSet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
-            /// Gets or sets the "client_id" claim
-            /// returned to the caller, if applicable.
+            /// Gets or sets the "client_id" claim returned to the caller, if applicable.
             /// </summary>
-            public string ClientId { get; set; }
+            public string? ClientId { get; set; }
 
             /// <summary>
             /// Gets or sets the "exp" claim
@@ -120,31 +145,31 @@ namespace OpenIddict.Server
             /// Gets or sets the "sub" claim
             /// returned to the caller, if applicable.
             /// </summary>
-            public string Subject { get; set; }
+            public string? Subject { get; set; }
 
             /// <summary>
             /// Gets or sets the "jti" claim
             /// returned to the caller, if applicable.
             /// </summary>
-            public string TokenId { get; set; }
+            public string? TokenId { get; set; }
 
             /// <summary>
             /// Gets or sets the "token_type" claim
             /// returned to the caller, if applicable.
             /// </summary>
-            public string TokenType { get; set; }
+            public string? TokenType { get; set; }
 
             /// <summary>
             /// Gets or sets the "token_usage" claim
             /// returned to the caller, if applicable.
             /// </summary>
-            public string TokenUsage { get; set; }
+            public string? TokenUsage { get; set; }
 
             /// <summary>
             /// Gets or sets the "username" claim
             /// returned to the caller, if applicable.
             /// </summary>
-            public string Username { get; set; }
+            public string? Username { get; set; }
         }
 
         /// <summary>
@@ -155,9 +180,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyIntrospectionResponseContext"/> class.
             /// </summary>
-            public ApplyIntrospectionResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyIntrospectionResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -165,7 +208,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
     }
 }

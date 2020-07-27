@@ -8,13 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
@@ -84,14 +84,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessRequestContext context)
             {
                 if (context == null)
                 {
@@ -192,14 +186,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessRequestContext context)
             {
                 if (context == null)
                 {
@@ -230,7 +218,7 @@ namespace OpenIddict.Server.AspNetCore
                     return default;
                 }
 
-                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri issuer) ||
+                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
                     !issuer.IsWellFormedOriginalString())
                 {
                     context.Reject(
@@ -264,14 +252,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessRequestContext context)
             {
                 if (context == null)
                 {
@@ -323,21 +305,15 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessChallengeContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessChallengeContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
                 if (properties != null)
                 {
                     context.Response.Error = properties.GetString(Properties.Error);
@@ -367,21 +343,17 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
                 if (properties == null)
                 {
                     return default;
@@ -390,7 +362,7 @@ namespace OpenIddict.Server.AspNetCore
                 foreach (var parameter in properties.Parameters)
                 {
                     // Note: AddParameter() is used to ensure existing parameters are not overriden.
-                    context.Response.AddParameter(parameter.Key, parameter.Value switch
+                    context.Transaction.Response.AddParameter(parameter.Key, parameter.Value switch
                     {
                         OpenIddictParameter value => value,
                         JsonElement         value => value,
@@ -425,14 +397,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -449,7 +415,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 if (HttpMethods.IsGet(request.Method))
                 {
-                    context.Request = new OpenIddictRequest(request.Query);
+                    context.Transaction.Request = new OpenIddictRequest(request.Query);
                 }
 
                 else
@@ -484,14 +450,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -508,7 +468,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 if (HttpMethods.IsGet(request.Method))
                 {
-                    context.Request = new OpenIddictRequest(request.Query);
+                    context.Transaction.Request = new OpenIddictRequest(request.Query);
                 }
 
                 else if (HttpMethods.IsPost(request.Method))
@@ -537,7 +497,7 @@ namespace OpenIddict.Server.AspNetCore
                         return;
                     }
 
-                    context.Request = new OpenIddictRequest(await request.ReadFormAsync(request.HttpContext.RequestAborted));
+                    context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync(request.HttpContext.RequestAborted));
                 }
 
                 else
@@ -570,14 +530,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -618,7 +572,7 @@ namespace OpenIddict.Server.AspNetCore
                         return;
                     }
 
-                    context.Request = new OpenIddictRequest(await request.ReadFormAsync(request.HttpContext.RequestAborted));
+                    context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync(request.HttpContext.RequestAborted));
                 }
 
                 else
@@ -652,19 +606,15 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
+
+                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
@@ -682,7 +632,8 @@ namespace OpenIddict.Server.AspNetCore
 
                 // At this point, reject requests that use multiple client authentication methods.
                 // See https://tools.ietf.org/html/rfc6749#section-2.3 for more information.
-                if (!string.IsNullOrEmpty(context.Request.ClientAssertion) || !string.IsNullOrEmpty(context.Request.ClientSecret))
+                if (!string.IsNullOrEmpty(context.Transaction.Request.ClientAssertion) ||
+                    !string.IsNullOrEmpty(context.Transaction.Request.ClientSecret))
                 {
                     context.Logger.LogError(SR.GetResourceString(SR.ID7140));
 
@@ -709,8 +660,8 @@ namespace OpenIddict.Server.AspNetCore
                     }
 
                     // Attach the basic authentication credentials to the request message.
-                    context.Request.ClientId = UnescapeDataString(data.Substring(0, index));
-                    context.Request.ClientSecret = UnescapeDataString(data.Substring(index + 1));
+                    context.Transaction.Request.ClientId = UnescapeDataString(data.Substring(0, index));
+                    context.Transaction.Request.ClientSecret = UnescapeDataString(data.Substring(index + 1));
 
                     return default;
                 }
@@ -724,7 +675,7 @@ namespace OpenIddict.Server.AspNetCore
                     return default;
                 }
 
-                static string UnescapeDataString(string data)
+                static string? UnescapeDataString(string data)
                 {
                     if (string.IsNullOrEmpty(data))
                     {
@@ -754,14 +705,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -776,6 +721,8 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
+                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
+
                 string header = request.Headers[HeaderNames.Authorization];
                 if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
@@ -783,7 +730,7 @@ namespace OpenIddict.Server.AspNetCore
                 }
 
                 // Attach the access token to the request message.
-                context.Request.AccessToken = header.Substring("Bearer ".Length);
+                context.Transaction.Request.AccessToken = header.Substring("Bearer ".Length);
 
                 return default;
             }
@@ -809,14 +756,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -846,14 +787,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -868,6 +803,8 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+
                 // When client authentication is made using basic authentication, the authorization server MUST return
                 // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
                 // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
@@ -875,7 +812,7 @@ namespace OpenIddict.Server.AspNetCore
                 // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
                 // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
                 // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-                response.StatusCode = context.Response.Error switch
+                response.StatusCode = context.Transaction.Response.Error switch
                 {
                     null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
 
@@ -910,14 +847,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -949,7 +880,7 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public AttachWwwAuthenticateHeader([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public AttachWwwAuthenticateHeader(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -963,14 +894,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -985,6 +910,8 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+
                 // When client authentication is made using basic authentication, the authorization server MUST return
                 // a 401 response with a valid WWW-Authenticate header containing the HTTP Basic authentication scheme.
                 // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
@@ -992,7 +919,7 @@ namespace OpenIddict.Server.AspNetCore
                 // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
                 // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
                 // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-                var scheme = context.Response.Error switch
+                var scheme = context.Transaction.Response.Error switch
                 {
                     Errors.InvalidClient      => Schemes.Basic,
 
@@ -1017,11 +944,11 @@ namespace OpenIddict.Server.AspNetCore
                     parameters[Parameters.Realm] = _options.CurrentValue.Realm;
                 }
 
-                foreach (var parameter in context.Response.GetParameters())
+                foreach (var parameter in context.Transaction.Response.GetParameters())
                 {
                     // Note: the error details are only included if the error was not caused by a missing token, as recommended
                     // by the OAuth 2.0 bearer specification: https://tools.ietf.org/html/rfc6750#section-3.1.
-                    if (string.Equals(context.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
+                    if (string.Equals(context.Transaction.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
                        (string.Equals(parameter.Key, Parameters.Error, StringComparison.Ordinal) ||
                         string.Equals(parameter.Key, Parameters.ErrorDescription, StringComparison.Ordinal) ||
                         string.Equals(parameter.Key, Parameters.ErrorUri, StringComparison.Ordinal)))
@@ -1030,7 +957,7 @@ namespace OpenIddict.Server.AspNetCore
                     }
 
                     // Ignore values that can't be represented as unique strings.
-                    var value = (string) parameter.Value;
+                    var value = (string?) parameter.Value;
                     if (string.IsNullOrEmpty(value))
                     {
                         continue;
@@ -1081,14 +1008,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -1109,7 +1030,7 @@ namespace OpenIddict.Server.AspNetCore
                     return default;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID7141), context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7141), context.Transaction.Response);
                 context.HandleRequest();
 
                 return default;
@@ -1133,14 +1054,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -1155,10 +1070,10 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Transaction.Response);
 
                 using var stream = new MemoryStream();
-                await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions
+                await JsonSerializer.SerializeAsync(stream, context.Transaction.Response, new JsonSerializerOptions
                 {
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                     WriteIndented = false
@@ -1196,14 +1111,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -1218,7 +1127,9 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+
+                if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
                     return default;
                 }
@@ -1248,14 +1159,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -1270,7 +1175,9 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+
+                if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
                     return default;
                 }
@@ -1311,14 +1218,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -1333,24 +1234,26 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+
+                if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
                     return;
                 }
 
                 // Don't return the state originally sent by the client application.
-                context.Response.State = null;
+                context.Transaction.Response.State = null;
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID7143), context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7143), context.Transaction.Response);
 
                 using var stream = new MemoryStream();
                 using var writer = new StreamWriter(stream);
 
-                foreach (var parameter in context.Response.GetParameters())
+                foreach (var parameter in context.Transaction.Response.GetParameters())
                 {
                     // Ignore null or empty parameters, including JSON
                     // objects that can't be represented as strings.
-                    var value = (string) parameter.Value;
+                    var value = (string?) parameter.Value;
                     if (string.IsNullOrEmpty(value))
                     {
                         continue;
@@ -1392,14 +1295,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -1414,7 +1311,7 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
                 if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     response.Redirect(properties.RedirectUri);
@@ -1445,14 +1342,8 @@ namespace OpenIddict.Server.AspNetCore
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {

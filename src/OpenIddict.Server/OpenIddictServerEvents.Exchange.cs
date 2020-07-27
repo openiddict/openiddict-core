@@ -5,7 +5,7 @@
  */
 
 using System.Security.Claims;
-using JetBrains.Annotations;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
@@ -20,9 +20,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractTokenRequestContext"/> class.
             /// </summary>
-            public ExtractTokenRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractTokenRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -35,16 +44,25 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateTokenRequestContext"/> class.
             /// </summary>
-            public ValidateTokenRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateTokenRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
 
             /// <summary>
             /// Gets or sets the security principal extracted from the authorization
             /// code or the refresh token, if applicable to the current token request.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
         }
 
         /// <summary>
@@ -56,9 +74,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleTokenRequestContext"/> class.
             /// </summary>
-            public HandleTokenRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleTokenRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
 
             /// <summary>
@@ -76,22 +103,40 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyTokenResponseContext"/> class.
             /// </summary>
-            public ApplyTokenResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyTokenResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
+            }
+
+            /// <summary>
             /// Gets or sets the security principal used to forge the token response.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
 
             /// <summary>
             /// Gets the error code returned to the client application.
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
     }
 }

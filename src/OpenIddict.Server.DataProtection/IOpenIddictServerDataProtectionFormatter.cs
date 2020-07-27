@@ -6,13 +6,12 @@
 
 using System.IO;
 using System.Security.Claims;
-using JetBrains.Annotations;
 
 namespace OpenIddict.Server.DataProtection
 {
     public interface IOpenIddictServerDataProtectionFormatter
     {
-        ClaimsPrincipal ReadToken([NotNull] BinaryReader reader);
-        void WriteToken([NotNull] BinaryWriter writer, [NotNull] ClaimsPrincipal principal);
+        ClaimsPrincipal? ReadToken(BinaryReader reader);
+        void WriteToken(BinaryWriter writer, ClaimsPrincipal principal);
     }
 }

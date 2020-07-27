@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server
@@ -20,7 +19,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireAccessTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSignInContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSignInContext context)
+            public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -36,7 +35,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireAuthorizationCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSignInContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSignInContext context)
+            public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -52,7 +51,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -68,7 +67,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireAuthorizationStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -84,14 +83,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(!string.IsNullOrEmpty(context.Request.ClientId));
+                return new ValueTask<bool>(!string.IsNullOrEmpty(context.Transaction.Request?.ClientId));
             }
         }
 
@@ -100,7 +99,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireConfigurationRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -116,7 +115,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireCryptographyRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -132,7 +131,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireDegradedModeDisabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -148,7 +147,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireDeviceCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSignInContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSignInContext context)
+            public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -164,7 +163,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireDeviceRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -180,7 +179,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -196,7 +195,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireGrantTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -212,7 +211,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireIdentityTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSignInContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSignInContext context)
+            public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -228,7 +227,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireIntrospectionRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -244,7 +243,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireLogoutRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -260,14 +259,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequirePostLogoutRedirectUriParameter : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(!string.IsNullOrEmpty(context.Request.PostLogoutRedirectUri));
+                return new ValueTask<bool>(!string.IsNullOrEmpty(context.Transaction.Request?.PostLogoutRedirectUri));
             }
         }
 
@@ -276,7 +275,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireReferenceAccessTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -292,7 +291,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireReferenceRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -308,7 +307,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireRefreshTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSignInContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSignInContext context)
+            public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -324,7 +323,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireRevocationRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -340,7 +339,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireRollingTokensDisabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -356,7 +355,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireRollingRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -372,7 +371,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireScopePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -388,7 +387,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireScopeValidationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -404,7 +403,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireSlidingRefreshTokenExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -420,7 +419,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireTokenRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -436,7 +435,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -452,7 +451,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireUserCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSignInContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSignInContext context)
+            public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -468,7 +467,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireUserinfoRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -484,7 +483,7 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireVerificationRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {

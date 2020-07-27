@@ -5,7 +5,6 @@
  */
 
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,9 +22,9 @@ namespace OpenIddict.Server
         /// Creates a new instance of the <see cref="OpenIddictServerDispatcher"/> class.
         /// </summary>
         public OpenIddictServerFactory(
-            [NotNull] IStringLocalizer<OpenIddictResources> localizer,
-            [NotNull] ILogger<OpenIddictServerDispatcher> logger,
-            [NotNull] IOptionsMonitor<OpenIddictServerOptions> options)
+            IStringLocalizer<OpenIddictResources> localizer,
+            ILogger<OpenIddictServerDispatcher> logger,
+            IOptionsMonitor<OpenIddictServerOptions> options)
         {
             _localizer = localizer;
             _logger = logger;

@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -27,10 +26,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireAuthorizationEndpointCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireAuthorizationEndpointCachingEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -49,10 +48,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireAuthorizationEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireAuthorizationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -70,10 +69,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireErrorPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireErrorPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -89,7 +88,7 @@ namespace OpenIddict.Server.AspNetCore
         /// </summary>
         public class RequireHttpRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -107,10 +106,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireLogoutEndpointCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireLogoutEndpointCachingEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -129,10 +128,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireLogoutEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireLogoutEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -150,10 +149,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireTransportSecurityRequirementEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -171,10 +170,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireStatusCodePagesIntegrationEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireStatusCodePagesIntegrationEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -193,10 +192,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireTokenEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireTokenEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -215,10 +214,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireUserinfoEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireUserinfoEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -237,10 +236,10 @@ namespace OpenIddict.Server.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-            public RequireVerificationEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            public RequireVerificationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {

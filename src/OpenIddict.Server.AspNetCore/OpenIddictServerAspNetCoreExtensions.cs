@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -28,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-        public static OpenIddictServerAspNetCoreBuilder UseAspNetCore([NotNull] this OpenIddictServerBuilder builder)
+        public static OpenIddictServerAspNetCoreBuilder UseAspNetCore(this OpenIddictServerBuilder builder)
         {
             if (builder == null)
             {
@@ -79,8 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public static OpenIddictServerBuilder UseAspNetCore(
-            [NotNull] this OpenIddictServerBuilder builder,
-            [NotNull] Action<OpenIddictServerAspNetCoreBuilder> configuration)
+            this OpenIddictServerBuilder builder, Action<OpenIddictServerAspNetCoreBuilder> configuration)
         {
             if (builder == null)
             {

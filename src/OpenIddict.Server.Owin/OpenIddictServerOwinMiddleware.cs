@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Infrastructure;
@@ -30,10 +29,10 @@ namespace OpenIddict.Server.Owin
         /// <param name="dispatcher">The OpenIddict server dispatcher.</param>
         /// <param name="factory">The OpenIddict server factory.</param>
         public OpenIddictServerOwinMiddleware(
-            [CanBeNull] OwinMiddleware next,
-            [NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options,
-            [NotNull] IOpenIddictServerDispatcher dispatcher,
-            [NotNull] IOpenIddictServerFactory factory)
+            OwinMiddleware? next,
+            IOptionsMonitor<OpenIddictServerOwinOptions> options,
+            IOpenIddictServerDispatcher dispatcher,
+            IOpenIddictServerFactory factory)
             : base(next, options.CurrentValue)
         {
             _dispatcher = dispatcher;

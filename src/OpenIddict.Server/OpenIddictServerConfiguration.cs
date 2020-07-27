@@ -7,7 +7,6 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -28,7 +27,7 @@ namespace OpenIddict.Server
         /// </summary>
         /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerOptions options)
+        public void PostConfigure(string name, OpenIddictServerOptions options)
         {
             if (options == null)
             {
@@ -300,7 +299,7 @@ namespace OpenIddict.Server
                 (SecurityKey _, SecurityKey _) => 0
             };
 
-            static string GetKeyIdentifier(SecurityKey key)
+            static string? GetKeyIdentifier(SecurityKey key)
             {
                 // When no key identifier can be retrieved from the security keys, a value is automatically
                 // inferred from the hexadecimal representation of the certificate thumbprint (SHA-1)

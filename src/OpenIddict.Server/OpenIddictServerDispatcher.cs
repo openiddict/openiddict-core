@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -25,16 +24,16 @@ namespace OpenIddict.Server
         /// Creates a new instance of the <see cref="OpenIddictServerDispatcher"/> class.
         /// </summary>
         public OpenIddictServerDispatcher(
-            [NotNull] ILogger<OpenIddictServerDispatcher> logger,
-            [NotNull] IOptionsMonitor<OpenIddictServerOptions> options,
-            [NotNull] IServiceProvider provider)
+            ILogger<OpenIddictServerDispatcher> logger,
+            IOptionsMonitor<OpenIddictServerOptions> options,
+            IServiceProvider provider)
         {
             _logger = logger;
             _options = options;
             _provider = provider;
         }
 
-        public async ValueTask DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext
+        public async ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext
         {
             if (context == null)
             {

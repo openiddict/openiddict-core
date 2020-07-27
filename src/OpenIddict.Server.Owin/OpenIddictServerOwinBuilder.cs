@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Owin;
 using OpenIddict.Server.Owin;
@@ -25,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictServerOwinBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictServerOwinBuilder([NotNull] IServiceCollection services)
+        public OpenIddictServerOwinBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder Configure([NotNull] Action<OpenIddictServerOwinOptions> configuration)
+        public OpenIddictServerOwinBuilder Configure(Action<OpenIddictServerOwinOptions> configuration)
         {
             if (configuration == null)
             {
@@ -144,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="realm">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder SetRealm([NotNull] string realm)
+        public OpenIddictServerOwinBuilder SetRealm(string realm)
         {
             if (string.IsNullOrEmpty(realm))
             {
@@ -160,7 +159,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="policy">The caching policy.</param>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder SetAuthorizationEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        public OpenIddictServerOwinBuilder SetAuthorizationEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
             if (policy == null)
             {
@@ -176,7 +175,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="policy">The caching policy.</param>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder SetLogoutEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        public OpenIddictServerOwinBuilder SetLogoutEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
             if (policy == null)
             {
@@ -192,7 +191,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -206,6 +205,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

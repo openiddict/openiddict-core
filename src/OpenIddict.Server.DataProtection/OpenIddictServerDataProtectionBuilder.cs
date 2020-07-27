@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using OpenIddict.Server.DataProtection;
 
@@ -22,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictServerDataProtectionBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictServerDataProtectionBuilder([NotNull] IServiceCollection services)
+        public OpenIddictServerDataProtectionBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -37,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-        public OpenIddictServerDataProtectionBuilder Configure([NotNull] Action<OpenIddictServerDataProtectionOptions> configuration)
+        public OpenIddictServerDataProtectionBuilder Configure(Action<OpenIddictServerDataProtectionOptions> configuration)
         {
             if (configuration == null)
             {
@@ -55,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="provider">The data protection provider used to create token protectors.</param>
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-        public OpenIddictServerDataProtectionBuilder UseDataProtectionProvider([NotNull] IDataProtectionProvider provider)
+        public OpenIddictServerDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
         {
             if (provider == null)
             {
@@ -70,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="formatter">The formatter used to read and write tokens.</param>
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-        public OpenIddictServerDataProtectionBuilder UseFormatter([NotNull] IOpenIddictServerDataProtectionFormatter formatter)
+        public OpenIddictServerDataProtectionBuilder UseFormatter(IOpenIddictServerDataProtectionFormatter formatter)
         {
             if (formatter == null)
             {
@@ -121,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -135,6 +134,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }
