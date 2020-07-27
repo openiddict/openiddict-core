@@ -26,10 +26,8 @@
 
   <ItemGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
-                                                                      $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.0')) And
-                                                                      $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '2.1'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '2.0'))) ">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication" Version="2.1.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.1.2" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="2.1.1" />
@@ -51,9 +49,8 @@
   </ItemGroup>
 
   <ItemGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0')) And
-                                                                      $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '3.1'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '2.1'))) ">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.6" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="3.1.6" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.6" />

@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using JetBrains.Annotations;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
@@ -22,9 +22,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractRevocationRequestContext"/> class.
             /// </summary>
-            public ExtractRevocationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractRevocationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -37,21 +46,30 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateRevocationRequestContext"/> class.
             /// </summary>
-            public ValidateRevocationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateRevocationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
 
             /// <summary>
             /// Gets the optional token_type_hint parameter extracted from the
             /// revocation request, or <c>null</c> if it cannot be found.
             /// </summary>
-            public string TokenTypeHint => Request.TokenTypeHint;
+            public string? TokenTypeHint => Request.TokenTypeHint;
 
             /// <summary>
             /// Gets or sets the security principal extracted from the revoked token, if available.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
         }
 
         /// <summary>
@@ -63,15 +81,24 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleRevocationRequestContext"/> class.
             /// </summary>
-            public HandleRevocationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleRevocationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets or sets the security principal extracted from the revoked token.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
 
             /// <summary>
             /// Gets the authentication ticket.
@@ -88,9 +115,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyRevocationResponseContext"/> class.
             /// </summary>
-            public ApplyRevocationResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyRevocationResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -98,7 +143,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
     }
 }

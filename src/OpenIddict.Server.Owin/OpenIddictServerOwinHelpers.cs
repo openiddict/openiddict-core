@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Owin;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
@@ -26,7 +25,7 @@ namespace Owin
         /// </summary>
         /// <param name="app">The application builder used to register middleware instances.</param>
         /// <returns>The <see cref="IAppBuilder"/>.</returns>
-        public static IAppBuilder UseOpenIddictServer([NotNull] this IAppBuilder app)
+        public static IAppBuilder UseOpenIddictServer(this IAppBuilder app)
         {
             if (app == null)
             {
@@ -41,19 +40,19 @@ namespace Owin
         /// </summary>
         /// <param name="transaction">The transaction instance.</param>
         /// <returns>The <see cref="IOwinRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static IOwinRequest GetOwinRequest([NotNull] this OpenIddictServerTransaction transaction)
+        public static IOwinRequest? GetOwinRequest(this OpenIddictServerTransaction transaction)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName, out object property))
+            if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property))
             {
                 return null;
             }
 
-            if (property is WeakReference<IOwinRequest> reference && reference.TryGetTarget(out IOwinRequest request))
+            if (property is WeakReference<IOwinRequest> reference && reference.TryGetTarget(out IOwinRequest? request))
             {
                 return request;
             }
@@ -66,7 +65,7 @@ namespace Owin
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictServerEndpointType"/>.</returns>
-        public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType([NotNull] this IOwinContext context)
+        public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType(this IOwinContext context)
         {
             if (context == null)
             {
@@ -81,7 +80,7 @@ namespace Owin
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictRequest GetOpenIddictServerRequest([NotNull] this IOwinContext context)
+        public static OpenIddictRequest? GetOpenIddictServerRequest(this IOwinContext context)
         {
             if (context == null)
             {
@@ -96,7 +95,7 @@ namespace Owin
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictResponse GetOpenIddictServerResponse([NotNull] this IOwinContext context)
+        public static OpenIddictResponse? GetOpenIddictServerResponse(this IOwinContext context)
         {
             if (context == null)
             {

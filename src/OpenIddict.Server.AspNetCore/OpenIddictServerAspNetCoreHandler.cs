@@ -6,10 +6,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -36,18 +36,19 @@ namespace OpenIddict.Server.AspNetCore
         /// Creates a new instance of the <see cref="OpenIddictServerAspNetCoreHandler"/> class.
         /// </summary>
         public OpenIddictServerAspNetCoreHandler(
-            [NotNull] IOpenIddictServerDispatcher dispatcher,
-            [NotNull] IOpenIddictServerFactory factory,
-            [NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options,
-            [NotNull] ILoggerFactory logger,
-            [NotNull] UrlEncoder encoder,
-            [NotNull] ISystemClock clock)
+            IOpenIddictServerDispatcher dispatcher,
+            IOpenIddictServerFactory factory,
+            IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder,
+            ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
             _dispatcher = dispatcher;
             _factory = factory;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> HandleRequestAsync()
         {
             // Note: the transaction may be already attached when replaying an ASP.NET Core request
@@ -57,7 +58,7 @@ namespace OpenIddict.Server.AspNetCore
             {
                 // Create a new transaction and attach the HTTP request to make it available to the ASP.NET Core handlers.
                 transaction = await _factory.CreateTransactionAsync();
-                transaction.Properties[typeof(HttpRequest).FullName] = new WeakReference<HttpRequest>(Request);
+                transaction.Properties[typeof(HttpRequest).FullName!] = new WeakReference<HttpRequest>(Request);
 
                 // Attach the OpenIddict server transaction to the ASP.NET Core features
                 // so that it can retrieved while performing sign-in/sign-out operations.
@@ -107,6 +108,7 @@ namespace OpenIddict.Server.AspNetCore
             return false;
         }
 
+        /// <inheritdoc/>
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
@@ -115,7 +117,7 @@ namespace OpenIddict.Server.AspNetCore
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
             // the authentication context is resolved from the transaction. If it's not available, a new one is created.
-            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName);
+            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
             if (context == null)
             {
                 context = new ProcessAuthenticationContext(transaction);
@@ -123,7 +125,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 // Store the context object in the transaction so it can be later retrieved by handlers
                 // that want to access the authentication result without triggering a new authentication flow.
-                transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName, context);
+                transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, context);
             }
 
             if (context.IsRequestHandled || context.IsRequestSkipped)
@@ -141,7 +143,7 @@ namespace OpenIddict.Server.AspNetCore
                     return AuthenticateResult.NoResult();
                 }
 
-                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = context.Error,
                     [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = context.ErrorDescription,
@@ -153,14 +155,18 @@ namespace OpenIddict.Server.AspNetCore
 
             else
             {
-                // Store the token to allow any ASP.NET Core component (e.g a controller)
+                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID5009));
+                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID5010));
+
+                // Store the token to allow any OWIN/Katana component (e.g a controller)
                 // to retrieve it (e.g to make an API request to another application).
                 var properties = new AuthenticationProperties();
                 properties.StoreTokens(new[]
                 {
                     new AuthenticationToken
                     {
-                        Name = context.TokenType,
+                        Name = context.Principal.GetTokenType(),
                         Value = context.Token
                     }
                 });
@@ -171,12 +177,13 @@ namespace OpenIddict.Server.AspNetCore
             }
         }
 
-        protected override async Task HandleChallengeAsync([CanBeNull] AuthenticationProperties properties)
+        /// <inheritdoc/>
+        protected override async Task HandleChallengeAsync(AuthenticationProperties? properties)
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
-            transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
+            transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
             var context = new ProcessChallengeContext(transaction)
             {
@@ -213,10 +220,12 @@ namespace OpenIddict.Server.AspNetCore
             }
         }
 
-        protected override Task HandleForbiddenAsync([CanBeNull] AuthenticationProperties properties)
+        /// <inheritdoc/>
+        protected override Task HandleForbiddenAsync(AuthenticationProperties? properties)
             => HandleChallengeAsync(properties);
 
-        public async Task SignInAsync([NotNull] ClaimsPrincipal user, [CanBeNull] AuthenticationProperties properties)
+        /// <inheritdoc/>
+        public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
             if (user == null)
             {
@@ -226,7 +235,7 @@ namespace OpenIddict.Server.AspNetCore
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
-            transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
+            transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
             var context = new ProcessSignInContext(transaction)
             {
@@ -264,7 +273,8 @@ namespace OpenIddict.Server.AspNetCore
             }
         }
 
-        public async Task SignOutAsync([CanBeNull] AuthenticationProperties properties)
+        /// <inheritdoc/>
+        public async Task SignOutAsync(AuthenticationProperties? properties)
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
@@ -274,7 +284,7 @@ namespace OpenIddict.Server.AspNetCore
                 Response = new OpenIddictResponse()
             };
 
-            transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
+            transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
             await _dispatcher.DispatchAsync(context);
 

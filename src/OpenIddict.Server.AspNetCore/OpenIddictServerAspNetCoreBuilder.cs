@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -25,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictServerAspNetCoreBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictServerAspNetCoreBuilder([NotNull] IServiceCollection services)
+        public OpenIddictServerAspNetCoreBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-        public OpenIddictServerAspNetCoreBuilder Configure([NotNull] Action<OpenIddictServerAspNetCoreOptions> configuration)
+        public OpenIddictServerAspNetCoreBuilder Configure(Action<OpenIddictServerAspNetCoreOptions> configuration)
         {
             if (configuration == null)
             {
@@ -155,7 +154,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="realm">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-        public OpenIddictServerAspNetCoreBuilder SetRealm([NotNull] string realm)
+        public OpenIddictServerAspNetCoreBuilder SetRealm(string realm)
         {
             if (string.IsNullOrEmpty(realm))
             {
@@ -171,7 +170,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="policy">The caching policy.</param>
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-        public OpenIddictServerAspNetCoreBuilder SetAuthorizationEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        public OpenIddictServerAspNetCoreBuilder SetAuthorizationEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
             if (policy == null)
             {
@@ -187,7 +186,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="policy">The caching policy.</param>
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-        public OpenIddictServerAspNetCoreBuilder SetLogoutEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        public OpenIddictServerAspNetCoreBuilder SetLogoutEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
             if (policy == null)
             {
@@ -203,7 +202,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -217,6 +216,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -15,7 +16,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
@@ -72,7 +72,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
 
-                public RestoreCachedRequestParameters([NotNull] IDistributedCache cache)
+                public RestoreCachedRequestParameters(IDistributedCache cache)
                     => _cache = cache;
 
                 /// <summary>
@@ -87,19 +87,15 @@ namespace OpenIddict.Server.AspNetCore
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ExtractAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(context.Request != null, SR.GetResourceString(SR.ID5008));
 
                     // If a request_id parameter can be found in the authorization request,
                     // restore the complete authorization request from the distributed cache.
@@ -173,8 +169,8 @@ namespace OpenIddict.Server.AspNetCore
                 public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
 
                 public CacheRequestParameters(
-                    [NotNull] IDistributedCache cache,
-                    [NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+                    IDistributedCache cache,
+                    IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 {
                     _cache = cache;
                     _options = options;
@@ -192,19 +188,15 @@ namespace OpenIddict.Server.AspNetCore
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ExtractAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(context.Request != null, SR.GetResourceString(SR.ID5008));
 
                     // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                     // this may indicate that the request was incorrectly processed by another server stack.
@@ -285,7 +277,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
 
-                public RemoveCachedRequest([NotNull] IDistributedCache cache)
+                public RemoveCachedRequest(IDistributedCache cache)
                     => _cache = cache;
 
                 /// <summary>
@@ -300,14 +292,8 @@ namespace OpenIddict.Server.AspNetCore
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -337,7 +323,7 @@ namespace OpenIddict.Server.AspNetCore
             {
                 private readonly HtmlEncoder _encoder;
 
-                public ProcessFormPostResponse([NotNull] HtmlEncoder encoder)
+                public ProcessFormPostResponse(HtmlEncoder encoder)
                     => _encoder = encoder;
 
                 /// <summary>
@@ -351,14 +337,8 @@ namespace OpenIddict.Server.AspNetCore
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -398,9 +378,10 @@ namespace OpenIddict.Server.AspNetCore
                         // For consistency, multiple parameters with the same name are also supported by this endpoint.
                         foreach (var (key, value) in
                             from parameter in context.Response.GetParameters()
-                            let values = (string[]) parameter.Value
+                            let values = (string?[]?) parameter.Value
                             where values != null
                             from value in values
+                            where !string.IsNullOrEmpty(value)
                             select (parameter.Key, Value: value))
                         {
                             writer.WriteLine($@"<input type=""hidden"" name=""{_encoder.Encode(key)}"" value=""{_encoder.Encode(value)}"" />");
@@ -446,14 +427,8 @@ namespace OpenIddict.Server.AspNetCore
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -483,9 +458,10 @@ namespace OpenIddict.Server.AspNetCore
                     // For consistency, multiple parameters with the same name are also supported by this endpoint.
                     foreach (var (key, value) in
                         from parameter in context.Response.GetParameters()
-                        let values = (string[]) parameter.Value
+                        let values = (string?[]?) parameter.Value
                         where values != null
                         from value in values
+                        where !string.IsNullOrEmpty(value)
                         select (parameter.Key, Value: value))
                     {
                         location = QueryHelpers.AddQueryString(location, key, value);
@@ -515,14 +491,8 @@ namespace OpenIddict.Server.AspNetCore
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -552,9 +522,10 @@ namespace OpenIddict.Server.AspNetCore
                     // For consistency, multiple parameters with the same name are also supported by this endpoint.
                     foreach (var (key, value) in
                         from parameter in context.Response.GetParameters()
-                        let values = (string[]) parameter.Value
+                        let values = (string?[]?) parameter.Value
                         where values != null
                         from value in values
+                        where !string.IsNullOrEmpty(value)
                         select (parameter.Key, Value: value))
                     {
                         builder.Append(Contains(builder, '#') ? '&' : '#')

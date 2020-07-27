@@ -1722,17 +1722,7 @@ namespace OpenIddict.Server.Tests
 
         private class CustomHandler : IOpenIddictServerHandler<CustomContext>
         {
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync(CustomContext context)
-            {
-                return new ValueTask();
-            }
+            public ValueTask HandleAsync(CustomContext context) => default;
         }
     }
 }

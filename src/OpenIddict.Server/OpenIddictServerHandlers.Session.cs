@@ -6,8 +6,8 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -51,7 +51,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractLogoutRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public ExtractLogoutRequest(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -65,14 +65,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -119,7 +113,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateLogoutRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public ValidateLogoutRequest(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -133,14 +127,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -152,7 +140,7 @@ namespace OpenIddict.Server
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the redirect_uri without triggering a new validation process.
-                    context.Transaction.SetProperty(typeof(ValidateLogoutRequestContext).FullName, notification);
+                    context.Transaction.SetProperty(typeof(ValidateLogoutRequestContext).FullName!, notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -186,7 +174,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleLogoutRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public HandleLogoutRequest(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -200,14 +188,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -280,7 +262,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyLogoutResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public ApplyLogoutResponse(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -294,14 +276,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] TContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(TContext context)
                 {
                     if (context == null)
                     {
@@ -342,14 +318,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateLogoutRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateLogoutRequestContext context)
                 {
                     if (context == null)
                     {
@@ -362,7 +332,7 @@ namespace OpenIddict.Server
                     }
 
                     // If an optional post_logout_redirect_uri was provided, validate it.
-                    if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID7126), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
@@ -398,7 +368,7 @@ namespace OpenIddict.Server
 
                 public ValidateClientPostLogoutRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
-                public ValidateClientPostLogoutRedirectUri([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientPostLogoutRedirectUri(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -413,19 +383,15 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateLogoutRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.PostLogoutRedirectUri), SR.FormatID5000(Parameters.PostLogoutRedirectUri));
 
                     if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                     {
@@ -473,14 +439,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {
@@ -493,7 +453,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = context.Transaction.GetProperty<ValidateLogoutRequestContext>(
-                        typeof(ValidateLogoutRequestContext).FullName);
+                        typeof(ValidateLogoutRequestContext).FullName!);
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if
                     // an error is returned from the ExtractLogoutRequest/ValidateLogoutRequest events).
@@ -521,14 +481,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {

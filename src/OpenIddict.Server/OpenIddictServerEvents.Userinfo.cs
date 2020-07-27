@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json;
-using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
@@ -24,9 +23,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractUserinfoRequestContext"/> class.
             /// </summary>
-            public ExtractUserinfoRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractUserinfoRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -39,15 +47,24 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateUserinfoRequestContext"/> class.
             /// </summary>
-            public ValidateUserinfoRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateUserinfoRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets or sets the security principal extracted from the access token, if available.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
         }
 
         /// <summary>
@@ -59,15 +76,24 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleUserinfoRequestContext"/> class.
             /// </summary>
-            public HandleUserinfoRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleUserinfoRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets or sets the security principal extracted from the access token.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
 
             /// <summary>
             /// Gets the additional claims returned to the client application.
@@ -92,14 +118,14 @@ namespace OpenIddict.Server
             /// Note: this value should only be populated if the "profile"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string BirthDate { get; set; }
+            public string? BirthDate { get; set; }
 
             /// <summary>
             /// Gets or sets the value used for the "email" claim.
             /// Note: this value should only be populated if the "email"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string Email { get; set; }
+            public string? Email { get; set; }
 
             /// <summary>
             /// Gets or sets the value used for the "email_verified" claim.
@@ -113,21 +139,21 @@ namespace OpenIddict.Server
             /// Note: this value should only be populated if the "profile"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string FamilyName { get; set; }
+            public string? FamilyName { get; set; }
 
             /// <summary>
             /// Gets or sets the value used for the "given_name" claim.
             /// Note: this value should only be populated if the "profile"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string GivenName { get; set; }
+            public string? GivenName { get; set; }
 
             /// <summary>
             /// Gets or sets the value used for the "phone_number" claim.
             /// Note: this value should only be populated if the "phone"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string PhoneNumber { get; set; }
+            public string? PhoneNumber { get; set; }
 
             /// <summary>
             /// Gets or sets the value used for the "phone_number_verified" claim.
@@ -141,27 +167,27 @@ namespace OpenIddict.Server
             /// Note: this value should only be populated if the "profile"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string PreferredUsername { get; set; }
+            public string? PreferredUsername { get; set; }
 
             /// <summary>
             /// Gets or sets the value used for the "profile" claim.
             /// Note: this value should only be populated if the "profile"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string Profile { get; set; }
+            public string? Profile { get; set; }
 
             /// <summary>
             /// Gets or sets the unique value
             /// used for the mandatory "sub" claim.
             /// </summary>
-            public string Subject { get; set; }
+            public string? Subject { get; set; }
 
             /// <summary>
             /// Gets or sets the value used for the "website" claim.
             /// Note: this value should only be populated if the "profile"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public string Website { get; set; }
+            public string? Website { get; set; }
         }
 
         /// <summary>
@@ -172,9 +198,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyUserinfoResponseContext"/> class.
             /// </summary>
-            public ApplyUserinfoResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyUserinfoResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -182,7 +226,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
     }
 }

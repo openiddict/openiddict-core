@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -25,7 +24,7 @@ namespace OpenIddict.Server.AspNetCore
         /// Registers the OpenIddict server handler in the global authentication options.
         /// </summary>
         /// <param name="options">The options instance to initialize.</param>
-        public void Configure([NotNull] AuthenticationOptions options)
+        public void Configure(AuthenticationOptions options)
         {
             if (options == null)
             {
@@ -43,7 +42,7 @@ namespace OpenIddict.Server.AspNetCore
                 OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, displayName: null);
         }
 
-        public void Configure([NotNull] OpenIddictServerOptions options)
+        public void Configure(OpenIddictServerOptions options)
         {
             if (options == null)
             {
@@ -59,22 +58,11 @@ namespace OpenIddict.Server.AspNetCore
         /// </summary>
         /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] AuthenticationOptions options)
+        public void PostConfigure(string name, AuthenticationOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
-            }
-
-            static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string scheme)
-            {
-                // If the scheme was not set or if it cannot be found in the map, return true.
-                if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
-                {
-                    return true;
-                }
-
-                return builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler);
             }
 
             if (!TryValidate(options.SchemeMap, options.DefaultAuthenticateScheme) ||
@@ -86,6 +74,17 @@ namespace OpenIddict.Server.AspNetCore
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1108));
             }
+
+            static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
+            {
+                // If the scheme was not set or if it cannot be found in the map, return true.
+                if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
+                {
+                    return true;
+                }
+
+                return builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler);
+            }
         }
 
         /// <summary>
@@ -94,7 +93,7 @@ namespace OpenIddict.Server.AspNetCore
         /// </summary>
         /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerAspNetCoreOptions options)
+        public void PostConfigure(string name, OpenIddictServerAspNetCoreOptions options)
         {
             if (options == null)
             {

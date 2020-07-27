@@ -6,13 +6,13 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -70,7 +70,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractIntrospectionRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public ExtractIntrospectionRequest(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -84,14 +84,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -138,7 +132,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateIntrospectionRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public ValidateIntrospectionRequest(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -152,14 +146,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -171,7 +159,7 @@ namespace OpenIddict.Server
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the principal without triggering a new validation process.
-                    context.Transaction.SetProperty(typeof(ValidateIntrospectionRequestContext).FullName, notification);
+                    context.Transaction.SetProperty(typeof(ValidateIntrospectionRequestContext).FullName!, notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -205,7 +193,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleIntrospectionRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public HandleIntrospectionRequest(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -219,14 +207,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -303,7 +285,7 @@ namespace OpenIddict.Server
                         response.SetParameter(claim.Key, claim.Value);
                     }
 
-                    context.Response = response;
+                    context.Transaction.Response = response;
                 }
             }
 
@@ -314,7 +296,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyIntrospectionResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public ApplyIntrospectionResponse(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -328,14 +310,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] TContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(TContext context)
                 {
                     if (context == null)
                     {
@@ -376,14 +352,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
@@ -421,14 +391,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
@@ -461,7 +425,7 @@ namespace OpenIddict.Server
 
                 public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
-                public ValidateClientId([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientId(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -476,19 +440,15 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     // Retrieve the application details corresponding to the requested client_id.
                     // If no entity can be found, this likely indicates that the client_id is invalid.
@@ -517,7 +477,7 @@ namespace OpenIddict.Server
 
                 public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
-                public ValidateClientType([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientType(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -532,19 +492,15 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
@@ -593,7 +549,7 @@ namespace OpenIddict.Server
 
                 public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
-                public ValidateClientSecret([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -608,19 +564,15 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
@@ -628,9 +580,15 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
-                    // If the application is not a public client, validate the client secret.
-                    if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
-                        !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
+                    // If the application is a public client, don't validate the client secret.
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
+                    {
+                        return;
+                    }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID5000(Parameters.ClientSecret));
+
+                    if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID7102), context.ClientId);
 
@@ -654,7 +612,7 @@ namespace OpenIddict.Server
 
                 public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
-                public ValidateEndpointPermissions([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -670,19 +628,15 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
@@ -711,7 +665,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateToken([NotNull] IOpenIddictServerDispatcher dispatcher)
+                public ValidateToken(IOpenIddictServerDispatcher dispatcher)
                     => _dispatcher = dispatcher;
 
                 /// <summary>
@@ -724,14 +678,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
@@ -782,19 +730,15 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
                     if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
                         !context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode) &&
@@ -834,19 +778,16 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
                     // When the introspected token is an authorization code, the caller must be
                     // listed as a presenter (i.e the party the authorization code was issued to).
@@ -940,14 +881,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
@@ -955,7 +890,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = context.Transaction.GetProperty<ValidateIntrospectionRequestContext>(
-                        typeof(ValidateIntrospectionRequestContext).FullName) ??
+                        typeof(ValidateIntrospectionRequestContext).FullName!) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
                     context.Principal ??= notification.Principal;
@@ -979,19 +914,15 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
                     context.TokenId = context.Principal.GetClaim(Claims.JwtId);
                     context.TokenUsage = context.Principal.GetTokenType();
@@ -1028,7 +959,7 @@ namespace OpenIddict.Server
 
                 public AttachApplicationClaims() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
-                public AttachApplicationClaims([NotNull] IOpenIddictApplicationManager applicationManager)
+                public AttachApplicationClaims(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1043,19 +974,16 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] HandleIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(HandleIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
                     // Don't return application-specific claims if the token is not an access or identity token.
                     if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) && !context.Principal.HasTokenType(TokenTypeHints.IdToken))
@@ -1166,14 +1094,8 @@ namespace OpenIddict.Server
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyIntrospectionResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyIntrospectionResponseContext context)
                 {
                     if (context == null)
                     {

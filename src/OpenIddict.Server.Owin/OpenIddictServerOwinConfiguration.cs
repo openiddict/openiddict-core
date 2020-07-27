@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -18,7 +17,7 @@ namespace OpenIddict.Server.Owin
     public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
                                                      IPostConfigureOptions<OpenIddictServerOwinOptions>
     {
-        public void Configure([NotNull] OpenIddictServerOptions options)
+        public void Configure(OpenIddictServerOptions options)
         {
             if (options == null)
             {
@@ -29,7 +28,7 @@ namespace OpenIddict.Server.Owin
             options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
         }
 
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerOwinOptions options)
+        public void PostConfigure(string name, OpenIddictServerOwinOptions options)
         {
             if (options == null)
             {

@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
@@ -27,10 +26,10 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public RequireDataProtectionAccessTokenFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public RequireDataProtectionAccessTokenFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -49,10 +48,10 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public RequireDataProtectionAuthorizationCodeFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public RequireDataProtectionAuthorizationCodeFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -71,10 +70,10 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public RequireDataProtectionDeviceCodeFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public RequireDataProtectionDeviceCodeFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -93,10 +92,10 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public RequireDataProtectionRefreshTokenFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public RequireDataProtectionRefreshTokenFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -115,10 +114,10 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public RequireDataProtectionUserCodeFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public RequireDataProtectionUserCodeFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {

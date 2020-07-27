@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public static OpenIddictServerBuilder AddServer([NotNull] this OpenIddictBuilder builder)
+        public static OpenIddictServerBuilder AddServer(this OpenIddictBuilder builder)
         {
             if (builder == null)
             {
@@ -106,9 +105,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The configuration delegate used to configure the server services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddServer(
-            [NotNull] this OpenIddictBuilder builder,
-            [NotNull] Action<OpenIddictServerBuilder> configuration)
+        public static OpenIddictBuilder AddServer(this OpenIddictBuilder builder, Action<OpenIddictServerBuilder> configuration)
         {
             if (builder == null)
             {

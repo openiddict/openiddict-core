@@ -12,7 +12,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
@@ -31,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictServerBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictServerBuilder([NotNull] IServiceCollection services)
+        public OpenIddictServerBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -48,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictServerBuilder AddEventHandler<TContext>(
-            [NotNull] Action<OpenIddictServerHandlerDescriptor.Builder<TContext>> configuration)
+            Action<OpenIddictServerHandlerDescriptor.Builder<TContext>> configuration)
             where TContext : OpenIddictServerEvents.BaseContext
         {
             if (configuration == null)
@@ -71,7 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="descriptor">The handler descriptor.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder AddEventHandler([NotNull] OpenIddictServerHandlerDescriptor descriptor)
+        public OpenIddictServerBuilder AddEventHandler(OpenIddictServerHandlerDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -90,7 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="descriptor">The descriptor corresponding to the handler to remove.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder RemoveEventHandler([NotNull] OpenIddictServerHandlerDescriptor descriptor)
+        public OpenIddictServerBuilder RemoveEventHandler(OpenIddictServerHandlerDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -119,7 +118,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder Configure([NotNull] Action<OpenIddictServerOptions> configuration)
+        public OpenIddictServerBuilder Configure(Action<OpenIddictServerOptions> configuration)
         {
             if (configuration == null)
             {
@@ -145,7 +144,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="credentials">The encrypting credentials.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptionCredentials([NotNull] EncryptingCredentials credentials)
+        public OpenIddictServerBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
         {
             if (credentials == null)
             {
@@ -160,7 +159,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptionKey([NotNull] SecurityKey key)
+        public OpenIddictServerBuilder AddEncryptionKey(SecurityKey key)
         {
             if (key == null)
             {
@@ -203,7 +202,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The X.509 certificate is attached to the server options.")]
-        public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate([NotNull] X500DistinguishedName subject)
+        public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
         {
             if (subject == null)
             {
@@ -296,7 +295,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="algorithm">The algorithm associated with the encryption key.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEphemeralEncryptionKey([NotNull] string algorithm)
+        public OpenIddictServerBuilder AddEphemeralEncryptionKey(string algorithm)
         {
             if (string.IsNullOrEmpty(algorithm))
             {
@@ -369,7 +368,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="certificate">The encryption certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptionCertificate([NotNull] X509Certificate2 certificate)
+        public OpenIddictServerBuilder AddEncryptionCertificate(X509Certificate2 certificate)
         {
             if (certificate == null)
             {
@@ -402,8 +401,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="resource">The name of the embedded resource.</param>
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptionCertificate(
-            [NotNull] Assembly assembly, [NotNull] string resource, [NotNull] string password)
+        public OpenIddictServerBuilder AddEncryptionCertificate(Assembly assembly, string resource, string password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddEncryptionCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -422,8 +420,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionCertificate(
-            [NotNull] Assembly assembly, [NotNull] string resource,
-            [NotNull] string password, X509KeyStorageFlags flags)
+            Assembly assembly, string resource,
+            string password, X509KeyStorageFlags flags)
         {
             if (assembly == null)
             {
@@ -455,7 +453,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptionCertificate([NotNull] Stream stream, [NotNull] string password)
+        public OpenIddictServerBuilder AddEncryptionCertificate(Stream stream, string password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddEncryptionCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -477,8 +475,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The X.509 certificate is attached to the server options.")]
-        public OpenIddictServerBuilder AddEncryptionCertificate(
-            [NotNull] Stream stream, [NotNull] string password, X509KeyStorageFlags flags)
+        public OpenIddictServerBuilder AddEncryptionCertificate(Stream stream, string password, X509KeyStorageFlags flags)
         {
             if (stream == null)
             {
@@ -501,7 +498,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptionCertificate([NotNull] string thumbprint)
+        public OpenIddictServerBuilder AddEncryptionCertificate(string thumbprint)
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
@@ -516,7 +513,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddEncryptionCertificate(certificate);
 
-            static X509Certificate2 GetCertificate(StoreLocation location, string thumbprint)
+            static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
             {
                 using var store = new X509Store(StoreName.My, location);
                 store.Open(OpenFlags.ReadOnly);
@@ -534,8 +531,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="name">The name of the X.509 store.</param>
         /// <param name="location">The location of the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptionCertificate(
-            [NotNull] string thumbprint, StoreName name, StoreLocation location)
+        public OpenIddictServerBuilder AddEncryptionCertificate(string thumbprint, StoreName name, StoreLocation location)
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
@@ -562,7 +558,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="credentials">The signing credentials.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddSigningCredentials([NotNull] SigningCredentials credentials)
+        public OpenIddictServerBuilder AddSigningCredentials(SigningCredentials credentials)
         {
             if (credentials == null)
             {
@@ -577,7 +573,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddSigningKey([NotNull] SecurityKey key)
+        public OpenIddictServerBuilder AddSigningKey(SecurityKey key)
         {
             if (key == null)
             {
@@ -643,7 +639,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The X.509 certificate is attached to the server options.")]
-        public OpenIddictServerBuilder AddDevelopmentSigningCertificate([NotNull] X500DistinguishedName subject)
+        public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
         {
             if (subject == null)
             {
@@ -738,7 +734,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The X.509 certificate is attached to the server options.")]
-        public OpenIddictServerBuilder AddEphemeralSigningKey([NotNull] string algorithm)
+        public OpenIddictServerBuilder AddEphemeralSigningKey(string algorithm)
         {
             if (string.IsNullOrEmpty(algorithm))
             {
@@ -828,7 +824,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="certificate">The signing certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddSigningCertificate([NotNull] X509Certificate2 certificate)
+        public OpenIddictServerBuilder AddSigningCertificate(X509Certificate2 certificate)
         {
             if (certificate == null)
             {
@@ -861,8 +857,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="resource">The name of the embedded resource.</param>
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddSigningCertificate(
-            [NotNull] Assembly assembly, [NotNull] string resource, [NotNull] string password)
+        public OpenIddictServerBuilder AddSigningCertificate(Assembly assembly, string resource, string password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddSigningCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -881,8 +876,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddSigningCertificate(
-            [NotNull] Assembly assembly, [NotNull] string resource,
-            [NotNull] string password, X509KeyStorageFlags flags)
+            Assembly assembly, string resource,
+            string password, X509KeyStorageFlags flags)
         {
             if (assembly == null)
             {
@@ -914,7 +909,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddSigningCertificate([NotNull] Stream stream, [NotNull] string password)
+        public OpenIddictServerBuilder AddSigningCertificate(Stream stream, string password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddSigningCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -936,8 +931,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The X.509 certificate is attached to the server options.")]
-        public OpenIddictServerBuilder AddSigningCertificate(
-            [NotNull] Stream stream, [NotNull] string password, X509KeyStorageFlags flags)
+        public OpenIddictServerBuilder AddSigningCertificate(Stream stream, string password, X509KeyStorageFlags flags)
         {
             if (stream == null)
             {
@@ -960,7 +954,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddSigningCertificate([NotNull] string thumbprint)
+        public OpenIddictServerBuilder AddSigningCertificate(string thumbprint)
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
@@ -975,7 +969,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddSigningCertificate(certificate);
 
-            static X509Certificate2 GetCertificate(StoreLocation location, string thumbprint)
+            static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
             {
                 using var store = new X509Store(StoreName.My, location);
                 store.Open(OpenFlags.ReadOnly);
@@ -993,8 +987,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="name">The name of the X.509 store.</param>
         /// <param name="location">The location of the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddSigningCertificate(
-            [NotNull] string thumbprint, StoreName name, StoreLocation location)
+        public OpenIddictServerBuilder AddSigningCertificate(string thumbprint, StoreName name, StoreLocation location)
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
@@ -1039,7 +1032,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The grant type associated with the flow.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AllowCustomFlow([NotNull] string type)
+        public OpenIddictServerBuilder AllowCustomFlow(string type)
         {
             if (string.IsNullOrEmpty(type))
             {
@@ -1090,7 +1083,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAuthorizationEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetAuthorizationEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1107,7 +1100,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAuthorizationEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetAuthorizationEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1133,7 +1126,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetConfigurationEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetConfigurationEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1150,7 +1143,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetConfigurationEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetConfigurationEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1176,7 +1169,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetCryptographyEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetCryptographyEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1193,7 +1186,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetCryptographyEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetCryptographyEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1219,7 +1212,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetDeviceEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetDeviceEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1236,7 +1229,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetDeviceEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetDeviceEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1262,7 +1255,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIntrospectionEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetIntrospectionEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1279,7 +1272,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIntrospectionEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetIntrospectionEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1305,7 +1298,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetLogoutEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetLogoutEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1322,7 +1315,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetLogoutEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetLogoutEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1348,7 +1341,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetRevocationEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetRevocationEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1365,7 +1358,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetRevocationEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetRevocationEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1391,7 +1384,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetTokenEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetTokenEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1408,7 +1401,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetTokenEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetTokenEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1434,7 +1427,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetUserinfoEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetUserinfoEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1451,7 +1444,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetUserinfoEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetUserinfoEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1477,7 +1470,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetVerificationEndpointUris([NotNull] params string[] addresses)
+        public OpenIddictServerBuilder SetVerificationEndpointUris(params string[] addresses)
         {
             if (addresses == null)
             {
@@ -1494,7 +1487,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="addresses">The addresses associated to the endpoint.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetVerificationEndpointUris([NotNull] params Uri[] addresses)
+        public OpenIddictServerBuilder SetVerificationEndpointUris(params Uri[] addresses)
         {
             if (addresses == null)
             {
@@ -1601,7 +1594,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="claims">The supported claims.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder RegisterClaims([NotNull] params string[] claims)
+        public OpenIddictServerBuilder RegisterClaims(params string[] claims)
         {
             if (claims == null)
             {
@@ -1622,7 +1615,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="scopes">The supported scopes.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder RegisterScopes([NotNull] params string[] scopes)
+        public OpenIddictServerBuilder RegisterScopes(params string[] scopes)
         {
             if (scopes == null)
             {
@@ -1646,7 +1639,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="lifetime">The access token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAccessTokenLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetAccessTokenLifetime(TimeSpan? lifetime)
             => Configure(options => options.AccessTokenLifetime = lifetime);
 
         /// <summary>
@@ -1657,7 +1650,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="lifetime">The authorization code lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAuthorizationCodeLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetAuthorizationCodeLifetime(TimeSpan? lifetime)
             => Configure(options => options.AuthorizationCodeLifetime = lifetime);
 
         /// <summary>
@@ -1668,7 +1661,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="lifetime">The authorization code lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetDeviceCodeLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetDeviceCodeLifetime(TimeSpan? lifetime)
             => Configure(options => options.DeviceCodeLifetime = lifetime);
 
         /// <summary>
@@ -1678,7 +1671,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="lifetime">The identity token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIdentityTokenLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetIdentityTokenLifetime(TimeSpan? lifetime)
             => Configure(options => options.IdentityTokenLifetime = lifetime);
 
         /// <summary>
@@ -1690,7 +1683,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="lifetime">The refresh token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetRefreshTokenLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetRefreshTokenLifetime(TimeSpan? lifetime)
             => Configure(options => options.RefreshTokenLifetime = lifetime);
 
         /// <summary>
@@ -1700,7 +1693,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="lifetime">The authorization code lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetUserCodeLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetUserCodeLifetime(TimeSpan? lifetime)
             => Configure(options => options.UserCodeLifetime = lifetime);
 
         /// <summary>
@@ -1709,7 +1702,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="address">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIssuer([NotNull] Uri address)
+        public OpenIddictServerBuilder SetIssuer(Uri address)
         {
             if (address == null)
             {
@@ -1756,7 +1749,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -1770,6 +1763,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

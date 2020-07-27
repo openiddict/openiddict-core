@@ -5,13 +5,12 @@
  */
 
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server
 {
     public interface IOpenIddictServerHandlerFilter<in TContext> where TContext : BaseContext
     {
-        ValueTask<bool> IsActiveAsync([NotNull] TContext context);
+        ValueTask<bool> IsActiveAsync(TContext context);
     }
 }

@@ -12,7 +12,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Properties;
@@ -21,7 +20,7 @@ namespace OpenIddict.Server.DataProtection
 {
     public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProtectionFormatter
     {
-        public ClaimsPrincipal ReadToken([NotNull] BinaryReader reader)
+        public ClaimsPrincipal? ReadToken(BinaryReader reader)
         {
             if (reader == null)
             {
@@ -60,7 +59,7 @@ namespace OpenIddict.Server.DataProtection
                 .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
                 .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
-            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
+            static (ClaimsPrincipal? principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
             {
                 // Read the version of the format used to serialize the ticket.
                 var version = reader.ReadInt32();
@@ -177,7 +176,7 @@ namespace OpenIddict.Server.DataProtection
                 return value;
             }
 
-            static string GetProperty(IReadOnlyDictionary<string, string> properties, string name)
+            static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? value : null;
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
@@ -185,7 +184,7 @@ namespace OpenIddict.Server.DataProtection
                 JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
         }
 
-        public void WriteToken([NotNull] BinaryWriter writer, [NotNull] ClaimsPrincipal principal)
+        public void WriteToken(BinaryWriter writer, ClaimsPrincipal principal)
         {
             if (writer == null)
             {
@@ -261,7 +260,7 @@ namespace OpenIddict.Server.DataProtection
             // authentication stack and MUST NOT be modified to ensure tokens encrypted using
             // the OpenID Connect server middleware can be read by OpenIddict (and vice-versa).
 
-            static void Write(BinaryWriter writer, string scheme, ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties)
+            static void Write(BinaryWriter writer, string? scheme, ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties)
             {
                 // Write the version of the format used to serialize the ticket.
                 writer.Write(/* version: */ 5);
@@ -360,7 +359,7 @@ namespace OpenIddict.Server.DataProtection
             static void WriteWithDefault(BinaryWriter writer, string value, string defaultValue)
                 => writer.Write(string.Equals(value, defaultValue, StringComparison.Ordinal) ? "\0" : value);
 
-            static void SetProperty(IDictionary<string, string> properties, string name, string value)
+            static void SetProperty(IDictionary<string, string> properties, string name, string? value)
             {
                 if (string.IsNullOrEmpty(value))
                 {

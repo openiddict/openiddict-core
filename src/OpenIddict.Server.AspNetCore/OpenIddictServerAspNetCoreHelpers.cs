@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
@@ -24,19 +23,19 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="transaction">The transaction instance.</param>
         /// <returns>The <see cref="HttpRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static HttpRequest GetHttpRequest([NotNull] this OpenIddictServerTransaction transaction)
+        public static HttpRequest? GetHttpRequest(this OpenIddictServerTransaction transaction)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName, out object property))
+            if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
             {
                 return null;
             }
 
-            if (property is WeakReference<HttpRequest> reference && reference.TryGetTarget(out HttpRequest request))
+            if (property is WeakReference<HttpRequest> reference && reference.TryGetTarget(out HttpRequest? request))
             {
                 return request;
             }
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictServerEndpointType"/>.</returns>
-        public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType([NotNull] this HttpContext context)
+        public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType(this HttpContext context)
         {
             if (context == null)
             {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictRequest GetOpenIddictServerRequest([NotNull] this HttpContext context)
+        public static OpenIddictRequest? GetOpenIddictServerRequest(this HttpContext context)
         {
             if (context == null)
             {
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictResponse GetOpenIddictServerResponse([NotNull] this HttpContext context)
+        public static OpenIddictResponse? GetOpenIddictServerResponse(this HttpContext context)
         {
             if (context == null)
             {

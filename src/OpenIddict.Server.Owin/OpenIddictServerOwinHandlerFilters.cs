@@ -6,7 +6,6 @@
 
 using System;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Owin;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -25,10 +24,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireAuthorizationEndpointCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireAuthorizationEndpointCachingEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -47,10 +46,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireAuthorizationEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireAuthorizationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -68,10 +67,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireErrorPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireErrorPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -89,10 +88,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireLogoutEndpointCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireLogoutEndpointCachingEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -111,10 +110,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireLogoutEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireLogoutEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -130,7 +129,7 @@ namespace OpenIddict.Server.Owin
         /// </summary>
         public class RequireOwinRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -148,10 +147,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireTransportSecurityRequirementEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -170,10 +169,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireTokenEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireTokenEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -192,10 +191,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireUserinfoEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireUserinfoEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -214,10 +213,10 @@ namespace OpenIddict.Server.Owin
         {
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-            public RequireVerificationEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            public RequireVerificationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
