@@ -15,6 +15,6 @@ namespace OpenIddict.Validation.AspNetCore
         /// Gets or sets the validation transaction that encapsulates all specific
         /// information about an individual OpenID Connect validation request.
         /// </summary>
-        public OpenIddictValidationTransaction Transaction { get; set; }
+        public OpenIddictValidationTransaction? Transaction { get; set; }
     }
 }

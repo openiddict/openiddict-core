@@ -9,7 +9,6 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -41,7 +40,7 @@ namespace OpenIddict.Validation.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictValidationDataProtectionOptions> _options;
 
-            public ValidateDataProtectionToken([NotNull] IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options)
+            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -54,14 +53,8 @@ namespace OpenIddict.Validation.DataProtection
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {

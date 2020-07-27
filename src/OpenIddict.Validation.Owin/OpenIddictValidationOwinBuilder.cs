@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.Owin.Security;
 using OpenIddict.Validation.Owin;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -23,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictValidationOwinBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictValidationOwinBuilder([NotNull] IServiceCollection services)
+        public OpenIddictValidationOwinBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -38,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
-        public OpenIddictValidationOwinBuilder Configure([NotNull] Action<OpenIddictValidationOwinOptions> configuration)
+        public OpenIddictValidationOwinBuilder Configure(Action<OpenIddictValidationOwinOptions> configuration)
         {
             if (configuration == null)
             {
@@ -70,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="realm">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
-        public OpenIddictValidationOwinBuilder SetRealm([NotNull] string realm)
+        public OpenIddictValidationOwinBuilder SetRealm(string realm)
         {
             if (string.IsNullOrEmpty(realm))
             {
@@ -86,7 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -100,6 +99,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

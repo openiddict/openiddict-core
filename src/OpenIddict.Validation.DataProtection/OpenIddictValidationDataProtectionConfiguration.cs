@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
@@ -23,10 +22,10 @@ namespace OpenIddict.Validation.DataProtection
         /// Creates a new instance of the <see cref="OpenIddictValidationDataProtectionConfiguration"/> class.
         /// </summary>
         /// <param name="dataProtectionProvider">The ASP.NET Core Data Protection provider.</param>
-        public OpenIddictValidationDataProtectionConfiguration([NotNull] IDataProtectionProvider dataProtectionProvider)
+        public OpenIddictValidationDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
             => _dataProtectionProvider = dataProtectionProvider;
 
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
             if (options == null)
             {
@@ -43,7 +42,7 @@ namespace OpenIddict.Validation.DataProtection
         /// </summary>
         /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictValidationDataProtectionOptions options)
+        public void PostConfigure(string name, OpenIddictValidationDataProtectionOptions options)
         {
             if (options == null)
             {

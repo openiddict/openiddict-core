@@ -4,9 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using JetBrains.Annotations;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation
 {
@@ -21,9 +21,18 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="PrepareConfigurationRequestContext"/> class.
             /// </summary>
-            public PrepareConfigurationRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            public PrepareConfigurationRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -36,9 +45,18 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyConfigurationRequestContext"/> class.
             /// </summary>
-            public ApplyConfigurationRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ApplyConfigurationRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -51,9 +69,27 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractConfigurationResponseContext"/> class.
             /// </summary>
-            public ExtractConfigurationResponseContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ExtractConfigurationResponseContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictResponse? Response
+            {
+                get => Transaction.Response;
+                set => Transaction.Response = value;
             }
         }
 
@@ -65,9 +101,27 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="HandleConfigurationResponseContext"/> class.
             /// </summary>
-            public HandleConfigurationResponseContext([NotNull] OpenIddictValidationTransaction transaction)
+            public HandleConfigurationResponseContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -85,9 +139,18 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="PrepareCryptographyRequestContext"/> class.
             /// </summary>
-            public PrepareCryptographyRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            public PrepareCryptographyRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -100,9 +163,18 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyCryptographyRequestContext"/> class.
             /// </summary>
-            public ApplyCryptographyRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ApplyCryptographyRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -115,9 +187,27 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractCryptographyResponseContext"/> class.
             /// </summary>
-            public ExtractCryptographyResponseContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ExtractCryptographyResponseContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictResponse? Response
+            {
+                get => Transaction.Response;
+                set => Transaction.Response = value;
             }
         }
 
@@ -129,9 +219,27 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="HandleCryptographyResponseContext"/> class.
             /// </summary>
-            public HandleCryptographyResponseContext([NotNull] OpenIddictValidationTransaction transaction)
+            public HandleCryptographyResponseContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
@@ -49,14 +48,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -65,7 +58,7 @@ namespace OpenIddict.Validation
 
                     // The issuer returned in the discovery document must exactly match the URL used to access it.
                     // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
-                    var issuer = (string) context.Response[Metadata.Issuer];
+                    var issuer = (string?) context.Response[Metadata.Issuer];
                     if (string.IsNullOrEmpty(issuer))
                     {
                         context.Reject(
@@ -75,7 +68,7 @@ namespace OpenIddict.Validation
                         return default;
                     }
 
-                    if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri address))
+                    if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? address))
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -114,14 +107,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -130,7 +117,7 @@ namespace OpenIddict.Validation
 
                     // Note: the jwks_uri node is required by the OpenID Connect discovery specification.
                     // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
-                    var address = (string) context.Response[Metadata.JwksUri];
+                    var address = (string?) context.Response[Metadata.JwksUri];
                     if (string.IsNullOrEmpty(address))
                     {
                         context.Reject(
@@ -170,21 +157,15 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationResponseContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    var address = (string) context.Response[Metadata.IntrospectionEndpoint];
+                    var address = (string?) context.Response[Metadata.IntrospectionEndpoint];
                     if (!string.IsNullOrEmpty(address) && !Uri.IsWellFormedUriString(address, UriKind.Absolute))
                     {
                         context.Reject(
@@ -201,7 +182,7 @@ namespace OpenIddict.Validation
                     {
                         foreach (var method in methods.GetUnnamedParameters())
                         {
-                            var value = (string) method;
+                            var value = (string?) method;
                             if (string.IsNullOrEmpty(value))
                             {
                                 continue;
@@ -230,14 +211,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleCryptographyResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleCryptographyResponseContext context)
                 {
                     if (context == null)
                     {
@@ -259,7 +234,7 @@ namespace OpenIddict.Validation
                         // Note: the "use" parameter is defined as optional by the specification.
                         // To prevent key swapping attacks, OpenIddict requires that this parameter
                         // be present and will ignore keys that don't include a "use" parameter.
-                        var use = (string) keys[index][JsonWebKeyParameterNames.Use];
+                        var use = (string?) keys[index][JsonWebKeyParameterNames.Use];
                         if (string.IsNullOrEmpty(use))
                         {
                             continue;
@@ -271,21 +246,21 @@ namespace OpenIddict.Validation
                             continue;
                         }
 
-                        var key = (string) keys[index][JsonWebKeyParameterNames.Kty] switch
+                        var key = (string?) keys[index][JsonWebKeyParameterNames.Kty] switch
                         {
                             JsonWebAlgorithmsKeyTypes.RSA => new JsonWebKey
                             {
                                 Kty = JsonWebAlgorithmsKeyTypes.RSA,
-                                E = (string) keys[index][JsonWebKeyParameterNames.E],
-                                N = (string) keys[index][JsonWebKeyParameterNames.N]
+                                E = (string?) keys[index][JsonWebKeyParameterNames.E],
+                                N = (string?) keys[index][JsonWebKeyParameterNames.N]
                             },
 
                             JsonWebAlgorithmsKeyTypes.EllipticCurve => new JsonWebKey
                             {
                                 Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve,
-                                Crv = (string) keys[index][JsonWebKeyParameterNames.Crv],
-                                X = (string) keys[index][JsonWebKeyParameterNames.X],
-                                Y = (string) keys[index][JsonWebKeyParameterNames.Y]
+                                Crv = (string?) keys[index][JsonWebKeyParameterNames.Crv],
+                                X = (string?) keys[index][JsonWebKeyParameterNames.X],
+                                Y = (string?) keys[index][JsonWebKeyParameterNames.Y]
                             },
 
                             _ => null
@@ -300,15 +275,15 @@ namespace OpenIddict.Validation
                             return default;
                         }
 
-                        key.KeyId = (string) keys[index][JsonWebKeyParameterNames.Kid];
-                        key.X5t = (string) keys[index][JsonWebKeyParameterNames.X5t];
-                        key.X5tS256 = (string) keys[index][JsonWebKeyParameterNames.X5tS256];
+                        key.KeyId = (string?) keys[index][JsonWebKeyParameterNames.Kid];
+                        key.X5t = (string?) keys[index][JsonWebKeyParameterNames.X5t];
+                        key.X5tS256 = (string?) keys[index][JsonWebKeyParameterNames.X5tS256];
 
                         if (keys[index].TryGetNamedParameter(JsonWebKeyParameterNames.X5c, out var chain))
                         {
                             foreach (var certificate in chain.GetNamedParameters())
                             {
-                                var value = (string) certificate.Value;
+                                var value = (string?) certificate.Value;
                                 if (string.IsNullOrEmpty(value))
                                 {
                                     context.Reject(

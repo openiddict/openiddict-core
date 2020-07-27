@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation.Owin
@@ -15,7 +14,7 @@ namespace OpenIddict.Validation.Owin
     /// </summary>
     public class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
     {
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
             if (options == null)
             {

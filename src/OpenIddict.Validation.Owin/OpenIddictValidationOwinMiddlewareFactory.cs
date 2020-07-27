@@ -6,7 +6,6 @@
 
 using System;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin;
@@ -24,7 +23,7 @@ namespace OpenIddict.Validation.Owin
         /// Creates a new instance of the <see cref="OpenIddictValidationOwinMiddlewareFactory"/> class.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline, if applicable.</param>
-        public OpenIddictValidationOwinMiddlewareFactory([CanBeNull] OwinMiddleware next)
+        public OpenIddictValidationOwinMiddlewareFactory(OwinMiddleware? next)
             : base(next)
         {
         }
@@ -38,7 +37,7 @@ namespace OpenIddict.Validation.Owin
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task Invoke([NotNull] IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             if (context == null)
             {

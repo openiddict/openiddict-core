@@ -20,7 +20,7 @@ namespace OpenIddict.Validation.SystemNetHttp
         /// <summary>
         /// Gets or sets the HTTP Polly error policy used by the internal OpenIddict HTTP clients.
         /// </summary>
-        public IAsyncPolicy<HttpResponseMessage> HttpErrorPolicy { get; set; }
+        public IAsyncPolicy<HttpResponseMessage>? HttpErrorPolicy { get; set; }
             = HttpPolicyExtensions.HandleTransientHttpError()
                 .OrResult(response => response.StatusCode == HttpStatusCode.NotFound)
                 .WaitAndRetryAsync(4, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));

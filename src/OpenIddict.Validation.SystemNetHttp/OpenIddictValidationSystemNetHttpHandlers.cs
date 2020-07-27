@@ -8,12 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters;
@@ -45,7 +45,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -57,7 +58,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
 
                 // Store the HttpRequestMessage in the transaction properties.
-                context.Transaction.Properties[typeof(HttpRequestMessage).FullName] = request;
+                context.Transaction.Properties[typeof(HttpRequestMessage).FullName!] = request;
 
                 return default;
             }
@@ -79,7 +80,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -91,7 +93,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
 
                 // Store the HttpRequestMessage in the transaction properties.
-                context.Transaction.Properties[typeof(HttpRequestMessage).FullName] = request;
+                context.Transaction.Properties[typeof(HttpRequestMessage).FullName!] = request;
 
                 return default;
             }
@@ -113,12 +115,15 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
+
+                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -132,8 +137,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                 // query strings from existing key/value pairs. To work around this limitation,
                 // a FormUrlEncodedContent is instantiated and used to manually create the URL.
                 using var content = new FormUrlEncodedContent(
-                    from parameter in context.Request.GetParameters()
-                    let values = (string[]) parameter.Value
+                    from parameter in context.Transaction.Request.GetParameters()
+                    let values = (string[]?) parameter.Value
                     where values != null
                     from value in values
                     select new KeyValuePair<string, string>(parameter.Key, value));
@@ -163,12 +168,15 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
+
+                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -179,8 +187,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                 }
 
                 request.Content = new FormUrlEncodedContent(
-                    from parameter in context.Request.GetParameters()
-                    let values = (string[]) parameter.Value
+                    from parameter in context.Transaction.Request.GetParameters()
+                    let values = (string[]?) parameter.Value
                     where values != null
                     from value in values
                     select new KeyValuePair<string, string>(parameter.Key, value));
@@ -196,7 +204,7 @@ namespace OpenIddict.Validation.SystemNetHttp
         {
             private readonly IHttpClientFactory _factory;
 
-            public SendHttpRequest([NotNull] IHttpClientFactory factory)
+            public SendHttpRequest(IHttpClientFactory factory)
                 => _factory = factory;
 
             /// <summary>
@@ -210,7 +218,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -239,7 +248,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 }
 
                 // Store the HttpResponseMessage in the transaction properties.
-                context.Transaction.Properties[typeof(HttpResponseMessage).FullName] = response;
+                context.Transaction.Properties[typeof(HttpResponseMessage).FullName!] = response;
             }
         }
 
@@ -259,7 +268,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -279,7 +289,7 @@ namespace OpenIddict.Validation.SystemNetHttp
 
                 // Note: ReadFromJsonAsync() automatically validates the content type and the content encoding
                 // and transcode the response stream if a non-UTF-8 response is returned by the remote server.
-                context.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
+                context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
             }
         }
     }

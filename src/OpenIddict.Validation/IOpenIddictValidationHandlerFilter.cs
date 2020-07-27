@@ -5,13 +5,12 @@
  */
 
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
 {
     public interface IOpenIddictValidationHandlerFilter<in TContext> where TContext : BaseContext
     {
-        ValueTask<bool> IsActiveAsync([NotNull] TContext context);
+        ValueTask<bool> IsActiveAsync(TContext context);
     }
 }

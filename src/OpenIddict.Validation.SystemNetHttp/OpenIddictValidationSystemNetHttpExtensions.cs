@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -28,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public static OpenIddictValidationSystemNetHttpBuilder UseSystemNetHttp([NotNull] this OpenIddictValidationBuilder builder)
+        public static OpenIddictValidationSystemNetHttpBuilder UseSystemNetHttp(this OpenIddictValidationBuilder builder)
         {
             if (builder == null)
             {
@@ -62,8 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictValidationBuilder UseSystemNetHttp(
-            [NotNull] this OpenIddictValidationBuilder builder,
-            [NotNull] Action<OpenIddictValidationSystemNetHttpBuilder> configuration)
+            this OpenIddictValidationBuilder builder, Action<OpenIddictValidationSystemNetHttpBuilder> configuration)
         {
             if (builder == null)
             {

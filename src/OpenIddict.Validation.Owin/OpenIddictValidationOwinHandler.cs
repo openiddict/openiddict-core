@@ -6,9 +6,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
@@ -33,13 +33,14 @@ namespace OpenIddict.Validation.Owin
         /// <param name="dispatcher">The OpenIddict validation provider used by this instance.</param>
         /// <param name="factory">The OpenIddict validation factory used by this instance.</param>
         public OpenIddictValidationOwinHandler(
-            [NotNull] IOpenIddictValidationDispatcher dispatcher,
-            [NotNull] IOpenIddictValidationFactory factory)
+            IOpenIddictValidationDispatcher dispatcher,
+            IOpenIddictValidationFactory factory)
         {
             _dispatcher = dispatcher;
             _factory = factory;
         }
 
+        /// <inheritdoc/>
         protected override async Task InitializeCoreAsync()
         {
             // Note: the transaction may be already attached when replaying an OWIN request
@@ -49,7 +50,7 @@ namespace OpenIddict.Validation.Owin
             {
                 // Create a new transaction and attach the OWIN request to make it available to the OWIN handlers.
                 transaction = await _factory.CreateTransactionAsync();
-                transaction.Properties[typeof(IOwinRequest).FullName] = new WeakReference<IOwinRequest>(Request);
+                transaction.Properties[typeof(IOwinRequest).FullName!] = new WeakReference<IOwinRequest>(Request);
 
                 // Attach the OpenIddict validation transaction to the OWIN shared dictionary
                 // so that it can retrieved while performing sign-in/sign-out operations.
@@ -60,9 +61,10 @@ namespace OpenIddict.Validation.Owin
             await _dispatcher.DispatchAsync(context);
 
             // Store the context in the transaction so that it can be retrieved from InvokeAsync().
-            transaction.SetProperty(typeof(ProcessRequestContext).FullName, context);
+            transaction.SetProperty(typeof(ProcessRequestContext).FullName!, context);
         }
 
+        /// <inheritdoc/>
         public override async Task<bool> InvokeAsync()
         {
             // Note: due to internal differences between ASP.NET Core and Katana, the request MUST start being processed
@@ -72,7 +74,7 @@ namespace OpenIddict.Validation.Owin
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
 
-            var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName) ??
+            var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName!) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
 
             if (context.IsRequestHandled)
@@ -115,7 +117,8 @@ namespace OpenIddict.Validation.Owin
             return false;
         }
 
-        protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
+        /// <inheritdoc/>
+        protected override async Task<AuthenticationTicket?> AuthenticateCoreAsync()
         {
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
@@ -123,7 +126,7 @@ namespace OpenIddict.Validation.Owin
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
             // the authentication context is resolved from the transaction. If it's not available, a new one is created.
-            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName);
+            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
             if (context == null)
             {
                 context = new ProcessAuthenticationContext(transaction);
@@ -131,7 +134,7 @@ namespace OpenIddict.Validation.Owin
 
                 // Store the context object in the transaction so it can be later retrieved by handlers
                 // that want to access the authentication result without triggering a new authentication flow.
-                transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName, context);
+                transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, context);
             }
 
             if (context.IsRequestHandled || context.IsRequestSkipped)
@@ -149,7 +152,7 @@ namespace OpenIddict.Validation.Owin
                     return null;
                 }
 
-                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [OpenIddictValidationOwinConstants.Properties.Error] = context.Error,
                     [OpenIddictValidationOwinConstants.Properties.ErrorDescription] = context.ErrorDescription,
@@ -161,17 +164,22 @@ namespace OpenIddict.Validation.Owin
 
             else
             {
+                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID5009));
+                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID5010));
+
                 // Store the token to allow any OWIN/Katana component (e.g a controller)
                 // to retrieve it (e.g to make an API request to another application).
-                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
-                    [context.TokenType] = context.Token
+                    [context.Principal.GetTokenType()!] = context.Token
                 });
 
                 return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, properties);
             }
         }
 
+        /// <inheritdoc/>
         protected override async Task TeardownCoreAsync()
         {
             // Note: OWIN authentication handlers cannot reliabily write to the response stream
@@ -195,7 +203,7 @@ namespace OpenIddict.Validation.Owin
                 var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
 
-                transaction.Properties[typeof(AuthenticationProperties).FullName] = challenge.Properties ?? new AuthenticationProperties();
+                transaction.Properties[typeof(AuthenticationProperties).FullName!] = challenge.Properties ?? new AuthenticationProperties();
 
                 var context = new ProcessChallengeContext(transaction)
                 {

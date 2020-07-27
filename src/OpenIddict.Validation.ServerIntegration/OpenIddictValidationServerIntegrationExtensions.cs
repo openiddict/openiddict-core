@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
@@ -25,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public static OpenIddictValidationServerIntegrationBuilder UseLocalServer([NotNull] this OpenIddictValidationBuilder builder)
+        public static OpenIddictValidationServerIntegrationBuilder UseLocalServer(this OpenIddictValidationBuilder builder)
         {
             if (builder == null)
             {
@@ -51,8 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictValidationBuilder UseLocalServer(
-            [NotNull] this OpenIddictValidationBuilder builder,
-            [NotNull] Action<OpenIddictValidationServerIntegrationBuilder> configuration)
+            this OpenIddictValidationBuilder builder, Action<OpenIddictValidationServerIntegrationBuilder> configuration)
         {
             if (builder == null)
             {

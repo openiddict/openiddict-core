@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
@@ -20,7 +19,7 @@ namespace OpenIddict.Validation
         /// </summary>
         public class RequireAuthorizationEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -36,7 +35,7 @@ namespace OpenIddict.Validation
         /// </summary>
         public class RequireLocalValidation : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -52,7 +51,7 @@ namespace OpenIddict.Validation
         /// </summary>
         public class RequireIntrospectionValidation : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {
@@ -68,7 +67,7 @@ namespace OpenIddict.Validation
         /// </summary>
         public class RequireTokenEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
                 if (context == null)
                 {

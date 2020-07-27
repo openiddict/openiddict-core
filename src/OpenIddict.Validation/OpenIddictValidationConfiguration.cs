@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -23,7 +22,7 @@ namespace OpenIddict.Validation
     {
         private readonly OpenIddictValidationService _service;
 
-        public OpenIddictValidationConfiguration([NotNull] OpenIddictValidationService service)
+        public OpenIddictValidationConfiguration(OpenIddictValidationService service)
             => _service = service;
 
         /// <summary>
@@ -32,7 +31,7 @@ namespace OpenIddict.Validation
         /// </summary>
         /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictValidationOptions options)
+        public void PostConfigure(string name, OpenIddictValidationOptions options)
         {
             if (options == null)
             {
@@ -91,46 +90,6 @@ namespace OpenIddict.Validation
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1086));
             }
 
-            if (options.Configuration == null && options.ConfigurationManager == null)
-            {
-                if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
-                    !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1134));
-                }
-
-                if (options.MetadataAddress == null)
-                {
-                    options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
-                }
-
-                if (!options.MetadataAddress.IsAbsoluteUri)
-                {
-                    if (options.Issuer == null || !options.Issuer.IsAbsoluteUri)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1135));
-                    }
-
-                    if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1136));
-                    }
-
-                    if (!options.Issuer.OriginalString.EndsWith("/"))
-                    {
-                        options.Issuer = new Uri(options.Issuer.OriginalString + "/", UriKind.Absolute);
-                    }
-
-                    if (options.MetadataAddress.OriginalString.StartsWith("/"))
-                    {
-                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
-                            1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
-                    }
-
-                    options.MetadataAddress = new Uri(options.Issuer, options.MetadataAddress);
-                }
-            }
-
             if (options.ConfigurationManager == null)
             {
                 if (options.Configuration != null)
@@ -140,6 +99,43 @@ namespace OpenIddict.Validation
 
                 else
                 {
+                    if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                        !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1134));
+                    }
+
+                    if (options.MetadataAddress == null)
+                    {
+                        options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
+                    }
+
+                    if (!options.MetadataAddress.IsAbsoluteUri)
+                    {
+                        if (options.Issuer == null || !options.Issuer.IsAbsoluteUri)
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1135));
+                        }
+
+                        if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1136));
+                        }
+
+                        if (!options.Issuer.OriginalString.EndsWith("/"))
+                        {
+                            options.Issuer = new Uri(options.Issuer.OriginalString + "/", UriKind.Absolute);
+                        }
+
+                        if (options.MetadataAddress.OriginalString.StartsWith("/"))
+                        {
+                            options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
+                                1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
+                        }
+
+                        options.MetadataAddress = new Uri(options.Issuer, options.MetadataAddress);
+                    }
+
                     options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                         options.MetadataAddress.AbsoluteUri, new OpenIddictValidationRetriever(_service))
                     {

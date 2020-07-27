@@ -5,13 +5,12 @@
  */
 
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
 {
     public interface IOpenIddictValidationDispatcher
     {
-        ValueTask DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext;
+        ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext;
     }
 }
