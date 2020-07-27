@@ -8,12 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -82,14 +82,8 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessRequestContext context)
             {
                 if (context == null)
                 {
@@ -120,7 +114,7 @@ namespace OpenIddict.Validation.AspNetCore
                     return default;
                 }
 
-                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri issuer) ||
+                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
                     !issuer.IsWellFormedOriginalString())
                 {
                     context.Reject(
@@ -153,14 +147,8 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
@@ -213,14 +201,8 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
@@ -277,14 +259,8 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
@@ -336,21 +312,15 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessChallengeContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessChallengeContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
                 if (properties != null)
                 {
                     context.Response.Error = properties.GetString(Properties.Error);
@@ -380,19 +350,15 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
+
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
@@ -402,7 +368,7 @@ namespace OpenIddict.Validation.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                response.StatusCode = context.Response.Error switch
+                response.StatusCode = context.Transaction.Response.Error switch
                 {
                     null => 200,
 
@@ -436,14 +402,8 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -475,7 +435,7 @@ namespace OpenIddict.Validation.AspNetCore
         {
             private readonly IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> _options;
 
-            public AttachWwwAuthenticateHeader([NotNull] IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options)
+            public AttachWwwAuthenticateHeader(IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -489,19 +449,15 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
+
+                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
@@ -511,7 +467,7 @@ namespace OpenIddict.Validation.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                var scheme = context.Response.Error switch
+                var scheme = context.Transaction.Response.Error switch
                 {
                     Errors.InvalidToken       => Schemes.Bearer,
                     Errors.MissingToken       => Schemes.Bearer,
@@ -534,11 +490,11 @@ namespace OpenIddict.Validation.AspNetCore
                     parameters[Parameters.Realm] = _options.CurrentValue.Realm;
                 }
 
-                foreach (var parameter in context.Response.GetParameters())
+                foreach (var parameter in context.Transaction.Response.GetParameters())
                 {
                     // Note: the error details are only included if the error was not caused by a missing token, as recommended
                     // by the OAuth 2.0 bearer specification: https://tools.ietf.org/html/rfc6750#section-3.1.
-                    if (string.Equals(context.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
+                    if (string.Equals(context.Transaction.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
                        (string.Equals(parameter.Key, Parameters.Error, StringComparison.Ordinal) ||
                         string.Equals(parameter.Key, Parameters.ErrorDescription, StringComparison.Ordinal) ||
                         string.Equals(parameter.Key, Parameters.ErrorUri, StringComparison.Ordinal)))
@@ -547,7 +503,7 @@ namespace OpenIddict.Validation.AspNetCore
                     }
 
                     // Ignore values that can't be represented as unique strings.
-                    var value = (string) parameter.Value;
+                    var value = (string?) parameter.Value;
                     if (string.IsNullOrEmpty(value))
                     {
                         continue;
@@ -598,14 +554,8 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -626,7 +576,7 @@ namespace OpenIddict.Validation.AspNetCore
                     return default;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID7141), context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7141), context.Transaction.Response);
                 context.HandleRequest();
 
                 return default;
@@ -650,14 +600,8 @@ namespace OpenIddict.Validation.AspNetCore
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
                 if (context == null)
                 {
@@ -672,10 +616,10 @@ namespace OpenIddict.Validation.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Transaction.Response);
 
                 using var stream = new MemoryStream();
-                await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions
+                await JsonSerializer.SerializeAsync(stream, context.Transaction.Response, new JsonSerializerOptions
                 {
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                     WriteIndented = false

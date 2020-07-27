@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.IdentityModel.JsonWebTokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -55,14 +54,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] PrepareIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
@@ -91,14 +84,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] PrepareIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
@@ -127,14 +114,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleIntrospectionResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
                     if (context == null)
                     {
@@ -185,14 +166,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleIntrospectionResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
                     if (context == null)
                     {
@@ -306,14 +281,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleIntrospectionResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
                     if (context == null)
                     {
@@ -322,10 +291,10 @@ namespace OpenIddict.Validation
 
                     // The issuer claim is optional. If it's not null or empty, validate it to
                     // ensure it matches the issuer registered in the server configuration.
-                    var issuer = (string) context.Response[Claims.Issuer];
+                    var issuer = (string?) context.Response[Claims.Issuer];
                     if (!string.IsNullOrEmpty(issuer))
                     {
-                        if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri uri))
+                        if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri))
                         {
                             context.Reject(
                                 error: Errors.ServerError,
@@ -363,14 +332,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleIntrospectionResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
                     if (context == null)
                     {
@@ -382,7 +345,7 @@ namespace OpenIddict.Validation
                     // introspected token is of the expected type and prevent token substitution attacks.
                     if (!string.IsNullOrEmpty(context.TokenType))
                     {
-                        var usage = (string) context.Response[Claims.TokenUsage];
+                        var usage = (string?) context.Response[Claims.TokenUsage];
                         if (!string.IsNullOrEmpty(usage) &&
                             !string.Equals(usage, context.TokenType, StringComparison.OrdinalIgnoreCase))
                         {
@@ -413,14 +376,8 @@ namespace OpenIddict.Validation
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleIntrospectionResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
                     if (context == null)
                     {
@@ -437,7 +394,7 @@ namespace OpenIddict.Validation
                     // Resolve the issuer that will be attached to the claims created by this handler.
                     // Note: at this stage, the optional issuer extracted from the response is assumed
                     // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
-                    var issuer = (string) context.Response[Claims.Issuer] ?? context.Issuer?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
+                    var issuer = (string?) context.Response[Claims.Issuer] ?? context.Issuer?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
 
                     foreach (var parameter in context.Response.GetParameters())
                     {

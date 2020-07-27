@@ -11,7 +11,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -30,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictValidationBuilder([NotNull] IServiceCollection services)
+        public OpenIddictValidationBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -47,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictValidationBuilder AddEventHandler<TContext>(
-            [NotNull] Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration)
+            Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration)
             where TContext : OpenIddictValidationEvents.BaseContext
         {
             if (configuration == null)
@@ -70,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="descriptor">The handler descriptor.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder AddEventHandler([NotNull] OpenIddictValidationHandlerDescriptor descriptor)
+        public OpenIddictValidationBuilder AddEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -89,7 +88,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="descriptor">The descriptor corresponding to the handler to remove.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder RemoveEventHandler([NotNull] OpenIddictValidationHandlerDescriptor descriptor)
+        public OpenIddictValidationBuilder RemoveEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -118,7 +117,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder Configure([NotNull] Action<OpenIddictValidationOptions> configuration)
+        public OpenIddictValidationBuilder Configure(Action<OpenIddictValidationOptions> configuration)
         {
             if (configuration == null)
             {
@@ -135,7 +134,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="credentials">The encrypting credentials.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder AddEncryptionCredentials([NotNull] EncryptingCredentials credentials)
+        public OpenIddictValidationBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
         {
             if (credentials == null)
             {
@@ -150,7 +149,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder AddEncryptionKey([NotNull] SecurityKey key)
+        public OpenIddictValidationBuilder AddEncryptionKey(SecurityKey key)
         {
             if (key == null)
             {
@@ -184,7 +183,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="certificate">The encryption certificate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder AddEncryptionCertificate([NotNull] X509Certificate2 certificate)
+        public OpenIddictValidationBuilder AddEncryptionCertificate(X509Certificate2 certificate)
         {
             if (certificate == null)
             {
@@ -218,7 +217,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCertificate(
-            [NotNull] Assembly assembly, [NotNull] string resource, [NotNull] string password)
+            Assembly assembly, string resource, string password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddEncryptionCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -237,8 +236,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCertificate(
-            [NotNull] Assembly assembly, [NotNull] string resource,
-            [NotNull] string password, X509KeyStorageFlags flags)
+            Assembly assembly, string resource,
+            string password, X509KeyStorageFlags flags)
         {
             if (assembly == null)
             {
@@ -270,7 +269,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder AddEncryptionCertificate([NotNull] Stream stream, [NotNull] string password)
+        public OpenIddictValidationBuilder AddEncryptionCertificate(Stream stream, string password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddEncryptionCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -293,7 +292,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictValidationBuilder AddEncryptionCertificate(
-            [NotNull] Stream stream, [NotNull] string password, X509KeyStorageFlags flags)
+            Stream stream, string password, X509KeyStorageFlags flags)
         {
             if (stream == null)
             {
@@ -316,7 +315,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder AddEncryptionCertificate([NotNull] string thumbprint)
+        public OpenIddictValidationBuilder AddEncryptionCertificate(string thumbprint)
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
@@ -350,7 +349,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="location">The location of the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCertificate(
-            [NotNull] string thumbprint, StoreName name, StoreLocation location)
+            string thumbprint, StoreName name, StoreLocation location)
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
@@ -378,7 +377,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="audiences">The audiences valid for this resource server.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder AddAudiences([NotNull] params string[] audiences)
+        public OpenIddictValidationBuilder AddAudiences(params string[] audiences)
         {
             if (audiences == null)
             {
@@ -419,7 +418,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="configuration">The server configuration.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetConfiguration([NotNull] OpenIdConnectConfiguration configuration)
+        public OpenIddictValidationBuilder SetConfiguration(OpenIdConnectConfiguration configuration)
         {
             if (configuration == null)
             {
@@ -435,7 +434,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="identifier">The client identifier.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetClientId([NotNull] string identifier)
+        public OpenIddictValidationBuilder SetClientId(string identifier)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -451,7 +450,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="secret">The client secret.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetClientSecret([NotNull] string secret)
+        public OpenIddictValidationBuilder SetClientSecret(string secret)
         {
             if (string.IsNullOrEmpty(secret))
             {
@@ -467,7 +466,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="address">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetIssuer([NotNull] Uri address)
+        public OpenIddictValidationBuilder SetIssuer(Uri address)
         {
             if (address == null)
             {
@@ -483,14 +482,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="address">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetIssuer([NotNull] string address)
+        public OpenIddictValidationBuilder SetIssuer(string address)
         {
             if (string.IsNullOrEmpty(address))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1125), nameof(address));
             }
 
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1126), nameof(address));
             }
@@ -511,7 +510,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -525,6 +524,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

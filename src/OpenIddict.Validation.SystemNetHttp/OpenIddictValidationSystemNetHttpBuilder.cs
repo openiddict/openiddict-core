@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Net.Http;
-using JetBrains.Annotations;
 using OpenIddict.Validation.SystemNetHttp;
 using Polly;
 
@@ -22,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictValidationSystemNetHttpBuilder([NotNull] IServiceCollection services)
+        public OpenIddictValidationSystemNetHttpBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -37,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
-        public OpenIddictValidationSystemNetHttpBuilder Configure([NotNull] Action<OpenIddictValidationSystemNetHttpOptions> configuration)
+        public OpenIddictValidationSystemNetHttpBuilder Configure(Action<OpenIddictValidationSystemNetHttpOptions> configuration)
         {
             if (configuration == null)
             {
@@ -54,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="policy">The HTTP Polly error policy.</param>
         /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
-        public OpenIddictValidationSystemNetHttpBuilder SetHttpErrorPolicy([CanBeNull] IAsyncPolicy<HttpResponseMessage> policy)
+        public OpenIddictValidationSystemNetHttpBuilder SetHttpErrorPolicy(IAsyncPolicy<HttpResponseMessage> policy)
             => Configure(options => options.HttpErrorPolicy = policy);
 
         /// <summary>
@@ -63,7 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
         /// <summary>
         /// Serves as the default hash function.
@@ -77,6 +76,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

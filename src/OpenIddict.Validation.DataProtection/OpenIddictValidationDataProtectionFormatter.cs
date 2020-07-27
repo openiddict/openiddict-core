@@ -10,7 +10,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Security.Claims;
 using System.Text.Json;
-using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Properties;
@@ -19,7 +18,7 @@ namespace OpenIddict.Validation.DataProtection
 {
     public class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
     {
-        public ClaimsPrincipal ReadToken([NotNull] BinaryReader reader)
+        public ClaimsPrincipal? ReadToken(BinaryReader reader)
         {
             if (reader == null)
             {
@@ -58,7 +57,7 @@ namespace OpenIddict.Validation.DataProtection
                 .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
                 .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
-            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
+            static (ClaimsPrincipal? principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
             {
                 // Read the version of the format used to serialize the ticket.
                 var version = reader.ReadInt32();
@@ -175,7 +174,7 @@ namespace OpenIddict.Validation.DataProtection
                 return value;
             }
 
-            static string GetProperty(IReadOnlyDictionary<string, string> properties, string name)
+            static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? value : null;
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)

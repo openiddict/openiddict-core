@@ -6,7 +6,6 @@
 
 using System;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
@@ -23,7 +22,7 @@ namespace OpenIddict.Validation
         /// Creates a new event using the specified handler delegate.
         /// </summary>
         /// <param name="handler">The event handler delegate.</param>
-        public OpenIddictValidationHandler([NotNull] Func<TContext, ValueTask> handler)
+        public OpenIddictValidationHandler(Func<TContext, ValueTask> handler)
             => _handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
         /// <summary>
@@ -33,7 +32,7 @@ namespace OpenIddict.Validation
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public ValueTask HandleAsync([NotNull] TContext context)
+        public ValueTask HandleAsync(TContext context)
             => _handler(context ?? throw new ArgumentNullException(nameof(context)));
     }
 }

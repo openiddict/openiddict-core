@@ -7,7 +7,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -22,7 +21,7 @@ namespace OpenIddict.Validation
         /// Creates a new instance of the <see cref="OpenIddictValidationRetriever"/> class.
         /// </summary>
         /// <param name="service">The validation service.</param>
-        public OpenIddictValidationRetriever([NotNull] OpenIddictValidationService service)
+        public OpenIddictValidationRetriever(OpenIddictValidationService service)
             => _service = service;
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace OpenIddict.Validation
                 throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1143), nameof(address));
             }

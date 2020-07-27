@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using OpenIddict.Server;
@@ -25,7 +24,7 @@ namespace OpenIddict.Validation.ServerIntegration
         /// Creates a new instance of the <see cref="OpenIddictValidationServerIntegrationConfiguration"/> class.
         /// </summary>
         /// <param name="options">The OpenIddict server options.</param>
-        public OpenIddictValidationServerIntegrationConfiguration([NotNull] IOptionsMonitor<OpenIddictServerOptions> options)
+        public OpenIddictValidationServerIntegrationConfiguration(IOptionsMonitor<OpenIddictServerOptions> options)
             => _options = options;
 
         /// <summary>
@@ -33,7 +32,7 @@ namespace OpenIddict.Validation.ServerIntegration
         /// and ensures that the configuration is in a consistent and valid state.
         /// </summary>
         /// <param name="options">The options instance to initialize.</param>
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
             if (options == null)
             {
@@ -66,7 +65,7 @@ namespace OpenIddict.Validation.ServerIntegration
         /// </summary>
         /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictValidationOptions options)
+        public void PostConfigure(string name, OpenIddictValidationOptions options)
         {
             if (options == null)
             {

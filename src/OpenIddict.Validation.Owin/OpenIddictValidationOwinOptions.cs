@@ -21,9 +21,8 @@ namespace OpenIddict.Validation.Owin
             => AuthenticationMode = AuthenticationMode.Passive;
 
         /// <summary>
-        /// Gets or sets the optional "realm" value returned to
-        /// the caller as part of the WWW-Authenticate header.
+        /// Gets or sets the optional "realm" value returned to the caller as part of the WWW-Authenticate header.
         /// </summary>
-        public string Realm { get; set; }
+        public string? Realm { get; set; }
     }
 }

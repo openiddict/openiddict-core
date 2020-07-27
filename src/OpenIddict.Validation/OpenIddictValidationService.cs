@@ -5,10 +5,10 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -27,7 +27,7 @@ namespace OpenIddict.Validation
         /// Creates a new instance of the <see cref="OpenIddictValidationService"/> class.
         /// </summary>
         /// <param name="provider">The service provider.</param>
-        public OpenIddictValidationService([NotNull] IServiceProvider provider)
+        public OpenIddictValidationService(IServiceProvider provider)
             => _provider = provider;
 
         /// <summary>
@@ -36,8 +36,7 @@ namespace OpenIddict.Validation
         /// <param name="address">The address of the remote metadata endpoint.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-        public async ValueTask<OpenIdConnectConfiguration> GetConfigurationAsync(
-            [NotNull] Uri address, CancellationToken cancellationToken = default)
+        public async ValueTask<OpenIdConnectConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
         {
             if (address == null)
             {
@@ -132,6 +131,8 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
+                    Debug.Assert(context.Response != null, SR.GetResourceString(SR.ID5007));
+
                     return context.Response;
                 }
 
@@ -176,8 +177,7 @@ namespace OpenIddict.Validation
         /// <param name="address">The address of the remote metadata endpoint.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The security keys retrieved from the remote server.</returns>
-        public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(
-            [NotNull] Uri address, CancellationToken cancellationToken = default)
+        public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri address, CancellationToken cancellationToken = default)
         {
             if (address == null)
             {
@@ -273,6 +273,8 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
+                    Debug.Assert(context.Response != null, SR.GetResourceString(SR.ID5007));
+
                     return context.Response;
                 }
 
@@ -318,8 +320,7 @@ namespace OpenIddict.Validation
         /// <param name="token">The token to introspect.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The claims principal created from the claim retrieved from the remote server.</returns>
-        public ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
-            [NotNull] Uri address, [NotNull] string token, CancellationToken cancellationToken = default)
+        public ValueTask<ClaimsPrincipal> IntrospectTokenAsync(Uri address, string token, CancellationToken cancellationToken = default)
             => IntrospectTokenAsync(address, token, type: null, cancellationToken);
 
         /// <summary>
@@ -331,8 +332,7 @@ namespace OpenIddict.Validation
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The claims principal created from the claim retrieved from the remote server.</returns>
         public async ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
-            [NotNull] Uri address, [NotNull] string token,
-            [CanBeNull] string type, CancellationToken cancellationToken = default)
+            Uri address, string token, string? type, CancellationToken cancellationToken = default)
         {
             if (address == null)
             {
@@ -434,6 +434,8 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
+                    Debug.Assert(context.Response != null, SR.GetResourceString(SR.ID5007));
+
                     return context.Response;
                 }
 
@@ -455,6 +457,8 @@ namespace OpenIddict.Validation
                             SR.FormatID1160(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
+
+                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
                     return context.Principal;
                 }
@@ -480,8 +484,7 @@ namespace OpenIddict.Validation
         /// <param name="token">The access token to validate.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The principal containing the claims extracted from the token.</returns>
-        public async ValueTask<ClaimsPrincipal> ValidateAccessTokenAsync(
-            [NotNull] string token, CancellationToken cancellationToken = default)
+        public async ValueTask<ClaimsPrincipal> ValidateAccessTokenAsync(string token, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -517,6 +520,8 @@ namespace OpenIddict.Validation
                         SR.FormatID1162(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
+
+                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
                 return context.Principal;
             }

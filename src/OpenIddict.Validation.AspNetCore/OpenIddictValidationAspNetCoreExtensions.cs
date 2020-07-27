@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -28,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
-        public static OpenIddictValidationAspNetCoreBuilder UseAspNetCore([NotNull] this OpenIddictValidationBuilder builder)
+        public static OpenIddictValidationAspNetCoreBuilder UseAspNetCore(this OpenIddictValidationBuilder builder)
         {
             if (builder == null)
             {
@@ -67,8 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public static OpenIddictValidationBuilder UseAspNetCore(
-            [NotNull] this OpenIddictValidationBuilder builder,
-            [NotNull] Action<OpenIddictValidationAspNetCoreBuilder> configuration)
+            this OpenIddictValidationBuilder builder, Action<OpenIddictValidationAspNetCoreBuilder> configuration)
         {
             if (builder == null)
             {

@@ -6,11 +6,11 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters;
@@ -52,12 +52,15 @@ namespace OpenIddict.Validation.SystemNetHttp
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
-                public async ValueTask HandleAsync([NotNull] PrepareIntrospectionRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
                 {
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(context.Request != null, SR.GetResourceString(SR.ID5008));
 
                     // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                     // this may indicate that the request was incorrectly processed by another client stack.
@@ -97,7 +100,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                         context.Request.ClientId = context.Request.ClientSecret = null;
                     }
 
-                    static string EscapeDataString(string value)
+                    static string? EscapeDataString(string? value)
                     {
                         if (string.IsNullOrEmpty(value))
                         {

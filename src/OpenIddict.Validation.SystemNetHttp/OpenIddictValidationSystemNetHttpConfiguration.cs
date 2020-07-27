@@ -7,7 +7,6 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -23,11 +22,11 @@ namespace OpenIddict.Validation.SystemNetHttp
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
         private readonly IServiceProvider _provider;
 
-        public OpenIddictValidationSystemNetHttpConfiguration([NotNull] IServiceProvider provider)
+        public OpenIddictValidationSystemNetHttpConfiguration(IServiceProvider provider)
             => _provider = provider;
 #endif
 
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
             if (options == null)
             {
@@ -38,10 +37,10 @@ namespace OpenIddict.Validation.SystemNetHttp
             options.Handlers.AddRange(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers);
         }
 
-        public void Configure([NotNull] HttpClientFactoryOptions options)
+        public void Configure(HttpClientFactoryOptions options)
             => Debug.Fail("This infrastructure method shouldn't be called.");
 
-        public void Configure([CanBeNull] string name, [NotNull] HttpClientFactoryOptions options)
+        public void Configure(string name, HttpClientFactoryOptions options)
         {
             if (options == null)
             {
@@ -58,8 +57,8 @@ namespace OpenIddict.Validation.SystemNetHttp
             options.HttpClientActions.Add(client =>
             {
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(
-                    productName: assembly.Name,
-                    productVersion: assembly.Version.ToString()));
+                    productName: assembly.Name!,
+                    productVersion: assembly.Version!.ToString()));
             });
 
             options.HttpMessageHandlerBuilderActions.Add(builder =>

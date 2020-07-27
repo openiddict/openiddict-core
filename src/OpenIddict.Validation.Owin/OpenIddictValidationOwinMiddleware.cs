@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Infrastructure;
@@ -30,10 +29,10 @@ namespace OpenIddict.Validation.Owin
         /// <param name="dispatcher">The OpenIddict validation dispatcher.</param>
         /// <param name="factory">The OpenIddict validation factory.</param>
         public OpenIddictValidationOwinMiddleware(
-            [CanBeNull] OwinMiddleware next,
-            [NotNull] IOptionsMonitor<OpenIddictValidationOwinOptions> options,
-            [NotNull] IOpenIddictValidationDispatcher dispatcher,
-            [NotNull] IOpenIddictValidationFactory factory)
+            OwinMiddleware? next,
+            IOptionsMonitor<OpenIddictValidationOwinOptions> options,
+            IOpenIddictValidationDispatcher dispatcher,
+            IOpenIddictValidationFactory factory)
             : base(next, options.CurrentValue)
         {
             _dispatcher = dispatcher;

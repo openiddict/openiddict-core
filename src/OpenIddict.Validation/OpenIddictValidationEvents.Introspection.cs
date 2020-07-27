@@ -5,7 +5,7 @@
  */
 
 using System.Security.Claims;
-using JetBrains.Annotations;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation
 {
@@ -20,20 +20,29 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="PrepareIntrospectionRequestContext"/> class.
             /// </summary>
-            public PrepareIntrospectionRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            public PrepareIntrospectionRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets or sets the token sent to the introspection endpoint.
             /// </summary>
-            public string Token { get; set; }
+            public string? Token { get; set; }
 
             /// <summary>
             /// Gets or sets the token type sent to the introspection endpoint.
             /// </summary>
-            public string TokenType { get; set; }
+            public string? TokenType { get; set; }
         }
 
         /// <summary>
@@ -45,9 +54,18 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyIntrospectionRequestContext"/> class.
             /// </summary>
-            public ApplyIntrospectionRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ApplyIntrospectionRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -60,9 +78,27 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractIntrospectionResponseContext"/> class.
             /// </summary>
-            public ExtractIntrospectionResponseContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ExtractIntrospectionResponseContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictResponse? Response
+            {
+                get => Transaction.Response;
+                set => Transaction.Response = value;
             }
         }
 
@@ -74,25 +110,43 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="HandleIntrospectionResponseContext"/> class.
             /// </summary>
-            public HandleIntrospectionResponseContext([NotNull] OpenIddictValidationTransaction transaction)
+            public HandleIntrospectionResponseContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
+            }
+
+            /// <summary>
             /// Gets or sets the token sent to the introspection endpoint.
             /// </summary>
-            public string Token { get; set; }
+            public string? Token { get; set; }
 
             /// <summary>
             /// Gets or sets the token type sent to the introspection endpoint.
             /// </summary>
-            public string TokenType { get; set; }
+            public string? TokenType { get; set; }
 
             /// <summary>
             /// Gets or sets the principal containing the claims resolved from the introspection response.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
         }
     }
 }

@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation;
@@ -24,19 +23,19 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="transaction">The transaction instance.</param>
         /// <returns>The <see cref="HttpRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static HttpRequest GetHttpRequest([NotNull] this OpenIddictValidationTransaction transaction)
+        public static HttpRequest? GetHttpRequest(this OpenIddictValidationTransaction transaction)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName, out object property))
+            if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
             {
                 return null;
             }
 
-            if (property is WeakReference<HttpRequest> reference && reference.TryGetTarget(out HttpRequest request))
+            if (property is WeakReference<HttpRequest> reference && reference.TryGetTarget(out HttpRequest? request))
             {
                 return request;
             }
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictValidationEndpointType"/>.</returns>
-        public static OpenIddictValidationEndpointType GetOpenIddictValidationEndpointType([NotNull] this HttpContext context)
+        public static OpenIddictValidationEndpointType GetOpenIddictValidationEndpointType(this HttpContext context)
         {
             if (context == null)
             {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictRequest GetOpenIddictValidationRequest([NotNull] this HttpContext context)
+        public static OpenIddictRequest? GetOpenIddictValidationRequest(this HttpContext context)
         {
             if (context == null)
             {
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="context">The context instance.</param>
         /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictResponse GetOpenIddictValidationResponse([NotNull] this HttpContext context)
+        public static OpenIddictResponse? GetOpenIddictValidationResponse(this HttpContext context)
         {
             if (context == null)
             {

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
@@ -25,16 +24,16 @@ namespace OpenIddict.Validation
         /// Creates a new instance of the <see cref="OpenIddictValidationDispatcher"/> class.
         /// </summary>
         public OpenIddictValidationDispatcher(
-            [NotNull] ILogger<OpenIddictValidationDispatcher> logger,
-            [NotNull] IOptionsMonitor<OpenIddictValidationOptions> options,
-            [NotNull] IServiceProvider provider)
+            ILogger<OpenIddictValidationDispatcher> logger,
+            IOptionsMonitor<OpenIddictValidationOptions> options,
+            IServiceProvider provider)
         {
             _logger = logger;
             _options = options;
             _provider = provider;
         }
 
-        public async ValueTask DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext
+        public async ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext
         {
             if (context == null)
             {

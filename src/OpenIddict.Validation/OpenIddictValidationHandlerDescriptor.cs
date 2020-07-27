@@ -10,7 +10,6 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -31,7 +30,7 @@ namespace OpenIddict.Validation
         /// <summary>
         /// Gets the context type associated with the event.
         /// </summary>
-        public Type ContextType { get; private set; }
+        public Type ContextType { get; private set; } = default!;
 
         /// <summary>
         /// Gets the list of filters responsible of excluding the handler
@@ -47,7 +46,7 @@ namespace OpenIddict.Validation
         /// <summary>
         /// Gets the service descriptor associated with the handler.
         /// </summary>
-        public ServiceDescriptor ServiceDescriptor { get; private set; }
+        public ServiceDescriptor ServiceDescriptor { get; private set; } = default!;
 
         /// <summary>
         /// Gets the type associated with the handler.
@@ -68,7 +67,7 @@ namespace OpenIddict.Validation
         /// <typeparam name="TContext">The event context type.</typeparam>
         public class Builder<TContext> where TContext : BaseContext
         {
-            private ServiceDescriptor _descriptor;
+            private ServiceDescriptor? _descriptor;
             private readonly List<Type> _filterTypes = new List<Type>();
             private int _order;
             private OpenIddictValidationHandlerType _type;
@@ -78,7 +77,7 @@ namespace OpenIddict.Validation
             /// </summary>
             /// <param name="type">The event handler filter type.</param>
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
-            public Builder<TContext> AddFilter([NotNull] Type type)
+            public Builder<TContext> AddFilter(Type type)
             {
                 if (type == null)
                 {
@@ -109,7 +108,7 @@ namespace OpenIddict.Validation
             /// </summary>
             /// <param name="descriptor">The service descriptor.</param>
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
-            public Builder<TContext> SetServiceDescriptor([NotNull] ServiceDescriptor descriptor)
+            public Builder<TContext> SetServiceDescriptor(ServiceDescriptor descriptor)
             {
                 if (descriptor == null)
                 {
@@ -161,7 +160,7 @@ namespace OpenIddict.Validation
             /// </summary>
             /// <param name="handler">The handler instance.</param>
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
-            public Builder<TContext> UseInlineHandler([NotNull] Func<TContext, ValueTask> handler)
+            public Builder<TContext> UseInlineHandler(Func<TContext, ValueTask> handler)
             {
                 if (handler == null)
                 {
@@ -197,7 +196,7 @@ namespace OpenIddict.Validation
             /// <typeparam name="THandler">The handler type.</typeparam>
             /// <param name="handler">The handler instance.</param>
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
-            public Builder<TContext> UseSingletonHandler<THandler>([NotNull] THandler handler)
+            public Builder<TContext> UseSingletonHandler<THandler>(THandler handler)
                 where THandler : IOpenIddictValidationHandler<TContext>
             {
                 if (handler == null)

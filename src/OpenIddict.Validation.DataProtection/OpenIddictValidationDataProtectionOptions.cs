@@ -20,7 +20,7 @@ namespace OpenIddict.Validation.DataProtection
         /// When this property is set to <c>null</c>, the data protection provider
         /// is directly retrieved from the dependency injection container.
         /// </summary>
-        public IDataProtectionProvider DataProtectionProvider { get; set; }
+        public IDataProtectionProvider DataProtectionProvider { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the formatter used to read Data Protection tokens.

@@ -5,7 +5,6 @@
  */
 
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,9 +22,9 @@ namespace OpenIddict.Validation
         /// Creates a new instance of the <see cref="OpenIddictValidationFactory"/> class.
         /// </summary>
         public OpenIddictValidationFactory(
-            [NotNull] IStringLocalizer<OpenIddictResources> localizer,
-            [NotNull] ILogger<OpenIddictValidationDispatcher> logger,
-            [NotNull] IOptionsMonitor<OpenIddictValidationOptions> options)
+            IStringLocalizer<OpenIddictResources> localizer,
+            ILogger<OpenIddictValidationDispatcher> logger,
+            IOptionsMonitor<OpenIddictValidationOptions> options)
         {
             _localizer = localizer;
             _logger = logger;

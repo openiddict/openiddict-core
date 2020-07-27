@@ -60,12 +60,12 @@ namespace OpenIddict.Validation
         /// <summary>
         /// Gets or sets the client identifier sent to the authorization server when using remote validation.
         /// </summary>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the client secret sent to the authorization server when using remote validation.
         /// </summary>
-        public string ClientSecret { get; set; }
+        public string? ClientSecret { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a database call is made
@@ -86,24 +86,24 @@ namespace OpenIddict.Validation
         /// <summary>
         /// Gets or sets the absolute URL of the OAuth 2.0/OpenID Connect server.
         /// </summary>
-        public Uri Issuer { get; set; }
+        public Uri? Issuer { get; set; }
 
         /// <summary>
         /// Gets or sets the URL of the OAuth 2.0/OpenID Connect server discovery endpoint.
         /// When the URL is relative, <see cref="Issuer"/> must be set and absolute.
         /// </summary>
-        public Uri MetadataAddress { get; set; }
+        public Uri? MetadataAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the OAuth 2.0/OpenID Connect static server configuration, if applicable.
         /// </summary>
-        public OpenIdConnectConfiguration Configuration { get; set; }
+        public OpenIdConnectConfiguration? Configuration { get; set; }
 
         /// <summary>
         /// Gets or sets the configuration manager used to retrieve
         /// and cache the OAuth 2.0/OpenID Connect server configuration.
         /// </summary>
-        public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; }
+        public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; } = default!;
 
         /// <summary>
         /// Gets the intended audiences of this resource server.

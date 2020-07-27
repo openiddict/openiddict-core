@@ -5,7 +5,7 @@
  */
 
 using System;
-using JetBrains.Annotations;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -23,7 +23,7 @@ namespace OpenIddict.Validation.AspNetCore
         /// Registers the OpenIddict validation handler in the global authentication options.
         /// </summary>
         /// <param name="options">The options instance to initialize.</param>
-        public void Configure([NotNull] AuthenticationOptions options)
+        public void Configure(AuthenticationOptions options)
         {
             if (options == null)
             {
@@ -41,7 +41,7 @@ namespace OpenIddict.Validation.AspNetCore
                 OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, displayName: null);
         }
 
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
             if (options == null)
             {
@@ -57,27 +57,28 @@ namespace OpenIddict.Validation.AspNetCore
         /// </summary>
         /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] AuthenticationOptions options)
+        public void PostConfigure(string name, AuthenticationOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            bool TryValidate(string scheme)
+            if (!TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
+                !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1164));
+            }
+
+            static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
             {
                 // If the scheme was not set or if it cannot be found in the map, return true.
-                if (string.IsNullOrEmpty(scheme) || !options.SchemeMap.TryGetValue(scheme, out var builder))
+                if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
                 {
                     return true;
                 }
 
                 return builder.HandlerType != typeof(OpenIddictValidationAspNetCoreHandler);
-            }
-
-            if (!TryValidate(options.DefaultSignInScheme) || !TryValidate(options.DefaultSignOutScheme))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1164));
             }
         }
     }

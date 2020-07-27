@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation
@@ -22,8 +21,8 @@ namespace OpenIddict.Validation
         /// <param name="transaction">The validation transaction.</param>
         /// <param name="name">The property name.</param>
         /// <returns>The property value or <c>null</c> if it couldn't be found.</returns>
-        public static TProperty GetProperty<TProperty>(
-            [NotNull] this OpenIddictValidationTransaction transaction, [NotNull] string name) where TProperty : class
+        public static TProperty? GetProperty<TProperty>(
+            this OpenIddictValidationTransaction transaction, string name) where TProperty : class
         {
             if (transaction == null)
             {
@@ -52,8 +51,8 @@ namespace OpenIddict.Validation
         /// <param name="value">The property value.</param>
         /// <returns>The validation transaction, so that calls can be easily chained.</returns>
         public static OpenIddictValidationTransaction SetProperty<TProperty>(
-            [NotNull] this OpenIddictValidationTransaction transaction,
-            [NotNull] string name, [CanBeNull] TProperty value) where TProperty : class
+            this OpenIddictValidationTransaction transaction,
+            string name, TProperty? value) where TProperty : class
         {
             if (transaction == null)
             {
