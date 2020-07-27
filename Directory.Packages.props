@@ -3,7 +3,6 @@
   <ItemGroup>
     <PackageVersion Include="AngleSharp" Version="0.14.0" />
     <PackageVersion Include="EntityFramework" Version="6.4.4" />
-    <PackageVersion Include="JetBrains.Annotations" Version="2020.1.0" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.1.0" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" />
