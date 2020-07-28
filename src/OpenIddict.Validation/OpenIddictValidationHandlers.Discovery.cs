@@ -275,25 +275,42 @@ namespace OpenIddict.Validation
                             return default;
                         }
 
+                        // If the key is a RSA key, ensure the mandatory parameters are all present.
+                        if (string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.RSA, StringComparison.Ordinal) &&
+                           (string.IsNullOrEmpty(key.E) || string.IsNullOrEmpty(key.N)))
+                        {
+                            context.Reject(
+                                error: Errors.ServerError,
+                                description: context.Localizer[SR.ID3104]);
+
+                            return default;
+                        }
+
+                        // If the key is an EC key, ensure the mandatory parameters are all present.
+                        if (string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.EllipticCurve, StringComparison.Ordinal) &&
+                           (string.IsNullOrEmpty(key.Crv) || string.IsNullOrEmpty(key.X) || string.IsNullOrEmpty(key.Y)))
+                        {
+                            context.Reject(
+                                error: Errors.ServerError,
+                                description: context.Localizer[SR.ID3104]);
+
+                            return default;
+                        }
+
                         key.KeyId = (string?) keys[index][JsonWebKeyParameterNames.Kid];
                         key.X5t = (string?) keys[index][JsonWebKeyParameterNames.X5t];
                         key.X5tS256 = (string?) keys[index][JsonWebKeyParameterNames.X5tS256];
 
                         if (keys[index].TryGetNamedParameter(JsonWebKeyParameterNames.X5c, out var chain))
                         {
-                            foreach (var certificate in chain.GetNamedParameters())
+                            foreach (string? certificate in chain.GetUnnamedParameters())
                             {
-                                var value = (string?) certificate.Value;
-                                if (string.IsNullOrEmpty(value))
+                                if (string.IsNullOrEmpty(certificate))
                                 {
-                                    context.Reject(
-                                        error: Errors.ServerError,
-                                        description: context.Localizer[SR.ID3104]);
-
-                                    return default;
+                                    continue;
                                 }
 
-                                key.X5c.Add(value);
+                                key.X5c.Add(certificate);
                             }
                         }
 
