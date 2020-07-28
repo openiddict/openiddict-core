@@ -36,10 +36,12 @@ namespace OpenIddict.Server
         /// </summary>
         /// <remarks>
         /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
-        /// <para>• Symmetric keys are always preferred when they can be used for the operation (e.g token encryption).</para>
-        /// <para>• X.509 keys are always preferred to non-X.509 asymmetric keys.</para>
-        /// <para>• X.509 keys with the furthest expiration date are preferred.</para>
-        /// <para>• X.509 keys whose backing certificate is not yet valid are never preferred.</para>
+        /// <list type="bullet">
+        ///   <item><description>Symmetric keys are always preferred when they can be used for the operation (e.g token encryption).</description></item>
+        ///   <item><description>X.509 keys are always preferred to non-X.509 asymmetric keys.</description></item>
+        ///   <item><description>X.509 keys with the furthest expiration date are preferred.</description></item>
+        ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
+        /// </list>
         /// </remarks>
         public List<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
 
@@ -52,10 +54,12 @@ namespace OpenIddict.Server
         /// </summary>
         /// <remarks>
         /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
-        /// <para>• Symmetric keys are always preferred when they can be used for the operation (e.g token signing).</para>
-        /// <para>• X.509 keys are always preferred to non-X.509 asymmetric keys.</para>
-        /// <para>• X.509 keys with the furthest expiration date are preferred.</para>
-        /// <para>• X.509 keys whose backing certificate is not yet valid are never preferred.</para>
+        /// <list type="bullet">
+        ///   <item><description>Symmetric keys are always preferred when they can be used for the operation (e.g token signing).</description></item>
+        ///   <item><description>X.509 keys are always preferred to non-X.509 asymmetric keys.</description></item>
+        ///   <item><description>X.509 keys with the furthest expiration date are preferred.</description></item>
+        ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
+        /// </list>
         /// </remarks>
         public List<SigningCredentials> SigningCredentials { get; } = new List<SigningCredentials>();
 
