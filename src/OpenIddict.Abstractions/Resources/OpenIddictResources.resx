@@ -441,7 +441,7 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
     <comment>{Locked}</comment>
   </data>
   <data name="ID1071" xml:space="preserve">
-    <value>One of the specified addresses is not valid.</value>
+    <value>Endpoint addresses must be valid URLs.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID1072" xml:space="preserve">
@@ -474,6 +474,10 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
   </data>
   <data name="ID1079" xml:space="preserve">
     <value>The verification endpoint must be enabled to use the device flow.</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="ID1080" xml:space="preserve">
+    <value>Endpoint addresses cannot start with '{0}'.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID1082" xml:space="preserve">

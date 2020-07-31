@@ -8,6 +8,7 @@ using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Tests
 {
@@ -541,232 +542,6 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void SetConfigurationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: null as Uri[]));
-            Assert.Equal("addresses", exception.ParamName);
-        }
-
-        [Fact]
-        public void SetConfigurationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: null as string[]));
-            Assert.Equal("addresses", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(@"C:\")]
-        public void SetConfigurationEndpointUris_ThrowsExceptionForUri(string uri)
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(new Uri(uri)));
-            Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
-        }
-
-        [Fact]
-        public void SetConfigurationEndpointUris_ClearsUris()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetConfigurationEndpointUris(Array.Empty<Uri>());
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Empty(options.ConfigurationEndpointUris);
-        }
-
-        [Fact]
-        public void SetConfigurationEndpointUris_AddsUri()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetConfigurationEndpointUris("http://localhost/endpoint-path");
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.ConfigurationEndpointUris);
-        }
-
-        [Fact]
-        public void SetDeviceEndpointUris_ThrowsExceptionWhenAddressesIsNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: null as Uri[]));
-            Assert.Equal("addresses", exception.ParamName);
-        }
-
-        [Fact]
-        public void SetDeviceEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: null as string[]));
-            Assert.Equal("addresses", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(@"C:\")]
-        public void SetDeviceEndpointUris_ThrowsExceptionForUri(string uri)
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(new Uri(uri)));
-            Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
-        }
-
-        [Fact]
-        public void SetDeviceEndpointUris_ClearsUris()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetDeviceEndpointUris(Array.Empty<Uri>());
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Empty(options.DeviceEndpointUris);
-        }
-
-        [Fact]
-        public void SetDeviceEndpointUris_AddsUri()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetDeviceEndpointUris("http://localhost/endpoint-path");
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.DeviceEndpointUris);
-        }
-
-        [Fact]
-        public void AddDeviceCodeFlow_AddsDeviceCodeGrantType()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.AllowDeviceCodeFlow();
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Contains(OpenIddictConstants.GrantTypes.DeviceCode, options.GrantTypes);
-        }
-
-        [Fact]
-        public void SetCryptographyEndpointUris_ThrowsExceptionWhenAddressesIsNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: null as Uri[]));
-            Assert.Equal("addresses", exception.ParamName);
-        }
-
-        [Fact]
-        public void SetCryptographyEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: null as string[]));
-            Assert.Equal("addresses", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(@"C:\")]
-        public void SetCryptographyEndpointUris_ThrowsExceptionForUri(string uri)
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(new Uri(uri)));
-            Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
-        }
-
-        [Fact]
-        public void SetCryptographyEndpointUris_ClearsUris()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetCryptographyEndpointUris(Array.Empty<Uri>());
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Empty(options.CryptographyEndpointUris);
-        }
-
-        [Fact]
-        public void SetCryptographyEndpointUris_AddsUri()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetCryptographyEndpointUris("http://localhost/endpoint-path");
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.CryptographyEndpointUris);
-        }
-
-        [Fact]
         public void DisableScopeValidation_ScopeValidationIsDisabled()
         {
             // Arrange
@@ -831,6 +606,22 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void AddDeviceCodeFlow_AddsDeviceCodeGrantType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AllowDeviceCodeFlow();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(OpenIddictConstants.GrantTypes.DeviceCode, options.GrantTypes);
+        }
+
+        [Fact]
         public void SetAuthorizationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
         {
             // Arrange
@@ -856,7 +647,7 @@ namespace OpenIddict.Server.Tests
 
         [Theory]
         [InlineData(@"C:\")]
-        public void SetAuthorizationEndpointUris_ThrowsExceptionForUri(string uri)
+        public void SetAuthorizationEndpointUris_ThrowsExceptionForMalformedUri(string uri)
         {
             // Arrange
             var services = CreateServices();
@@ -865,7 +656,21 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationEndpointUris(new Uri(uri)));
             Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetAuthorizationEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
         }
 
         [Fact]
@@ -901,6 +706,258 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void SetConfigurationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: null as Uri[]));
+            Assert.Equal("addresses", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetConfigurationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: null as string[]));
+            Assert.Equal("addresses", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetConfigurationEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(new Uri(uri)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetConfigurationEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
+        }
+
+        [Fact]
+        public void SetConfigurationEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetConfigurationEndpointUris(Array.Empty<Uri>());
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.ConfigurationEndpointUris);
+        }
+
+        [Fact]
+        public void SetConfigurationEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetConfigurationEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.ConfigurationEndpointUris);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: null as Uri[]));
+            Assert.Equal("addresses", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: null as string[]));
+            Assert.Equal("addresses", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetCryptographyEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(new Uri(uri)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetCryptographyEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetCryptographyEndpointUris(Array.Empty<Uri>());
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.CryptographyEndpointUris);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetCryptographyEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.CryptographyEndpointUris);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: null as Uri[]));
+            Assert.Equal("addresses", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: null as string[]));
+            Assert.Equal("addresses", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetDeviceEndpointUris_ThrowsExceptionForMalformedUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(new Uri(uri)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetDeviceEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDeviceEndpointUris(Array.Empty<Uri>());
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.DeviceEndpointUris);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDeviceEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.DeviceEndpointUris);
+        }
+
+        [Fact]
         public void SetIntrospectionEndpointUris_ThrowsExceptionWhenAddressesIsNull()
         {
             // Arrange
@@ -926,7 +983,7 @@ namespace OpenIddict.Server.Tests
 
         [Theory]
         [InlineData(@"C:\")]
-        public void SetIntrospectionEndpointUris_ThrowsExceptionForUri(string uri)
+        public void SetIntrospectionEndpointUris_ThrowsExceptionForMalformedUri(string uri)
         {
             // Arrange
             var services = CreateServices();
@@ -935,7 +992,21 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetIntrospectionEndpointUris(new Uri(uri)));
             Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetIntrospectionEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetIntrospectionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
         }
 
         [Fact]
@@ -996,7 +1067,7 @@ namespace OpenIddict.Server.Tests
 
         [Theory]
         [InlineData(@"C:\")]
-        public void SetLogoutEndpointUris_ThrowsExceptionForUri(string uri)
+        public void SetLogoutEndpointUris_ThrowsExceptionForMalformedUri(string uri)
         {
             // Arrange
             var services = CreateServices();
@@ -1005,7 +1076,21 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetLogoutEndpointUris(new Uri(uri)));
             Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetLogoutEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetLogoutEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
         }
 
         [Fact]
@@ -1066,7 +1151,7 @@ namespace OpenIddict.Server.Tests
 
         [Theory]
         [InlineData(@"C:\")]
-        public void SetRevocationEndpointUris_ThrowsExceptionForUri(string uri)
+        public void SetRevocationEndpointUris_ThrowsExceptionForMalformedUri(string uri)
         {
             // Arrange
             var services = CreateServices();
@@ -1075,7 +1160,21 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetRevocationEndpointUris(new Uri(uri)));
             Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetRevocationEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetRevocationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
         }
 
         [Fact]
@@ -1136,7 +1235,7 @@ namespace OpenIddict.Server.Tests
 
         [Theory]
         [InlineData(@"C:\")]
-        public void SetTokenEndpointUris_ThrowsExceptionForUri(string uri)
+        public void SetTokenEndpointUris_ThrowsExceptionForMalformedUri(string uri)
         {
             // Arrange
             var services = CreateServices();
@@ -1145,7 +1244,21 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetTokenEndpointUris(new Uri(uri)));
             Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetTokenEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetTokenEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
         }
 
         [Fact]
@@ -1206,7 +1319,7 @@ namespace OpenIddict.Server.Tests
 
         [Theory]
         [InlineData(@"C:\")]
-        public void SetUserinfoEndpointUris_ThrowsExceptionForUri(string uri)
+        public void SetUserinfoEndpointUris_ThrowsExceptionForMalformedUri(string uri)
         {
             // Arrange
             var services = CreateServices();
@@ -1215,7 +1328,21 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetUserinfoEndpointUris(new Uri(uri)));
             Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetUserinfoEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetUserinfoEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
         }
 
         [Fact]
@@ -1276,7 +1403,7 @@ namespace OpenIddict.Server.Tests
 
         [Theory]
         [InlineData(@"C:\")]
-        public void SetVerificationEndpointUris_ThrowsExceptionForUri(string uri)
+        public void SetVerificationEndpointUris_ThrowsExceptionForMalformedUri(string uri)
         {
             // Arrange
             var services = CreateServices();
@@ -1285,7 +1412,21 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.SetVerificationEndpointUris(new Uri(uri)));
             Assert.Equal("addresses", exception.ParamName);
-            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+            Assert.Contains(SR.GetResourceString(SR.ID1071), exception.Message);
+        }
+
+        [Theory]
+        [InlineData("~/path")]
+        public void SetVerificationEndpointUris_ThrowsExceptionForInvalidRelativeUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetVerificationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
+            Assert.Equal("addresses", exception.ParamName);
+            Assert.Contains(SR.FormatID1080("~"), exception.Message);
         }
 
         [Fact]
