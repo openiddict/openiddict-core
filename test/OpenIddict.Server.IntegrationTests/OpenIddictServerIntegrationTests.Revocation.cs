@@ -455,7 +455,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.FormatID3061(Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID3053(Parameters.ClientSecret), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -494,7 +494,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.FormatID3062(Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID3054(Parameters.ClientSecret), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());

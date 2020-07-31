@@ -1385,7 +1385,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID3054(Parameters.CodeChallenge), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,

@@ -1015,7 +1015,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
         }
 
         [Theory]

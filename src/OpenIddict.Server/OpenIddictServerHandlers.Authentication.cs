@@ -1412,7 +1412,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3029, Parameters.CodeChallenge]);
+                            description: context.Localizer[SR.ID3054, Parameters.CodeChallenge]);
 
                         return;
                     }

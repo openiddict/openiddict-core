@@ -146,7 +146,7 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: context.Localizer[SR.ID3027]);
+                        description: context.Localizer[SR.ID3004]);
 
                     return;
                 }
@@ -253,7 +253,7 @@ namespace OpenIddict.Validation
                             SecurityTokenSignatureKeyNotFoundException _ => context.Localizer[SR.ID3090],
                             SecurityTokenInvalidSignatureException     _ => context.Localizer[SR.ID3091],
 
-                            _ => context.Localizer[SR.ID3027]
+                            _ => context.Localizer[SR.ID3004]
                         });
 
                     return;
@@ -348,7 +348,7 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: context.Localizer[SR.ID3027]);
+                        description: context.Localizer[SR.ID3004]);
 
                     return;
                 }
@@ -590,7 +590,7 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: context.Localizer[SR.ID3027]);
+                        description: context.Localizer[SR.ID3004]);
 
                     return default;
                 }

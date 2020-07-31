@@ -106,7 +106,7 @@ namespace OpenIddict.Validation.DataProtection
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: context.Localizer[SR.ID3027]);
+                        description: context.Localizer[SR.ID3004]);
 
                     return default;
                 }
