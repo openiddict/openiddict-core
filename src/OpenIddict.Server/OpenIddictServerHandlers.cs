@@ -798,18 +798,12 @@ namespace OpenIddict.Server
         /// </summary>
         public class ValidateTokenEntry : IOpenIddictServerHandler<ProcessAuthenticationContext>
         {
-            private readonly IOpenIddictAuthorizationManager _authorizationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
             public ValidateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
-            public ValidateTokenEntry(
-                IOpenIddictAuthorizationManager authorizationManager,
-                IOpenIddictTokenManager tokenManager)
-            {
-                _authorizationManager = authorizationManager;
-                _tokenManager = tokenManager;
-            }
+            public ValidateTokenEntry(IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -872,15 +866,16 @@ namespace OpenIddict.Server
                     context.Request.IsRefreshTokenGrantType()))
                 {
                     // If the authorization code/device code/refresh token is already marked as redeemed, this may indicate
-                    // that it was compromised. In this case, revoke the authorization and all the associated tokens. 
+                    // that it was compromised. In this case, revoke the entire chain of tokens associated with the authorization.
+                    // Note: the authorization itself is not revoked to allow the legitimate client to start a new flow.
                     // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
                     if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
                     {
                         // First, mark the redeemed token submitted by the client as revoked.
                         await _tokenManager.TryRevokeAsync(token);
 
-                        // Then, try to revoke the authorization and the associated token entries.
-                        await TryRevokeAuthorizationChainAsync(context.Principal.GetAuthorizationId());
+                        // Then, try to revoke the token entries associated with the authorization.
+                        await TryRevokeChainAsync(context.Principal.GetAuthorizationId());
 
                         context.Logger.LogError(SR.GetResourceString(SR.ID7002), identifier);
 
@@ -965,19 +960,11 @@ namespace OpenIddict.Server
                                   .SetTokenId(await _tokenManager.GetIdAsync(token))
                                   .SetTokenType(await _tokenManager.GetTypeAsync(token));
 
-                async ValueTask TryRevokeAuthorizationChainAsync(string? identifier)
+                async ValueTask TryRevokeChainAsync(string? identifier)
                 {
-                    if (context.Options.DisableAuthorizationStorage || string.IsNullOrEmpty(identifier))
+                    if (string.IsNullOrEmpty(identifier))
                     {
                         return;
-                    }
-
-                    // Then, try to revoke the authorization and the associated token entries.
-
-                    var authorization = await _authorizationManager.FindByIdAsync(identifier);
-                    if (authorization != null)
-                    {
-                        await _authorizationManager.TryRevokeAsync(authorization);
                     }
 
                     await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier))
