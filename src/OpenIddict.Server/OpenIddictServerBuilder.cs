@@ -1112,6 +1112,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+            }
+
             return Configure(options =>
             {
                 options.AuthorizationEndpointUris.Clear();
@@ -1153,6 +1158,11 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+            }
+
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1198,6 +1208,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+            }
+
             return Configure(options =>
             {
                 options.CryptographyEndpointUris.Clear();
@@ -1239,6 +1254,11 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+            }
+
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1284,6 +1304,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+            }
+
             return Configure(options =>
             {
                 options.IntrospectionEndpointUris.Clear();
@@ -1325,6 +1350,11 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+            }
+
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1370,6 +1400,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+            }
+
             return Configure(options =>
             {
                 options.RevocationEndpointUris.Clear();
@@ -1411,6 +1446,11 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+            }
+
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1456,6 +1496,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+            }
+
             return Configure(options =>
             {
                 options.UserinfoEndpointUris.Clear();
@@ -1497,6 +1542,11 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+            }
+
+            if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
             }
 
             return Configure(options =>
