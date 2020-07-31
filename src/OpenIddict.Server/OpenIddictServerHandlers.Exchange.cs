@@ -820,7 +820,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidClient,
-                                description: context.Localizer[SR.ID3061, Parameters.ClientSecret]);
+                                description: context.Localizer[SR.ID3053, Parameters.ClientSecret]);
 
                             return;
                         }
@@ -835,7 +835,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID3062, Parameters.ClientSecret]);
+                            description: context.Localizer[SR.ID3054, Parameters.ClientSecret]);
 
                         return;
                     }
@@ -1159,7 +1159,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3029, Parameters.CodeVerifier]);
+                            description: context.Localizer[SR.ID3054, Parameters.CodeVerifier]);
 
                         return;
                     }
@@ -1438,7 +1438,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: context.Localizer[SR.ID3073, Parameters.CodeVerifier]);
+                                description: context.Localizer[SR.ID3073, Parameters.CodeVerifier, Parameters.CodeChallenge]);
 
                             return default;
                         }

@@ -465,7 +465,7 @@ namespace OpenIddict.Server
 
                             (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Userinfo) => context.Localizer[SR.ID3008],
 
-                            _ => context.Localizer[SR.ID3027]
+                            _ => context.Localizer[SR.ID3004]
                         });
 
                     return default;

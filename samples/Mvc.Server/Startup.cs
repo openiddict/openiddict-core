@@ -161,6 +161,13 @@ namespace Mvc.Server
 
             app.UseRouting();
 
+            app.UseRequestLocalization(options =>
+            {
+                options.AddSupportedCultures("en-US", "fr-FR");
+                options.AddSupportedUICultures("en-US", "fr-FR");
+                options.SetDefaultCulture("en-US");
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
 
