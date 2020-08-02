@@ -1,4 +1,12 @@
-﻿using System;
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+ * See https://github.com/openiddict/openiddict-core for more information concerning
+ * the license and the contributors participating to this project.
+ */
+
+#nullable disable
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
@@ -80,7 +88,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        ValueTask<object?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default);
+        ValueTask<object> FindByIdAsync(string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a scope using its name.
@@ -91,7 +99,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        ValueTask<object?> FindByNameAsync(string name, CancellationToken cancellationToken = default);
+        ValueTask<object> FindByNameAsync(string name, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a list of scopes using their name.
@@ -147,7 +155,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the description associated with the specified scope.
         /// </returns>
-        ValueTask<string?> GetDescriptionAsync(object scope, CancellationToken cancellationToken = default);
+        ValueTask<string> GetDescriptionAsync(object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized descriptions associated with an scope.
@@ -169,7 +177,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the scope.
         /// </returns>
-        ValueTask<string?> GetDisplayNameAsync(object scope, CancellationToken cancellationToken = default);
+        ValueTask<string> GetDisplayNameAsync(object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized display names associated with an scope.
@@ -191,7 +199,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the scope.
         /// </returns>
-        ValueTask<string?> GetIdAsync(object scope, CancellationToken cancellationToken = default);
+        ValueTask<string> GetIdAsync(object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized description associated with an scope
@@ -204,7 +212,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the matching localized description associated with the scope.
         /// </returns>
-        ValueTask<string?> GetLocalizedDescriptionAsync(object scope, CancellationToken cancellationToken = default);
+        ValueTask<string> GetLocalizedDescriptionAsync(object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized description associated with an scope
@@ -218,7 +226,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the matching localized description associated with the scope.
         /// </returns>
-        ValueTask<string?> GetLocalizedDescriptionAsync(object scope, CultureInfo culture, CancellationToken cancellationToken = default);
+        ValueTask<string> GetLocalizedDescriptionAsync(object scope, CultureInfo culture, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized display name associated with an scope
@@ -231,7 +239,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the scope.
         /// </returns>
-        ValueTask<string?> GetLocalizedDisplayNameAsync(object scope, CancellationToken cancellationToken = default);
+        ValueTask<string> GetLocalizedDisplayNameAsync(object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized display name associated with an scope
@@ -245,7 +253,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the scope.
         /// </returns>
-        ValueTask<string?> GetLocalizedDisplayNameAsync(object scope, CultureInfo culture, CancellationToken cancellationToken = default);
+        ValueTask<string> GetLocalizedDisplayNameAsync(object scope, CultureInfo culture, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the name associated with a scope.
@@ -256,7 +264,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the name associated with the specified scope.
         /// </returns>
-        ValueTask<string?> GetNameAsync(object scope, CancellationToken cancellationToken = default);
+        ValueTask<string> GetNameAsync(object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the resources associated with a scope.
