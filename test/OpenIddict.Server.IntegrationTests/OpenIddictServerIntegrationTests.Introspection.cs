@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
@@ -221,8 +220,13 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.Equal(SR.GetResourceString(SR.ID3019), response.ErrorDescription);
         }
 
-        [Fact]
-        public async Task ValidateIntrospectionRequest_AuthorizationCodeCausesAnErrorWhenPresentersAreMissing()
+        [Theory]
+        [InlineData(TokenTypeHints.AuthorizationCode)]
+        [InlineData(TokenTypeHints.DeviceCode)]
+        [InlineData(TokenTypeHints.IdToken)]
+        [InlineData(TokenTypeHints.UserCode)]
+        [InlineData("custom_token")]
+        public async Task ValidateIntrospectionRequest_UnsupportedTokenTypeCausesAnError(string type)
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
@@ -233,52 +237,10 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal("SlAV32hkKG", context.Token);
+                        Assert.Equal("5HtRgAtc02", context.Token);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AuthorizationCode)
-                            .SetPresenters(Enumerable.Empty<string>());
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act and assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
-            {
-                return client.PostAsync("/connect/introspect", new OpenIddictRequest
-                {
-                    ClientId = "Fabrikam",
-                    Token = "SlAV32hkKG",
-                    TokenTypeHint = TokenTypeHints.AuthorizationCode
-                });
-            });
-
-            Assert.Equal(SR.GetResourceString(SR.ID1042), exception.Message);
-        }
-
-        [Fact]
-        public async Task ValidateIntrospectionRequest_AuthorizationCodeCausesAnErrorWhenCallerIsNotAValidPresenter()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("SlAV32hkKG", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AuthorizationCode)
-                            .SetPresenters("Contoso");
+                            .SetTokenType(type);
 
                         return default;
                     });
@@ -295,13 +257,12 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
             {
                 ClientId = "Fabrikam",
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.AuthorizationCode
+                Token = "5HtRgAtc02"
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3077), response.ErrorDescription);
+            Assert.Equal(Errors.UnsupportedTokenType, response.Error);
+            Assert.Equal(SR.GetResourceString(SR.ID3076), response.ErrorDescription);
         }
 
         [Fact]
@@ -340,48 +301,6 @@ namespace OpenIddict.Server.IntegrationTests
                 ClientId = "Fabrikam",
                 Token = "2YotnFZFEjr1zCsicMWpAA",
                 TokenTypeHint = TokenTypeHints.AccessToken
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3077), response.ErrorDescription);
-        }
-
-        [Fact]
-        public async Task ValidateIntrospectionRequest_IdentityTokenCausesAnErrorWhenCallerIsNotAValidAudience()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.IdToken)
-                            .SetAudiences("AdventureWorks");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "2YotnFZFEjr1zCsicMWpAA",
-                TokenTypeHint = TokenTypeHints.IdToken
             });
 
             // Assert
@@ -848,49 +767,6 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
-        public async Task HandleIntrospectionRequest_NonBasicAuthorizationCodeClaimsAreNotReturned()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AuthorizationCode)
-                            .SetPresenters("Fabrikam")
-                            .SetClaim(Claims.Username, "Bob")
-                            .SetClaim("custom_claim", "secret_value");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                Token = "2YotnFZFEjr1zCsicMWpAA",
-                TokenTypeHint = TokenTypeHints.AuthorizationCode
-            });
-
-            // Assert
-            Assert.Null(response["custom_claim"]);
-            Assert.Null(response[Claims.Username]);
-        }
-
-        [Fact]
         public async Task HandleIntrospectionRequest_NonBasicRefreshTokenClaimsAreNotReturned()
         {
             // Arrange
@@ -991,63 +867,6 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.Equal("secret_value", (string) response["custom_claim"]);
             Assert.Equal("Bob", (string) response[Claims.Username]);
             Assert.Equal("openid profile", (string) response[Claims.Scope]);
-        }
-
-        [Fact]
-        public async Task HandleIntrospectionRequest_NonBasicIdentityClaimsAreReturnedToTrustedAudiences()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.IdToken)
-                            .SetAudiences("Fabrikam")
-                            .SetClaim(Claims.Username, "Bob")
-                            .SetClaim("custom_claim", "secret_value");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                Token = "2YotnFZFEjr1zCsicMWpAA",
-                TokenTypeHint = TokenTypeHints.IdToken
-            });
-
-            // Assert
-            Assert.Equal("secret_value", (string) response["custom_claim"]);
-            Assert.Equal("Bob", (string) response[Claims.Username]);
         }
 
         [Fact]
