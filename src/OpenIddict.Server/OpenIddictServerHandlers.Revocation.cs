@@ -687,7 +687,6 @@ namespace OpenIddict.Server
                     Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
                     if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
-                        !context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode) &&
                         !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID7117));
@@ -734,29 +733,6 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
                     Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
 
-                    // When the revoked token is an authorization code, the caller must be
-                    // listed as a presenter (i.e the party the authorization code was issued to).
-                    if (context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode))
-                    {
-                        if (!context.Principal.HasPresenter())
-                        {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1042));
-                        }
-
-                        if (!context.Principal.HasPresenter(context.ClientId))
-                        {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID7118));
-
-                            context.Reject(
-                                error: Errors.InvalidToken,
-                                description: context.Localizer[SR.ID3080]);
-
-                            return default;
-                        }
-
-                        return default;
-                    }
-
                     // When the revoked token is an access token, the caller must be listed either as a presenter
                     // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
                     // If the access token doesn't contain any explicit presenter/audience, the token is assumed
@@ -766,22 +742,6 @@ namespace OpenIddict.Server
                         context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID7119));
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID3080]);
-
-                        return default;
-                    }
-
-                    // When the revoked token is an identity token, the caller must be listed as an audience
-                    // (i.e the client application the identity token was initially issued to).
-                    // If the identity token doesn't contain any explicit audience, the token is
-                    // assumed to be not specific to any client application and the check is bypassed.
-                    if (context.Principal.HasTokenType(TokenTypeHints.IdToken) &&
-                        context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId))
-                    {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7120));
 
                         context.Reject(
                             error: Errors.InvalidToken,

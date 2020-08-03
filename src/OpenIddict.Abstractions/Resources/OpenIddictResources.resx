@@ -2184,16 +2184,8 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The introspection request was rejected because the received token was of an unsupported type.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7105" xml:space="preserve">
-    <value>The introspection request was rejected because the authorization code was issued to a different client.</value>
-    <comment>{Locked}</comment>
-  </data>
   <data name="ID7106" xml:space="preserve">
     <value>The introspection request was rejected because the access token was issued to a different client or for another resource server.</value>
-    <comment>{Locked}</comment>
-  </data>
-  <data name="ID7107" xml:space="preserve">
-    <value>The introspection request was rejected because the identity token was issued to a different client.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID7108" xml:space="preserve">
@@ -2236,16 +2228,8 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The revocation request was rejected because the received token was of an unsupported type.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7118" xml:space="preserve">
-    <value>The revocation request was rejected because the authorization code was issued to a different client.</value>
-    <comment>{Locked}</comment>
-  </data>
   <data name="ID7119" xml:space="preserve">
     <value>The revocation request was rejected because the access token was issued to a different client or for another resource server.</value>
-    <comment>{Locked}</comment>
-  </data>
-  <data name="ID7120" xml:space="preserve">
-    <value>The revocation request was rejected because the identity token was issued to a different client.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID7121" xml:space="preserve">

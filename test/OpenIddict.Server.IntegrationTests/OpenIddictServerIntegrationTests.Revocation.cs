@@ -153,8 +153,13 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.Equal(SR.FormatID3029(Parameters.Token), response.ErrorDescription);
         }
 
-        [Fact]
-        public async Task ValidateRevocationRequest_IdentityTokenCausesAnUnsupportedTokenTypeError()
+        [Theory]
+        [InlineData(TokenTypeHints.AuthorizationCode)]
+        [InlineData(TokenTypeHints.DeviceCode)]
+        [InlineData(TokenTypeHints.IdToken)]
+        [InlineData(TokenTypeHints.UserCode)]
+        [InlineData("custom_token")]
+        public async Task ValidateRevocationRequest_UnsupportedTokenTypeCausesAnError(string type)
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
@@ -165,11 +170,10 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+                        Assert.Equal("5HtRgAtc02", context.Token);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.IdToken)
-                            .SetAudiences("AdventureWorks");
+                            .SetTokenType(type);
 
                         return default;
                     });
@@ -186,55 +190,12 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
                 ClientId = "Fabrikam",
-                Token = "2YotnFZFEjr1zCsicMWpAA",
-                TokenTypeHint = TokenTypeHints.IdToken
+                Token = "5HtRgAtc02"
             });
 
             // Assert
             Assert.Equal(Errors.UnsupportedTokenType, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID3079), response.ErrorDescription);
-        }
-
-        [Fact]
-        public async Task ValidateRevocationRequest_AuthorizationCodeCausesAnErrorWhenCallerIsNotAValidPresenter()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("SlAV32hkKG", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AuthorizationCode)
-                            .SetPresenters("Contoso");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.AuthorizationCode
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3080), response.ErrorDescription);
         }
 
         [Fact]
