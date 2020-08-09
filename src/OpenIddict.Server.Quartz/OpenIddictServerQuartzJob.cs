@@ -5,13 +5,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using Quartz;
-using static OpenIddict.Abstractions.OpenIddictExceptions;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Quartz
@@ -22,7 +21,6 @@ namespace OpenIddict.Server.Quartz
     [DisallowConcurrentExecution]
     public class OpenIddictServerQuartzJob : IJob
     {
-        private readonly ILogger _logger;
         private readonly IOptionsMonitor<OpenIddictServerQuartzOptions> _options;
         private readonly IServiceProvider _provider;
 
@@ -34,15 +32,10 @@ namespace OpenIddict.Server.Quartz
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerQuartzJob"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
         /// <param name="options">The OpenIddict server Quartz.NET options.</param>
         /// <param name="provider">The service provider.</param>
-        public OpenIddictServerQuartzJob(
-            ILogger<OpenIddictServerQuartzJob> logger,
-            IOptionsMonitor<OpenIddictServerQuartzOptions> options,
-            IServiceProvider provider)
+        public OpenIddictServerQuartzJob(IOptionsMonitor<OpenIddictServerQuartzOptions> options, IServiceProvider provider)
         {
-            _logger = logger;
             _options = options;
             _provider = provider;
         }
@@ -62,7 +55,7 @@ namespace OpenIddict.Server.Quartz
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // TODO: determine whether errors should be swallowed or should be re-thrown to be logged by Quartz.NET.
+            List<Exception>? exceptions = null;
 
             // Note: this job is registered as a transient service. As such, it cannot directly depend on scoped services
             // like the core managers. To work around this limitation, a scope is manually created for each invocation.
@@ -86,11 +79,11 @@ namespace OpenIddict.Server.Quartz
                         // Inform Quartz.NET that the triggers associated with this job should be removed,
                         // as the future invocations will always fail until the application is correctly
                         // re-configured to register the OpenIddict core services in the DI container.
-                        throw new JobExecutionException(SR.GetResourceString(SR.ID1277))
+                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID1277)))
                         {
+                            RefireImmediately = false,
                             UnscheduleAllTriggers = true,
-                            UnscheduleFiringTrigger = true,
-                            RefireImmediately = false
+                            UnscheduleFiringTrigger = true
                         };
                     }
 
@@ -99,19 +92,37 @@ namespace OpenIddict.Server.Quartz
                         await manager.PruneAsync(context.CancellationToken);
                     }
 
-                    catch (ConcurrencyException exception)
+                    // OutOfMemoryExceptions are treated as fatal errors and are always re-thrown as-is.
+                    catch (OutOfMemoryException)
                     {
-                        _logger.LogDebug(exception, SR.GetResourceString(SR.ID7105));
+                        throw;
                     }
 
+                    // OperationCanceledExceptions are typically thrown the host is about to shut down.
+                    // To allow the host to shut down as fast as possible, this exception type is special-cased
+                    // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
                     catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
                     {
-                        _logger.LogDebug(exception, SR.GetResourceString(SR.ID7107));
+                        throw new JobExecutionException(exception)
+                        {
+                            RefireImmediately = false
+                        };
                     }
 
+                    // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
+                    // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
+                    catch (AggregateException exception)
+                    {
+                        exceptions ??= new List<Exception>(capacity: 1);
+                        exceptions.AddRange(exception.InnerExceptions);
+                    }
+
+                    // Other exceptions are assumed to be transient and are added to the exceptions collection
+                    // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
                     catch (Exception exception)
                     {
-                        _logger.LogError(exception, SR.GetResourceString(SR.ID7118));
+                        exceptions ??= new List<Exception>(capacity: 1);
+                        exceptions.Add(exception);
                     }
                 }
 
@@ -123,11 +134,11 @@ namespace OpenIddict.Server.Quartz
                         // Inform Quartz.NET that the triggers associated with this job should be removed,
                         // as the future invocations will always fail until the application is correctly
                         // re-configured to register the OpenIddict core services in the DI container.
-                        throw new JobExecutionException(SR.GetResourceString(SR.ID1277))
+                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID1277)))
                         {
+                            RefireImmediately = false,
                             UnscheduleAllTriggers = true,
-                            UnscheduleFiringTrigger = true,
-                            RefireImmediately = false
+                            UnscheduleFiringTrigger = true
                         };
                     }
 
@@ -136,20 +147,47 @@ namespace OpenIddict.Server.Quartz
                         await manager.PruneAsync(context.CancellationToken);
                     }
 
-                    catch (ConcurrencyException exception)
+                    // OutOfMemoryExceptions are treated as fatal errors and are always re-thrown as-is.
+                    catch (OutOfMemoryException)
                     {
-                        _logger.LogDebug(exception, SR.GetResourceString(SR.ID7120));
+                        throw;
                     }
 
+                    // OperationCanceledExceptions are typically thrown the host is about to shut down.
+                    // To allow the host to shut down as fast as possible, this exception type is special-cased
+                    // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
                     catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
                     {
-                        _logger.LogDebug(exception, SR.GetResourceString(SR.ID7180));
+                        throw new JobExecutionException(exception)
+                        {
+                            RefireImmediately = false
+                        };
                     }
 
+                    // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
+                    // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
+                    catch (AggregateException exception)
+                    {
+                        exceptions ??= new List<Exception>(capacity: 1);
+                        exceptions.AddRange(exception.InnerExceptions);
+                    }
+
+                    // Other exceptions are assumed to be transient and are added to the exceptions collection
+                    // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
                     catch (Exception exception)
                     {
-                        _logger.LogError(exception, SR.GetResourceString(SR.ID7181));
+                        exceptions ??= new List<Exception>(capacity: 1);
+                        exceptions.Add(exception);
                     }
+                }
+
+                if (exceptions != null)
+                {
+                    throw new JobExecutionException(new AggregateException(exceptions))
+                    {
+                        // Only refire the job if the maximum refire count set in the options wasn't reached.
+                        RefireImmediately = context.RefireCount < _options.CurrentValue.MaximumRefireCount
+                    };
                 }
             }
 

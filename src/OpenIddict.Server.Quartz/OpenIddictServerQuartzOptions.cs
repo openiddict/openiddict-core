@@ -20,5 +20,11 @@ namespace OpenIddict.Server.Quartz
         /// Gets or sets a boolean indicating whether tokens pruning should be disabled.
         /// </summary>
         public bool DisableTokensPruning { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of times a failed Quartz.NET job can be retried.
+        /// By default, failed jobs are automatically retried twice after the initial failure.
+        /// </summary>
+        public int MaximumRefireCount { get; set; } = 2;
     }
 }

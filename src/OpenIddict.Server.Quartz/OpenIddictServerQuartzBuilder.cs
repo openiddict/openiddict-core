@@ -7,6 +7,7 @@
 using System;
 using System.ComponentModel;
 using OpenIddict.Server.Quartz;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -60,6 +61,21 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
         public OpenIddictServerQuartzBuilder DisableTokensPruning()
             => Configure(options => options.DisableTokensPruning = true);
+
+        /// <summary>
+        /// Sets the number of times a failed Quartz.NET job can be retried.
+        /// </summary>
+        /// <param name="count">The number of times a failed Quartz.NET job can be retried.</param>
+        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
+        public OpenIddictServerQuartzBuilder SetMaximumRefireCount(int count)
+        {
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), SR.GetResourceString(SR.ID1278));
+            }
+
+            return Configure(options => options.MaximumRefireCount = count);
+        }
 
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
