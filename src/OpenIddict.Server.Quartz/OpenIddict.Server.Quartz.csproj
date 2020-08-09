@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      TODO: add .NET Framework 4.6.1 and .NET Standard 2.0 once Quartz.NET is updated
+      to target the 2.1 version of the .NET Platform Extensions (logging and hosting).
+    -->
+    <TargetFrameworks>netcoreapp3.1;netstandard2.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <IsShipping>false</IsShipping>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Quartz integration package for the OpenIddict server services.</Description>
+    <PackageTags>$(PackageTags);quartz;server</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+</Project>
