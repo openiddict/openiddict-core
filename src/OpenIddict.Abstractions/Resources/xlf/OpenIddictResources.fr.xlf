@@ -594,7 +594,7 @@
       </trans-unit>
       <trans-unit id="ID8001">
         <source>Starts the scheduled task at regular intervals.</source>
-        <target state="translated">Démarre la tâche planifiée à intervalles régulières.</target>
+        <target state="translated">Démarre la tâche planifiée à intervalles réguliers.</target>
         <note />
       </trans-unit>
     </body>
