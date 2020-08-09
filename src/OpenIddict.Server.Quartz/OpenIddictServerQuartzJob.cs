@@ -83,7 +83,15 @@ namespace OpenIddict.Server.Quartz
                     var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>();
                     if (manager == null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1277));
+                        // Inform Quartz.NET that the triggers associated with this job should be removed,
+                        // as the future invocations will always fail until the application is correctly
+                        // re-configured to register the OpenIddict core services in the DI container.
+                        throw new JobExecutionException(SR.GetResourceString(SR.ID1277))
+                        {
+                            UnscheduleAllTriggers = true,
+                            UnscheduleFiringTrigger = true,
+                            RefireImmediately = false
+                        };
                     }
 
                     try
@@ -112,7 +120,15 @@ namespace OpenIddict.Server.Quartz
                     var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>();
                     if (manager == null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1277));
+                        // Inform Quartz.NET that the triggers associated with this job should be removed,
+                        // as the future invocations will always fail until the application is correctly
+                        // re-configured to register the OpenIddict core services in the DI container.
+                        throw new JobExecutionException(SR.GetResourceString(SR.ID1277))
+                        {
+                            UnscheduleAllTriggers = true,
+                            UnscheduleFiringTrigger = true,
+                            RefireImmediately = false
+                        };
                     }
 
                     try
