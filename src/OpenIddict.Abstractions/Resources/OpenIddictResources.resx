@@ -2487,5 +2487,6 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID1278" xml:space="preserve">
     <value>The maximum refire count cannot be negative.</value>
+    <comment>{Locked}</comment>
   </data>
 </root>
