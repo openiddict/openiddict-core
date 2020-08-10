@@ -480,6 +480,11 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
     <value>Endpoint addresses cannot start with '{0}'.</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="ID1081" xml:space="preserve">
+    <value>Dependency injection support must be enabled in Quartz.NET when using the OpenIddict server integration.
+To enable DI support, call 'services.AddQuartz(options =&gt; options.UseMicrosoftDependencyInjectionJobFactory())'.</value>
+    <comment>{Locked}</comment>
+  </data>
   <data name="ID1082" xml:space="preserve">
     <value>Reference tokens cannot be used when disabling token storage.</value>
     <comment>{Locked}</comment>
@@ -1361,6 +1366,15 @@ To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFr
   <data name="ID1276" xml:space="preserve">
     <value>The Entity Framework 6.x stores cannot be used with generic types.
 Consider creating non-generic classes derived from the default entities for the application, authorization, scope and token entities.</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="ID1277" xml:space="preserve">
+    <value>The core services must be registered when enabling the OpenIddict server Quartz.NET integration.
+To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="ID1278" xml:space="preserve">
+    <value>The maximum refire count cannot be negative.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID3000" xml:space="preserve">
@@ -2468,5 +2482,11 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID7179" xml:space="preserve">
     <value>An exception occurred while trying to revoke the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
+  </data>
+  <data name="ID9000" xml:space="preserve">
+    <value>Removes orphaned tokens and authorizations from the database.</value>
+  </data>
+  <data name="ID9001" xml:space="preserve">
+    <value>Starts the scheduled task at regular intervals.</value>
   </data>
 </root>

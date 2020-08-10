@@ -587,6 +587,16 @@
         <target state="translated">Les URLs de rappel doit être des URLs valides et absolues.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ID9000">
+        <source>Removes orphaned tokens and authorizations from the database.</source>
+        <target state="translated">Supprime les jetons et autorisations orphelines de la base de données.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID9001">
+        <source>Starts the scheduled task at regular intervals.</source>
+        <target state="translated">Démarre la tâche planifiée à intervalles réguliers.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

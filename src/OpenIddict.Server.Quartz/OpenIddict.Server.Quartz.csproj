@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <IsShipping>false</IsShipping>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Quartz.NET integration package for the OpenIddict server services.</Description>
+    <PackageTags>$(PackageTags);quartz;server</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+</Project>
