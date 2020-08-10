@@ -2483,10 +2483,10 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>An exception occurred while trying to revoke the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID8000" xml:space="preserve">
+  <data name="ID9000" xml:space="preserve">
     <value>Removes orphaned tokens and authorizations from the database.</value>
   </data>
-  <data name="ID8001" xml:space="preserve">
+  <data name="ID9001" xml:space="preserve">
     <value>Starts the scheduled task at regular intervals.</value>
   </data>
 </root>
