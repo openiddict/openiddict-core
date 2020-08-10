@@ -14,12 +14,12 @@ using SR = OpenIddict.Abstractions.OpenIddictResources;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Exposes extensions allowing to register the OpenIddict Quartz.NET integration.
+    /// Exposes extensions allowing to register the OpenIddict server Quartz.NET integration.
     /// </summary>
     public static class OpenIddictServerQuartzExtensions
     {
         /// <summary>
-        /// Registers the OpenIddict Quartz.NET integration in the DI container.
+        /// Registers the OpenIddict server Quartz.NET integration in the DI container.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the OpenIddict Quartz.NET integration in the DI container.
+        /// Registers the OpenIddict server Quartz.NET integration in the DI container.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="configuration">The configuration delegate used to configure the server services.</param>
