@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // pointing to OpenIddictServerQuartzJob was already registered in the DI container.
             if (!builder.Services.Any(descriptor => descriptor.ServiceType == typeof(IJobDetail) &&
                                                     descriptor.ImplementationInstance is IJobDetail job &&
-                                                    job.Key == OpenIddictServerQuartzJob.Identity))
+                                                    job.Key.Equals(OpenIddictServerQuartzJob.Identity)))
             {
                 builder.Services.AddSingleton(
                     JobBuilder.Create<OpenIddictServerQuartzJob>()
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // pointing to OpenIddictServerQuartzJob was already registered in the DI container.
             if (!builder.Services.Any(descriptor => descriptor.ServiceType == typeof(ITrigger) &&
                                                     descriptor.ImplementationInstance is ITrigger trigger &&
-                                                    trigger.JobKey == OpenIddictServerQuartzJob.Identity))
+                                                    trigger.JobKey.Equals(OpenIddictServerQuartzJob.Identity)))
             {
                 // Note: this trigger uses a quite long interval (1 hour), which means it may be
                 // potentially never reached if the application is shut down or recycled. As such,

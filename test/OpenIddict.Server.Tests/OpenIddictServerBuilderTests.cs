@@ -212,19 +212,20 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void Configure_OptionsAreCorrectlyAmended()
+        public void Configure_DelegateIsCorrectlyRegistered()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
+            var configuration = new Action<OpenIddictServerOptions>(options => { });
 
             // Act
-            builder.Configure(configuration => configuration.AccessTokenLifetime = TimeSpan.FromDays(1));
-
-            var options = GetOptions(services);
+            builder.Configure(configuration);
 
             // Assert
-            Assert.Equal(TimeSpan.FromDays(1), options.AccessTokenLifetime);
+            Assert.Contains(services, service => service.ServiceType == typeof(IConfigureOptions<OpenIddictServerOptions>) &&
+                service.ImplementationInstance is ConfigureNamedOptions<OpenIddictServerOptions> options &&
+                options.Action == configuration && string.IsNullOrEmpty(options.Name));
         }
 
         [Fact]
