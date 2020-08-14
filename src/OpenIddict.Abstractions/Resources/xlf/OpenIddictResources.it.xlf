@@ -274,7 +274,7 @@
       </trans-unit>
       <trans-unit id="ID3056">
         <source>This client application is not allowed to use the device endpoint.</source>
-        <target state="translated">Questa applicazione client non è autorizzata a utilizzare l'endpoint del dispositivo.</target>
+        <target state="translated">L'applicazione client non è autorizzata a utilizzare l'endpoint del dispositivo.</target>
         <note/>
       </trans-unit>
       <trans-unit id="ID3057">
@@ -359,7 +359,7 @@
       </trans-unit>
       <trans-unit id="ID3075">
         <source>This client application is not allowed to use the introspection endpoint.</source>
-        <target state="translated">L' applicazione client non può utilizzare l'endpoint di introspezione.</target>
+        <target state="translated">L'applicazione client non può utilizzare l'endpoint di introspezione.</target>
         <note/>
       </trans-unit>
       <trans-unit id="ID3076">
