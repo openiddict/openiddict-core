@@ -269,152 +269,152 @@
       </trans-unit>
       <trans-unit id="ID3055">
         <source>The specified client credentials are invalid.</source>
-        <target state="new">The specified client credentials are invalid.</target>
+        <target state="new">İstemci kimlik bilgileri geçersiz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3056">
         <source>This client application is not allowed to use the device endpoint.</source>
-        <target state="new">This client application is not allowed to use the device endpoint.</target>
+        <target state="new">İstemci uygulamasının cihaz uçbirimini kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3057">
         <source>The '{0}' and '{1}' parameters are required when using the client credentials grant.</source>
-        <target state="new">The '{0}' and '{1}' parameters are required when using the client credentials grant.</target>
+        <target state="new">'{0}' ve '{1}' parametreleri istemci kimlik bilgileri hakkı kullanıldığında zorunludur.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3058">
         <source>The '{0}' parameter is required when using the device code grant.</source>
-        <target state="new">The '{0}' parameter is required when using the device code grant.</target>
+        <target state="new">'{0}' parametresi cihaz kodu hakkı kullanıldığında zorunludur.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3059">
         <source>The mandatory '{0}' and/or '{1}' parameters are missing.</source>
-        <target state="new">The mandatory '{0}' and/or '{1}' parameters are missing.</target>
+        <target state="new">Zorunlu '{0}' ve/veya '{1}' parametreleri eksik.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3060">
         <source>A scope with the same name already exists.</source>
-        <target state="new">A scope with the same name already exists.</target>
+        <target state="new">Aynı isimde bir kapsam bulunmaktadır..</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3063">
         <source>This client application is not allowed to use the token endpoint.</source>
-        <target state="new">This client application is not allowed to use the token endpoint.</target>
+        <target state="new">İstemci uygulamasının belirteç uçbirimini kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3064">
         <source>This client application is not allowed to use the specified grant type.</source>
-        <target state="new">This client application is not allowed to use the specified grant type.</target>
+        <target state="new">İstemci uygulamasının belirtilen hak tipini kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3065">
         <source>The client application is not allowed to use the '{0}' scope.</source>
-        <target state="new">The client application is not allowed to use the '{0}' scope.</target>
+        <target state="new">İstemci uygulamasının '{0}' kapsamını kullanmaya izni bulunmamaktadır..</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3066">
         <source>The specified authorization code cannot be used without sending a client identifier.</source>
-        <target state="new">The specified authorization code cannot be used without sending a client identifier.</target>
+        <target state="new">Belirtilen yetkilendirme kodu istemci tanımlayıcı yollanmadan kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3067">
         <source>The specified device code cannot be used without sending a client identifier.</source>
-        <target state="new">The specified device code cannot be used without sending a client identifier.</target>
+        <target state="new">Belirtilen cihaz kodu istemci tanımlayıcı yollanmadan kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3068">
         <source>The specified refresh token cannot be used without sending a client identifier.</source>
-        <target state="new">The specified refresh token cannot be used without sending a client identifier.</target>
+        <target state="new">Belirtilen yenileme belirteci istemci tanımlayıcı yollanmadan kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3069">
         <source>The specified authorization code cannot be used by this client application.</source>
-        <target state="new">The specified authorization code cannot be used by this client application.</target>
+        <target state="new">Belirtilen yetkilendirme kodu istemci uygulaması tarafından kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3070">
         <source>The specified device code cannot be used by this client application.</source>
-        <target state="new">The specified device code cannot be used by this client application.</target>
+        <target state="new">Belirtilen cihaz kodu istemci uygulaması tarafından kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3071">
         <source>The specified refresh token cannot be used by this client application.</source>
-        <target state="new">The specified refresh token cannot be used by this client application.</target>
+        <target state="new">Belirtilen yenileme belirteci istemci uygulaması tarafından kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3072">
         <source>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</source>
-        <target state="new">The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</target>
+        <target state="new">'{0}' parametresi yetkilendirme kodunun ilk yollandığı istemci yönlendirme adresi ile eşleşmiyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3073">
         <source>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</source>
-        <target state="new">The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</target>
+        <target state="new">'{0}' parametresi yetkilendirme isteğinde '{1}' tanımlanmadığında kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3074">
         <source>The '{0}' parameter is not valid in this context.</source>
-        <target state="new">The '{0}' parameter is not valid in this context.</target>
+        <target state="new">'{0}' parametresi bu bağlamda geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3075">
         <source>This client application is not allowed to use the introspection endpoint.</source>
-        <target state="new">This client application is not allowed to use the introspection endpoint.</target>
+        <target state="new">İstemci uygulamasının içgözlem uçbirimini kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3076">
         <source>The specified token cannot be introspected.</source>
-        <target state="new">The specified token cannot be introspected.</target>
+        <target state="new">Belirteç içgözlenemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3077">
         <source>The client application is not allowed to introspect the specified token.</source>
-        <target state="new">The client application is not allowed to introspect the specified token.</target>
+        <target state="new">İstemci uygulamasının belirteci içgözlemlemeye izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3078">
         <source>This client application is not allowed to use the revocation endpoint.</source>
-        <target state="new">This client application is not allowed to use the revocation endpoint.</target>
+        <target state="new">İstemci uygulamasının yürürlükten kaldırma uçbirimini kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3079">
         <source>This token cannot be revoked.</source>
-        <target state="new">This token cannot be revoked.</target>
+        <target state="new">Belirteç yürürlükten kaldırılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3080">
         <source>The client application is not allowed to revoke the specified token.</source>
-        <target state="new">The client application is not allowed to revoke the specified token.</target>
+        <target state="new">İstemci uygulamasının belirteci yürürlükten kaldırmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3081">
         <source>The mandatory '{0}' header is missing.</source>
-        <target state="new">The mandatory '{0}' header is missing.</target>
+        <target state="new">Zorunlu '{0}' başlığı eksik.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3082">
         <source>The specified '{0}' header is invalid.</source>
-        <target state="new">The specified '{0}' header is invalid.</target>
+        <target state="new">'{0}' başlığı geçersiz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3083">
         <source>This server only accepts HTTPS requests.</source>
-        <target state="new">This server only accepts HTTPS requests.</target>
+        <target state="new">Bu sunucu sadece HTTPS isteklerini kabul etmektedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3084">
         <source>The specified HTTP method is not valid.</source>
-        <target state="new">The specified HTTP method is not valid.</target>
+        <target state="new">Belirtilen HTTP metodu geçersiz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3085">
         <source>A token with the same reference identifier already exists.</source>
-        <target state="new">A token with the same reference identifier already exists.</target>
+        <target state="new">Aynı referans tanımlayıcı ile bir belirteç bulunmaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3086">
         <source>The token type cannot be null or empty.</source>
-        <target state="new">The token type cannot be null or empty.</target>
+        <target state="new">Belirteç tipi boş veya tanımsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3087">
