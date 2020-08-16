@@ -4,132 +4,132 @@
     <body>
       <trans-unit id="ID3000">
         <source>The security token is missing.</source>
-        <target state="new">The security token is missing.</target>
+        <target state="new">Güvenlik belirteci eksik.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3001">
         <source>The specified authorization code is invalid.</source>
-        <target state="new">The specified authorization code is invalid.</target>
+        <target state="new">Belirtilen yetkilendirme kodu geçersiz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3002">
         <source>The specified device code is invalid.</source>
-        <target state="new">The specified device code is invalid.</target>
+        <target state="new">Belirtilen cihaz kodu geçersiz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3003">
         <source>The specified refresh token is invalid.</source>
-        <target state="new">The specified refresh token is invalid.</target>
+        <target state="new">Belirtilen yenileme belirteci geçersiz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3004">
         <source>The specified token is invalid.</source>
-        <target state="new">The specified token is invalid.</target>
+        <target state="new">Geçersiz belirteç.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3005">
         <source>The specified token is not an authorization code.</source>
-        <target state="new">The specified token is not an authorization code.</target>
+        <target state="new">Belirteç Yetkilendirme belirteci değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3006">
         <source>The specified token is not an device code.</source>
-        <target state="new">The specified token is not an device code.</target>
+        <target state="new">Belirteç cihaz kodu değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3007">
         <source>The specified token is not a refresh token.</source>
-        <target state="new">The specified token is not a refresh token.</target>
+        <target state="new">Belirteç yenileme belirteci değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3008">
         <source>The specified token is not an access token.</source>
-        <target state="new">The specified token is not an access token.</target>
+        <target state="new">Belirteç erişim belirteci değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3009">
         <source>The specified identity token is invalid.</source>
-        <target state="new">The specified identity token is invalid.</target>
+        <target state="new">Kimlik belirteci geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3010">
         <source>The specified authorization code has already been redeemed.</source>
-        <target state="new">The specified authorization code has already been redeemed.</target>
+        <target state="new">Yetkilendirme belirteci daha önce kullanılmış.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3011">
         <source>The specified device code has already been redeemed.</source>
-        <target state="new">The specified device code has already been redeemed.</target>
+        <target state="new">Cihaz kodu daha önce kullanılmış.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3012">
         <source>The specified refresh token has already been redeemed.</source>
-        <target state="new">The specified refresh token has already been redeemed.</target>
+        <target state="new">Yenileme belirteci daha önce kullanılmış.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3013">
         <source>The specified token has already been redeemed.</source>
-        <target state="new">The specified token has already been redeemed.</target>
+        <target state="new">Belirteç daha önce kullanılmış.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3014">
         <source>The authorization has not been granted yet by the end user.</source>
-        <target state="new">The authorization has not been granted yet by the end user.</target>
+        <target state="new">Yetkilendirme son kullanıcı tarafından henüz verilmedi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3015">
         <source>The authorization was denied by the end user.</source>
-        <target state="new">The authorization was denied by the end user.</target>
+        <target state="new">Yetkilendirme son kullanıcı tarafından reddedildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3016">
         <source>The specified authorization code is no longer valid.</source>
-        <target state="new">The specified authorization code is no longer valid.</target>
+        <target state="new">Yetkilendirme kodu artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3017">
         <source>The specified device code is no longer valid.</source>
-        <target state="new">The specified device code is no longer valid.</target>
+        <target state="new">Cihaz kodu artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3018">
         <source>The specified refresh token is no longer valid.</source>
-        <target state="new">The specified refresh token is no longer valid.</target>
+        <target state="new">Yenileme belirteci artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3019">
         <source>The specified token is no longer valid.</source>
-        <target state="new">The specified token is no longer valid.</target>
+        <target state="new">Belirteç artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3020">
         <source>The authorization associated with the authorization code is no longer valid.</source>
-        <target state="new">The authorization associated with the authorization code is no longer valid.</target>
+        <target state="new">Yetkilendirme ile ilişkili yetkilendirme kodu artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3021">
         <source>The authorization associated with the device code is no longer valid.</source>
-        <target state="new">The authorization associated with the device code is no longer valid.</target>
+        <target state="new">Yetkilendirme ile ilişkili cihaz kodu artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3022">
         <source>The authorization associated with the refresh token is no longer valid.</source>
-        <target state="new">The authorization associated with the refresh token is no longer valid.</target>
+        <target state="new">Yenileme belirteci ile ilişkili cihaz kodu artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3023">
         <source>The authorization associated with the token is no longer valid.</source>
-        <target state="new">The authorization associated with the token is no longer valid.</target>
+        <target state="new">Yetkilendirme ile ilişkili belirteç artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3024">
         <source>The token request was rejected by the authentication server.</source>
-        <target state="new">The token request was rejected by the authentication server.</target>
+        <target state="new">Belirteç isteği erişim sunucusu tarafından reddedildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3025">
         <source>The user information access demand was rejected by the authentication server.</source>
-        <target state="new">The user information access demand was rejected by the authentication server.</target>
+        <target state="new">Kullanıcı bilgisi isteği erişim sunucusu tarafından reddedildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3026">
