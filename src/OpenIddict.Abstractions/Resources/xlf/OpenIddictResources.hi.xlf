@@ -4,597 +4,597 @@
     <body>
       <trans-unit id="ID3000">
         <source>The security token is missing.</source>
-        <target state="new">The security token is missing.</target>
+        <target state="translated">सुरक्षा टोकन गायब है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3001">
         <source>The specified authorization code is invalid.</source>
-        <target state="new">The specified authorization code is invalid.</target>
+        <target state="translated">निर्दिष्ट प्राधिकरण कोड अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3002">
         <source>The specified device code is invalid.</source>
-        <target state="new">The specified device code is invalid.</target>
+        <target state="translated">निर्दिष्ट डिवाइस कोड अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3003">
         <source>The specified refresh token is invalid.</source>
-        <target state="new">The specified refresh token is invalid.</target>
+        <target state="translated">निर्दिष्ट ताज़ा टोकन अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3004">
         <source>The specified token is invalid.</source>
-        <target state="new">The specified token is invalid.</target>
+        <target state="translated">निर्दिष्ट टोकन अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3005">
         <source>The specified token is not an authorization code.</source>
-        <target state="new">The specified token is not an authorization code.</target>
+        <target state="translated">निर्दिष्ट टोकन एक प्राधिकरण कोड नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3006">
         <source>The specified token is not an device code.</source>
-        <target state="new">The specified token is not an device code.</target>
+        <target state="translated">निर्दिष्ट टोकन डिवाइस कोड नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3007">
         <source>The specified token is not a refresh token.</source>
-        <target state="new">The specified token is not a refresh token.</target>
+        <target state="translated">निर्दिष्ट टोकन एक ताज़ा टोकन नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3008">
         <source>The specified token is not an access token.</source>
-        <target state="new">The specified token is not an access token.</target>
+        <target state="translated">निर्दिष्ट टोकन एक्सेस टोकन नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3009">
         <source>The specified identity token is invalid.</source>
-        <target state="new">The specified identity token is invalid.</target>
+        <target state="translated">निर्दिष्ट पहचान टोकन अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3010">
         <source>The specified authorization code has already been redeemed.</source>
-        <target state="new">The specified authorization code has already been redeemed.</target>
+        <target state="translated">निर्दिष्ट प्राधिकरण कोड पहले ही भुनाया जा चुका है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3011">
         <source>The specified device code has already been redeemed.</source>
-        <target state="new">The specified device code has already been redeemed.</target>
+        <target state="translated">निर्दिष्ट डिवाइस कोड पहले ही भुनाया जा चुका है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3012">
         <source>The specified refresh token has already been redeemed.</source>
-        <target state="new">The specified refresh token has already been redeemed.</target>
+        <target state="translated">निर्दिष्ट ताज़ा टोकन पहले ही भुनाया जा चुका है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3013">
         <source>The specified token has already been redeemed.</source>
-        <target state="new">The specified token has already been redeemed.</target>
+        <target state="translated">निर्दिष्ट टोकन को पहले ही भुनाया जा चुका है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3014">
         <source>The authorization has not been granted yet by the end user.</source>
-        <target state="new">The authorization has not been granted yet by the end user.</target>
+        <target state="translated">अंतिम उपयोगकर्ता द्वारा प्राधिकरण अभी तक प्रदान नहीं किया गया है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3015">
         <source>The authorization was denied by the end user.</source>
-        <target state="new">The authorization was denied by the end user.</target>
+        <target state="translated">प्राधिकरण को अंतिम उपयोगकर्ता द्वारा अस्वीकार कर दिया गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3016">
         <source>The specified authorization code is no longer valid.</source>
-        <target state="new">The specified authorization code is no longer valid.</target>
+        <target state="translated">निर्दिष्ट प्राधिकरण कोड अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3017">
         <source>The specified device code is no longer valid.</source>
-        <target state="new">The specified device code is no longer valid.</target>
+        <target state="translated">निर्दिष्ट डिवाइस कोड अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3018">
         <source>The specified refresh token is no longer valid.</source>
-        <target state="new">The specified refresh token is no longer valid.</target>
+        <target state="translated">निर्दिष्ट ताज़ा टोकन अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3019">
         <source>The specified token is no longer valid.</source>
-        <target state="new">The specified token is no longer valid.</target>
+        <target state="translated">निर्दिष्ट टोकन अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3020">
         <source>The authorization associated with the authorization code is no longer valid.</source>
-        <target state="new">The authorization associated with the authorization code is no longer valid.</target>
+        <target state="translated">प्राधिकरण कोड से संबद्ध प्राधिकरण अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3021">
         <source>The authorization associated with the device code is no longer valid.</source>
-        <target state="new">The authorization associated with the device code is no longer valid.</target>
+        <target state="translated">डिवाइस कोड से संबद्ध प्राधिकरण अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3022">
         <source>The authorization associated with the refresh token is no longer valid.</source>
-        <target state="new">The authorization associated with the refresh token is no longer valid.</target>
+        <target state="translated">ताज़ा टोकन से संबद्ध प्राधिकरण अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3023">
         <source>The authorization associated with the token is no longer valid.</source>
-        <target state="new">The authorization associated with the token is no longer valid.</target>
+        <target state="translated">टोकन से जुड़ा प्राधिकरण अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3024">
         <source>The token request was rejected by the authentication server.</source>
-        <target state="new">The token request was rejected by the authentication server.</target>
+        <target state="translated">टोकन अनुरोध प्रमाणीकरण सर्वर द्वारा अस्वीकार कर दिया गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3025">
         <source>The user information access demand was rejected by the authentication server.</source>
-        <target state="new">The user information access demand was rejected by the authentication server.</target>
+        <target state="translated">प्रमाणीकरण सर्वर द्वारा उपयोगकर्ता सूचना पहुंच मांग को अस्वीकार कर दिया गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3026">
         <source>The specified user code is no longer valid.</source>
-        <target state="new">The specified user code is no longer valid.</target>
+        <target state="translated">निर्दिष्ट उपयोगकर्ता कोड अब मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3028">
         <source>The '{0}' parameter is not supported.</source>
-        <target state="new">The '{0}' parameter is not supported.</target>
+        <target state="translated">'{0}' पैरामीटर समर्थित नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3029">
         <source>The mandatory '{0}' parameter is missing.</source>
-        <target state="new">The mandatory '{0}' parameter is missing.</target>
+        <target state="translated">अनिवार्य '{0}' पैरामीटर गायब है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3030">
         <source>The '{0}' parameter must be a valid absolute URL.</source>
-        <target state="new">The '{0}' parameter must be a valid absolute URL.</target>
+        <target state="translated">'{0}' पैरामीटर एक मान्य पूर्ण URL होना चाहिए.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3031">
         <source>The '{0}' parameter must not include a fragment.</source>
-        <target state="new">The '{0}' parameter must not include a fragment.</target>
+        <target state="translated">'{0}' पैरामीटर में एक टुकड़ा शामिल नहीं होना चाहिए.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3032">
         <source>The specified '{0}' is not supported.</source>
-        <target state="new">The specified '{0}' is not supported.</target>
+        <target state="translated">निर्दिष्ट '{0}' समर्थित नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3033">
         <source>The specified '{0}'/'{1}' combination is invalid.</source>
-        <target state="new">The specified '{0}'/'{1}' combination is invalid.</target>
+        <target state="translated">निर्दिष्ट '{0}' / '{1}' संयोजन अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3034">
         <source>The mandatory '{0}' scope is missing.</source>
-        <target state="new">The mandatory '{0}' scope is missing.</target>
+        <target state="translated">अनिवार्य '{0}' स्कोप गायब है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3035">
         <source>The '{0}' scope is not allowed.</source>
-        <target state="new">The '{0}' scope is not allowed.</target>
+        <target state="translated">'{0}' स्कोप की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3036">
         <source>The client identifier cannot be null or empty.</source>
-        <target state="new">The client identifier cannot be null or empty.</target>
+        <target state="translated">क्लाइंट पहचानकर्ता रिक्त या रिक्त नहीं हो सकता.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3037">
         <source>The '{0}' parameter cannot be used without '{1}'.</source>
-        <target state="new">The '{0}' parameter cannot be used without '{1}'.</target>
+        <target state="translated">'{0}' पैरामीटर का उपयोग '{1}' के बिना नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3038">
         <source>The status cannot be null or empty.</source>
-        <target state="new">The status cannot be null or empty.</target>
+        <target state="translated">स्थिति शून्य या रिक्त नहीं हो सकती.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3039">
         <source>Scopes cannot be null or empty.</source>
-        <target state="new">Scopes cannot be null or empty.</target>
+        <target state="translated">स्कोप्स शून्य या रिक्त नहीं हो सकते.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3040">
         <source>The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</source>
-        <target state="new">The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</target>
+        <target state="translated">'{0}' और '{1}' मापदंडों का उपयोग केवल '{2}' वाले प्रतिक्रिया प्रकार के साथ किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3041">
         <source>The specified '{0}' is not allowed when using PKCE.</source>
-        <target state="new">The specified '{0}' is not allowed when using PKCE.</target>
+        <target state="translated">PKCE का उपयोग करते समय निर्दिष्ट '{0}' की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3042">
         <source>Scopes cannot contain spaces.</source>
-        <target state="new">Scopes cannot contain spaces.</target>
+        <target state="translated">स्कोप में स्थान नहीं हो सकते.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3043">
         <source>The specified '{0}' is not valid for this client application.</source>
-        <target state="new">The specified '{0}' is not valid for this client application.</target>
+        <target state="translated">निर्दिष्ट '{0}' इस क्लाइंट एप्लिकेशन के लिए मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3044">
         <source>The scope name cannot be null or empty.</source>
-        <target state="new">The scope name cannot be null or empty.</target>
+        <target state="translated">स्कोप नाम शून्य या रिक्त नहीं हो सकता.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3045">
         <source>The scope name cannot contain spaces.</source>
-        <target state="new">The scope name cannot contain spaces.</target>
+        <target state="translated">स्कोप नाम में रिक्त स्थान नहीं हो सकते.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3046">
         <source>This client application is not allowed to use the authorization endpoint.</source>
-        <target state="new">This client application is not allowed to use the authorization endpoint.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन को प्राधिकरण समापन बिंदु का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3047">
         <source>The client application is not allowed to use the authorization code flow.</source>
-        <target state="new">The client application is not allowed to use the authorization code flow.</target>
+        <target state="translated">क्लाइंट एप्लिकेशन को प्राधिकरण कोड प्रवाह का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3048">
         <source>The client application is not allowed to use the implicit flow.</source>
-        <target state="new">The client application is not allowed to use the implicit flow.</target>
+        <target state="translated">क्लाइंट एप्लिकेशन को निहित प्रवाह का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3049">
         <source>The client application is not allowed to use the hybrid flow.</source>
-        <target state="new">The client application is not allowed to use the hybrid flow.</target>
+        <target state="translated">हाइब्रिड प्रवाह का उपयोग करने के लिए क्लाइंट एप्लिकेशन को अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3051">
         <source>This client application is not allowed to use the specified scope.</source>
-        <target state="new">This client application is not allowed to use the specified scope.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन को निर्दिष्ट दायरे का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3052">
         <source>The specified '{0}' is invalid.</source>
-        <target state="new">The specified '{0}' is invalid.</target>
+        <target state="translated">निर्दिष्ट '{0}' अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3053">
         <source>The '{0}' parameter is not valid for this client application.</source>
-        <target state="new">The '{0}' parameter is not valid for this client application.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन के लिए '{0}' पैरामीटर मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3054">
         <source>The '{0}' parameter required for this client application is missing.</source>
-        <target state="new">The '{0}' parameter required for this client application is missing.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन के लिए आवश्यक '{0}' पैरामीटर गायब है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3055">
         <source>The specified client credentials are invalid.</source>
-        <target state="new">The specified client credentials are invalid.</target>
+        <target state="translated">निर्दिष्ट क्लाइंट क्रेडेंशियल अमान्य हैं.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3056">
         <source>This client application is not allowed to use the device endpoint.</source>
-        <target state="new">This client application is not allowed to use the device endpoint.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन को डिवाइस एंडपॉइंट का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3057">
         <source>The '{0}' and '{1}' parameters are required when using the client credentials grant.</source>
-        <target state="new">The '{0}' and '{1}' parameters are required when using the client credentials grant.</target>
+        <target state="translated">क्लाइंट क्रेडेंशियल्स अनुदान का उपयोग करते समय '{0}' और '{1}' मापदंडों की आवश्यकता होती है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3058">
         <source>The '{0}' parameter is required when using the device code grant.</source>
-        <target state="new">The '{0}' parameter is required when using the device code grant.</target>
+        <target state="translated">डिवाइस कोड अनुदान का उपयोग करते समय '{0}' पैरामीटर की आवश्यकता होती है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3059">
         <source>The mandatory '{0}' and/or '{1}' parameters are missing.</source>
-        <target state="new">The mandatory '{0}' and/or '{1}' parameters are missing.</target>
+        <target state="translated">अनिवार्य '{0}' और / या '{1}' पैरामीटर गायब हैं.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3060">
         <source>A scope with the same name already exists.</source>
-        <target state="new">A scope with the same name already exists.</target>
+        <target state="translated">समान नाम वाला स्कोप पहले से मौजूद है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3063">
         <source>This client application is not allowed to use the token endpoint.</source>
-        <target state="new">This client application is not allowed to use the token endpoint.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन को टोकन समापन बिंदु का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3064">
         <source>This client application is not allowed to use the specified grant type.</source>
-        <target state="new">This client application is not allowed to use the specified grant type.</target>
+        <target state="translated">इस ग्राहक एप्लिकेशन को निर्दिष्ट अनुदान प्रकार का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3065">
         <source>The client application is not allowed to use the '{0}' scope.</source>
-        <target state="new">The client application is not allowed to use the '{0}' scope.</target>
+        <target state="translated">क्लाइंट एप्लिकेशन को '{0}' स्कोप का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3066">
         <source>The specified authorization code cannot be used without sending a client identifier.</source>
-        <target state="new">The specified authorization code cannot be used without sending a client identifier.</target>
+        <target state="translated">क्लाइंट पहचानकर्ता को भेजे बिना निर्दिष्ट प्राधिकरण कोड का उपयोग नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3067">
         <source>The specified device code cannot be used without sending a client identifier.</source>
-        <target state="new">The specified device code cannot be used without sending a client identifier.</target>
+        <target state="translated">क्लाइंट पहचानकर्ता को भेजे बिना निर्दिष्ट डिवाइस कोड का उपयोग नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3068">
         <source>The specified refresh token cannot be used without sending a client identifier.</source>
-        <target state="new">The specified refresh token cannot be used without sending a client identifier.</target>
+        <target state="translated">निर्दिष्ट ताज़ा टोकन का उपयोग ग्राहक पहचानकर्ता को भेजे बिना नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3069">
         <source>The specified authorization code cannot be used by this client application.</source>
-        <target state="new">The specified authorization code cannot be used by this client application.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन द्वारा निर्दिष्ट प्राधिकरण कोड का उपयोग नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3070">
         <source>The specified device code cannot be used by this client application.</source>
-        <target state="new">The specified device code cannot be used by this client application.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन द्वारा निर्दिष्ट डिवाइस कोड का उपयोग नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3071">
         <source>The specified refresh token cannot be used by this client application.</source>
-        <target state="new">The specified refresh token cannot be used by this client application.</target>
+        <target state="translated">निर्दिष्ट ताज़ा टोकन का उपयोग इस क्लाइंट एप्लिकेशन द्वारा नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3072">
         <source>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</source>
-        <target state="new">The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</target>
+        <target state="translated">निर्दिष्ट '{0}' पैरामीटर ग्राहक पुनर्निर्देशन पते से मेल नहीं खाता है जो प्राधिकरण कोड शुरू में भेजा गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3073">
         <source>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</source>
-        <target state="new">The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</target>
+        <target state="translated">प्राधिकरण अनुरोध में कोई {{1} 'पैरामीटर का उपयोग नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3074">
         <source>The '{0}' parameter is not valid in this context.</source>
-        <target state="new">The '{0}' parameter is not valid in this context.</target>
+        <target state="translated">इस संदर्भ में '{0}' पैरामीटर मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3075">
         <source>This client application is not allowed to use the introspection endpoint.</source>
-        <target state="new">This client application is not allowed to use the introspection endpoint.</target>
+        <target state="translated">इस ग्राहक एप्लिकेशन को आत्मनिरीक्षण समापन बिंदु का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3076">
         <source>The specified token cannot be introspected.</source>
-        <target state="new">The specified token cannot be introspected.</target>
+        <target state="translated">निर्दिष्ट टोकन आत्मनिरीक्षण नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3077">
         <source>The client application is not allowed to introspect the specified token.</source>
-        <target state="new">The client application is not allowed to introspect the specified token.</target>
+        <target state="translated">क्लाइंट एप्लिकेशन को निर्दिष्ट टोकन का आत्मनिरीक्षण करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3078">
         <source>This client application is not allowed to use the revocation endpoint.</source>
-        <target state="new">This client application is not allowed to use the revocation endpoint.</target>
+        <target state="translated">इस क्लाइंट एप्लिकेशन को प्रत्यावर्तन समापन बिंदु का उपयोग करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3079">
         <source>This token cannot be revoked.</source>
-        <target state="new">This token cannot be revoked.</target>
+        <target state="translated">इस टोकन को निरस्त नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3080">
         <source>The client application is not allowed to revoke the specified token.</source>
-        <target state="new">The client application is not allowed to revoke the specified token.</target>
+        <target state="translated">क्लाइंट एप्लिकेशन को निर्दिष्ट टोकन को रद्द करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3081">
         <source>The mandatory '{0}' header is missing.</source>
-        <target state="new">The mandatory '{0}' header is missing.</target>
+        <target state="translated">अनिवार्य '{0}' शीर्षक गायब है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3082">
         <source>The specified '{0}' header is invalid.</source>
-        <target state="new">The specified '{0}' header is invalid.</target>
+        <target state="translated">निर्दिष्ट '{0}' शीर्षक अमान्य है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3083">
         <source>This server only accepts HTTPS requests.</source>
-        <target state="new">This server only accepts HTTPS requests.</target>
+        <target state="translated">यह सर्वर केवल HTTPS अनुरोध स्वीकार करता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3084">
         <source>The specified HTTP method is not valid.</source>
-        <target state="new">The specified HTTP method is not valid.</target>
+        <target state="translated">निर्दिष्ट HTTP विधि मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3085">
         <source>A token with the same reference identifier already exists.</source>
-        <target state="new">A token with the same reference identifier already exists.</target>
+        <target state="translated">समान संदर्भ पहचानकर्ता के साथ एक टोकन पहले से मौजूद है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3086">
         <source>The token type cannot be null or empty.</source>
-        <target state="new">The token type cannot be null or empty.</target>
+        <target state="translated">टोकन प्रकार शून्य या रिक्त नहीं हो सकता.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3087">
         <source>Multiple client credentials cannot be specified.</source>
-        <target state="new">Multiple client credentials cannot be specified.</target>
+        <target state="translated">एकाधिक क्लाइंट क्रेडेंशियल निर्दिष्ट नहीं किए जा सकते हैं.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3088">
         <source>The issuer associated to the specified token is not valid.</source>
-        <target state="new">The issuer associated to the specified token is not valid.</target>
+        <target state="translated">निर्दिष्ट टोकन से संबंधित जारीकर्ता मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3089">
         <source>The specified token is not of the expected type.</source>
-        <target state="new">The specified token is not of the expected type.</target>
+        <target state="translated">निर्दिष्ट टोकन अपेक्षित प्रकार का नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3090">
         <source>The signing key associated to the specified token was not found.</source>
-        <target state="new">The signing key associated to the specified token was not found.</target>
+        <target state="translated">निर्दिष्ट टोकन से संबंधित हस्ताक्षरित कुंजी नहीं मिली.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3091">
         <source>The signature associated to the specified token is not valid.</source>
-        <target state="new">The signature associated to the specified token is not valid.</target>
+        <target state="translated">निर्दिष्ट टोकन से संबंधित हस्ताक्षर मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3092">
         <source>This resource server is currently unavailable.</source>
-        <target state="new">This resource server is currently unavailable.</target>
+        <target state="translated">वर्तमान में यह संसाधन सर्वर अनुपलब्ध है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3093">
         <source>The specified token doesn't contain any audience.</source>
-        <target state="new">The specified token doesn't contain any audience.</target>
+        <target state="translated">निर्दिष्ट टोकन में कोई भी श्रोता नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3094">
         <source>The specified token cannot be used with this resource server.</source>
-        <target state="new">The specified token cannot be used with this resource server.</target>
+        <target state="translated">निर्दिष्ट टोकन का उपयोग इस संसाधन सर्वर के साथ नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3095">
         <source>The user represented by the token is not allowed to perform the requested action.</source>
-        <target state="new">The user represented by the token is not allowed to perform the requested action.</target>
+        <target state="translated">टोकन द्वारा प्रस्तुत उपयोगकर्ता को अनुरोधित कार्रवाई करने की अनुमति नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3096">
         <source>No issuer could be found in the server configuration.</source>
-        <target state="new">No issuer could be found in the server configuration.</target>
+        <target state="translated">सर्वर कॉन्फ़िगरेशन में कोई जारीकर्ता नहीं मिला.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3097">
         <source>A server configuration containing an invalid issuer was returned.</source>
-        <target state="new">A server configuration containing an invalid issuer was returned.</target>
+        <target state="translated">अमान्य जारीकर्ता वाला सर्वर कॉन्फ़िगरेशन वापस कर दिया गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3098">
         <source>The issuer returned in the server configuration is not valid.</source>
-        <target state="new">The issuer returned in the server configuration is not valid.</target>
+        <target state="translated">सर्वर कॉन्फ़िगरेशन में जारीकर्ता मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3099">
         <source>No JWKS endpoint could be found in the server configuration.</source>
-        <target state="new">No JWKS endpoint could be found in the server configuration.</target>
+        <target state="translated">सर्वर कॉन्फ़िगरेशन में कोई JWKS समापन बिंदु नहीं मिला.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3100">
         <source>A server configuration containing an invalid JWKS endpoint URL was returned.</source>
-        <target state="new">A server configuration containing an invalid JWKS endpoint URL was returned.</target>
+        <target state="translated">अमान्य JWKS समापन बिंदु URL वाला सर्वर कॉन्फ़िगरेशन लौटाया गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3101">
         <source>A server configuration containing an invalid introspection endpoint URL was returned.</source>
-        <target state="new">A server configuration containing an invalid introspection endpoint URL was returned.</target>
+        <target state="translated">अमान्य इंट्रॉस्पेशन एंडपॉइंट URL वाले सर्वर कॉन्फ़िगरेशन को लौटा दिया गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3102">
         <source>The JWKS document didn't contain a valid '{0}' node with at least one key.</source>
-        <target state="new">The JWKS document didn't contain a valid '{0}' node with at least one key.</target>
+        <target state="translated">JWKS दस्तावेज़ में कम से कम एक कुंजी के साथ एक वैध '{0}' नोड नहीं था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3103">
         <source>A JWKS response containing an unsupported key was returned.</source>
-        <target state="new">A JWKS response containing an unsupported key was returned.</target>
+        <target state="translated">एक असमर्थित कुंजी वाली JWKS प्रतिक्रिया लौटा दी गई थी.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3104">
         <source>A JWKS response containing an invalid key was returned.</source>
-        <target state="new">A JWKS response containing an invalid key was returned.</target>
+        <target state="translated">अमान्य कुंजी वाली JWKS प्रतिक्रिया लौटा दी गई थी।</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3105">
         <source>The mandatory '{0}' parameter couldn't be found in the introspection response.</source>
-        <target state="new">The mandatory '{0}' parameter couldn't be found in the introspection response.</target>
+        <target state="translated">आत्मनिरीक्षण प्रतिक्रिया में अनिवार्य '{0}' पैरामीटर नहीं मिला.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3106">
         <source>The token was rejected by the remote authentication server.</source>
-        <target state="new">The token was rejected by the remote authentication server.</target>
+        <target state="translated">रिमोट प्रमाणीकरण सर्वर द्वारा टोकन को अस्वीकार कर दिया गया था.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3107">
         <source>The '{0}' claim is malformed or isn't of the expected type.</source>
-        <target state="new">The '{0}' claim is malformed or isn't of the expected type.</target>
+        <target state="translated">'{0}' दावा विकृत है या अपेक्षित प्रकार का नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3108">
         <source>An introspection response containing a malformed issuer was returned.</source>
-        <target state="new">An introspection response containing a malformed issuer was returned.</target>
+        <target state="translated">एक विकृत जारीकर्ता युक्त आत्मनिरीक्षण प्रतिक्रिया लौटा दी गई.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3109">
         <source>The issuer returned in the introspection response is not valid.</source>
-        <target state="new">The issuer returned in the introspection response is not valid.</target>
+        <target state="translated">जारीकर्ता आत्मनिरीक्षण प्रतिक्रिया में लौटाया गया मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3110">
         <source>The type of the introspected token doesn't match the expected type.</source>
-        <target state="new">The type of the introspected token doesn't match the expected type.</target>
+        <target state="translated">अंतर्मुखी टोकन का प्रकार अपेक्षित प्रकार से मेल नहीं खाता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3111">
         <source>An application with the same client identifier already exists.</source>
-        <target state="new">An application with the same client identifier already exists.</target>
+        <target state="translated">समान क्लाइंट पहचानकर्ता के साथ एक एप्लिकेशन पहले से मौजूद है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3112">
         <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
-        <target state="new">Only confidential, hybrid or public applications are supported by the default application manager.</target>
+        <target state="translated">केवल गोपनीय, हाइब्रिड या सार्वजनिक एप्लिकेशन डिफ़ॉल्ट एप्लिकेशन मैनेजर द्वारा समर्थित हैं.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3113">
         <source>The client secret cannot be null or empty for a confidential application.</source>
-        <target state="new">The client secret cannot be null or empty for a confidential application.</target>
+        <target state="translated">गोपनीय के लिए क्लाइंट रहस्य शून्य या रिक्त नहीं हो सकता.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3114">
         <source>A client secret cannot be associated with a public application.</source>
-        <target state="new">A client secret cannot be associated with a public application.</target>
+        <target state="translated">एक ग्राहक रहस्य एक सार्वजनिक आवेदन के साथ संबद्ध नहीं किया जा सकता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3115">
         <source>Callback URLs cannot contain a fragment.</source>
-        <target state="new">Callback URLs cannot contain a fragment.</target>
+        <target state="translated">कॉलबैक URL में एक टुकड़ा नहीं हो सकता.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3116">
         <source>The authorization type cannot be null or empty.</source>
-        <target state="new">The authorization type cannot be null or empty.</target>
+        <target state="translated">प्राधिकरण प्रकार शून्य या रिक्त नहीं हो सकता.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3117">
         <source>The specified authorization type is not supported by the default token manager.</source>
-        <target state="new">The specified authorization type is not supported by the default token manager.</target>
+        <target state="translated">निर्दिष्ट प्राधिकरण प्रकार डिफ़ॉल्ट टोकन प्रबंधक द्वारा समर्थित नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3118">
         <source>The client type cannot be null or empty.</source>
-        <target state="new">The client type cannot be null or empty.</target>
+        <target state="translated">क्लाइंट प्रकार रिक्त या रिक्त नहीं हो सकता.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3119">
         <source>Callback URLs cannot be null or empty.</source>
-        <target state="new">Callback URLs cannot be null or empty.</target>
+        <target state="translated">कॉलबैक URL शून्य या रिक्त नहीं हो सकते.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3120">
         <source>Callback URLs must be valid absolute URLs.</source>
-        <target state="new">Callback URLs must be valid absolute URLs.</target>
+        <target state="translated">कॉलबैक URL मान्य निरपेक्ष URL होने चाहिए.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID9000">
         <source>Removes orphaned tokens and authorizations from the database.</source>
-        <target state="new">Removes orphaned tokens and authorizations from the database.</target>
+        <target state="translated">डेटाबेस से अनाथ टोकन और प्राधिकरणों को निकालता है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID9001">
         <source>Starts the scheduled task at regular intervals.</source>
-        <target state="new">Starts the scheduled task at regular intervals.</target>
+        <target state="translated">नियमित अंतराल पर निर्धारित कार्य शुरू करता है.</target>
         <note />
       </trans-unit>
     </body>
