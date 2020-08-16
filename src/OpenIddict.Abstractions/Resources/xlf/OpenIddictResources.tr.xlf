@@ -419,182 +419,182 @@
       </trans-unit>
       <trans-unit id="ID3087">
         <source>Multiple client credentials cannot be specified.</source>
-        <target state="new">Multiple client credentials cannot be specified.</target>
+        <target state="new">Birden çok istemci kimlik bilgisi belirtilemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3088">
         <source>The issuer associated to the specified token is not valid.</source>
-        <target state="new">The issuer associated to the specified token is not valid.</target>
+        <target state="new">Belirteç ile ilişkilendirilen kuruluş geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3089">
         <source>The specified token is not of the expected type.</source>
-        <target state="new">The specified token is not of the expected type.</target>
+        <target state="new">Belirteç beklenen tipte değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3090">
         <source>The signing key associated to the specified token was not found.</source>
-        <target state="new">The signing key associated to the specified token was not found.</target>
+        <target state="new">Belirteç ile ilişkilendirilen imzalama anahtarı bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3091">
         <source>The signature associated to the specified token is not valid.</source>
-        <target state="new">The signature associated to the specified token is not valid.</target>
+        <target state="new">Belirteç ile ilişkilendirilen imza geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3092">
         <source>This resource server is currently unavailable.</source>
-        <target state="new">This resource server is currently unavailable.</target>
+        <target state="new">Kaynak sunucusu ulaşılabilir değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3093">
         <source>The specified token doesn't contain any audience.</source>
-        <target state="new">The specified token doesn't contain any audience.</target>
+        <target state="new">Belirteç izleyici içermemektedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3094">
         <source>The specified token cannot be used with this resource server.</source>
-        <target state="new">The specified token cannot be used with this resource server.</target>
+        <target state="new">Belirteç bu kaynak sunucusu ile kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3095">
         <source>The user represented by the token is not allowed to perform the requested action.</source>
-        <target state="new">The user represented by the token is not allowed to perform the requested action.</target>
+        <target state="new">Belirteç ile ilişkilendirilen kullanıcının talep edilen işlemi gerçekleştirmeye izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3096">
         <source>No issuer could be found in the server configuration.</source>
-        <target state="new">No issuer could be found in the server configuration.</target>
+        <target state="new">Sunucu yapılandırmasında kuruluş bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3097">
         <source>A server configuration containing an invalid issuer was returned.</source>
-        <target state="new">A server configuration containing an invalid issuer was returned.</target>
+        <target state="new">Geçersiz bir kuruluş içeren sunucu yapılandırması yanıtı döndü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3098">
         <source>The issuer returned in the server configuration is not valid.</source>
-        <target state="new">The issuer returned in the server configuration is not valid.</target>
+        <target state="new">Sunucu yapılandırmasında döndürülen kuruluş yanıtı geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3099">
         <source>No JWKS endpoint could be found in the server configuration.</source>
-        <target state="new">No JWKS endpoint could be found in the server configuration.</target>
+        <target state="new">Sunucu yapılandırmasında JWKS uçbirimi bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3100">
         <source>A server configuration containing an invalid JWKS endpoint URL was returned.</source>
-        <target state="new">A server configuration containing an invalid JWKS endpoint URL was returned.</target>
+        <target state="new">Geçersiz JWKS uçbirimi adresi içeren sunucu yapılandırması yanıtı döndü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3101">
         <source>A server configuration containing an invalid introspection endpoint URL was returned.</source>
-        <target state="new">A server configuration containing an invalid introspection endpoint URL was returned.</target>
+        <target state="new">Geçersiz içgözlem uçbirimi adresi adresi içeren sunucu yapılandırması yanıtı döndü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3102">
         <source>The JWKS document didn't contain a valid '{0}' node with at least one key.</source>
-        <target state="new">The JWKS document didn't contain a valid '{0}' node with at least one key.</target>
+        <target state="new">JWKS dokümanı en az bir anahtarı olan geçerli bir '{0}' ucu içermemektedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3103">
         <source>A JWKS response containing an unsupported key was returned.</source>
-        <target state="new">A JWKS response containing an unsupported key was returned.</target>
+        <target state="new">Desteklenmeyen bir anahtar içeren bir JWKS yanıtı döndü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3104">
         <source>A JWKS response containing an invalid key was returned.</source>
-        <target state="new">A JWKS response containing an invalid key was returned.</target>
+        <target state="new">Geçersiz anahtar içeren bir JWKS yanıtı döndü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3105">
         <source>The mandatory '{0}' parameter couldn't be found in the introspection response.</source>
-        <target state="new">The mandatory '{0}' parameter couldn't be found in the introspection response.</target>
+        <target state="new">Zorunlu '{0}' parametresi içgözlem yanıtında bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3106">
         <source>The token was rejected by the remote authentication server.</source>
-        <target state="new">The token was rejected by the remote authentication server.</target>
+        <target state="new">Belirteç uzak erişim sunucusu tarafından reddedildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3107">
         <source>The '{0}' claim is malformed or isn't of the expected type.</source>
-        <target state="new">The '{0}' claim is malformed or isn't of the expected type.</target>
+          <target state="new">'{0}' hakkı kusurlu veya beklenen tipte değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3108">
         <source>An introspection response containing a malformed issuer was returned.</source>
-        <target state="new">An introspection response containing a malformed issuer was returned.</target>
+        <target state="new">Kusurlu kuruluş içeren bir içgözlem yanıtı döndü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3109">
         <source>The issuer returned in the introspection response is not valid.</source>
-        <target state="new">The issuer returned in the introspection response is not valid.</target>
+        <target state="new">İçgözlem yanıtında dönen kuruluş geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3110">
         <source>The type of the introspected token doesn't match the expected type.</source>
-        <target state="new">The type of the introspected token doesn't match the expected type.</target>
+        <target state="new">İçgözlenen belirteç tipi beklenen tipte değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3111">
         <source>An application with the same client identifier already exists.</source>
-        <target state="new">An application with the same client identifier already exists.</target>
+        <target state="new">Aynı istemci belirteci ile başka bir uygulama bulunmaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3112">
         <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
-        <target state="new">Only confidential, hybrid or public applications are supported by the default application manager.</target>
+        <target state="new">Varsayılan uygulama yöneticisi tarafından sadece gizli, hibrit ve umumi uygulamalar desteklenmektedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3113">
         <source>The client secret cannot be null or empty for a confidential application.</source>
-        <target state="new">The client secret cannot be null or empty for a confidential application.</target>
+        <target state="new">Gizli uygulama için istemci gizli anahtarı boş veya tanımsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3114">
         <source>A client secret cannot be associated with a public application.</source>
-        <target state="new">A client secret cannot be associated with a public application.</target>
+        <target state="new">Umumi uygulama gizli anahtar ile ilişkilendirilemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3115">
         <source>Callback URLs cannot contain a fragment.</source>
-        <target state="new">Callback URLs cannot contain a fragment.</target>
+        <target state="new">Geri çağırma adresi parça içeremez.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3116">
         <source>The authorization type cannot be null or empty.</source>
-        <target state="new">The authorization type cannot be null or empty.</target>
+        <target state="new">Yetkilendirme tipi boş veya tanımsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3117">
         <source>The specified authorization type is not supported by the default token manager.</source>
-        <target state="new">The specified authorization type is not supported by the default token manager.</target>
+        <target state="new">Yetkilendirme tipi varsayılan belirteç yöneticisi tarafından desteklenmemektedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3118">
         <source>The client type cannot be null or empty.</source>
-        <target state="new">The client type cannot be null or empty.</target>
+        <target state="new">İstemci tipi boş veya tanımsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3119">
         <source>Callback URLs cannot be null or empty.</source>
-        <target state="new">Callback URLs cannot be null or empty.</target>
+        <target state="new">Geri çağırma adresi boş veya tanımsız olamaz..</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3120">
         <source>Callback URLs must be valid absolute URLs.</source>
-        <target state="new">Callback URLs must be valid absolute URLs.</target>
+        <target state="new">Geri çağırma adresi mutlak ve geçerli bir adres olmalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID9000">
         <source>Removes orphaned tokens and authorizations from the database.</source>
-        <target state="new">Removes orphaned tokens and authorizations from the database.</target>
+        <target state="new">Yetim belirteç ve yetkilendirmeleri veritabanından kaldırır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID9001">
         <source>Starts the scheduled task at regular intervals.</source>
-        <target state="new">Starts the scheduled task at regular intervals.</target>
+        <target state="new">Zamanlanmış görevi düzenli aralıklarda başlatır.</target>
         <note />
       </trans-unit>
     </body>
