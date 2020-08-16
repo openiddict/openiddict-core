@@ -134,137 +134,137 @@
       </trans-unit>
       <trans-unit id="ID3026">
         <source>The specified user code is no longer valid.</source>
-        <target state="new">The specified user code is no longer valid.</target>
+        <target state="new">Kullanıcı kodu artık geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3028">
         <source>The '{0}' parameter is not supported.</source>
-        <target state="new">The '{0}' parameter is not supported.</target>
+        <target state="new">'{0}' parametresi desteklenmiyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3029">
         <source>The mandatory '{0}' parameter is missing.</source>
-        <target state="new">The mandatory '{0}' parameter is missing.</target>
+        <target state="new">Zorunlu '{0}' parametresi eksik.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3030">
         <source>The '{0}' parameter must be a valid absolute URL.</source>
-        <target state="new">The '{0}' parameter must be a valid absolute URL.</target>
+        <target state="new">'{0}' parametresi geçerli bir mutlak link olmalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3031">
         <source>The '{0}' parameter must not include a fragment.</source>
-        <target state="new">The '{0}' parameter must not include a fragment.</target>
+        <target state="new">'{0}' parametresi parçe içermemelidir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3032">
         <source>The specified '{0}' is not supported.</source>
-        <target state="new">The specified '{0}' is not supported.</target>
+        <target state="new">Belirtilen '{0}' desteklenmemektedir..</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3033">
         <source>The specified '{0}'/'{1}' combination is invalid.</source>
-        <target state="new">The specified '{0}'/'{1}' combination is invalid.</target>
+        <target state="new">Belirtilen '{0}'/'{1}' kombinasyonu geçersizdir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3034">
         <source>The mandatory '{0}' scope is missing.</source>
-        <target state="new">The mandatory '{0}' scope is missing.</target>
+        <target state="new">Zorunlu '{0}' kapsamı eksik.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3035">
         <source>The '{0}' scope is not allowed.</source>
-        <target state="new">The '{0}' scope is not allowed.</target>
+        <target state="new">'{0}' kapsamına izin verilmemektedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3036">
         <source>The client identifier cannot be null or empty.</source>
-        <target state="new">The client identifier cannot be null or empty.</target>
+        <target state="new">İstemci tanımlayıcısı boş veya tanımsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3037">
         <source>The '{0}' parameter cannot be used without '{1}'.</source>
-        <target state="new">The '{0}' parameter cannot be used without '{1}'.</target>
+        <target state="new">'{0}' parametresi '{1}' olmadan kullanılamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3038">
         <source>The status cannot be null or empty.</source>
-        <target state="new">The status cannot be null or empty.</target>
+        <target state="new">Durum boş veya tanımsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3039">
         <source>Scopes cannot be null or empty.</source>
-        <target state="new">Scopes cannot be null or empty.</target>
+        <target state="new">Kapsamlar boş veya tanımsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3040">
         <source>The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</source>
-        <target state="new">The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</target>
+        <target state="new">'{0}' ve '{1}' parametreleri ancak '{2}' içeren yanıt tipleri ile kullanılabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3041">
         <source>The specified '{0}' is not allowed when using PKCE.</source>
-        <target state="new">The specified '{0}' is not allowed when using PKCE.</target>
+        <target state="new">Belirtilen '{0}' PKCE ile birlikte kullanılamaz..</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3042">
         <source>Scopes cannot contain spaces.</source>
-        <target state="new">Scopes cannot contain spaces.</target>
+        <target state="new">Kapsamlar boşluk içeremez.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3043">
         <source>The specified '{0}' is not valid for this client application.</source>
-        <target state="new">The specified '{0}' is not valid for this client application.</target>
+        <target state="new">Belirtilen '{0}' istemci uygulaması için geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3044">
         <source>The scope name cannot be null or empty.</source>
-        <target state="new">The scope name cannot be null or empty.</target>
+        <target state="new">Kapsam ismi boş veya tanımmsız olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3045">
         <source>The scope name cannot contain spaces.</source>
-        <target state="new">The scope name cannot contain spaces.</target>
+        <target state="new">Kapsam ismi boşluk içeremez.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3046">
         <source>This client application is not allowed to use the authorization endpoint.</source>
-        <target state="new">This client application is not allowed to use the authorization endpoint.</target>
+        <target state="new">Bu istemci uygulamasının yetkilendirme uç birimini kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3047">
         <source>The client application is not allowed to use the authorization code flow.</source>
-        <target state="new">The client application is not allowed to use the authorization code flow.</target>
+        <target state="new">Bu istemci uygulamasının yetkilendirme kodu akışını kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3048">
         <source>The client application is not allowed to use the implicit flow.</source>
-        <target state="new">The client application is not allowed to use the implicit flow.</target>
+        <target state="new">Bu istemci uygulamasının implicit akış kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3049">
         <source>The client application is not allowed to use the hybrid flow.</source>
-        <target state="new">The client application is not allowed to use the hybrid flow.</target>
+        <target state="new">Bu istemci uygulamasının hibrit akış kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3051">
         <source>This client application is not allowed to use the specified scope.</source>
-        <target state="new">This client application is not allowed to use the specified scope.</target>
+        <target state="new">Bu istemci uygulamasının belirtilen kapsamları kullanmaya izni bulunmamaktadır.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3052">
         <source>The specified '{0}' is invalid.</source>
-        <target state="new">The specified '{0}' is invalid.</target>
+        <target state="new">Belirtilen '{0}' geçersiz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3053">
         <source>The '{0}' parameter is not valid for this client application.</source>
-        <target state="new">The '{0}' parameter is not valid for this client application.</target>
+        <target state="new">'{0}' parametresi bu istemci uygulaması ile geçerli değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3054">
         <source>The '{0}' parameter required for this client application is missing.</source>
-        <target state="new">The '{0}' parameter required for this client application is missing.</target>
+        <target state="new">Eksik '{0}' parametresi bu istemci uygulaması için zorunludur.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3055">
