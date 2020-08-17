@@ -1,0 +1,602 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ru" original="../OpenIddictResources.resx">
+    <body>
+      <trans-unit id="ID3000">
+        <source>The security token is missing.</source>
+        <target state="new">The security token is missing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3001">
+        <source>The specified authorization code is invalid.</source>
+        <target state="new">The specified authorization code is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3002">
+        <source>The specified device code is invalid.</source>
+        <target state="new">The specified device code is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3003">
+        <source>The specified refresh token is invalid.</source>
+        <target state="new">The specified refresh token is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3004">
+        <source>The specified token is invalid.</source>
+        <target state="new">The specified token is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3005">
+        <source>The specified token is not an authorization code.</source>
+        <target state="new">The specified token is not an authorization code.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3006">
+        <source>The specified token is not an device code.</source>
+        <target state="new">The specified token is not an device code.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3007">
+        <source>The specified token is not a refresh token.</source>
+        <target state="new">The specified token is not a refresh token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3008">
+        <source>The specified token is not an access token.</source>
+        <target state="new">The specified token is not an access token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3009">
+        <source>The specified identity token is invalid.</source>
+        <target state="new">The specified identity token is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3010">
+        <source>The specified authorization code has already been redeemed.</source>
+        <target state="new">The specified authorization code has already been redeemed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3011">
+        <source>The specified device code has already been redeemed.</source>
+        <target state="new">The specified device code has already been redeemed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3012">
+        <source>The specified refresh token has already been redeemed.</source>
+        <target state="new">The specified refresh token has already been redeemed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3013">
+        <source>The specified token has already been redeemed.</source>
+        <target state="new">The specified token has already been redeemed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3014">
+        <source>The authorization has not been granted yet by the end user.</source>
+        <target state="new">The authorization has not been granted yet by the end user.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3015">
+        <source>The authorization was denied by the end user.</source>
+        <target state="new">The authorization was denied by the end user.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3016">
+        <source>The specified authorization code is no longer valid.</source>
+        <target state="new">The specified authorization code is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3017">
+        <source>The specified device code is no longer valid.</source>
+        <target state="new">The specified device code is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3018">
+        <source>The specified refresh token is no longer valid.</source>
+        <target state="new">The specified refresh token is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3019">
+        <source>The specified token is no longer valid.</source>
+        <target state="new">The specified token is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3020">
+        <source>The authorization associated with the authorization code is no longer valid.</source>
+        <target state="new">The authorization associated with the authorization code is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3021">
+        <source>The authorization associated with the device code is no longer valid.</source>
+        <target state="new">The authorization associated with the device code is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3022">
+        <source>The authorization associated with the refresh token is no longer valid.</source>
+        <target state="new">The authorization associated with the refresh token is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3023">
+        <source>The authorization associated with the token is no longer valid.</source>
+        <target state="new">The authorization associated with the token is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3024">
+        <source>The token request was rejected by the authentication server.</source>
+        <target state="new">The token request was rejected by the authentication server.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3025">
+        <source>The user information access demand was rejected by the authentication server.</source>
+        <target state="new">The user information access demand was rejected by the authentication server.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3026">
+        <source>The specified user code is no longer valid.</source>
+        <target state="new">The specified user code is no longer valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3028">
+        <source>The '{0}' parameter is not supported.</source>
+        <target state="new">The '{0}' parameter is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3029">
+        <source>The mandatory '{0}' parameter is missing.</source>
+        <target state="new">The mandatory '{0}' parameter is missing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3030">
+        <source>The '{0}' parameter must be a valid absolute URL.</source>
+        <target state="new">The '{0}' parameter must be a valid absolute URL.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3031">
+        <source>The '{0}' parameter must not include a fragment.</source>
+        <target state="new">The '{0}' parameter must not include a fragment.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3032">
+        <source>The specified '{0}' is not supported.</source>
+        <target state="new">The specified '{0}' is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3033">
+        <source>The specified '{0}'/'{1}' combination is invalid.</source>
+        <target state="new">The specified '{0}'/'{1}' combination is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3034">
+        <source>The mandatory '{0}' scope is missing.</source>
+        <target state="new">The mandatory '{0}' scope is missing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3035">
+        <source>The '{0}' scope is not allowed.</source>
+        <target state="new">The '{0}' scope is not allowed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3036">
+        <source>The client identifier cannot be null or empty.</source>
+        <target state="new">The client identifier cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3037">
+        <source>The '{0}' parameter cannot be used without '{1}'.</source>
+        <target state="new">The '{0}' parameter cannot be used without '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3038">
+        <source>The status cannot be null or empty.</source>
+        <target state="new">The status cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3039">
+        <source>Scopes cannot be null or empty.</source>
+        <target state="new">Scopes cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3040">
+        <source>The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</source>
+        <target state="new">The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3041">
+        <source>The specified '{0}' is not allowed when using PKCE.</source>
+        <target state="new">The specified '{0}' is not allowed when using PKCE.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3042">
+        <source>Scopes cannot contain spaces.</source>
+        <target state="new">Scopes cannot contain spaces.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3043">
+        <source>The specified '{0}' is not valid for this client application.</source>
+        <target state="new">The specified '{0}' is not valid for this client application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3044">
+        <source>The scope name cannot be null or empty.</source>
+        <target state="new">The scope name cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3045">
+        <source>The scope name cannot contain spaces.</source>
+        <target state="new">The scope name cannot contain spaces.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3046">
+        <source>This client application is not allowed to use the authorization endpoint.</source>
+        <target state="new">This client application is not allowed to use the authorization endpoint.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3047">
+        <source>The client application is not allowed to use the authorization code flow.</source>
+        <target state="new">The client application is not allowed to use the authorization code flow.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3048">
+        <source>The client application is not allowed to use the implicit flow.</source>
+        <target state="new">The client application is not allowed to use the implicit flow.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3049">
+        <source>The client application is not allowed to use the hybrid flow.</source>
+        <target state="new">The client application is not allowed to use the hybrid flow.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3051">
+        <source>This client application is not allowed to use the specified scope.</source>
+        <target state="new">This client application is not allowed to use the specified scope.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3052">
+        <source>The specified '{0}' is invalid.</source>
+        <target state="new">The specified '{0}' is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3053">
+        <source>The '{0}' parameter is not valid for this client application.</source>
+        <target state="new">The '{0}' parameter is not valid for this client application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3054">
+        <source>The '{0}' parameter required for this client application is missing.</source>
+        <target state="new">The '{0}' parameter required for this client application is missing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3055">
+        <source>The specified client credentials are invalid.</source>
+        <target state="new">The specified client credentials are invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3056">
+        <source>This client application is not allowed to use the device endpoint.</source>
+        <target state="new">This client application is not allowed to use the device endpoint.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3057">
+        <source>The '{0}' and '{1}' parameters are required when using the client credentials grant.</source>
+        <target state="new">The '{0}' and '{1}' parameters are required when using the client credentials grant.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3058">
+        <source>The '{0}' parameter is required when using the device code grant.</source>
+        <target state="new">The '{0}' parameter is required when using the device code grant.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3059">
+        <source>The mandatory '{0}' and/or '{1}' parameters are missing.</source>
+        <target state="new">The mandatory '{0}' and/or '{1}' parameters are missing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3060">
+        <source>A scope with the same name already exists.</source>
+        <target state="new">A scope with the same name already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3063">
+        <source>This client application is not allowed to use the token endpoint.</source>
+        <target state="new">This client application is not allowed to use the token endpoint.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3064">
+        <source>This client application is not allowed to use the specified grant type.</source>
+        <target state="new">This client application is not allowed to use the specified grant type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3065">
+        <source>The client application is not allowed to use the '{0}' scope.</source>
+        <target state="new">The client application is not allowed to use the '{0}' scope.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3066">
+        <source>The specified authorization code cannot be used without sending a client identifier.</source>
+        <target state="new">The specified authorization code cannot be used without sending a client identifier.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3067">
+        <source>The specified device code cannot be used without sending a client identifier.</source>
+        <target state="new">The specified device code cannot be used without sending a client identifier.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3068">
+        <source>The specified refresh token cannot be used without sending a client identifier.</source>
+        <target state="new">The specified refresh token cannot be used without sending a client identifier.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3069">
+        <source>The specified authorization code cannot be used by this client application.</source>
+        <target state="new">The specified authorization code cannot be used by this client application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3070">
+        <source>The specified device code cannot be used by this client application.</source>
+        <target state="new">The specified device code cannot be used by this client application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3071">
+        <source>The specified refresh token cannot be used by this client application.</source>
+        <target state="new">The specified refresh token cannot be used by this client application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3072">
+        <source>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</source>
+        <target state="new">The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3073">
+        <source>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</source>
+        <target state="new">The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3074">
+        <source>The '{0}' parameter is not valid in this context.</source>
+        <target state="new">The '{0}' parameter is not valid in this context.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3075">
+        <source>This client application is not allowed to use the introspection endpoint.</source>
+        <target state="new">This client application is not allowed to use the introspection endpoint.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3076">
+        <source>The specified token cannot be introspected.</source>
+        <target state="new">The specified token cannot be introspected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3077">
+        <source>The client application is not allowed to introspect the specified token.</source>
+        <target state="new">The client application is not allowed to introspect the specified token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3078">
+        <source>This client application is not allowed to use the revocation endpoint.</source>
+        <target state="new">This client application is not allowed to use the revocation endpoint.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3079">
+        <source>This token cannot be revoked.</source>
+        <target state="new">This token cannot be revoked.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3080">
+        <source>The client application is not allowed to revoke the specified token.</source>
+        <target state="new">The client application is not allowed to revoke the specified token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3081">
+        <source>The mandatory '{0}' header is missing.</source>
+        <target state="new">The mandatory '{0}' header is missing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3082">
+        <source>The specified '{0}' header is invalid.</source>
+        <target state="new">The specified '{0}' header is invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3083">
+        <source>This server only accepts HTTPS requests.</source>
+        <target state="new">This server only accepts HTTPS requests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3084">
+        <source>The specified HTTP method is not valid.</source>
+        <target state="new">The specified HTTP method is not valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3085">
+        <source>A token with the same reference identifier already exists.</source>
+        <target state="new">A token with the same reference identifier already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3086">
+        <source>The token type cannot be null or empty.</source>
+        <target state="new">The token type cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3087">
+        <source>Multiple client credentials cannot be specified.</source>
+        <target state="new">Multiple client credentials cannot be specified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3088">
+        <source>The issuer associated to the specified token is not valid.</source>
+        <target state="new">The issuer associated to the specified token is not valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3089">
+        <source>The specified token is not of the expected type.</source>
+        <target state="new">The specified token is not of the expected type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3090">
+        <source>The signing key associated to the specified token was not found.</source>
+        <target state="new">The signing key associated to the specified token was not found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3091">
+        <source>The signature associated to the specified token is not valid.</source>
+        <target state="new">The signature associated to the specified token is not valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3092">
+        <source>This resource server is currently unavailable.</source>
+        <target state="new">This resource server is currently unavailable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3093">
+        <source>The specified token doesn't contain any audience.</source>
+        <target state="new">The specified token doesn't contain any audience.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3094">
+        <source>The specified token cannot be used with this resource server.</source>
+        <target state="new">The specified token cannot be used with this resource server.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3095">
+        <source>The user represented by the token is not allowed to perform the requested action.</source>
+        <target state="new">The user represented by the token is not allowed to perform the requested action.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3096">
+        <source>No issuer could be found in the server configuration.</source>
+        <target state="new">No issuer could be found in the server configuration.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3097">
+        <source>A server configuration containing an invalid issuer was returned.</source>
+        <target state="new">A server configuration containing an invalid issuer was returned.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3098">
+        <source>The issuer returned in the server configuration is not valid.</source>
+        <target state="new">The issuer returned in the server configuration is not valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3099">
+        <source>No JWKS endpoint could be found in the server configuration.</source>
+        <target state="new">No JWKS endpoint could be found in the server configuration.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3100">
+        <source>A server configuration containing an invalid JWKS endpoint URL was returned.</source>
+        <target state="new">A server configuration containing an invalid JWKS endpoint URL was returned.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3101">
+        <source>A server configuration containing an invalid introspection endpoint URL was returned.</source>
+        <target state="new">A server configuration containing an invalid introspection endpoint URL was returned.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3102">
+        <source>The JWKS document didn't contain a valid '{0}' node with at least one key.</source>
+        <target state="new">The JWKS document didn't contain a valid '{0}' node with at least one key.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3103">
+        <source>A JWKS response containing an unsupported key was returned.</source>
+        <target state="new">A JWKS response containing an unsupported key was returned.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3104">
+        <source>A JWKS response containing an invalid key was returned.</source>
+        <target state="new">A JWKS response containing an invalid key was returned.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3105">
+        <source>The mandatory '{0}' parameter couldn't be found in the introspection response.</source>
+        <target state="new">The mandatory '{0}' parameter couldn't be found in the introspection response.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3106">
+        <source>The token was rejected by the remote authentication server.</source>
+        <target state="new">The token was rejected by the remote authentication server.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3107">
+        <source>The '{0}' claim is malformed or isn't of the expected type.</source>
+        <target state="new">The '{0}' claim is malformed or isn't of the expected type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3108">
+        <source>An introspection response containing a malformed issuer was returned.</source>
+        <target state="new">An introspection response containing a malformed issuer was returned.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3109">
+        <source>The issuer returned in the introspection response is not valid.</source>
+        <target state="new">The issuer returned in the introspection response is not valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3110">
+        <source>The type of the introspected token doesn't match the expected type.</source>
+        <target state="new">The type of the introspected token doesn't match the expected type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3111">
+        <source>An application with the same client identifier already exists.</source>
+        <target state="new">An application with the same client identifier already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3112">
+        <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
+        <target state="new">Only confidential, hybrid or public applications are supported by the default application manager.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3113">
+        <source>The client secret cannot be null or empty for a confidential application.</source>
+        <target state="new">The client secret cannot be null or empty for a confidential application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3114">
+        <source>A client secret cannot be associated with a public application.</source>
+        <target state="new">A client secret cannot be associated with a public application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3115">
+        <source>Callback URLs cannot contain a fragment.</source>
+        <target state="new">Callback URLs cannot contain a fragment.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3116">
+        <source>The authorization type cannot be null or empty.</source>
+        <target state="new">The authorization type cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3117">
+        <source>The specified authorization type is not supported by the default token manager.</source>
+        <target state="new">The specified authorization type is not supported by the default token manager.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3118">
+        <source>The client type cannot be null or empty.</source>
+        <target state="new">The client type cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3119">
+        <source>Callback URLs cannot be null or empty.</source>
+        <target state="new">Callback URLs cannot be null or empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID3120">
+        <source>Callback URLs must be valid absolute URLs.</source>
+        <target state="new">Callback URLs must be valid absolute URLs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID9000">
+        <source>Removes orphaned tokens and authorizations from the database.</source>
+        <target state="new">Removes orphaned tokens and authorizations from the database.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID9001">
+        <source>Starts the scheduled task at regular intervals.</source>
+        <target state="new">Starts the scheduled task at regular intervals.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
