@@ -4,597 +4,597 @@
     <body>
       <trans-unit id="ID3000">
         <source>The security token is missing.</source>
-        <target state="new">The security token is missing.</target>
+        <target state="translated">رمز الأمان مفقود.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3001">
         <source>The specified authorization code is invalid.</source>
-        <target state="new">The specified authorization code is invalid.</target>
+        <target state="translated">رمز التفويض المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3002">
         <source>The specified device code is invalid.</source>
-        <target state="new">The specified device code is invalid.</target>
+        <target state="translated">رمز الجهاز المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3003">
         <source>The specified refresh token is invalid.</source>
-        <target state="new">The specified refresh token is invalid.</target>
+        <target state="translated">رمز التحديث المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3004">
         <source>The specified token is invalid.</source>
-        <target state="new">The specified token is invalid.</target>
+        <target state="translated">الرمز المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3005">
         <source>The specified token is not an authorization code.</source>
-        <target state="new">The specified token is not an authorization code.</target>
+        <target state="translated">الرمز المحدد ليس رمز تفويض.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3006">
         <source>The specified token is not an device code.</source>
-        <target state="new">The specified token is not an device code.</target>
+        <target state="translated">الرمز المحدد ليس رمز جهاز.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3007">
         <source>The specified token is not a refresh token.</source>
-        <target state="new">The specified token is not a refresh token.</target>
+        <target state="translated">الرمز المحدد ليس رمز تحديث.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3008">
         <source>The specified token is not an access token.</source>
-        <target state="new">The specified token is not an access token.</target>
+        <target state="translated">الرمز المحدد ليس رمز وصول.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3009">
         <source>The specified identity token is invalid.</source>
-        <target state="new">The specified identity token is invalid.</target>
+        <target state="translated">رمز الهوية المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3010">
         <source>The specified authorization code has already been redeemed.</source>
-        <target state="new">The specified authorization code has already been redeemed.</target>
+        <target state="translated">تم بالفعل استرداد رمز التفويض المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3011">
         <source>The specified device code has already been redeemed.</source>
-        <target state="new">The specified device code has already been redeemed.</target>
+        <target state="translated">تم بالفعل استرداد رمز الجهاز المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3012">
         <source>The specified refresh token has already been redeemed.</source>
-        <target state="new">The specified refresh token has already been redeemed.</target>
+        <target state="translated">تم بالفعل استرداد رمز التحديث المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3013">
         <source>The specified token has already been redeemed.</source>
-        <target state="new">The specified token has already been redeemed.</target>
+        <target state="translated">تم بالفعل استرداد الرمز المميز المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3014">
         <source>The authorization has not been granted yet by the end user.</source>
-        <target state="new">The authorization has not been granted yet by the end user.</target>
+        <target state="translated">لم يتم منح التفويض بعد من قبل المستخدم النهائي.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3015">
         <source>The authorization was denied by the end user.</source>
-        <target state="new">The authorization was denied by the end user.</target>
+        <target state="translated">تم رفض الإذن من قبل المستخدم.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3016">
         <source>The specified authorization code is no longer valid.</source>
-        <target state="new">The specified authorization code is no longer valid.</target>
+        <target state="translated">رمز التفويض المحدد لم يعد صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3017">
         <source>The specified device code is no longer valid.</source>
-        <target state="new">The specified device code is no longer valid.</target>
+        <target state="translated">رمز الجهاز المحدد لم يعد صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3018">
         <source>The specified refresh token is no longer valid.</source>
-        <target state="new">The specified refresh token is no longer valid.</target>
+        <target state="translated">لم يعد رمز التحديث المحدد صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3019">
         <source>The specified token is no longer valid.</source>
-        <target state="new">The specified token is no longer valid.</target>
+        <target state="translated">لم يعد الرمز المحدد صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3020">
         <source>The authorization associated with the authorization code is no longer valid.</source>
-        <target state="new">The authorization associated with the authorization code is no longer valid.</target>
+        <target state="translated">لم يعد التفويض المرتبط برمز التفويض صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3021">
         <source>The authorization associated with the device code is no longer valid.</source>
-        <target state="new">The authorization associated with the device code is no longer valid.</target>
+        <target state="translated">لم يعد التفويض المرتبط برمز الجهاز صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3022">
         <source>The authorization associated with the refresh token is no longer valid.</source>
-        <target state="new">The authorization associated with the refresh token is no longer valid.</target>
+        <target state="translated">لم يعد التفويض المرتبط برمز التحديث صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3023">
         <source>The authorization associated with the token is no longer valid.</source>
-        <target state="new">The authorization associated with the token is no longer valid.</target>
+        <target state="translated">التفويض المرتبط بالرمز لم يعد صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3024">
         <source>The token request was rejected by the authentication server.</source>
-        <target state="new">The token request was rejected by the authentication server.</target>
+        <target state="translated">تم رفض طلب الرمز المميز من قبل خادم المصادقة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3025">
         <source>The user information access demand was rejected by the authentication server.</source>
-        <target state="new">The user information access demand was rejected by the authentication server.</target>
+        <target state="translated">تم رفض طلب الوصول إلى معلومات المستخدم من قبل خادم المصادقة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3026">
         <source>The specified user code is no longer valid.</source>
-        <target state="new">The specified user code is no longer valid.</target>
+        <target state="translated">رمز المستخدم المحدد لم يعد صالحًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3028">
         <source>The '{0}' parameter is not supported.</source>
-        <target state="new">The '{0}' parameter is not supported.</target>
+        <target state="translated">المعلمة '{0}' غير مدعومة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3029">
         <source>The mandatory '{0}' parameter is missing.</source>
-        <target state="new">The mandatory '{0}' parameter is missing.</target>
+        <target state="translated">المعلمة الإلزامية '{0}' مفقودة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3030">
         <source>The '{0}' parameter must be a valid absolute URL.</source>
-        <target state="new">The '{0}' parameter must be a valid absolute URL.</target>
+        <target state="translated">يجب أن تكون المعلمة '{0}' رابط مطلق صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3031">
         <source>The '{0}' parameter must not include a fragment.</source>
-        <target state="new">The '{0}' parameter must not include a fragment.</target>
+        <target state="translated">يجب ألا تتضمن المعلمة '{0}' جزءًا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3032">
         <source>The specified '{0}' is not supported.</source>
-        <target state="new">The specified '{0}' is not supported.</target>
+        <target state="translated">'{0}' المحدد غير مدعوم.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3033">
         <source>The specified '{0}'/'{1}' combination is invalid.</source>
-        <target state="new">The specified '{0}'/'{1}' combination is invalid.</target>
+        <target state="translated">مجموعة '{0}' / "{1}" المحددة غير صالحة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3034">
         <source>The mandatory '{0}' scope is missing.</source>
-        <target state="new">The mandatory '{0}' scope is missing.</target>
+        <target state="translated">النطاق الإلزامي '{0}' مفقود.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3035">
         <source>The '{0}' scope is not allowed.</source>
-        <target state="new">The '{0}' scope is not allowed.</target>
+        <target state="translated">النطاق '{0}' غير مسموح به.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3036">
         <source>The client identifier cannot be null or empty.</source>
-        <target state="new">The client identifier cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن يكون معرف العميل خالياً أو فارغاً.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3037">
         <source>The '{0}' parameter cannot be used without '{1}'.</source>
-        <target state="new">The '{0}' parameter cannot be used without '{1}'.</target>
+        <target state="translated">لا يمكن استخدام المعلمة '{0}' بدون "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3038">
         <source>The status cannot be null or empty.</source>
-        <target state="new">The status cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن تكون الحالة فارغة أو فارغة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3039">
         <source>Scopes cannot be null or empty.</source>
-        <target state="new">Scopes cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن تكون النطاقات فارغة أو فارغة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3040">
         <source>The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</source>
-        <target state="new">The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</target>
+        <target state="translated">لا يمكن استخدام المعلمات '{0}' و "{1}" إلا مع نوع استجابة يحتوي على "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3041">
         <source>The specified '{0}' is not allowed when using PKCE.</source>
-        <target state="new">The specified '{0}' is not allowed when using PKCE.</target>
+        <target state="translated">'{0}' المحدد غير مسموح به عند استخدام PKCE.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3042">
         <source>Scopes cannot contain spaces.</source>
-        <target state="new">Scopes cannot contain spaces.</target>
+        <target state="translated">لا يمكن أن تحتوي النطاقات على مسافات.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3043">
         <source>The specified '{0}' is not valid for this client application.</source>
-        <target state="new">The specified '{0}' is not valid for this client application.</target>
+        <target state="translated">'{0}' المحدد غير صالح لتطبيق العميل هذا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3044">
         <source>The scope name cannot be null or empty.</source>
-        <target state="new">The scope name cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن يكون اسم النطاق فارغاً.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3045">
         <source>The scope name cannot contain spaces.</source>
-        <target state="new">The scope name cannot contain spaces.</target>
+        <target state="translated">لا يمكن أن يحتوي اسم النطاق على مسافات.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3046">
         <source>This client application is not allowed to use the authorization endpoint.</source>
-        <target state="new">This client application is not allowed to use the authorization endpoint.</target>
+        <target state="translated">تطبيق العميل هذا غير مسموح له باستخدام نقطة نهاية التفويض.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3047">
         <source>The client application is not allowed to use the authorization code flow.</source>
-        <target state="new">The client application is not allowed to use the authorization code flow.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل باستخدام تدفق رمز التفويض.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3048">
         <source>The client application is not allowed to use the implicit flow.</source>
-        <target state="new">The client application is not allowed to use the implicit flow.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل باستخدام التدفق الضمني.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3049">
         <source>The client application is not allowed to use the hybrid flow.</source>
-        <target state="new">The client application is not allowed to use the hybrid flow.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل باستخدام التدفق المختلط.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3051">
         <source>This client application is not allowed to use the specified scope.</source>
-        <target state="new">This client application is not allowed to use the specified scope.</target>
+        <target state="translated">تطبيق العميل هذا غير مسموح له باستخدام النطاق المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3052">
         <source>The specified '{0}' is invalid.</source>
-        <target state="new">The specified '{0}' is invalid.</target>
+        <target state="translated">'{0}' المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3053">
         <source>The '{0}' parameter is not valid for this client application.</source>
-        <target state="new">The '{0}' parameter is not valid for this client application.</target>
+        <target state="translated">المعلمة '{0}' غير صالحة لتطبيق العميل هذا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3054">
         <source>The '{0}' parameter required for this client application is missing.</source>
-        <target state="new">The '{0}' parameter required for this client application is missing.</target>
+        <target state="translated">المعلمة '{0}' المطلوبة لتطبيق العميل هذا مفقودة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3055">
         <source>The specified client credentials are invalid.</source>
-        <target state="new">The specified client credentials are invalid.</target>
+        <target state="translated">بيانات اعتماد العميل المحددة غير صالحة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3056">
         <source>This client application is not allowed to use the device endpoint.</source>
-        <target state="new">This client application is not allowed to use the device endpoint.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل هذا باستخدام نقطة نهاية الجهاز.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3057">
         <source>The '{0}' and '{1}' parameters are required when using the client credentials grant.</source>
-        <target state="new">The '{0}' and '{1}' parameters are required when using the client credentials grant.</target>
+        <target state="translated">معلمات '{0}' و "{1}" مطلوبة عند استخدام منح بيانات اعتماد العميل.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3058">
         <source>The '{0}' parameter is required when using the device code grant.</source>
-        <target state="new">The '{0}' parameter is required when using the device code grant.</target>
+        <target state="translated">المعلمة '{0}' مطلوبة عند استخدام منحة رمز الجهاز.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3059">
         <source>The mandatory '{0}' and/or '{1}' parameters are missing.</source>
-        <target state="new">The mandatory '{0}' and/or '{1}' parameters are missing.</target>
+        <target state="translated">معلمات '{0}' و / أو "{1}" الإلزامية مفقودة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3060">
         <source>A scope with the same name already exists.</source>
-        <target state="new">A scope with the same name already exists.</target>
+        <target state="translated">يوجد نطاق بنفس الإسم.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3063">
         <source>This client application is not allowed to use the token endpoint.</source>
-        <target state="new">This client application is not allowed to use the token endpoint.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل هذا باستخدام نقطة نهاية الرمز المميز.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3064">
         <source>This client application is not allowed to use the specified grant type.</source>
-        <target state="new">This client application is not allowed to use the specified grant type.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل هذا باستخدام نوع المنحة المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3065">
         <source>The client application is not allowed to use the '{0}' scope.</source>
-        <target state="new">The client application is not allowed to use the '{0}' scope.</target>
+        <target state="translated">غير مسموح لتطبيق العميل باستخدام النطاق '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3066">
         <source>The specified authorization code cannot be used without sending a client identifier.</source>
-        <target state="new">The specified authorization code cannot be used without sending a client identifier.</target>
+        <target state="translated">لا يمكن استخدام رمز التفويض المحدد بدون إرسال معرف العميل.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3067">
         <source>The specified device code cannot be used without sending a client identifier.</source>
-        <target state="new">The specified device code cannot be used without sending a client identifier.</target>
+        <target state="translated">لا يمكن استخدام رمز الجهاز المحدد بدون إرسال معرف العميل.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3068">
         <source>The specified refresh token cannot be used without sending a client identifier.</source>
-        <target state="new">The specified refresh token cannot be used without sending a client identifier.</target>
+        <target state="translated">لا يمكن استخدام رمز التحديث المحدد بدون إرسال معرف العميل.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3069">
         <source>The specified authorization code cannot be used by this client application.</source>
-        <target state="new">The specified authorization code cannot be used by this client application.</target>
+        <target state="translated">لا يمكن استخدام رمز التفويض المحدد بواسطة تطبيق العميل هذا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3070">
         <source>The specified device code cannot be used by this client application.</source>
-        <target state="new">The specified device code cannot be used by this client application.</target>
+        <target state="translated">لا يمكن استخدام رمز الجهاز المحدد بواسطة تطبيق العميل هذا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3071">
         <source>The specified refresh token cannot be used by this client application.</source>
-        <target state="new">The specified refresh token cannot be used by this client application.</target>
+        <target state="translated">لا يمكن استخدام رمز التحديث المحدد بواسطة تطبيق العميل هذا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3072">
         <source>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</source>
-        <target state="new">The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</target>
+        <target state="translated">المعلمة '{0}' المحددة لا تطابق عنوان إعادة توجيه العميل الذي تم إرسال رمز التفويض إليه في البداية.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3073">
         <source>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</source>
-        <target state="new">The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</target>
+        <target state="translated">لا يمكن استخدام المعلمة '{0}' في حالة عدم تحديد "{1}" في طلب التفويض.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3074">
         <source>The '{0}' parameter is not valid in this context.</source>
-        <target state="new">The '{0}' parameter is not valid in this context.</target>
+        <target state="translated">المعلمة '{0}' غير صالحة في هذا السياق.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3075">
         <source>This client application is not allowed to use the introspection endpoint.</source>
-        <target state="new">This client application is not allowed to use the introspection endpoint.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل هذا باستخدام نقطة نهاية الاستبطان.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3076">
         <source>The specified token cannot be introspected.</source>
-        <target state="new">The specified token cannot be introspected.</target>
+        <target state="translated">لا يمكن استبطان الرمز المميز المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3077">
         <source>The client application is not allowed to introspect the specified token.</source>
-        <target state="new">The client application is not allowed to introspect the specified token.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل بفحص الرمز المميز المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3078">
         <source>This client application is not allowed to use the revocation endpoint.</source>
-        <target state="new">This client application is not allowed to use the revocation endpoint.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل هذا باستخدام نقطة نهاية الإبطال.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3079">
         <source>This token cannot be revoked.</source>
-        <target state="new">This token cannot be revoked.</target>
+        <target state="translated">لا يمكن إبطال هذا الرمز المميز.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3080">
         <source>The client application is not allowed to revoke the specified token.</source>
-        <target state="new">The client application is not allowed to revoke the specified token.</target>
+        <target state="translated">لا يُسمح لتطبيق العميل بإلغاء الرمز المميز المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3081">
         <source>The mandatory '{0}' header is missing.</source>
-        <target state="new">The mandatory '{0}' header is missing.</target>
+        <target state="translated">header '{0}' الإلزامي مفقود.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3082">
         <source>The specified '{0}' header is invalid.</source>
-        <target state="new">The specified '{0}' header is invalid.</target>
+        <target state="translated">header '{0}' المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3083">
         <source>This server only accepts HTTPS requests.</source>
-        <target state="new">This server only accepts HTTPS requests.</target>
+        <target state="translated">لا يقبل هذا الخادم سوى طلبات HTTPS.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3084">
         <source>The specified HTTP method is not valid.</source>
-        <target state="new">The specified HTTP method is not valid.</target>
+        <target state="translated">طريقة HTTP المحددة غير صالحة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3085">
         <source>A token with the same reference identifier already exists.</source>
-        <target state="new">A token with the same reference identifier already exists.</target>
+        <target state="translated">الرمز بنفس مرجع المعرف موجود مسبقاً.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3086">
         <source>The token type cannot be null or empty.</source>
-        <target state="new">The token type cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن يكون نوع الرمز المميز خالياً أو فارغاً.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3087">
         <source>Multiple client credentials cannot be specified.</source>
-        <target state="new">Multiple client credentials cannot be specified.</target>
+        <target state="translated">لا يمكن تحديد بيانات اعتماد متعددة للعملاء.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3088">
         <source>The issuer associated to the specified token is not valid.</source>
-        <target state="new">The issuer associated to the specified token is not valid.</target>
+        <target state="translated">المُصدر المرتبط بالرمز المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3089">
         <source>The specified token is not of the expected type.</source>
-        <target state="new">The specified token is not of the expected type.</target>
+        <target state="translated">الرمز المميز المحدد ليس من النوع المتوقع.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3090">
         <source>The signing key associated to the specified token was not found.</source>
-        <target state="new">The signing key associated to the specified token was not found.</target>
+        <target state="translated">لم يتم العثور على مفتاح التوقيع المرتبط بالرمز المميز المحدد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3091">
         <source>The signature associated to the specified token is not valid.</source>
-        <target state="new">The signature associated to the specified token is not valid.</target>
+        <target state="translated">التوقيع المرتبط بالرمز المحدد غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3092">
         <source>This resource server is currently unavailable.</source>
-        <target state="new">This resource server is currently unavailable.</target>
+        <target state="translated">خادم الموارد غير متوفر حالياّ.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3093">
         <source>The specified token doesn't contain any audience.</source>
-        <target state="new">The specified token doesn't contain any audience.</target>
+        <target state="translated">لا يحتوي الرمز المميز المحدد على أي جمهور.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3094">
         <source>The specified token cannot be used with this resource server.</source>
-        <target state="new">The specified token cannot be used with this resource server.</target>
+        <target state="translated">لا يمكن استخدام الرمز المميز مع خادم المورد هذا.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3095">
         <source>The user represented by the token is not allowed to perform the requested action.</source>
-        <target state="new">The user represented by the token is not allowed to perform the requested action.</target>
+        <target state="translated">لا يُسمح للمستخدم الذي يمثله الرمز المميز بتنفيذ الإجراء المطلوب.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3096">
         <source>No issuer could be found in the server configuration.</source>
-        <target state="new">No issuer could be found in the server configuration.</target>
+        <target state="translated">تعذر العثور على أي مُصدر في إعدادات الخادم.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3097">
         <source>A server configuration containing an invalid issuer was returned.</source>
-        <target state="new">A server configuration containing an invalid issuer was returned.</target>
+        <target state="translated">تم إرجاع إعدادات خادم يحتوي على مُصدر غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3098">
         <source>The issuer returned in the server configuration is not valid.</source>
-        <target state="new">The issuer returned in the server configuration is not valid.</target>
+        <target state="translated">المُصدر الذي تم إرجاعه في إعدادات الخادم غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3099">
         <source>No JWKS endpoint could be found in the server configuration.</source>
-        <target state="new">No JWKS endpoint could be found in the server configuration.</target>
+        <target state="translated">تعذر العثور على نقطة نهاية JWKS في إعدادات الخادم.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3100">
         <source>A server configuration containing an invalid JWKS endpoint URL was returned.</source>
-        <target state="new">A server configuration containing an invalid JWKS endpoint URL was returned.</target>
+        <target state="translated">تم إرجاع إعدادات خادم يحتوي على رابط غير صالح لنقطة نهاية JWKS.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3101">
         <source>A server configuration containing an invalid introspection endpoint URL was returned.</source>
-        <target state="new">A server configuration containing an invalid introspection endpoint URL was returned.</target>
+        <target state="translated">تم إرجاع إعدادات خادم يحتوي على رابط غير صالح لنقطة نهاية الاستبطان.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3102">
         <source>The JWKS document didn't contain a valid '{0}' node with at least one key.</source>
-        <target state="new">The JWKS document didn't contain a valid '{0}' node with at least one key.</target>
+        <target state="translated">لا يحتوي مستند JWKS على عقدة '{0}' صالحة بمفتاح واحد على الأقل.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3103">
         <source>A JWKS response containing an unsupported key was returned.</source>
-        <target state="new">A JWKS response containing an unsupported key was returned.</target>
+        <target state="translated">تم إرجاع استجابة JWKS تحتوي على مفتاح غير مدعوم.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3104">
         <source>A JWKS response containing an invalid key was returned.</source>
-        <target state="new">A JWKS response containing an invalid key was returned.</target>
+        <target state="translated">تم إرجاع استجابة JWKS تحتوي على مفتاح غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3105">
         <source>The mandatory '{0}' parameter couldn't be found in the introspection response.</source>
-        <target state="new">The mandatory '{0}' parameter couldn't be found in the introspection response.</target>
+        <target state="translated">لا يمكن العثور على المعلمة '{0}' الإلزامية في استجابة التأمل.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3106">
         <source>The token was rejected by the remote authentication server.</source>
-        <target state="new">The token was rejected by the remote authentication server.</target>
+        <target state="translated">تم رفض الرمز المميز بواسطة خادم المصادقة عن بُعد.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3107">
         <source>The '{0}' claim is malformed or isn't of the expected type.</source>
-        <target state="new">The '{0}' claim is malformed or isn't of the expected type.</target>
+        <target state="translated">المطالبة '{0}' مكتوبة بشكل غير صحيح أو أنها ليست من النوع المتوقع.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3108">
         <source>An introspection response containing a malformed issuer was returned.</source>
-        <target state="new">An introspection response containing a malformed issuer was returned.</target>
+        <target state="translated">تم إرجاع استجابة استبطان تحتوي على مُصدر تالف.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3109">
         <source>The issuer returned in the introspection response is not valid.</source>
-        <target state="new">The issuer returned in the introspection response is not valid.</target>
+        <target state="translated">المُصدر الذي تم إرجاعه في استجابة التأمل غير صالح.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3110">
         <source>The type of the introspected token doesn't match the expected type.</source>
-        <target state="new">The type of the introspected token doesn't match the expected type.</target>
+        <target state="translated">لا يتطابق نوع الرمز المميز الذي تم استبطانه مع النوع المتوقع.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3111">
         <source>An application with the same client identifier already exists.</source>
-        <target state="new">An application with the same client identifier already exists.</target>
+        <target state="translated">التطبيق بنفس معرف العميل موجود مسبقاً.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3112">
         <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
-        <target state="new">Only confidential, hybrid or public applications are supported by the default application manager.</target>
+        <target state="translated">يتم دعم التطبيقات السرية أو الهجينة أو العامة فقط من قبل مدير التطبيق الافتراضي.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3113">
         <source>The client secret cannot be null or empty for a confidential application.</source>
-        <target state="new">The client secret cannot be null or empty for a confidential application.</target>
+        <target state="translated">لا يمكن أن يكون سر العميل خالياً أو فارغاً لتطبيق سري.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3114">
         <source>A client secret cannot be associated with a public application.</source>
-        <target state="new">A client secret cannot be associated with a public application.</target>
+        <target state="translated">لا يمكن ربط سر العميل بتطبيق عام.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3115">
         <source>Callback URLs cannot contain a fragment.</source>
-        <target state="new">Callback URLs cannot contain a fragment.</target>
+        <target state="translated">لا يمكن أن تحتوي روابط معاودة الاتصال على جزء.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3116">
         <source>The authorization type cannot be null or empty.</source>
-        <target state="new">The authorization type cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن يكون نوع التفويض خالياً أو فارغاً.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3117">
         <source>The specified authorization type is not supported by the default token manager.</source>
-        <target state="new">The specified authorization type is not supported by the default token manager.</target>
+        <target state="translated">نوع التفويض المحدد غير مدعوم من قبل مدير الرمز المميز الافتراضي.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3118">
         <source>The client type cannot be null or empty.</source>
-        <target state="new">The client type cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن يكون نوع العميل خالياً أو فارغاً.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3119">
         <source>Callback URLs cannot be null or empty.</source>
-        <target state="new">Callback URLs cannot be null or empty.</target>
+        <target state="translated">لا يمكن أن تكون روابط معاودة الاتصال خالية أو فارغة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3120">
         <source>Callback URLs must be valid absolute URLs.</source>
-        <target state="new">Callback URLs must be valid absolute URLs.</target>
+        <target state="translated">روابط معاودة الاتصال لابد أن تكون روابط مطلقة صالحة.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID9000">
         <source>Removes orphaned tokens and authorizations from the database.</source>
-        <target state="new">Removes orphaned tokens and authorizations from the database.</target>
+        <target state="translated">إزالة الرموز المميزة والتراخيص المعزولة من قاعدة البيانات.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID9001">
         <source>Starts the scheduled task at regular intervals.</source>
-        <target state="new">Starts the scheduled task at regular intervals.</target>
+        <target state="translated">تبدأ المهمة المجدولة على فترات منتظمة.</target>
         <note />
       </trans-unit>
     </body>
