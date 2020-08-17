@@ -112,35 +112,35 @@
       </trans-unit>
       <trans-unit id="ID3027" resname="the-0-parameter-is-not-supported" datatype="plaintext">
         <source>The '{0}' parameter is not supported.</source>
-        <target>المعلمة "{0}" غير مدعومة.</target>
+        <target>المعلمة '{0}' غير مدعومة.</target>
       </trans-unit>
       <trans-unit id="ID3028" resname="the-mandatory-0-parameter-is-missing" datatype="plaintext">
         <source>The mandatory '{0}' parameter is missing.</source>
-        <target></target>
+        <target>المعلمة الإلزامية '{0}' مفقودة.</target>
       </trans-unit>
       <trans-unit id="ID3029" resname="the-0-parameter-must-be-a-valid-absolute-url" datatype="plaintext">
         <source>The '{0}' parameter must be a valid absolute URL.</source>
-        <target>يجب أن تكون المعلمة "{0}" رابط مطلق صالح.</target>
+        <target>يجب أن تكون المعلمة '{0}' رابط مطلق صالح.</target>
       </trans-unit>
       <trans-unit id="ID3030" resname="the-0-parameter-must-not-include-a-fragment" datatype="plaintext">
         <source>The '{0}' parameter must not include a fragment.</source>
-        <target>يجب ألا تتضمن المعلمة "{0}" جزءًا.</target>
+        <target>يجب ألا تتضمن المعلمة '{0}' جزءًا.</target>
       </trans-unit>
       <trans-unit id="ID30031" resname="the-specified-0-is-not-supported" datatype="plaintext">
         <source>The specified '{0}' is not supported.</source>
-        <target></target>
+        <target>'{0}' المحدد غير مدعوم.</target>
       </trans-unit>
       <trans-unit id="ID3032" resname="the-specified-0-1-combination-is-invalid" datatype="plaintext">
         <source>The specified '{0}'/'{1}' combination is invalid.</source>
-        <target></target>
+        <target>مجموعة '{0}' / "{1}" المحددة غير صالحة.</target>
       </trans-unit>
       <trans-unit id="ID3033" resname="the-mandatory-0-scope-is-missing" datatype="plaintext">
         <source>The mandatory '{0}' scope is missing.</source>
-        <target></target>
+        <target>النطاق الإلزامي '{0}' مفقود.</target>
       </trans-unit>
       <trans-unit id="ID3034" resname="the-0-scope-is-not-allowed" datatype="plaintext">
         <source>The '{0}' scope is not allowed.</source>
-        <target>النطاق "{0}" غير مسموح به.</target>
+        <target>النطاق '{0}' غير مسموح به.</target>
       </trans-unit>
       <trans-unit id="ID3035" resname="the-client-identifier-cannot-be-null-or-empty" datatype="plaintext">
         <source>The client identifier cannot be null or empty.</source>
@@ -148,7 +148,7 @@
       </trans-unit>
       <trans-unit id="ID3036" resname="the-0-parameter-cannot-be-used-without-1" datatype="plaintext">
         <source>The '{0}' parameter cannot be used without '{1}'.</source>
-        <target>لا يمكن استخدام المعلمة "{0}" بدون "{1}".</target>
+        <target>لا يمكن استخدام المعلمة '{0}' بدون "{1}".</target>
       </trans-unit>
       <trans-unit id="ID3037" resname="the-status-cannot-be-null-or-empty" datatype="plaintext">
         <source>The status cannot be null or empty.</source>
@@ -160,11 +160,11 @@
       </trans-unit>
       <trans-unit id="ID3039" resname="the-0-and-1-parameters-can-only-be-used-with-a-response-type-containing-2" datatype="plaintext">
         <source>The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</source>
-        <target>لا يمكن استخدام المعلمات "{0}" و "{1}" إلا مع نوع استجابة يحتوي على "{2}".</target>
+        <target>لا يمكن استخدام المعلمات '{0}' و "{1}" إلا مع نوع استجابة يحتوي على "{2}".</target>
       </trans-unit>
       <trans-unit id="ID3040" resname="the-specified-0-is-not-allowed-when-using-pkce" datatype="plaintext">
         <source>The specified '{0}' is not allowed when using PKCE.</source>
-        <target></target>
+        <target>'{0}' المحدد غير مسموح به عند استخدام PKCE.</target>
       </trans-unit>
       <trans-unit id="ID3041" resname="scopes-cannot-contain-spaces" datatype="plaintext">
         <source>Scopes cannot contain spaces.</source>
@@ -172,7 +172,7 @@
       </trans-unit>
       <trans-unit id="ID3042" resname="the-specified-0-is-not-valid-for-this-client-application" datatype="plaintext">
         <source>The specified '{0}' is not valid for this client application.</source>
-        <target></target>
+        <target>'{0}' المحدد غير صالح لتطبيق العميل هذا.</target>
       </trans-unit>
       <trans-unit id="ID3043" resname="the-scope-name-cannot-be-null-or-empty" datatype="plaintext">
         <source>The scope name cannot be null or empty.</source>
@@ -204,7 +204,7 @@
       </trans-unit>
       <trans-unit id="ID3050" resname="the-specified-0-is-invalid" datatype="plaintext">
         <source>The specified '{0}' is invalid.</source>
-        <target></target>
+        <target>'{0}' المحدد غير صالح.</target>
       </trans-unit>
       <trans-unit id="ID3051" resname="the-0-parameter-is-not-valid-for-this-client-application" datatype="plaintext">
         <source>The '{0}' parameter is not valid for this client application.</source>
@@ -212,7 +212,7 @@
       </trans-unit>
       <trans-unit id="ID3052" resname="the-0-parameter-required-for-this-client-application-is-missing" datatype="plaintext">
         <source>The '{0}' parameter required for this client application is missing.</source>
-        <target>المعلمة "{0}" المطلوبة لتطبيق العميل هذا مفقودة.</target>
+        <target>المعلمة '{0}' المطلوبة لتطبيق العميل هذا مفقودة.</target>
       </trans-unit>
       <trans-unit id="ID3053" resname="the-specified-client-credentials-are-invalid" datatype="plaintext">
         <source>The specified client credentials are invalid.</source>
@@ -224,15 +224,15 @@
       </trans-unit>
       <trans-unit id="ID3055" resname="the-0-and-1-parameters-are-required-when-using-the-client-credentials-grant" datatype="plaintext">
         <source>The '{0}' and '{1}' parameters are required when using the client credentials grant.</source>
-        <target>معلمات "{0}" و "{1}" مطلوبة عند استخدام منح بيانات اعتماد العميل.</target>
+        <target>معلمات '{0}' و "{1}" مطلوبة عند استخدام منح بيانات اعتماد العميل.</target>
       </trans-unit>
       <trans-unit id="ID3056" resname="the-0-parameter-is-required-when-using-the-device-code-grant" datatype="plaintext">
         <source>The '{0}' parameter is required when using the device code grant.</source>
-        <target>المعلمة "{0}" مطلوبة عند استخدام منحة رمز الجهاز.</target>
+        <target>المعلمة '{0}' مطلوبة عند استخدام منحة رمز الجهاز.</target>
       </trans-unit>
       <trans-unit id="ID3057" resname="the-mandatory-0-and-or-1-parameters-are-missing" datatype="plaintext">
         <source>The mandatory '{0}' and/or '{1}' parameters are missing.</source>
-        <target></target>
+        <target>معلمات '{0}' و / أو "{1}" الإلزامية مفقودة.</target>
       </trans-unit>
       <trans-unit id="ID3058" resname="a-scope-with-the-same-name-already-exists" datatype="plaintext">
         <source>A scope with the same name already exists.</source>
@@ -248,7 +248,7 @@
       </trans-unit>
       <trans-unit id="ID3061" resname="the-client-application-is-not-allowed-to-use-the-0-scope" datatype="plaintext">
         <source>The client application is not allowed to use the '{0}' scope.</source>
-        <target>غير مسموح لتطبيق العميل باستخدام النطاق "{0}".</target>
+        <target>غير مسموح لتطبيق العميل باستخدام النطاق '{0}'.</target>
       </trans-unit>
       <trans-unit id="ID3062" resname="the-specified-authorization-code-cannot-be-used-without-sending-a-client-identifier" datatype="plaintext">
         <source>The specified authorization code cannot be used without sending a client identifier.</source>
@@ -276,15 +276,15 @@
       </trans-unit>
       <trans-unit id="ID3068" resname="the-specified-0-parameter-doesnt-match-the-client-redirection-address-the-authorization-code-was-ini" datatype="plaintext">
         <source>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</source>
-        <target></target>
+        <target>المعلمة '{0}' المحددة لا تطابق عنوان إعادة توجيه العميل الذي تم إرسال رمز التفويض إليه في البداية.</target>
       </trans-unit>
       <trans-unit id="ID3069" resname="the-0-parameter-cannot-be-used-when-no-1-was-specified-in-the-authorization-request" datatype="plaintext">
         <source>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</source>
-        <target>لا يمكن استخدام المعلمة "{0}" في حالة عدم تحديد "{1}" في طلب التفويض.</target>
+        <target>لا يمكن استخدام المعلمة '{0}' في حالة عدم تحديد "{1}" في طلب التفويض.</target>
       </trans-unit>
       <trans-unit id="ID3070" resname="the-0-parameter-is-not-valid-in-this-context" datatype="plaintext">
         <source>The '{0}' parameter is not valid in this context.</source>
-        <target>المعلمة "{0}" غير صالحة في هذا السياق.</target>
+        <target>المعلمة '{0}' غير صالحة في هذا السياق.</target>
       </trans-unit>
       <trans-unit id="ID3071" resname="this-client-application-is-not-allowed-to-use-the-introspection-endpoint" datatype="plaintext">
         <source>This client application is not allowed to use the introspection endpoint.</source>
@@ -312,11 +312,11 @@
       </trans-unit>
       <trans-unit id="ID3077" resname="the-mandatory-0-header-is-missing" datatype="plaintext">
         <source>The mandatory '{0}' header is missing.</source>
-        <target></target>
+        <target>header '{0}' الإلزامي مفقود.</target>
       </trans-unit>
       <trans-unit id="ID3078" resname="the-specified-0-header-is-invalid" datatype="plaintext">
         <source>The specified '{0}' header is invalid.</source>
-        <target></target>
+        <target>header '{0}' المحدد غير صالح.</target>
       </trans-unit>
       <trans-unit id="ID3079" resname="this-server-only-accepts-https-requests" datatype="plaintext">
         <source>This server only accepts HTTPS requests.</source>
@@ -408,7 +408,7 @@
       </trans-unit>
       <trans-unit id="ID3101" resname="the-mandatory-0-parameter-couldnt-be-found-in-the-introspection-response" datatype="plaintext">
         <source>The mandatory '{0}' parameter couldn't be found in the introspection response.</source>
-        <target></target>
+        <target>لا يمكن العثور على المعلمة '{0}' الإلزامية في استجابة التأمل.</target>
       </trans-unit>
       <trans-unit id="ID3102" resname="the-token-was-rejected-by-the-remote-authentication-server" datatype="plaintext">
         <source>The token was rejected by the remote authentication server.</source>
@@ -416,7 +416,7 @@
       </trans-unit>
       <trans-unit id="ID3103" resname="the-0-claim-is-malformed-or-isnt-of-the-expected-type" datatype="plaintext">
         <source>The '{0}' claim is malformed or isn't of the expected type.</source>
-        <target>المطالبة "{0}" مكتوبة بشكل غير صحيح أو أنها ليست من النوع المتوقع.</target>
+        <target>المطالبة '{0}' مكتوبة بشكل غير صحيح أو أنها ليست من النوع المتوقع.</target>
       </trans-unit>
       <trans-unit id="ID3104" resname="an-introspection-response-containing-a-malformed-issuer-was-returned" datatype="plaintext">
         <source>An introspection response containing a malformed issuer was returned.</source>
