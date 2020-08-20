@@ -1377,6 +1377,10 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>The maximum refire count cannot be negative.</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="ID1279" xml:space="preserve">
+    <value>The duration cannot be less than 10 minutes.</value>
+    <comment>{Locked}</comment>
+  </data>
   <data name="ID3000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

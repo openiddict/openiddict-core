@@ -52,15 +52,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Disables authorizations pruning.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder DisableAuthorizationsPruning()
-            => Configure(options => options.DisableAuthorizationsPruning = true);
+        public OpenIddictServerQuartzBuilder DisableAuthorizationPruning()
+            => Configure(options => options.DisableAuthorizationPruning = true);
 
         /// <summary>
         /// Disables tokens pruning.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder DisableTokensPruning()
-            => Configure(options => options.DisableTokensPruning = true);
+        public OpenIddictServerQuartzBuilder DisableTokenPruning()
+            => Configure(options => options.DisableTokenPruning = true);
 
         /// <summary>
         /// Sets the number of times a failed Quartz.NET job can be retried.
@@ -75,6 +75,36 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.MaximumRefireCount = count);
+        }
+
+        /// <summary>
+        /// Sets the minimum lifespan authorizations must have to be pruned.
+        /// </summary>
+        /// <param name="lifespan">The minimum lifespan authorizations must have to be pruned.</param>
+        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
+        public OpenIddictServerQuartzBuilder SetMinimumAuthorizationLifespan(TimeSpan lifespan)
+        {
+            if (lifespan < TimeSpan.FromMinutes(10))
+            {
+                throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID1279));
+            }
+
+            return Configure(options => options.MinimumAuthorizationLifespan = lifespan);
+        }
+
+        /// <summary>
+        /// Sets the minimum lifespan tokens must have to be pruned.
+        /// </summary>
+        /// <param name="lifespan">The minimum lifespan tokens must have to be pruned.</param>
+        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
+        public OpenIddictServerQuartzBuilder SetMinimumTokenLifespan(TimeSpan lifespan)
+        {
+            if (lifespan < TimeSpan.FromMinutes(10))
+            {
+                throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID1279));
+            }
+
+            return Configure(options => options.MinimumTokenLifespan = lifespan);
         }
 
         /// <inheritdoc/>

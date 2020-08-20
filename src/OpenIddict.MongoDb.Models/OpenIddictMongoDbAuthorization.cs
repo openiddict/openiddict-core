@@ -32,6 +32,11 @@ namespace OpenIddict.MongoDb.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
+        /// Gets or sets the creation date of the current authorization.
+        /// </summary>
+        public virtual DateTime? CreationDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique identifier associated with the current authorization.
         /// </summary>
         [BsonId, BsonRequired]

@@ -15,6 +15,11 @@ namespace OpenIddict.Abstractions
         public string? ApplicationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the creation date associated with the authorization.
+        /// </summary>
+        public DateTimeOffset? CreationDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the optional principal associated with the authorization.
         /// Note: this property is not stored by the default authorization stores.
         /// </summary>

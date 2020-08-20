@@ -1727,6 +1727,7 @@ namespace OpenIddict.Server
 
                 var descriptor = new OpenIddictAuthorizationDescriptor
                 {
+                    CreationDate = DateTimeOffset.UtcNow,
                     Principal = context.Principal,
                     Status = Statuses.Valid,
                     Subject = context.Principal.GetClaim(Claims.Subject),

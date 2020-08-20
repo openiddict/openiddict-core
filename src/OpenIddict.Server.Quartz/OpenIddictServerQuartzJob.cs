@@ -65,68 +65,10 @@ namespace OpenIddict.Server.Quartz
             {
                 // Note: this background task is responsible of automatically removing orphaned tokens/authorizations
                 // (i.e tokens that are no longer valid and ad-hoc authorizations that have no valid tokens associated).
-                // Since ad-hoc authorizations and their associated tokens are removed as part of the same operation
-                // when they no longer have any token attached, it's more efficient to remove the authorizations first.
+                // Import: since tokens associated to ad-hoc authorizations are not removed as part of the same operation,
+                // the tokens MUST be deleted before removing the ad-hoc authorizations that no longer have any token.
 
-                // Note: the authorization/token managers MUST be resolved from the scoped provider
-                // as they depend on scoped stores that should be disposed as soon as possible.
-
-                if (!_options.CurrentValue.DisableAuthorizationsPruning)
-                {
-                    var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>();
-                    if (manager == null)
-                    {
-                        // Inform Quartz.NET that the triggers associated with this job should be removed,
-                        // as the future invocations will always fail until the application is correctly
-                        // re-configured to register the OpenIddict core services in the DI container.
-                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID1277)))
-                        {
-                            RefireImmediately = false,
-                            UnscheduleAllTriggers = true,
-                            UnscheduleFiringTrigger = true
-                        };
-                    }
-
-                    try
-                    {
-                        await manager.PruneAsync(context.CancellationToken);
-                    }
-
-                    // OutOfMemoryExceptions are treated as fatal errors and are always re-thrown as-is.
-                    catch (OutOfMemoryException)
-                    {
-                        throw;
-                    }
-
-                    // OperationCanceledExceptions are typically thrown the host is about to shut down.
-                    // To allow the host to shut down as fast as possible, this exception type is special-cased
-                    // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
-                    catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
-                    {
-                        throw new JobExecutionException(exception)
-                        {
-                            RefireImmediately = false
-                        };
-                    }
-
-                    // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
-                    // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
-                    catch (AggregateException exception)
-                    {
-                        exceptions ??= new List<Exception>(capacity: 1);
-                        exceptions.AddRange(exception.InnerExceptions);
-                    }
-
-                    // Other exceptions are assumed to be transient and are added to the exceptions collection
-                    // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
-                    catch (Exception exception)
-                    {
-                        exceptions ??= new List<Exception>(capacity: 1);
-                        exceptions.Add(exception);
-                    }
-                }
-
-                if (!_options.CurrentValue.DisableTokensPruning)
+                if (!_options.CurrentValue.DisableTokenPruning)
                 {
                     var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>();
                     if (manager == null)
@@ -142,9 +84,11 @@ namespace OpenIddict.Server.Quartz
                         };
                     }
 
+                    var threshold = DateTimeOffset.UtcNow - _options.CurrentValue.MinimumTokenLifespan;
+
                     try
                     {
-                        await manager.PruneAsync(context.CancellationToken);
+                        await manager.PruneAsync(threshold, context.CancellationToken);
                     }
 
                     // OutOfMemoryExceptions are treated as fatal errors and are always re-thrown as-is.
@@ -168,7 +112,64 @@ namespace OpenIddict.Server.Quartz
                     // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
                     catch (AggregateException exception)
                     {
+                        exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
+                        exceptions.AddRange(exception.InnerExceptions);
+                    }
+
+                    // Other exceptions are assumed to be transient and are added to the exceptions collection
+                    // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
+                    catch (Exception exception)
+                    {
                         exceptions ??= new List<Exception>(capacity: 1);
+                        exceptions.Add(exception);
+                    }
+                }
+
+                if (!_options.CurrentValue.DisableAuthorizationPruning)
+                {
+                    var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>();
+                    if (manager == null)
+                    {
+                        // Inform Quartz.NET that the triggers associated with this job should be removed,
+                        // as the future invocations will always fail until the application is correctly
+                        // re-configured to register the OpenIddict core services in the DI container.
+                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID1277)))
+                        {
+                            RefireImmediately = false,
+                            UnscheduleAllTriggers = true,
+                            UnscheduleFiringTrigger = true
+                        };
+                    }
+
+                    var threshold = DateTimeOffset.UtcNow - _options.CurrentValue.MinimumAuthorizationLifespan;
+
+                    try
+                    {
+                        await manager.PruneAsync(threshold, context.CancellationToken);
+                    }
+
+                    // OutOfMemoryExceptions are treated as fatal errors and are always re-thrown as-is.
+                    catch (OutOfMemoryException)
+                    {
+                        throw;
+                    }
+
+                    // OperationCanceledExceptions are typically thrown the host is about to shut down.
+                    // To allow the host to shut down as fast as possible, this exception type is special-cased
+                    // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
+                    catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
+                    {
+                        throw new JobExecutionException(exception)
+                        {
+                            RefireImmediately = false
+                        };
+                    }
+
+                    // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
+                    // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
+                    catch (AggregateException exception)
+                    {
+                        exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
                         exceptions.AddRange(exception.InnerExceptions);
                     }
 

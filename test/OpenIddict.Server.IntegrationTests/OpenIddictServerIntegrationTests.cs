@@ -3928,6 +3928,7 @@ namespace OpenIddict.Server.IntegrationTests
             Mock.Get(manager).Verify(manager => manager.CreateAsync(
                 It.Is<OpenIddictAuthorizationDescriptor>(descriptor =>
                     descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A56" &&
+                    descriptor.CreationDate != null &&
                     descriptor.Subject == "Bob le Magnifique" &&
                     descriptor.Type == AuthorizationTypes.AdHoc),
                 It.IsAny<CancellationToken>()), Times.Once());

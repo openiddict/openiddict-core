@@ -50,35 +50,35 @@ namespace OpenIddict.Server.Quartz.Tests
         }
 
         [Fact]
-        public void DisableAuthorizationsPruning_AuthorizationsPruningIsDisabled()
+        public void DisableAuthorizationPruning_AuthorizationPruningIsDisabled()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.DisableAuthorizationsPruning();
+            builder.DisableAuthorizationPruning();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.DisableAuthorizationsPruning);
+            Assert.True(options.DisableAuthorizationPruning);
         }
 
         [Fact]
-        public void DisableTokensPruning_TokensPruningIsDisabled()
+        public void DisableTokenPruning_TokenPruningIsDisabled()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.DisableTokensPruning();
+            builder.DisableTokenPruning();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.DisableTokensPruning);
+            Assert.True(options.DisableTokenPruning);
         }
 
         [Fact]
@@ -109,6 +109,66 @@ namespace OpenIddict.Server.Quartz.Tests
 
             // Assert
             Assert.Equal(42, options.MaximumRefireCount);
+        }
+
+        [Fact]
+        public void SetMinimumAuthorizationLifespan_ThrowsAnExceptionForNegativeLifespan()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetMinimumAuthorizationLifespan(TimeSpan.FromSeconds(-1)));
+
+            Assert.Equal("lifespan", exception.ParamName);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1279), exception.Message);
+        }
+
+        [Fact]
+        public void SetMinimumAuthorizationLifespan_MinimumAuthorizationLifespanIsSet()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetMinimumAuthorizationLifespan(TimeSpan.FromDays(42));
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Equal(42, options.MinimumAuthorizationLifespan.TotalDays);
+        }
+
+        [Fact]
+        public void SetMinimumTokenLifespan_ThrowsAnExceptionForNegativeLifespan()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetMinimumTokenLifespan(TimeSpan.FromSeconds(-1)));
+
+            Assert.Equal("lifespan", exception.ParamName);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1279), exception.Message);
+        }
+
+        [Fact]
+        public void SetMinimumTokenLifespan_MinimumTokenLifespanIsSet()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetMinimumTokenLifespan(TimeSpan.FromDays(42));
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Equal(42, options.MinimumTokenLifespan.TotalDays);
         }
 
         private static IServiceCollection CreateServices()

@@ -22,6 +22,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFrameworkCore
@@ -599,7 +600,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <inheritdoc/>
-        public virtual async ValueTask PruneAsync(CancellationToken cancellationToken)
+        public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         {
             // Note: Entity Framework Core doesn't support set-based deletes, which prevents removing
             // entities in a single command without having to retrieve and materialize them first.
@@ -645,11 +646,14 @@ namespace OpenIddict.EntityFrameworkCore
                 // and thus prevent them from being concurrently modified outside this block.
                 using var transaction = await CreateTransactionAsync();
 
-                var tokens = await (from token in Tokens.AsTracking()
-                                    where token.Status != OpenIddictConstants.Statuses.Valid ||
-                                          token.ExpirationDate < DateTimeOffset.UtcNow
-                                    orderby token.Id
-                                    select token).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
+                var tokens = await
+                    (from token in Tokens.AsTracking()
+                     where token.CreationDate < threshold
+                     where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
+                           (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
+                            token.ExpirationDate < DateTimeOffset.UtcNow
+                     orderby token.Id
+                     select token).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
 
                 if (tokens.Count == 0)
                 {
@@ -666,11 +670,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 catch (Exception exception)
                 {
-                    if (exceptions == null)
-                    {
-                        exceptions = new List<Exception>(capacity: 1);
-                    }
-
+                    exceptions ??= new List<Exception>(capacity: 1);
                     exceptions.Add(exception);
                 }
             }

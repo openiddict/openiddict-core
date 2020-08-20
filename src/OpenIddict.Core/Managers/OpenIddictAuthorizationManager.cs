@@ -684,6 +684,26 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the creation date associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the creation date associated with the specified authorization.
+        /// </returns>
+        public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(
+            TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.GetCreationDateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -920,7 +940,8 @@ namespace OpenIddict.Core
             }
 
             await Store.SetApplicationIdAsync(authorization, descriptor.ApplicationId, cancellationToken);
-            await Store.SetScopesAsync(authorization, ImmutableArray.CreateRange(descriptor.Scopes), cancellationToken);
+            await Store.SetCreationDateAsync(authorization, descriptor.CreationDate, cancellationToken);
+            await Store.SetScopesAsync(authorization, descriptor.Scopes.ToImmutableArray(), cancellationToken);
             await Store.SetStatusAsync(authorization, descriptor.Status, cancellationToken);
             await Store.SetSubjectAsync(authorization, descriptor.Subject, cancellationToken);
             await Store.SetTypeAsync(authorization, descriptor.Type, cancellationToken);
@@ -950,6 +971,7 @@ namespace OpenIddict.Core
             }
 
             descriptor.ApplicationId = await Store.GetApplicationIdAsync(authorization, cancellationToken);
+            descriptor.CreationDate = await Store.GetCreationDateAsync(authorization, cancellationToken);
             descriptor.Scopes.Clear();
             descriptor.Scopes.UnionWith(await Store.GetScopesAsync(authorization, cancellationToken));
             descriptor.Status = await Store.GetStatusAsync(authorization, cancellationToken);
@@ -958,14 +980,20 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
+        /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no token attached.
+        /// Only authorizations created before the specified <paramref name="threshold"/> are removed.
         /// </summary>
+        /// <remarks>
+        /// To ensure ad-hoc authorizations that no longer have any valid/non-expired token
+        /// attached are correctly removed, the tokens should always be pruned first.
+        /// </remarks>
+        /// <param name="threshold">The date before which authorizations are not pruned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual ValueTask PruneAsync(CancellationToken cancellationToken = default)
-            => Store.PruneAsync(cancellationToken);
+        public virtual ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default)
+            => Store.PruneAsync(threshold, cancellationToken);
 
         /// <summary>
         /// Sets the application identifier associated with an authorization.
@@ -1225,6 +1253,9 @@ namespace OpenIddict.Core
         ValueTask<TResult> IOpenIddictAuthorizationManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
             => GetAsync(query, state, cancellationToken);
 
+        ValueTask<DateTimeOffset?> IOpenIddictAuthorizationManager.GetCreationDateAsync(object authorization, CancellationToken cancellationToken)
+            => GetCreationDateAsync((TAuthorization) authorization, cancellationToken);
+
         /// <inheritdoc/>
         ValueTask<string?> IOpenIddictAuthorizationManager.GetIdAsync(object authorization, CancellationToken cancellationToken)
             => GetIdAsync((TAuthorization) authorization, cancellationToken);
@@ -1278,8 +1309,8 @@ namespace OpenIddict.Core
             => PopulateAsync((TAuthorization) authorization, descriptor, cancellationToken);
 
         /// <inheritdoc/>
-        ValueTask IOpenIddictAuthorizationManager.PruneAsync(CancellationToken cancellationToken)
-            => PruneAsync(cancellationToken);
+        ValueTask IOpenIddictAuthorizationManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+            => PruneAsync(threshold, cancellationToken);
 
         /// <inheritdoc/>
         ValueTask IOpenIddictAuthorizationManager.SetApplicationIdAsync(object authorization, string? identifier, CancellationToken cancellationToken)

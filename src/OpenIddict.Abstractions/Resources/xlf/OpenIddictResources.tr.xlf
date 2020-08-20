@@ -519,7 +519,7 @@
       </trans-unit>
       <trans-unit id="ID3107">
         <source>The '{0}' claim is malformed or isn't of the expected type.</source>
-          <target state="translated">'{0}' hakkı kusurlu veya beklenen tipte değil.</target>
+        <target state="translated">'{0}' hakkı kusurlu veya beklenen tipte değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID3108">

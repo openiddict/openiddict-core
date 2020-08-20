@@ -46,30 +46,7 @@ namespace OpenIddict.Server.Quartz.Tests
         }
 
         [Fact]
-        public async Task Execute_IgnoresPruningWhenAuthorizationsPruningIsDisabled()
-        {
-            // Arrange
-
-            var manager = new Mock<IOpenIddictAuthorizationManager>();
-
-            var provider = Mock.Of<IServiceProvider>(provider =>
-                provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
-                provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
-
-            var job = CreateJob(provider, new OpenIddictServerQuartzOptions
-            {
-                DisableAuthorizationsPruning = true
-            });
-
-            // Act
-            await job.Execute(Mock.Of<IJobExecutionContext>());
-
-            // Assert
-            manager.Verify(manager => manager.PruneAsync(It.IsAny<CancellationToken>()), Times.Never());
-        }
-
-        [Fact]
-        public async Task Execute_IgnoresPruningWhenTokensPruningIsDisabled()
+        public async Task Execute_IgnoresPruningWhenTokenPruningIsDisabled()
         {
             // Arrange
 
@@ -81,34 +58,37 @@ namespace OpenIddict.Server.Quartz.Tests
 
             var job = CreateJob(provider, new OpenIddictServerQuartzOptions
             {
-                DisableTokensPruning = true
+                DisableTokenPruning = true
             });
 
             // Act
             await job.Execute(Mock.Of<IJobExecutionContext>());
 
             // Assert
-            manager.Verify(manager => manager.PruneAsync(It.IsAny<CancellationToken>()), Times.Never());
+            manager.Verify(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
-        public async Task Execute_UnschedulesTriggersWhenAuthorizationManagerIsMissing()
+        public async Task Execute_IgnoresPruningWhenAuthorizationPruningIsDisabled()
         {
             // Arrange
+
+            var manager = new Mock<IOpenIddictAuthorizationManager>();
+
             var provider = Mock.Of<IServiceProvider>(provider =>
-                provider.GetService(typeof(IOpenIddictAuthorizationManager)) == null);
+                provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
+                provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
 
-            var job = CreateJob(provider);
+            var job = CreateJob(provider, new OpenIddictServerQuartzOptions
+            {
+                DisableAuthorizationPruning = true
+            });
 
-            // Act and assert
-            var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+            // Act
+            await job.Execute(Mock.Of<IJobExecutionContext>());
 
-            Assert.False(exception.RefireImmediately);
-            Assert.True(exception.UnscheduleAllTriggers);
-            Assert.True(exception.UnscheduleFiringTrigger);
-
-            Assert.IsType<InvalidOperationException>(exception.InnerException);
-            Assert.Equal(SR.GetResourceString(SR.ID1277), exception.InnerException!.Message);
+            // Assert
+            manager.Verify(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
@@ -133,29 +113,31 @@ namespace OpenIddict.Server.Quartz.Tests
         }
 
         [Fact]
-        public async Task Execute_RethrowsOutOfMemoryExceptionsThrownDuringAuthorizationsPruning()
+        public async Task Execute_UnschedulesTriggersWhenAuthorizationManagerIsMissing()
         {
             // Arrange
-            var manager = new Mock<IOpenIddictAuthorizationManager>();
-            manager.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
-                .Throws(new OutOfMemoryException());
-
             var provider = Mock.Of<IServiceProvider>(provider =>
-                provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
-                provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
+                provider.GetService(typeof(IOpenIddictAuthorizationManager)) == null);
 
             var job = CreateJob(provider);
 
             // Act and assert
-            await Assert.ThrowsAsync<OutOfMemoryException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+            var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+
+            Assert.False(exception.RefireImmediately);
+            Assert.True(exception.UnscheduleAllTriggers);
+            Assert.True(exception.UnscheduleFiringTrigger);
+
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
+            Assert.Equal(SR.GetResourceString(SR.ID1277), exception.InnerException!.Message);
         }
 
         [Fact]
-        public async Task Execute_RethrowsOutOfMemoryExceptionsThrownDuringTokensPruning()
+        public async Task Execute_RethrowsOutOfMemoryExceptionsThrownDuringTokenPruning()
         {
             // Arrange
             var manager = new Mock<IOpenIddictTokenManager>();
-            manager.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
+            manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                 .Throws(new OutOfMemoryException());
 
             var provider = Mock.Of<IServiceProvider>(provider =>
@@ -169,39 +151,31 @@ namespace OpenIddict.Server.Quartz.Tests
         }
 
         [Fact]
-        public async Task Execute_DisablesRefiringWhenJobIsCanceledDuringAuthorizationsPruning()
+        public async Task Execute_RethrowsOutOfMemoryExceptionsThrownDuringAuthorizationPruning()
         {
             // Arrange
-            var token = new CancellationToken(canceled: true);
-
             var manager = new Mock<IOpenIddictAuthorizationManager>();
-            manager.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
-                .Throws(new OperationCanceledException(token));
+            manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+                .Throws(new OutOfMemoryException());
 
             var provider = Mock.Of<IServiceProvider>(provider =>
                 provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
                 provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
 
-            var context = Mock.Of<IJobExecutionContext>(context => context.CancellationToken == token);
-
             var job = CreateJob(provider);
 
             // Act and assert
-            var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
-
-            Assert.False(exception.RefireImmediately);
-
-            manager.Verify(manager => manager.PruneAsync(It.IsAny<CancellationToken>()), Times.Once());
+            await Assert.ThrowsAsync<OutOfMemoryException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
         }
 
         [Fact]
-        public async Task Execute_DisablesRefiringWhenJobIsCanceledDuringTokensPruning()
+        public async Task Execute_DisablesRefiringWhenJobIsCanceledDuringTokenPruning()
         {
             // Arrange
             var token = new CancellationToken(canceled: true);
 
             var manager = new Mock<IOpenIddictTokenManager>();
-            manager.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
+            manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                 .Throws(new OperationCanceledException(token));
 
             var provider = Mock.Of<IServiceProvider>(provider =>
@@ -217,7 +191,33 @@ namespace OpenIddict.Server.Quartz.Tests
 
             Assert.False(exception.RefireImmediately);
 
-            manager.Verify(manager => manager.PruneAsync(It.IsAny<CancellationToken>()), Times.Once());
+            manager.Verify(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task Execute_DisablesRefiringWhenJobIsCanceledDuringAuthorizationPruning()
+        {
+            // Arrange
+            var token = new CancellationToken(canceled: true);
+
+            var manager = new Mock<IOpenIddictAuthorizationManager>();
+            manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException(token));
+
+            var provider = Mock.Of<IServiceProvider>(provider =>
+                provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
+                provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
+
+            var context = Mock.Of<IJobExecutionContext>(context => context.CancellationToken == token);
+
+            var job = CreateJob(provider);
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
+
+            Assert.False(exception.RefireImmediately);
+
+            manager.Verify(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -247,7 +247,7 @@ namespace OpenIddict.Server.Quartz.Tests
             static IOpenIddictAuthorizationManager CreateAuthorizationManager(Exception exception)
             {
                 var mock = new Mock<IOpenIddictAuthorizationManager>();
-                mock.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
+                mock.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                     .Throws(exception);
 
                 return mock.Object;
@@ -256,7 +256,7 @@ namespace OpenIddict.Server.Quartz.Tests
             static IOpenIddictTokenManager CreateTokenManager(Exception exception)
             {
                 var mock = new Mock<IOpenIddictTokenManager>();
-                mock.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
+                mock.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                     .Throws(exception);
 
                 return mock.Object;
@@ -294,7 +294,7 @@ namespace OpenIddict.Server.Quartz.Tests
             static IOpenIddictAuthorizationManager CreateAuthorizationManager(Exception exception)
             {
                 var mock = new Mock<IOpenIddictAuthorizationManager>();
-                mock.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
+                mock.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                     .Throws(exception);
 
                 return mock.Object;
@@ -303,7 +303,7 @@ namespace OpenIddict.Server.Quartz.Tests
             static IOpenIddictTokenManager CreateTokenManager(Exception exception)
             {
                 var mock = new Mock<IOpenIddictTokenManager>();
-                mock.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
+                mock.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                     .Throws(exception);
 
                 return mock.Object;
@@ -315,7 +315,7 @@ namespace OpenIddict.Server.Quartz.Tests
         {
             // Arrange
             var manager = new Mock<IOpenIddictAuthorizationManager>();
-            manager.Setup(manager => manager.PruneAsync(It.IsAny<CancellationToken>()))
+            manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
                 .Throws(new ApplicationException());
 
             var provider = Mock.Of<IServiceProvider>(provider =>

@@ -19,6 +19,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
@@ -529,13 +530,54 @@ namespace OpenIddict.MongoDb
         }
 
         /// <inheritdoc/>
-        public virtual async ValueTask PruneAsync(CancellationToken cancellationToken)
+        public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-            await collection.DeleteManyAsync(token => token.Status != OpenIddictConstants.Statuses.Valid ||
-                                                      token.ExpirationDate < DateTime.UtcNow, cancellationToken);
+            // Note: directly deleting the resulting set of an aggregate query is not supported by MongoDB.
+            // To work around this limitation, the token identifiers are stored in an intermediate list
+            // and delete requests are sent to remove the documents corresponding to these identifiers.
+
+            var identifiers =
+                await (from token in collection.AsQueryable()
+                       join authorization in database.GetCollection<OpenIddictMongoDbAuthorization>(Options.CurrentValue.AuthorizationsCollectionName).AsQueryable()
+                                          on token.AuthorizationId equals authorization.Id into authorizations
+                       where token.CreationDate < threshold
+                       where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
+                              token.ExpirationDate < DateTime.UtcNow ||
+                              authorizations.Any(authorization => authorization.Status != Statuses.Valid)
+                       select token.Id).ToListAsync(cancellationToken);
+
+            // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
+            // maximum number of elements that can be removed by a single call to PruneAsync() is limited to 50000.
+            foreach (var buffer in Buffer(identifiers.Take(50_000), 1_000))
+            {
+                await collection.DeleteManyAsync(token => buffer.Contains(token.Id));
+            }
+
+            static IEnumerable<List<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)
+            {
+                List<TSource>? buffer = null;
+
+                foreach (var element in source)
+                {
+                    buffer ??= new List<TSource>(capacity: 1);
+                    buffer.Add(element);
+
+                    if (buffer.Count == count)
+                    {
+                        yield return buffer;
+
+                        buffer = null;
+                    }
+                }
+
+                if (buffer != null)
+                {
+                    yield return buffer;
+                }
+            }
         }
 
         /// <inheritdoc/>
