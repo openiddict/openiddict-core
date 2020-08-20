@@ -213,6 +213,17 @@ namespace OpenIddict.Abstractions
             TState state, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieves the creation date associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the creation date associated with the specified authorization.
+        /// </returns>
+        ValueTask<DateTimeOffset?> GetCreationDateAsync(object authorization, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Retrieves the unique identifier associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -350,13 +361,19 @@ namespace OpenIddict.Abstractions
         ValueTask PopulateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
+        /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no token attached.
+        /// Only authorizations created before the specified <paramref name="threshold"/> are removed.
         /// </summary>
+        /// <remarks>
+        /// To ensure ad-hoc authorizations that no longer have any valid/non-expired token
+        /// attached are correctly removed, the tokens should always be pruned first.
+        /// </remarks>
+        /// <param name="threshold">The date before which authorizations are not pruned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        ValueTask PruneAsync(CancellationToken cancellationToken = default);
+        ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sets the application identifier associated with an authorization.

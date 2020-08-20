@@ -362,6 +362,17 @@ namespace OpenIddict.MongoDb
         }
 
         /// <inheritdoc/>
+        public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return new ValueTask<DateTimeOffset?>(authorization.CreationDate);
+        }
+
+        /// <inheritdoc/>
         public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -503,7 +514,7 @@ namespace OpenIddict.MongoDb
         }
 
         /// <inheritdoc/>
-        public virtual async ValueTask PruneAsync(CancellationToken cancellationToken)
+        public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -516,10 +527,9 @@ namespace OpenIddict.MongoDb
                 await (from authorization in collection.AsQueryable()
                        join token in database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName).AsQueryable()
                                   on authorization.Id equals token.AuthorizationId into tokens
+                       where authorization.CreationDate < threshold.UtcDateTime
                        where authorization.Status != OpenIddictConstants.Statuses.Valid ||
-                            (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
-                            !tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid &&
-                                                 token.ExpirationDate > DateTime.UtcNow))
+                            (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc && !tokens.Any())
                        select authorization.Id).ToListAsync(cancellationToken);
 
             // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
@@ -527,10 +537,6 @@ namespace OpenIddict.MongoDb
             foreach (var buffer in Buffer(identifiers.Take(50_000), 1_000))
             {
                 await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id));
-
-                // Delete the tokens associated with the pruned authorizations.
-                await database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName)
-                    .DeleteManyAsync(token => buffer.Contains(token.AuthorizationId), cancellationToken);
             }
 
             static IEnumerable<List<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)
@@ -539,11 +545,7 @@ namespace OpenIddict.MongoDb
 
                 foreach (var element in source)
                 {
-                    if (buffer == null)
-                    {
-                        buffer = new List<TSource>();
-                    }
-
+                    buffer ??= new List<TSource>(capacity: 1);
                     buffer.Add(element);
 
                     if (buffer.Count == count)
@@ -579,6 +581,20 @@ namespace OpenIddict.MongoDb
             {
                 authorization.ApplicationId = ObjectId.Empty;
             }
+
+            return default;
+        }
+
+        /// <inheritdoc/>
+        public virtual ValueTask SetCreationDateAsync(TAuthorization authorization,
+            DateTimeOffset? date, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            authorization.CreationDate = date?.UtcDateTime;
 
             return default;
         }

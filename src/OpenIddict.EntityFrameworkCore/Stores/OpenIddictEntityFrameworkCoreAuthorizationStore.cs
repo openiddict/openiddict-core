@@ -479,6 +479,17 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <inheritdoc/>
+        public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return new ValueTask<DateTimeOffset?>(authorization.CreationDate);
+        }
+
+        /// <inheritdoc/>
         public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -627,7 +638,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <inheritdoc/>
-        public virtual async ValueTask PruneAsync(CancellationToken cancellationToken)
+        public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         {
             // Note: Entity Framework Core doesn't support set-based deletes, which prevents removing
             // entities in a single command without having to retrieve and materialize them first.
@@ -673,10 +684,9 @@ namespace OpenIddict.EntityFrameworkCore
 
                 var authorizations =
                     await (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
+                           where authorization.CreationDate < threshold
                            where authorization.Status != OpenIddictConstants.Statuses.Valid ||
-                                (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
-                                !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid &&
-                                                                   token.ExpirationDate > DateTimeOffset.UtcNow))
+                                (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
                            orderby authorization.Id
                            select authorization).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
 
@@ -690,7 +700,6 @@ namespace OpenIddict.EntityFrameworkCore
                 // repeatable read instead of serializable for performance reasons). In this
                 // case, the operation will fail, which is considered an acceptable risk.
                 Context.RemoveRange(authorizations);
-                Context.RemoveRange(authorizations.SelectMany(authorization => authorization.Tokens));
 
                 try
                 {
@@ -700,11 +709,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 catch (Exception exception)
                 {
-                    if (exceptions == null)
-                    {
-                        exceptions = new List<Exception>(capacity: 1);
-                    }
-
+                    exceptions ??= new List<Exception>(capacity: 1);
                     exceptions.Add(exception);
                 }
             }
@@ -757,6 +762,20 @@ namespace OpenIddict.EntityFrameworkCore
 
                 authorization.Application = null;
             }
+        }
+
+        /// <inheritdoc/>
+        public virtual ValueTask SetCreationDateAsync(TAuthorization authorization,
+            DateTimeOffset? date, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            authorization.CreationDate = date;
+
+            return default;
         }
 
         /// <inheritdoc/>

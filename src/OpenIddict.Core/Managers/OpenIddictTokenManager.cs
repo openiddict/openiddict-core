@@ -984,14 +984,16 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Removes the tokens that are marked as expired or invalid.
+        /// Removes the tokens that are marked as invalid or whose attached authorization is no longer valid.
+        /// Only tokens created before the specified <paramref name="threshold"/> are removed.
         /// </summary>
+        /// <param name="threshold">The date before which tokens are not pruned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual ValueTask PruneAsync(CancellationToken cancellationToken = default)
-            => Store.PruneAsync(cancellationToken);
+        public virtual ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default)
+            => Store.PruneAsync(threshold, cancellationToken);
 
         /// <summary>
         /// Sets the application identifier associated with a token.
@@ -1508,8 +1510,8 @@ namespace OpenIddict.Core
             => PopulateAsync((TToken) token, descriptor, cancellationToken);
 
         /// <inheritdoc/>
-        ValueTask IOpenIddictTokenManager.PruneAsync(CancellationToken cancellationToken)
-            => PruneAsync(cancellationToken);
+        ValueTask IOpenIddictTokenManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+            => PruneAsync(threshold, cancellationToken);
 
         /// <inheritdoc/>
         ValueTask IOpenIddictTokenManager.SetApplicationIdAsync(object token, string? identifier, CancellationToken cancellationToken)

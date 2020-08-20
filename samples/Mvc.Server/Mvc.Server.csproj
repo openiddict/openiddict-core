@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsShipping>false</IsShipping>
+    <SignAssembly>false</SignAssembly>
     <TypeScriptEnabled>false</TypeScriptEnabled>
   </PropertyGroup>
 

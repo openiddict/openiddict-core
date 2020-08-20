@@ -55,12 +55,12 @@ namespace OpenIddict.EntityFrameworkCore.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the date on which the token will start to be considered valid.
+        /// Gets or sets the creation date of the current token.
         /// </summary>
         public virtual DateTimeOffset? CreationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date on which the token will no longer be considered valid.
+        /// Gets or sets the expiration date of the current token.
         /// </summary>
         public virtual DateTimeOffset? ExpirationDate { get; set; }
 
