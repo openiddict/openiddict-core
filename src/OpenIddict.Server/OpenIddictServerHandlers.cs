@@ -3957,20 +3957,6 @@ namespace OpenIddict.Server
                 // only compound of 12 digits, generated using a crypto-secure random number generator.
                 // In this case, the resulting user code is estimated to have at most ~40 bits of entropy.
 
-                var data = new byte[12];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                RandomNumberGenerator.Fill(data);
-#else
-                using var generator = RandomNumberGenerator.Create();
-                generator.GetBytes(data);
-#endif
-                var builder = new StringBuilder(data.Length);
-
-                for (var index = 0; index < data.Length; index += 4)
-                {
-                    builder.AppendFormat(CultureInfo.InvariantCulture, "{0:D4}", BitConverter.ToUInt32(data, index) % 10000);
-                }
-
                 var descriptor = new OpenIddictTokenDescriptor();
                 await _tokenManager.PopulateAsync(descriptor, token);
 
@@ -3978,13 +3964,43 @@ namespace OpenIddict.Server
                 // and replace the returned token by the reference identifier.
                 descriptor.Payload = context.Response.UserCode;
                 descriptor.Principal = principal;
-                descriptor.ReferenceId = builder.ToString();
+                descriptor.ReferenceId = await GenerateReferenceIdentifierAsync(_tokenManager);
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
                 context.Response.UserCode = descriptor.ReferenceId;
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID7027), identifier, descriptor.ReferenceId);
+
+                static async ValueTask<string> GenerateReferenceIdentifierAsync(IOpenIddictTokenManager manager)
+                {
+                    string token;
+
+                    do
+                    {
+                        var data = new byte[12];
+#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
+                        RandomNumberGenerator.Fill(data);
+#else
+                        using var generator = RandomNumberGenerator.Create();
+                        generator.GetBytes(data);
+#endif
+                        var builder = new StringBuilder(data.Length);
+
+                        for (var index = 0; index < data.Length; index += 4)
+                        {
+                            builder.AppendFormat(CultureInfo.InvariantCulture, "{0:D4}", BitConverter.ToUInt32(data, index) % 10000);
+                        }
+
+                        token = builder.ToString();
+                    }
+
+                    // User codes are relatively short. To help reduce the risks of collisions with
+                    // existing entries, a database check is performed here before updating the entry.
+                    while (await manager.FindByReferenceIdAsync(token) != null);
+
+                    return token;
+                }
             }
         }
 
