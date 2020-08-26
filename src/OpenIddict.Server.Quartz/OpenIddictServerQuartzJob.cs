@@ -97,7 +97,7 @@ namespace OpenIddict.Server.Quartz
                         throw;
                     }
 
-                    // OperationCanceledExceptions are typically thrown the host is about to shut down.
+                    // OperationCanceledExceptions are typically thrown when the host is about to shut down.
                     // To allow the host to shut down as fast as possible, this exception type is special-cased
                     // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
                     catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
@@ -154,7 +154,7 @@ namespace OpenIddict.Server.Quartz
                         throw;
                     }
 
-                    // OperationCanceledExceptions are typically thrown the host is about to shut down.
+                    // OperationCanceledExceptions are typically thrown when the host is about to shut down.
                     // To allow the host to shut down as fast as possible, this exception type is special-cased
                     // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
                     catch (OperationCanceledException exception) when (exception.CancellationToken == context.CancellationToken)
