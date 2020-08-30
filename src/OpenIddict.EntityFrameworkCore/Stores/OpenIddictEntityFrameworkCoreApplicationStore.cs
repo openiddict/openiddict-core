@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -912,8 +911,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
-        [return: MaybeNull]
-        public virtual TKey ConvertIdentifierFromString(string? identifier)
+        public virtual TKey? ConvertIdentifierFromString(string? identifier)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -928,7 +926,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
-        public virtual string? ConvertIdentifierToString([AllowNull] TKey identifier)
+        public virtual string? ConvertIdentifierToString(TKey? identifier)
         {
             if (Equals(identifier, default(TKey)))
             {
