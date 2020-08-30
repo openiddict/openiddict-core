@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace OpenIddict.EntityFrameworkCore.Models
 {
@@ -58,8 +57,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
         /// <summary>
         /// Gets or sets the unique identifier associated with the current authorization.
         /// </summary>
-        [AllowNull, MaybeNull]
-        public virtual TKey Id { get; set; } = default!;
+        public virtual TKey? Id { get; set; }
 
         /// <summary>
         /// Gets or sets the additional properties serialized as a JSON object,

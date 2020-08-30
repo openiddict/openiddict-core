@@ -6,7 +6,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace OpenIddict.EntityFrameworkCore.Models
 {
@@ -67,8 +66,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
         /// <summary>
         /// Gets or sets the unique identifier associated with the current token.
         /// </summary>
-        [AllowNull, MaybeNull]
-        public virtual TKey Id { get; set; } = default!;
+        public virtual TKey? Id { get; set; }
 
         /// <summary>
         /// Gets or sets the payload of the current token, if applicable.

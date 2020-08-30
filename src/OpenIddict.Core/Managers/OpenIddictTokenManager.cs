@@ -622,7 +622,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return GetAsync((tokens, state) => state(tokens), query, cancellationToken);
+            return GetAsync(static (tokens, query) => query(tokens), query, cancellationToken);
         }
 
         /// <summary>
@@ -892,7 +892,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ListAsync((tokens, state) => state(tokens), query, cancellationToken);
+            return ListAsync(static (tokens, query) => query(tokens), query, cancellationToken);
         }
 
         /// <summary>
