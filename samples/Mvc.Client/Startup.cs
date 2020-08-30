@@ -20,7 +20,7 @@ namespace Mvc.Client
 
             .AddCookie(options =>
             {
-                options.LoginPath = new PathString("/signin");
+                options.LoginPath = "/login";
             })
 
             .AddOpenIdConnect(options =>

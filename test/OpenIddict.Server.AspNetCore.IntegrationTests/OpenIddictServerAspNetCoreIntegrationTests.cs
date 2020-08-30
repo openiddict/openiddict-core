@@ -529,8 +529,8 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                         var principal = new ClaimsPrincipal(identity);
 
                         var properties = new AuthenticationProperties(
-                            items: new Dictionary<string, string>(),
-                            parameters: new Dictionary<string, object>
+                            items: new Dictionary<string, string?>(),
+                            parameters: new Dictionary<string, object?>
                             {
                                 ["boolean_parameter"] = true,
                                 ["integer_parameter"] = 42,
@@ -552,8 +552,8 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                     else if (context.Request.Path == "/signout/custom")
                     {
                         var properties = new AuthenticationProperties(
-                            items: new Dictionary<string, string>(),
-                            parameters: new Dictionary<string, object>
+                            items: new Dictionary<string, string?>(),
+                            parameters: new Dictionary<string, object?>
                             {
                                 ["boolean_parameter"] = true,
                                 ["integer_parameter"] = 42,
@@ -573,13 +573,13 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                     else if (context.Request.Path == "/challenge/custom")
                     {
                         var properties = new AuthenticationProperties(
-                            items: new Dictionary<string, string>
+                            items: new Dictionary<string, string?>
                             {
                                 [OpenIddictServerAspNetCoreConstants.Properties.Error] = "custom_error",
                                 [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "custom_error_description",
                                 [OpenIddictServerAspNetCoreConstants.Properties.ErrorUri] = "custom_error_uri"
                             },
-                            parameters: new Dictionary<string, object>
+                            parameters: new Dictionary<string, object?>
                             {
                                 ["boolean_parameter"] = true,
                                 ["integer_parameter"] = 42,

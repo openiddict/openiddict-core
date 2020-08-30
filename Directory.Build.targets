@@ -61,6 +61,11 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_BCL_ASYNC_ENUMERABLE</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
+  </PropertyGroup>
+
   <!--
     Note: Entity Framework Core 2.x references System.Interactive.Async 3.x, that includes
     its own IAsyncEnumerable. To work around collisions between this type and the new type

@@ -422,7 +422,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
-                return await message.Content!.ReadFromJsonAsync<OpenIddictResponse>();
+                return (await message.Content!.ReadFromJsonAsync<OpenIddictResponse>())!;
             }
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
