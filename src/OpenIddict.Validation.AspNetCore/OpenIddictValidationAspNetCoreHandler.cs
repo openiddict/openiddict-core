@@ -163,7 +163,7 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     new AuthenticationToken
                     {
-                        Name = context.Principal.GetTokenType(),
+                        Name = context.Principal.GetTokenType()!,
                         Value = context.Token
                     }
                 });
