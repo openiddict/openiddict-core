@@ -4,8 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -83,7 +81,7 @@ namespace OpenIddict.Abstractions
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        ValueTask CreateAsync(object application, string secret, CancellationToken cancellationToken = default);
+        ValueTask CreateAsync(object application, string? secret, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes an existing application.
@@ -104,7 +102,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        ValueTask<object> FindByClientIdAsync(string identifier, CancellationToken cancellationToken = default);
+        ValueTask<object?> FindByClientIdAsync(string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves an application using its unique identifier.
@@ -115,7 +113,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        ValueTask<object> FindByIdAsync(string identifier, CancellationToken cancellationToken = default);
+        ValueTask<object?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
@@ -171,7 +169,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client identifier associated with the application.
         /// </returns>
-        ValueTask<string> GetClientIdAsync(object application, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetClientIdAsync(object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the client type associated with an application.
@@ -182,7 +180,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        ValueTask<string> GetClientTypeAsync(object application, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetClientTypeAsync(object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the consent type associated with an application.
@@ -193,7 +191,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the consent type of the application (by default, "explicit").
         /// </returns>
-        ValueTask<string> GetConsentTypeAsync(object application, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetConsentTypeAsync(object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the display name associated with an application.
@@ -204,7 +202,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        ValueTask<string> GetDisplayNameAsync(object application, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetDisplayNameAsync(object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized display names associated with an application.
@@ -226,7 +224,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        ValueTask<string> GetIdAsync(object application, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetIdAsync(object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized display name associated with an application
@@ -239,7 +237,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the matching localized display name associated with the application.
         /// </returns>
-        ValueTask<string> GetLocalizedDisplayNameAsync(object application, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetLocalizedDisplayNameAsync(object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the localized display name associated with an application
@@ -253,7 +251,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the matching localized display name associated with the application.
         /// </returns>
-        ValueTask<string> GetLocalizedDisplayNameAsync(object application, CultureInfo culture, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetLocalizedDisplayNameAsync(object application, CultureInfo culture, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the permissions associated with an application.

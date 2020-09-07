@@ -4,8 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -162,7 +160,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        ValueTask<object> FindByIdAsync(string identifier, CancellationToken cancellationToken = default);
+        ValueTask<object?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves all the authorizations corresponding to the specified subject.
@@ -181,7 +179,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the authorization.
         /// </returns>
-        ValueTask<string> GetApplicationIdAsync(object authorization, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetApplicationIdAsync(object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns the first element.
@@ -232,7 +230,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the authorization.
         /// </returns>
-        ValueTask<string> GetIdAsync(object authorization, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetIdAsync(object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the scopes associated with an authorization.
@@ -254,7 +252,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the status associated with the specified authorization.
         /// </returns>
-        ValueTask<string> GetStatusAsync(object authorization, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetStatusAsync(object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the subject associated with an authorization.
@@ -265,7 +263,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the subject associated with the specified authorization.
         /// </returns>
-        ValueTask<string> GetSubjectAsync(object authorization, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetSubjectAsync(object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the type associated with an authorization.
@@ -276,7 +274,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the type associated with the specified authorization.
         /// </returns>
-        ValueTask<string> GetTypeAsync(object authorization, CancellationToken cancellationToken = default);
+        ValueTask<string?> GetTypeAsync(object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines whether the specified scopes are included in the authorization.
