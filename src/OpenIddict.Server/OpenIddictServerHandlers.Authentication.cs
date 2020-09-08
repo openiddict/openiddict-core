@@ -1080,13 +1080,15 @@ namespace OpenIddict.Server
 
             /// <summary>
             /// Contains the logic responsible of rejecting authorization requests that use unregistered scopes.
-            /// Note: this handler is not used when the degraded mode is enabled or when scope validation is disabled.
+            /// Note: this handler partially works with the degraded mode but is not used when scope validation is disabled.
             /// </summary>
             public class ValidateScopes : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
             {
-                private readonly IOpenIddictScopeManager _scopeManager;
+                private readonly IOpenIddictScopeManager? _scopeManager;
 
-                public ValidateScopes() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateScopes()
+                {
+                }
 
                 public ValidateScopes(IOpenIddictScopeManager scopeManager)
                     => _scopeManager = scopeManager;
@@ -1097,7 +1099,6 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .AddFilter<RequireScopeValidationEnabled>()
-                        .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateScopes>()
                         .SetOrder(ValidateClientRedirectUri.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1115,8 +1116,13 @@ namespace OpenIddict.Server
                     var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
                     scopes.ExceptWith(context.Options.Scopes);
 
-                    if (scopes.Count != 0)
+                    // Note: the remaining scopes are only checked if the degraded mode was not enabled,
+                    // as this requires using the scope manager, which is never used with the degraded mode,
+                    // even if the service was registered and resolved from the dependency injection container.
+                    if (scopes.Count != 0 && !context.Options.EnableDegradedMode)
                     {
+                        Debug.Assert(_scopeManager != null, SR.GetResourceString(SR.ID5011));
+
                         await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {
                             var name = await _scopeManager.GetNameAsync(scope);
