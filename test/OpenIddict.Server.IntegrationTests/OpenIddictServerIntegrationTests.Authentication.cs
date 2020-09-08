@@ -615,38 +615,8 @@ namespace OpenIddict.Server.IntegrationTests
             // Arrange
             await using var server = await CreateServerAsync(options =>
             {
+                options.EnableDegradedMode();
                 options.RegisterScopes("registered_scope");
-                options.SetRevocationEndpointUris(Array.Empty<Uri>());
-                options.DisableTokenStorage();
-                options.DisableSlidingRefreshTokenExpiration();
-
-                options.Services.AddSingleton(CreateApplicationManager(mock =>
-                {
-                    var application = new OpenIddictApplication();
-
-                    mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(application);
-
-                    mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-                }));
-
-                options.Services.AddSingleton(CreateApplicationManager(mock =>
-                {
-                    var application = new OpenIddictApplication();
-
-                    mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(application);
-
-                    mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-                }));
 
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
                     builder.UseInlineHandler(context =>

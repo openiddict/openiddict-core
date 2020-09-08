@@ -886,6 +886,7 @@ namespace OpenIddict.Server.IntegrationTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+                options.RegisterScopes(Scopes.Phone, Scopes.Profile);
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -930,6 +931,7 @@ namespace OpenIddict.Server.IntegrationTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+                options.RegisterScopes(Scopes.Phone, Scopes.Profile);
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -974,6 +976,7 @@ namespace OpenIddict.Server.IntegrationTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+                options.RegisterScopes(Scopes.Phone, Scopes.Profile);
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -1016,6 +1019,7 @@ namespace OpenIddict.Server.IntegrationTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+                options.RegisterScopes(Scopes.Phone, Scopes.Profile);
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
