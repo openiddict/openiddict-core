@@ -70,7 +70,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -99,7 +99,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1052));
                     }
@@ -132,7 +132,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -193,7 +193,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -285,7 +285,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -327,7 +327,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateUserinfoRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -370,7 +370,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateUserinfoRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -423,7 +423,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleUserinfoRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -456,12 +456,12 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleUserinfoRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     // Note: when receiving an access token, its audiences list cannot be used for the "aud" claim
                     // as the client application is not the intented audience but only an authorized presenter.
@@ -490,12 +490,12 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleUserinfoRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     context.Subject = context.Principal.GetClaim(Claims.Subject);
 

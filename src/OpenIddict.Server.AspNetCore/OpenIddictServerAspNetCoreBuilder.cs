@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
         public OpenIddictServerAspNetCoreBuilder Configure(Action<OpenIddictServerAspNetCoreOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
         public OpenIddictServerAspNetCoreBuilder SetAuthorizationEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
-            if (policy == null)
+            if (policy is null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }
@@ -188,7 +188,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
         public OpenIddictServerAspNetCoreBuilder SetLogoutEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
-            if (policy == null)
+            if (policy is null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }

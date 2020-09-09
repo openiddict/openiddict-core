@@ -46,7 +46,7 @@ namespace OpenIddict.Validation.Owin
             // Note: the transaction may be already attached when replaying an OWIN request
             // (e.g when using a status code pages middleware re-invoking the OWIN pipeline).
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName);
-            if (transaction == null)
+            if (transaction is null)
             {
                 // Create a new transaction and attach the OWIN request to make it available to the OWIN handlers.
                 transaction = await _factory.CreateTransactionAsync();
@@ -127,7 +127,7 @@ namespace OpenIddict.Validation.Owin
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
             // the authentication context is resolved from the transaction. If it's not available, a new one is created.
             var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
-            if (context == null)
+            if (context is null)
             {
                 context = new ProcessAuthenticationContext(transaction);
                 await _dispatcher.DispatchAsync(context);
@@ -164,7 +164,7 @@ namespace OpenIddict.Validation.Owin
 
             else
             {
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
                 Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID5009));
                 Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID5010));
 
@@ -198,7 +198,7 @@ namespace OpenIddict.Validation.Owin
             // corresponds to a challenge response, as LookupChallenge() will always return a non-null
             // value when active authentication is used, even if no challenge was actually triggered.
             var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode);
-            if (challenge != null && (Response.StatusCode == 401 || Response.StatusCode == 403))
+            if (challenge is not null && (Response.StatusCode == 401 || Response.StatusCode == 403))
             {
                 var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));

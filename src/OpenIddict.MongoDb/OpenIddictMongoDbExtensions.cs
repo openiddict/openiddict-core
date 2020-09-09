@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public static OpenIddictMongoDbBuilder UseMongoDb(this OpenIddictCoreBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -67,12 +67,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictCoreBuilder UseMongoDb(
             this OpenIddictCoreBuilder builder, Action<OpenIddictMongoDbBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

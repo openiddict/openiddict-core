@@ -40,7 +40,7 @@ namespace Mvc.Server.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            if (user is null)
             {
                 return Challenge(
                     authenticationSchemes: OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,

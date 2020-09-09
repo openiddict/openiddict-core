@@ -2953,7 +2953,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
         private TimeSpan? ParseLifeTime(string lifetime)
         {
-            var lifeT = lifetime != null
+            var lifeT = lifetime is not null
                 ? (TimeSpan?) TimeSpan.FromSeconds(double.Parse(lifetime, NumberStyles.Number, CultureInfo.InvariantCulture))
                 : null;
 

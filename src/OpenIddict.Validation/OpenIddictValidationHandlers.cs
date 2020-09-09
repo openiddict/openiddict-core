@@ -69,7 +69,7 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -122,7 +122,7 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -136,7 +136,7 @@ namespace OpenIddict.Validation
 
                 // If the reference token cannot be found, don't return an error to allow another handler to validate it.
                 var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
-                if (token == null)
+                if (token is null)
                 {
                     return;
                 }
@@ -185,13 +185,13 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                if (context.Principal is not null)
                 {
                     return;
                 }
@@ -248,10 +248,10 @@ namespace OpenIddict.Validation
                         error: Errors.InvalidToken,
                         description: result.Exception switch
                         {
-                            SecurityTokenInvalidIssuerException        _ => context.Localizer[SR.ID3088],
-                            SecurityTokenInvalidTypeException          _ => context.Localizer[SR.ID3089],
-                            SecurityTokenSignatureKeyNotFoundException _ => context.Localizer[SR.ID3090],
-                            SecurityTokenInvalidSignatureException     _ => context.Localizer[SR.ID3091],
+                            SecurityTokenInvalidIssuerException        => context.Localizer[SR.ID3088],
+                            SecurityTokenInvalidTypeException          => context.Localizer[SR.ID3089],
+                            SecurityTokenSignatureKeyNotFoundException => context.Localizer[SR.ID3090],
+                            SecurityTokenInvalidSignatureException     => context.Localizer[SR.ID3091],
 
                             _ => context.Localizer[SR.ID3004]
                         });
@@ -301,13 +301,13 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                if (context.Principal is not null)
                 {
                     return;
                 }
@@ -373,12 +373,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     return default;
                 }
@@ -418,12 +418,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     return default;
                 }
@@ -531,12 +531,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     return;
                 }
@@ -548,7 +548,7 @@ namespace OpenIddict.Validation
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
@@ -581,12 +581,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -635,12 +635,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 var date = context.Principal.GetExpirationDate();
                 if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
@@ -677,12 +677,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // If no explicit audience has been configured,
                 // skip the default audience validation.
@@ -749,12 +749,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 var identifier = context.Principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
@@ -763,7 +763,7 @@ namespace OpenIddict.Validation
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null || !await _tokenManager.HasStatusAsync(token, Statuses.Valid))
+                if (token is null || !await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
                     context.Logger.LogError(SR.GetResourceString(SR.ID7005), identifier);
 
@@ -812,12 +812,12 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 var identifier = context.Principal.GetAuthorizationId();
                 if (string.IsNullOrEmpty(identifier))
@@ -826,7 +826,7 @@ namespace OpenIddict.Validation
                 }
 
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
-                if (authorization == null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
+                if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
                     context.Logger.LogError(SR.GetResourceString(SR.ID7006), identifier);
 
@@ -857,7 +857,7 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -915,7 +915,7 @@ namespace OpenIddict.Validation
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }

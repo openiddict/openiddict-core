@@ -61,7 +61,7 @@ namespace OpenIddict.MongoDb
         public virtual async ValueTask<long> CountAsync<TResult>(
             Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -75,7 +75,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual async ValueTask CreateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -89,7 +89,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual async ValueTask DeleteAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -332,7 +332,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetApplicationIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -350,7 +350,7 @@ namespace OpenIddict.MongoDb
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -364,7 +364,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -375,7 +375,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -386,12 +386,12 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (authorization.Properties == null)
+            if (authorization.Properties is null)
             {
                 return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
@@ -403,12 +403,12 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (authorization.Scopes == null || authorization.Scopes.Count == 0)
+            if (authorization.Scopes is null || authorization.Scopes.Count == 0)
             {
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
@@ -419,7 +419,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetStatusAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -430,7 +430,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetSubjectAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -441,7 +441,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetTypeAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -494,7 +494,7 @@ namespace OpenIddict.MongoDb
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -556,7 +556,7 @@ namespace OpenIddict.MongoDb
                     }
                 }
 
-                if (buffer != null)
+                if (buffer is not null)
                 {
                     yield return buffer;
                 }
@@ -567,7 +567,7 @@ namespace OpenIddict.MongoDb
         public virtual ValueTask SetApplicationIdAsync(TAuthorization authorization,
             string? identifier, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -589,7 +589,7 @@ namespace OpenIddict.MongoDb
         public virtual ValueTask SetCreationDateAsync(TAuthorization authorization,
             DateTimeOffset? date, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -603,12 +603,12 @@ namespace OpenIddict.MongoDb
         public virtual ValueTask SetPropertiesAsync(TAuthorization authorization,
             ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (properties == null || properties.IsEmpty)
+            if (properties is null || properties.IsEmpty)
             {
                 authorization.Properties = null;
 
@@ -628,7 +628,7 @@ namespace OpenIddict.MongoDb
         public virtual ValueTask SetScopesAsync(TAuthorization authorization,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -648,7 +648,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetStatusAsync(TAuthorization authorization, string? status, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -661,7 +661,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetSubjectAsync(TAuthorization authorization, string? subject, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -674,7 +674,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetTypeAsync(TAuthorization authorization, string? type, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -687,7 +687,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual async ValueTask UpdateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }

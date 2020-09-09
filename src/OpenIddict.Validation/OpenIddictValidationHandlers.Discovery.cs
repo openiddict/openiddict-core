@@ -51,7 +51,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -77,7 +77,7 @@ namespace OpenIddict.Validation
                         return default;
                     }
 
-                    if (context.Issuer != null && context.Issuer != address)
+                    if (context.Issuer is not null && context.Issuer != address)
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -110,7 +110,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -160,7 +160,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -214,13 +214,13 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleCryptographyResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
                     var keys = context.Response[JsonWebKeySetParameterNames.Keys]?.GetUnnamedParameters();
-                    if (keys == null || keys.Count == 0)
+                    if (keys is null || keys.Count == 0)
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -266,7 +266,7 @@ namespace OpenIddict.Validation
                             _ => null
                         };
 
-                        if (key == null)
+                        if (key is null)
                         {
                             context.Reject(
                                 error: Errors.ServerError,

@@ -75,7 +75,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -83,7 +83,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -177,7 +177,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -185,14 +185,14 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 // Don't require that the request host be present if the request is not handled
                 // by an OpenIddict endpoint or if an explicit issuer URL was already set.
-                if (context.Issuer != null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
+                if (context.Issuer is not null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
                 {
                     return default;
                 }
@@ -243,7 +243,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -251,7 +251,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -296,13 +296,13 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties != null)
+                if (properties is not null)
                 {
                     context.Response.Error = GetProperty(properties, Properties.Error);
                     context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
@@ -337,7 +337,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -345,7 +345,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -390,7 +390,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -398,7 +398,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -470,7 +470,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -478,7 +478,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -546,17 +546,17 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -645,17 +645,17 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -696,7 +696,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -727,17 +727,17 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -787,7 +787,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -795,7 +795,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -834,17 +834,17 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -948,7 +948,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -956,7 +956,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -994,7 +994,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1002,7 +1002,7 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -1051,17 +1051,17 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -1101,17 +1101,17 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
@@ -1178,7 +1178,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1186,13 +1186,13 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
+                if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     response.Redirect(properties.RedirectUri);
 
@@ -1225,7 +1225,7 @@ namespace OpenIddict.Server.Owin
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }

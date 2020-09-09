@@ -98,7 +98,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<long> CountAsync<TResult>(
             Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -116,7 +116,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask CreateAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -182,13 +182,13 @@ namespace OpenIddict.Core
         public virtual async ValueTask<TToken> CreateAsync(
             OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
             var token = await Store.InstantiateAsync(cancellationToken);
-            if (token == null)
+            if (token is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1225));
             }
@@ -209,7 +209,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask DeleteAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -486,7 +486,7 @@ namespace OpenIddict.Core
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
-            if (token == null)
+            if (token is null)
             {
                 return null;
             }
@@ -526,7 +526,7 @@ namespace OpenIddict.Core
                 await Store.FindByReferenceIdAsync(identifier, cancellationToken) :
                 await Cache.FindByReferenceIdAsync(identifier, cancellationToken);
 
-            if (token == null)
+            if (token is null)
             {
                 return null;
             }
@@ -596,7 +596,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetApplicationIdAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -617,7 +617,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<TResult> GetAsync<TResult>(
             Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -641,7 +641,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -660,7 +660,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetAuthorizationIdAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -679,7 +679,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -698,7 +698,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<DateTimeOffset?> GetExpirationDateAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -717,7 +717,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetIdAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -736,7 +736,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetPayloadAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -757,7 +757,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetReferenceIdAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -776,7 +776,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetStatusAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -795,7 +795,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetSubjectAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -814,7 +814,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetTypeAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -831,7 +831,7 @@ namespace OpenIddict.Core
         /// <returns><c>true</c> if the token has the specified status, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> HasStatusAsync(TToken token, string status, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -853,7 +853,7 @@ namespace OpenIddict.Core
         /// <returns><c>true</c> if the token has the specified type, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> HasTypeAsync(TToken token, string type, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -887,7 +887,7 @@ namespace OpenIddict.Core
         public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
             Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -908,7 +908,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -928,12 +928,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask PopulateAsync(TToken token,
             OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -962,12 +962,12 @@ namespace OpenIddict.Core
             OpenIddictTokenDescriptor descriptor,
             TToken token, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1007,7 +1007,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask SetApplicationIdAsync(TToken token,
             string? identifier, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1028,7 +1028,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask SetAuthorizationIdAsync(TToken token,
             string? identifier, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1047,7 +1047,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> TryExtendAsync(TToken token,
             DateTimeOffset? date, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1063,7 +1063,7 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                if (date != null)
+                if (date is not null)
                 {
                     Logger.LogInformation(SR.GetResourceString(SR.ID7167), await Store.GetIdAsync(token, cancellationToken), date);
                 }
@@ -1099,7 +1099,7 @@ namespace OpenIddict.Core
         /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> TryRedeemAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1144,7 +1144,7 @@ namespace OpenIddict.Core
         /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> TryRejectAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1189,7 +1189,7 @@ namespace OpenIddict.Core
         /// <returns><c>true</c> if the token was successfully revoked, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> TryRevokeAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1236,7 +1236,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask UpdateAsync(TToken token, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1290,12 +1290,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask UpdateAsync(TToken token,
             OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -1324,7 +1324,7 @@ namespace OpenIddict.Core
         public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
             TToken token, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -1339,7 +1339,7 @@ namespace OpenIddict.Core
                 // the casing is different). To avoid issues when the reference identifier is part of an index
                 // using the same collation, an error is added even if the two identifiers don't exactly match.
                 var other = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
-                if (other != null && !string.Equals(
+                if (other is not null && !string.Equals(
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
                 {

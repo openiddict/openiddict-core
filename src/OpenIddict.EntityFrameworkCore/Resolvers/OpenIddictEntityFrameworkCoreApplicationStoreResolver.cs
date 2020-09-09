@@ -43,7 +43,7 @@ namespace OpenIddict.EntityFrameworkCore
         public IOpenIddictApplicationStore<TApplication> Get<TApplication>() where TApplication : class
         {
             var store = _provider.GetService<IOpenIddictApplicationStore<TApplication>>();
-            if (store != null)
+            if (store is not null)
             {
                 return store;
             }
@@ -51,13 +51,13 @@ namespace OpenIddict.EntityFrameworkCore
             var type = _cache.GetOrAdd(typeof(TApplication), key =>
             {
                 var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkCoreApplication<,,>));
-                if (root == null)
+                if (root is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1251));
                 }
 
                 var context = _options.CurrentValue.DbContextType;
-                if (context == null)
+                if (context is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1252));
                 }

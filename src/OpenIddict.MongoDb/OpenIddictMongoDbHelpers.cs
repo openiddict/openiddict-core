@@ -26,7 +26,7 @@ namespace MongoDB.Driver
         /// <returns>The streamed async enumeration containing the results.</returns>
         internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IAsyncCursorSource<T> source, CancellationToken cancellationToken)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
@@ -56,7 +56,7 @@ namespace MongoDB.Driver
         /// <returns>The streamed async enumeration containing the results.</returns>
         internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }

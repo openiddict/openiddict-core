@@ -27,7 +27,7 @@ namespace OpenIddict.Server.DataProtection
 
         public void Configure(OpenIddictServerOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -44,7 +44,7 @@ namespace OpenIddict.Server.DataProtection
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure(string name, OpenIddictServerDataProtectionOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }

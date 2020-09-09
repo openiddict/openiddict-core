@@ -8,7 +8,7 @@ namespace Mvc.Server.Helpers
     {
         public static Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }

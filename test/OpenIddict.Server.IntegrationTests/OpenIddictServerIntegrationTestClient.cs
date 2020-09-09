@@ -49,12 +49,12 @@ namespace OpenIddict.Server.IntegrationTests
         /// <param name="parser">The HTML parser used to parse the responses returned by the OpenID Connect server.</param>
         public OpenIddictServerIntegrationTestClient(HttpClient client, HtmlParser parser)
         {
-            if (client == null)
+            if (client is null)
             {
                 throw new ArgumentNullException(nameof(client));
             }
 
-            if (parser == null)
+            if (parser is null)
             {
                 throw new ArgumentNullException(nameof(parser));
             }
@@ -102,7 +102,7 @@ namespace OpenIddict.Server.IntegrationTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> GetAsync(string uri, OpenIddictRequest request)
         {
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -134,7 +134,7 @@ namespace OpenIddict.Server.IntegrationTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> PostAsync(string uri, OpenIddictRequest request)
         {
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -167,7 +167,7 @@ namespace OpenIddict.Server.IntegrationTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> SendAsync(string method, string uri, OpenIddictRequest request)
         {
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -195,12 +195,12 @@ namespace OpenIddict.Server.IntegrationTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> SendAsync(HttpMethod method, string uri, OpenIddictRequest request)
         {
-            if (method == null)
+            if (method is null)
             {
                 throw new ArgumentNullException(nameof(method));
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -223,22 +223,22 @@ namespace OpenIddict.Server.IntegrationTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public virtual async Task<OpenIddictResponse> SendAsync(HttpMethod method, Uri uri, OpenIddictRequest request)
         {
-            if (method == null)
+            if (method is null)
             {
                 throw new ArgumentNullException(nameof(method));
             }
 
-            if (uri == null)
+            if (uri is null)
             {
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (HttpClient.BaseAddress == null && !uri.IsAbsoluteUri)
+            if (HttpClient.BaseAddress is null && !uri.IsAbsoluteUri)
             {
                 throw new ArgumentException("The address cannot be a relative URI when no base address " +
                                             "is associated with the HTTP client.", nameof(uri));
@@ -268,7 +268,7 @@ namespace OpenIddict.Server.IntegrationTests
                 }
 
                 var values = (string[]) parameter.Value;
-                if (values == null || values.Length == 0)
+                if (values is null || values.Length == 0)
                 {
                     continue;
                 }
@@ -353,7 +353,7 @@ namespace OpenIddict.Server.IntegrationTests
                 return response;
             }
 
-            else if (message.Headers.Location != null)
+            else if (message.Headers.Location is not null)
             {
                 var payload = message.Headers.Location.Fragment;
                 if (string.IsNullOrEmpty(payload))
@@ -475,7 +475,7 @@ namespace OpenIddict.Server.IntegrationTests
                 // this is required for derived drafts like the OAuth2 token exchange specification.
                 var parameters = new List<KeyValuePair<string, string>>();
 
-                for (var line = await reader.ReadLineAsync(); line != null; line = await reader.ReadLineAsync())
+                for (var line = await reader.ReadLineAsync(); line is not null; line = await reader.ReadLineAsync())
                 {
                     var index = line.IndexOf(':');
                     if (index == -1)

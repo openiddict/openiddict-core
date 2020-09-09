@@ -62,7 +62,7 @@ namespace OpenIddict.MongoDb
         public virtual async ValueTask<long> CountAsync<TResult>(
             Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -76,7 +76,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual async ValueTask CreateAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -90,7 +90,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual async ValueTask DeleteAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -315,7 +315,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetApplicationIdAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -333,7 +333,7 @@ namespace OpenIddict.MongoDb
             Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -347,7 +347,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetAuthorizationIdAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -363,7 +363,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -374,7 +374,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<DateTimeOffset?> GetExpirationDateAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -385,7 +385,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetIdAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -396,7 +396,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetPayloadAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -407,12 +407,12 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (token.Properties == null)
+            if (token.Properties is null)
             {
                 return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
@@ -424,7 +424,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetReferenceIdAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -435,7 +435,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetStatusAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -446,7 +446,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetSubjectAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -457,7 +457,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetTypeAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -510,7 +510,7 @@ namespace OpenIddict.MongoDb
             Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -573,7 +573,7 @@ namespace OpenIddict.MongoDb
                     }
                 }
 
-                if (buffer != null)
+                if (buffer is not null)
                 {
                     yield return buffer;
                 }
@@ -583,7 +583,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetApplicationIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -604,7 +604,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetAuthorizationIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -625,7 +625,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetCreationDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -638,7 +638,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetExpirationDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -651,7 +651,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetPayloadAsync(TToken token, string? payload, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -665,12 +665,12 @@ namespace OpenIddict.MongoDb
         public virtual ValueTask SetPropertiesAsync(TToken token,
             ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (properties == null || properties.IsEmpty)
+            if (properties is null || properties.IsEmpty)
             {
                 token.Properties = null;
 
@@ -689,7 +689,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetReferenceIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -702,7 +702,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetStatusAsync(TToken token, string? status, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -715,7 +715,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetSubjectAsync(TToken token, string? subject, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -728,7 +728,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual ValueTask SetTypeAsync(TToken token, string? type, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -741,7 +741,7 @@ namespace OpenIddict.MongoDb
         /// <inheritdoc/>
         public virtual async ValueTask UpdateAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }

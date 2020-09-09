@@ -79,7 +79,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericApplicationManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictApplicationManager<CustomApplication>) &&
                 service.ImplementationType == typeof(ClosedGenericApplicationManager));
@@ -170,7 +170,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericAuthorizationManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictAuthorizationManager<CustomAuthorization>) &&
                 service.ImplementationType == typeof(ClosedGenericAuthorizationManager));
@@ -260,7 +260,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericScopeManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictScopeManager<CustomScope>) &&
                 service.ImplementationType == typeof(ClosedGenericScopeManager));
@@ -351,7 +351,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericTokenManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictTokenManager<CustomToken>) &&
                 service.ImplementationType == typeof(ClosedGenericTokenManager));

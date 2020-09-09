@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore
         /// <returns>The <see cref="HttpRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
         public static HttpRequest? GetHttpRequest(this OpenIddictServerTransaction transaction)
         {
-            if (transaction == null)
+            if (transaction is null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore
         /// <returns>The <see cref="OpenIddictServerEndpointType"/>.</returns>
         public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType(this HttpContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore
         /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
         public static OpenIddictRequest? GetOpenIddictServerRequest(this HttpContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore
         /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
         public static OpenIddictResponse? GetOpenIddictServerResponse(this HttpContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }

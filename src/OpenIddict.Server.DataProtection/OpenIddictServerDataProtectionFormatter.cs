@@ -22,13 +22,13 @@ namespace OpenIddict.Server.DataProtection
     {
         public ClaimsPrincipal? ReadToken(BinaryReader reader)
         {
-            if (reader == null)
+            if (reader is null)
             {
                 throw new ArgumentNullException(nameof(reader));
             }
 
             var (principal, properties) = Read(reader);
-            if (principal == null)
+            if (principal is null)
             {
                 return null;
             }
@@ -186,12 +186,12 @@ namespace OpenIddict.Server.DataProtection
 
         public void WriteToken(BinaryWriter writer, ClaimsPrincipal principal)
         {
-            if (writer == null)
+            if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            if (principal == null)
+            if (principal is null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
@@ -303,7 +303,7 @@ namespace OpenIddict.Server.DataProtection
                     writer.Write(false);
                 }
 
-                if (identity.Actor != null)
+                if (identity.Actor is not null)
                 {
                     writer.Write(true);
                     WriteIdentity(writer, identity.Actor);
@@ -317,12 +317,12 @@ namespace OpenIddict.Server.DataProtection
 
             static void WriteClaim(BinaryWriter writer, Claim claim)
             {
-                if (writer == null)
+                if (writer is null)
                 {
                     throw new ArgumentNullException(nameof(writer));
                 }
 
-                if (claim == null)
+                if (claim is null)
                 {
                     throw new ArgumentNullException(nameof(claim));
                 }

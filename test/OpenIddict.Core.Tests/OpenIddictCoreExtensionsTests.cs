@@ -122,7 +122,7 @@ namespace OpenIddict.Core.Tests
             builder.AddCore();
 
             // Assert
-            Assert.Contains(services, service => service.ServiceType == type && service.ImplementationFactory != null);
+            Assert.Contains(services, service => service.ServiceType == type && service.ImplementationFactory is not null);
         }
 
         [Fact]

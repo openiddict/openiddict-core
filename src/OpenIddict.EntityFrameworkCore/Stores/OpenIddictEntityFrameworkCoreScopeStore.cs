@@ -108,7 +108,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -119,7 +119,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -132,7 +132,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -236,7 +236,7 @@ namespace OpenIddict.EntityFrameworkCore
             Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -247,7 +247,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -258,7 +258,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -286,7 +286,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -297,7 +297,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -325,7 +325,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -336,7 +336,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -347,7 +347,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -374,7 +374,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -436,7 +436,7 @@ namespace OpenIddict.EntityFrameworkCore
             Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -447,7 +447,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetDescriptionAsync(TScope scope, string? description, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -461,12 +461,12 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual ValueTask SetDescriptionsAsync(TScope scope,
             ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (descriptions == null || descriptions.IsEmpty)
+            if (descriptions is null || descriptions.IsEmpty)
             {
                 scope.Descriptions = null;
 
@@ -499,7 +499,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetDisplayNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -513,12 +513,12 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual ValueTask SetDisplayNamesAsync(TScope scope,
             ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (names == null || names.IsEmpty)
+            if (names is null || names.IsEmpty)
             {
                 scope.DisplayNames = null;
 
@@ -551,7 +551,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -565,12 +565,12 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual ValueTask SetPropertiesAsync(TScope scope,
             ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (properties == null || properties.IsEmpty)
+            if (properties is null || properties.IsEmpty)
             {
                 scope.Properties = null;
 
@@ -589,7 +589,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetResourcesAsync(TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -613,7 +613,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }

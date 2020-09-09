@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -166,7 +166,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder UseDatabase(IMongoDatabase database)
         {
-            if (database == null)
+            if (database is null)
             {
                 throw new ArgumentNullException(nameof(database));
             }

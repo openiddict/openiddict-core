@@ -138,7 +138,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -149,7 +149,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask CreateAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -162,7 +162,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask DeleteAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -366,7 +366,7 @@ namespace OpenIddict.EntityFrameworkCore
             Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -377,7 +377,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetClientIdAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -388,7 +388,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetClientSecretAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -399,7 +399,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetClientTypeAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -410,7 +410,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetConsentTypeAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -421,7 +421,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -432,7 +432,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -460,7 +460,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetIdAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -471,7 +471,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -498,7 +498,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -525,7 +525,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -552,7 +552,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableArray<string>> GetRedirectUrisAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -579,7 +579,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableArray<string>> GetRequirementsAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -641,7 +641,7 @@ namespace OpenIddict.EntityFrameworkCore
             Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -652,7 +652,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetClientIdAsync(TApplication application, string? identifier, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -665,7 +665,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetClientSecretAsync(TApplication application, string? secret, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -678,7 +678,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetClientTypeAsync(TApplication application, string? type, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -691,7 +691,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetConsentTypeAsync(TApplication application, string? type, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -704,7 +704,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetDisplayNameAsync(TApplication application, string? name, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -718,12 +718,12 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual ValueTask SetDisplayNamesAsync(TApplication application,
             ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (names == null || names.IsEmpty)
+            if (names is null || names.IsEmpty)
             {
                 application.DisplayNames = null;
 
@@ -756,7 +756,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetPermissionsAsync(TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -781,7 +781,7 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual ValueTask SetPostLogoutRedirectUrisAsync(TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -806,12 +806,12 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual ValueTask SetPropertiesAsync(TApplication application,
             ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (properties == null || properties.IsEmpty)
+            if (properties is null || properties.IsEmpty)
             {
                 application.Properties = null;
 
@@ -831,7 +831,7 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual ValueTask SetRedirectUrisAsync(TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -855,7 +855,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual ValueTask SetRequirementsAsync(TApplication application, ImmutableArray<string> requirements, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -879,7 +879,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <inheritdoc/>
         public virtual async ValueTask UpdateAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }

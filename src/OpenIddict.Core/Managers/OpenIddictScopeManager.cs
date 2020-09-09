@@ -97,7 +97,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<long> CountAsync<TResult>(
             Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -115,7 +115,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -167,13 +167,13 @@ namespace OpenIddict.Core
         public virtual async ValueTask<TScope> CreateAsync(
             OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
             var scope = await Store.InstantiateAsync(cancellationToken);
-            if (scope == null)
+            if (scope is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1222));
             }
@@ -194,7 +194,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -227,7 +227,7 @@ namespace OpenIddict.Core
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
-            if (scope == null)
+            if (scope is null)
             {
                 return null;
             }
@@ -264,7 +264,7 @@ namespace OpenIddict.Core
                 await Store.FindByNameAsync(name, cancellationToken) :
                 await Cache.FindByNameAsync(name, cancellationToken);
 
-            if (scope == null)
+            if (scope is null)
             {
                 return null;
             }
@@ -378,7 +378,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<TResult> GetAsync<TResult>(
             Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -402,7 +402,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -421,7 +421,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -441,13 +441,13 @@ namespace OpenIddict.Core
         public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(
             TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
             var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
-            if (descriptions == null || descriptions.Count == 0)
+            if (descriptions is null || descriptions.Count == 0)
             {
                 return ImmutableDictionary.Create<CultureInfo, string>();
             }
@@ -466,7 +466,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -486,13 +486,13 @@ namespace OpenIddict.Core
         public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(
             TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
             var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
-            if (names == null || names.Count == 0)
+            if (names is null || names.Count == 0)
             {
                 return ImmutableDictionary.Create<CultureInfo, string>();
             }
@@ -511,7 +511,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -548,18 +548,18 @@ namespace OpenIddict.Core
         public virtual async ValueTask<string?> GetLocalizedDisplayNameAsync(
             TScope scope, CultureInfo culture, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (culture == null)
+            if (culture is null)
             {
                 throw new ArgumentNullException(nameof(culture));
             }
 
             var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
-            if (names == null || names.IsEmpty)
+            if (names is null || names.IsEmpty)
             {
                 return await Store.GetDisplayNameAsync(scope, cancellationToken);
             }
@@ -608,18 +608,18 @@ namespace OpenIddict.Core
         public virtual async ValueTask<string?> GetLocalizedDescriptionAsync(
             TScope scope, CultureInfo culture, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (culture == null)
+            if (culture is null)
             {
                 throw new ArgumentNullException(nameof(culture));
             }
 
             var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
-            if (descriptions == null || descriptions.IsEmpty)
+            if (descriptions is null || descriptions.IsEmpty)
             {
                 return await Store.GetDescriptionAsync(scope, cancellationToken);
             }
@@ -650,7 +650,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -670,7 +670,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(
             TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -699,7 +699,7 @@ namespace OpenIddict.Core
         public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
             Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -720,7 +720,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -762,12 +762,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask PopulateAsync(TScope scope,
             OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -793,12 +793,12 @@ namespace OpenIddict.Core
             OpenIddictScopeDescriptor descriptor,
             TScope scope, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -832,7 +832,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -886,12 +886,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask UpdateAsync(TScope scope,
             OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -909,7 +909,7 @@ namespace OpenIddict.Core
         public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
             TScope scope, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -934,7 +934,7 @@ namespace OpenIddict.Core
                 // the casing is different). To avoid issues when the scope name is part of an index
                 // using the same collation, an error is added even if the two names don't exactly match.
                 var other = await Store.FindByNameAsync(name, cancellationToken);
-                if (other != null && !string.Equals(
+                if (other is not null && !string.Equals(
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
                 {

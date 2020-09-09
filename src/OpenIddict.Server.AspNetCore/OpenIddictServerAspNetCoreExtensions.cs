@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
         public static OpenIddictServerAspNetCoreBuilder UseAspNetCore(this OpenIddictServerBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -80,12 +80,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictServerBuilder UseAspNetCore(
             this OpenIddictServerBuilder builder, Action<OpenIddictServerAspNetCoreBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

@@ -19,7 +19,7 @@ namespace OpenIddict.Server.Owin
     {
         public void Configure(OpenIddictServerOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -30,7 +30,7 @@ namespace OpenIddict.Server.Owin
 
         public void PostConfigure(string name, OpenIddictServerOwinOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }

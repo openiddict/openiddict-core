@@ -48,7 +48,7 @@ namespace System.Data.Entity
             where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -71,7 +71,7 @@ namespace System.Data.Entity
         /// <returns>The non-streamed async enumeration containing the results.</returns>
         internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }

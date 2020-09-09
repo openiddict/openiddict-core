@@ -139,7 +139,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -183,7 +183,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -251,7 +251,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -309,7 +309,7 @@ namespace OpenIddict.Server
 
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -324,7 +324,7 @@ namespace OpenIddict.Server
 
                 // If the reference token cannot be found, don't return an error to allow another handler to validate it.
                 var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
-                if (token == null)
+                if (token is null)
                 {
                     return;
                 }
@@ -386,13 +386,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                if (context.Principal is not null)
                 {
                     return default;
                 }
@@ -454,16 +454,16 @@ namespace OpenIddict.Server
                         },
                         description: (result.Exception, context.EndpointType) switch
                         {
-                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
+                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
                                 when context.Request.IsAuthorizationCodeGrantType() => context.Localizer[SR.ID3005],
 
-                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
+                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
                                 when context.Request.IsDeviceCodeGrantType() => context.Localizer[SR.ID3006],
 
-                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
+                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
                                 when context.Request.IsRefreshTokenGrantType() => context.Localizer[SR.ID3007],
 
-                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Userinfo) => context.Localizer[SR.ID3008],
+                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Userinfo) => context.Localizer[SR.ID3008],
 
                             _ => context.Localizer[SR.ID3004]
                         });
@@ -473,7 +473,7 @@ namespace OpenIddict.Server
 
                 // Get the JWT token. If the token is encrypted using JWE, retrieve the inner token.
                 var token = (JsonWebToken) result.SecurityToken;
-                if (token.InnerToken != null)
+                if (token.InnerToken is not null)
                 {
                     token = token.InnerToken;
                 }
@@ -530,12 +530,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     return default;
                 }
@@ -575,12 +575,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     return default;
                 }
@@ -687,12 +687,12 @@ namespace OpenIddict.Server
 
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     return;
                 }
@@ -704,7 +704,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
@@ -737,12 +737,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     context.Reject(
                         error: context.EndpointType switch
@@ -819,12 +819,12 @@ namespace OpenIddict.Server
 
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token
@@ -837,7 +837,7 @@ namespace OpenIddict.Server
 
                 // If the token entry cannot be found, return a generic error.
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     context.Reject(
                         error: context.EndpointType switch
@@ -1010,12 +1010,12 @@ namespace OpenIddict.Server
 
             public async ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 var identifier = context.Principal.GetAuthorizationId();
                 if (string.IsNullOrEmpty(identifier))
@@ -1024,7 +1024,7 @@ namespace OpenIddict.Server
                 }
 
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
-                if (authorization == null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
+                if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
                     context.Logger.LogError(SR.GetResourceString(SR.ID7006), identifier);
 
@@ -1069,12 +1069,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Don't validate the lifetime of id_tokens used as id_token_hints.
                 switch (context.EndpointType)
@@ -1134,7 +1134,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1170,7 +1170,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1227,7 +1227,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1241,7 +1241,7 @@ namespace OpenIddict.Server
                     typeof(ProcessAuthenticationContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
-                Debug.Assert(notification.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Extract the device code identifier from the user code principal.
                 var identifier = notification.Principal.GetClaim(Claims.Private.DeviceCodeId);
@@ -1251,7 +1251,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token != null)
+                if (token is not null)
                 {
                     await _tokenManager.TryRejectAsync(token);
                 }
@@ -1286,7 +1286,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1300,7 +1300,7 @@ namespace OpenIddict.Server
                     typeof(ProcessAuthenticationContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
-                Debug.Assert(notification.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Extract the device code identifier from the authentication principal.
                 var identifier = notification.Principal.GetTokenId();
@@ -1310,7 +1310,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token != null)
+                if (token is not null)
                 {
                     await _tokenManager.TryRejectAsync(token);
                 }
@@ -1336,12 +1336,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 switch (context.EndpointType)
                 {
@@ -1354,7 +1354,7 @@ namespace OpenIddict.Server
                     default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1009));
                 }
 
-                if (context.Principal.Identity == null)
+                if (context.Principal.Identity is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1010));
                 }
@@ -1409,12 +1409,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 switch (context.EndpointType)
                 {
@@ -1433,7 +1433,7 @@ namespace OpenIddict.Server
                     typeof(ProcessAuthenticationContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
-                if (notification.Principal == null)
+                if (notification.Principal is null)
                 {
                     return default;
                 }
@@ -1481,12 +1481,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Always include the "openid" scope when the developer doesn't explicitly call SetScopes.
                 // Note: the application is allowed to specify a different "scopes": in this case,
@@ -1518,12 +1518,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Add the validated client_id to the list of authorized presenters,
                 // unless the presenters were explicitly set by the developer.
@@ -1554,12 +1554,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // When a "resources" property cannot be found in the ticket, infer it from the "audiences" property.
                 if (context.Principal.HasAudience() && !context.Principal.HasResource())
@@ -1592,12 +1592,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 context.IncludeAccessToken = context.EndpointType switch
                 {
@@ -1706,12 +1706,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // If no authorization code, device code or refresh token is returned, don't create an authorization.
                 if (!context.IncludeAuthorizationCode && !context.IncludeDeviceCode && !context.IncludeRefreshToken)
@@ -1740,7 +1740,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
@@ -1749,7 +1749,7 @@ namespace OpenIddict.Server
                 }
 
                 var authorization = await _authorizationManager.CreateAsync(descriptor);
-                if (authorization == null)
+                if (authorization is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1017));
                 }
@@ -1792,12 +1792,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -1911,12 +1911,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -1997,12 +1997,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Note: a device code principal is produced when a device code is included in the response or when a
                 // device code entry is replaced when processing a sign-in response sent to the verification endpoint.
@@ -2078,12 +2078,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2122,7 +2122,7 @@ namespace OpenIddict.Server
                         typeof(ProcessAuthenticationContext).FullName!) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
-                    Debug.Assert(notification.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     principal.SetExpirationDate(notification.Principal.GetExpirationDate());
                 }
@@ -2162,12 +2162,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Replace the principal by a new one containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2276,12 +2276,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2355,7 +2355,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -2381,7 +2381,7 @@ namespace OpenIddict.Server
                     }
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token has no backing database entry.
@@ -2396,7 +2396,7 @@ namespace OpenIddict.Server
                 // If the operation fails, return an error indicating the code/token is no longer valid.
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null || !await _tokenManager.TryRedeemAsync(token))
+                if (token is null || !await _tokenManager.TryRedeemAsync(token))
                 {
                     context.Reject(
                         error: Errors.InvalidGrant,
@@ -2449,7 +2449,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -2459,7 +2459,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // When rolling tokens are enabled, try to revoke all the previously issued tokens
                 // associated with the authorization if the request is a refresh_token request.
@@ -2516,7 +2516,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -2526,7 +2526,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token has no backing database entry.
@@ -2537,7 +2537,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1264));
                 }
@@ -2591,13 +2591,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var principal = context.AccessTokenPrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -2617,7 +2617,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
@@ -2626,7 +2626,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
@@ -2659,7 +2659,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -2670,7 +2670,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                if (context.AccessTokenPrincipal == null)
+                if (context.AccessTokenPrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -2687,7 +2687,7 @@ namespace OpenIddict.Server
                     _ => true
                 });
 
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -2777,7 +2777,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -2788,7 +2788,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.AccessTokenPrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -2800,7 +2800,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
@@ -2865,13 +2865,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var principal = context.AuthorizationCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -2891,7 +2891,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
@@ -2900,7 +2900,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
@@ -2933,7 +2933,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -2944,7 +2944,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                if (context.AuthorizationCodePrincipal == null)
+                if (context.AuthorizationCodePrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -2959,7 +2959,7 @@ namespace OpenIddict.Server
                     _ => true
                 });
 
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -3031,7 +3031,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3042,7 +3042,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.AuthorizationCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3054,7 +3054,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
@@ -3119,7 +3119,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3130,7 +3130,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.DeviceCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3150,7 +3150,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
@@ -3159,7 +3159,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
@@ -3192,7 +3192,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3203,7 +3203,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                if (context.DeviceCodePrincipal == null)
+                if (context.DeviceCodePrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -3218,7 +3218,7 @@ namespace OpenIddict.Server
                     _ => true
                 });
 
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -3291,7 +3291,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3307,7 +3307,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.DeviceCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3319,7 +3319,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
@@ -3378,7 +3378,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3393,10 +3393,10 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 var principal = context.DeviceCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3409,7 +3409,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1264));
                 }
@@ -3470,13 +3470,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var principal = context.RefreshTokenPrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3496,7 +3496,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
@@ -3505,7 +3505,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
@@ -3538,7 +3538,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3549,7 +3549,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                if (context.RefreshTokenPrincipal == null)
+                if (context.RefreshTokenPrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -3564,7 +3564,7 @@ namespace OpenIddict.Server
                     _ => true
                 });
 
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -3637,7 +3637,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3648,7 +3648,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.RefreshTokenPrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3660,7 +3660,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
@@ -3710,13 +3710,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var principal = context.UserCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3766,13 +3766,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var principal = context.UserCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3792,7 +3792,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
@@ -3801,7 +3801,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
@@ -3834,7 +3834,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3845,7 +3845,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                if (context.UserCodePrincipal == null)
+                if (context.UserCodePrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -3860,7 +3860,7 @@ namespace OpenIddict.Server
                     _ => true
                 });
 
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -3923,7 +3923,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -3934,7 +3934,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.UserCodePrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -3946,7 +3946,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
@@ -3997,7 +3997,7 @@ namespace OpenIddict.Server
 
                     // User codes are relatively short. To help reduce the risks of collisions with
                     // existing entries, a database check is performed here before updating the entry.
-                    while (await manager.FindByReferenceIdAsync(token) != null);
+                    while (await manager.FindByReferenceIdAsync(token) is not null);
 
                     return token;
                 }
@@ -4024,13 +4024,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var principal = context.IdentityTokenPrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -4043,13 +4043,13 @@ namespace OpenIddict.Server
 
                 var credentials = context.Options.SigningCredentials.FirstOrDefault(
                     credentials => credentials.Key is AsymmetricSecurityKey);
-                if (credentials == null)
+                if (credentials is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1265));
                 }
 
                 using var hash = GetHashAlgorithm(credentials);
-                if (hash == null || hash is KeyedHashAlgorithm)
+                if (hash is null || hash is KeyedHashAlgorithm)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1266));
                 }
@@ -4083,7 +4083,7 @@ namespace OpenIddict.Server
                         hash = CryptoConfig.CreateFromName(credentials.Digest) as HashAlgorithm;
                     }
 
-                    if (hash == null)
+                    if (hash is null)
                     {
                         var algorithm = credentials.Digest switch
                         {
@@ -4172,13 +4172,13 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var principal = context.IdentityTokenPrincipal;
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
@@ -4198,7 +4198,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(context.Request.ClientId))
                 {
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
@@ -4207,7 +4207,7 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
-                if (token == null)
+                if (token is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
@@ -4240,7 +4240,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -4251,7 +4251,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                if (context.IdentityTokenPrincipal == null)
+                if (context.IdentityTokenPrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -4267,7 +4267,7 @@ namespace OpenIddict.Server
                     _ => true
                 });
 
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -4338,7 +4338,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -4386,12 +4386,12 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.AccessTokenPrincipal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.AccessTokenPrincipal is not null, SR.GetResourceString(SR.ID5006));
 
                 context.Response.TokenType = TokenTypes.Bearer;
 
@@ -4434,15 +4434,15 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.DeviceCodePrincipal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.DeviceCodePrincipal is not null, SR.GetResourceString(SR.ID5006));
 
                 var address = GetEndpointAbsoluteUri(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
-                if (address != null)
+                if (address is not null)
                 {
                     var builder = new UriBuilder(address)
                     {
@@ -4465,7 +4465,7 @@ namespace OpenIddict.Server
                 static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri endpoint)
                 {
                     // If the endpoint is disabled (i.e a null address is specified), return null.
-                    if (endpoint == null)
+                    if (endpoint is null)
                     {
                         return null;
                     }
@@ -4477,7 +4477,7 @@ namespace OpenIddict.Server
                     }
 
                     // At this stage, throw an exception if the issuer cannot be retrieved.
-                    if (issuer == null || !issuer.IsAbsoluteUri)
+                    if (issuer is null || !issuer.IsAbsoluteUri)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1022));
                     }
@@ -4520,7 +4520,7 @@ namespace OpenIddict.Server
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignOutContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }

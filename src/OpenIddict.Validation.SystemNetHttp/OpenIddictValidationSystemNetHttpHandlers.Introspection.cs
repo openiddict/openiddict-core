@@ -55,17 +55,17 @@ namespace OpenIddict.Validation.SystemNetHttp
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Request != null, SR.GetResourceString(SR.ID5008));
+                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID5008));
 
                     // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                     // this may indicate that the request was incorrectly processed by another client stack.
                     var request = context.Transaction.GetHttpRequestMessage();
-                    if (request == null)
+                    if (request is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                     }

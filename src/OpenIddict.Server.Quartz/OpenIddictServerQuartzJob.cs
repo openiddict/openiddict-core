@@ -50,7 +50,7 @@ namespace OpenIddict.Server.Quartz
         /// <inheritdoc/>
         public async Task Execute(IJobExecutionContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -71,7 +71,7 @@ namespace OpenIddict.Server.Quartz
                 if (!_options.CurrentValue.DisableTokenPruning)
                 {
                     var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>();
-                    if (manager == null)
+                    if (manager is null)
                     {
                         // Inform Quartz.NET that the triggers associated with this job should be removed,
                         // as the future invocations will always fail until the application is correctly
@@ -128,7 +128,7 @@ namespace OpenIddict.Server.Quartz
                 if (!_options.CurrentValue.DisableAuthorizationPruning)
                 {
                     var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>();
-                    if (manager == null)
+                    if (manager is null)
                     {
                         // Inform Quartz.NET that the triggers associated with this job should be removed,
                         // as the future invocations will always fail until the application is correctly
@@ -182,7 +182,7 @@ namespace OpenIddict.Server.Quartz
                     }
                 }
 
-                if (exceptions != null)
+                if (exceptions is not null)
                 {
                     throw new JobExecutionException(new AggregateException(exceptions))
                     {

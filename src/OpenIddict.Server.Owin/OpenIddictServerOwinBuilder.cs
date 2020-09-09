@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
         public OpenIddictServerOwinBuilder Configure(Action<OpenIddictServerOwinOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -161,7 +161,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
         public OpenIddictServerOwinBuilder SetAuthorizationEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
-            if (policy == null)
+            if (policy is null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }
@@ -177,7 +177,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
         public OpenIddictServerOwinBuilder SetLogoutEndpointCachingPolicy(DistributedCacheEntryOptions policy)
         {
-            if (policy == null)
+            if (policy is null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }

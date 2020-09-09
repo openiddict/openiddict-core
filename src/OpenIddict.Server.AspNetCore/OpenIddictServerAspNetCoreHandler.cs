@@ -54,7 +54,7 @@ namespace OpenIddict.Server.AspNetCore
             // Note: the transaction may be already attached when replaying an ASP.NET Core request
             // (e.g when using the built-in status code pages middleware with the re-execute mode).
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction;
-            if (transaction == null)
+            if (transaction is null)
             {
                 // Create a new transaction and attach the HTTP request to make it available to the ASP.NET Core handlers.
                 transaction = await _factory.CreateTransactionAsync();
@@ -118,7 +118,7 @@ namespace OpenIddict.Server.AspNetCore
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
             // the authentication context is resolved from the transaction. If it's not available, a new one is created.
             var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!);
-            if (context == null)
+            if (context is null)
             {
                 context = new ProcessAuthenticationContext(transaction);
                 await _dispatcher.DispatchAsync(context);
@@ -155,7 +155,7 @@ namespace OpenIddict.Server.AspNetCore
 
             else
             {
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
                 Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID5009));
                 Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID5010));
 
@@ -227,7 +227,7 @@ namespace OpenIddict.Server.AspNetCore
         /// <inheritdoc/>
         public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
-            if (user == null)
+            if (user is null)
             {
                 throw new ArgumentNullException(nameof(user));
             }

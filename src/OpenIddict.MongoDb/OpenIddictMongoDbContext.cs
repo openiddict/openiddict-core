@@ -37,12 +37,12 @@ namespace OpenIddict.MongoDb
             }
 
             var database = _options.CurrentValue.Database;
-            if (database == null)
+            if (database is null)
             {
                 database = _provider.GetService<IMongoDatabase>();
             }
 
-            if (database == null)
+            if (database is null)
             {
                 return new ValueTask<IMongoDatabase>(Task.FromException<IMongoDatabase>(
                     new InvalidOperationException(SR.GetResourceString(SR.ID1261))));

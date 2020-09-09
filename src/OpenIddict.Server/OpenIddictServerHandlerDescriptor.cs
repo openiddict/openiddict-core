@@ -79,7 +79,7 @@ namespace OpenIddict.Server
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
             public Builder<TContext> AddFilter(Type type)
             {
-                if (type == null)
+                if (type is null)
                 {
                     throw new ArgumentNullException(nameof(type));
                 }
@@ -110,7 +110,7 @@ namespace OpenIddict.Server
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
             public Builder<TContext> SetServiceDescriptor(ServiceDescriptor descriptor)
             {
-                if (descriptor == null)
+                if (descriptor is null)
                 {
                     throw new ArgumentNullException(nameof(descriptor));
                 }
@@ -162,7 +162,7 @@ namespace OpenIddict.Server
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
             public Builder<TContext> UseInlineHandler(Func<TContext, ValueTask> handler)
             {
-                if (handler == null)
+                if (handler is null)
                 {
                     throw new ArgumentNullException(nameof(handler));
                 }
@@ -199,7 +199,7 @@ namespace OpenIddict.Server
             public Builder<TContext> UseSingletonHandler<THandler>(THandler handler)
                 where THandler : IOpenIddictServerHandler<TContext>
             {
-                if (handler == null)
+                if (handler is null)
                 {
                     throw new ArgumentNullException(nameof(handler));
                 }

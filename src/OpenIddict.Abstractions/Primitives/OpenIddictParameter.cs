@@ -505,7 +505,7 @@ namespace OpenIddict.Abstractions
         /// <param name="writer">The UTF-8 JSON writer.</param>
         public void WriteTo(Utf8JsonWriter writer)
         {
-            if (writer == null)
+            if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }

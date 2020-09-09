@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration)
             where TContext : OpenIddictValidationEvents.BaseContext
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictValidationBuilder AddEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictValidationBuilder RemoveEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder Configure(Action<OpenIddictValidationOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -136,7 +136,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
         {
-            if (credentials == null)
+            if (credentials is null)
             {
                 throw new ArgumentNullException(nameof(credentials));
             }
@@ -151,7 +151,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionKey(SecurityKey key)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -185,7 +185,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCertificate(X509Certificate2 certificate)
         {
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
@@ -239,7 +239,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Assembly assembly, string resource,
             string password, X509KeyStorageFlags flags)
         {
-            if (assembly == null)
+            if (assembly is null)
             {
                 throw new ArgumentNullException(nameof(assembly));
             }
@@ -255,7 +255,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
-            if (stream == null)
+            if (stream is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1063));
             }
@@ -294,7 +294,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public OpenIddictValidationBuilder AddEncryptionCertificate(
             Stream stream, string password, X509KeyStorageFlags flags)
         {
-            if (stream == null)
+            if (stream is null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
@@ -323,7 +323,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
@@ -363,7 +363,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .OfType<X509Certificate2>()
                 .SingleOrDefault();
 
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
@@ -379,7 +379,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddAudiences(params string[] audiences)
         {
-            if (audiences == null)
+            if (audiences is null)
             {
                 throw new ArgumentNullException(nameof(audiences));
             }
@@ -420,7 +420,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder SetConfiguration(OpenIdConnectConfiguration configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -468,7 +468,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder SetIssuer(Uri address)
         {
-            if (address == null)
+            if (address is null)
             {
                 throw new ArgumentNullException(nameof(address));
             }

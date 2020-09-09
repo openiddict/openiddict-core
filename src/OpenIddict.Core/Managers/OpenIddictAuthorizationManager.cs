@@ -98,7 +98,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<long> CountAsync<TResult>(
             Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -116,7 +116,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask CreateAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -174,13 +174,13 @@ namespace OpenIddict.Core
         public virtual async ValueTask<TAuthorization> CreateAsync(
             OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
             var authorization = await Store.InstantiateAsync(cancellationToken);
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1219));
             }
@@ -207,7 +207,7 @@ namespace OpenIddict.Core
             ClaimsPrincipal principal, string subject, string client,
             string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
         {
-            if (principal == null)
+            if (principal is null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
@@ -251,7 +251,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask DeleteAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -560,7 +560,7 @@ namespace OpenIddict.Core
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
-            if (authorization == null)
+            if (authorization is null)
             {
                 return null;
             }
@@ -630,7 +630,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<string?> GetApplicationIdAsync(
             TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -651,7 +651,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<TResult> GetAsync<TResult>(
             Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -675,7 +675,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -695,7 +695,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(
             TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -714,7 +714,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -734,7 +734,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(
             TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -754,7 +754,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<string?> GetStatusAsync(
             TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -774,7 +774,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<string?> GetSubjectAsync(
             TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -794,7 +794,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<string?> GetTypeAsync(
             TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -812,7 +812,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> HasScopesAsync(TAuthorization authorization,
             ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -831,7 +831,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> HasStatusAsync(TAuthorization authorization,
             string status, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -854,7 +854,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> HasTypeAsync(
             TAuthorization authorization, string type, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -888,7 +888,7 @@ namespace OpenIddict.Core
         public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
             Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -909,7 +909,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -929,12 +929,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask PopulateAsync(TAuthorization authorization,
             OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -960,12 +960,12 @@ namespace OpenIddict.Core
             OpenIddictAuthorizationDescriptor descriptor,
             TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -1007,7 +1007,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask SetApplicationIdAsync(
             TAuthorization authorization, string? identifier, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -1024,7 +1024,7 @@ namespace OpenIddict.Core
         /// <returns><c>true</c> if the authorization was successfully revoked, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> TryRevokeAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -1071,7 +1071,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask UpdateAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -1125,12 +1125,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask UpdateAsync(TAuthorization authorization,
             OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -1148,7 +1148,7 @@ namespace OpenIddict.Core
         public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
             TAuthorization authorization, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }

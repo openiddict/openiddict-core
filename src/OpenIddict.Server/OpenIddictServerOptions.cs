@@ -163,7 +163,7 @@ namespace OpenIddict.Server
                 }
 
                 // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
-                if (parameters.ValidTypes != null && parameters.ValidTypes.Any() &&
+                if (parameters.ValidTypes is not null && parameters.ValidTypes.Any() &&
                    !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
                 {
                     throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID1270))

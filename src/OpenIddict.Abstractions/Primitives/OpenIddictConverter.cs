@@ -23,7 +23,7 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the type is supported, <c>false</c> otherwise.</returns>
         public override bool CanConvert(Type typeToConvert)
         {
-            if (typeToConvert == null)
+            if (typeToConvert is null)
             {
                 throw new ArgumentNullException(nameof(typeToConvert));
             }
@@ -42,7 +42,7 @@ namespace OpenIddict.Abstractions
         /// <returns>The deserialized <see cref="OpenIddictMessage"/> instance.</returns>
         public override OpenIddictMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (typeToConvert == null)
+            if (typeToConvert is null)
             {
                 throw new ArgumentNullException(nameof(typeToConvert));
             }
@@ -51,7 +51,7 @@ namespace OpenIddict.Abstractions
 
             return typeToConvert == typeof(OpenIddictMessage)  ? new OpenIddictMessage(document.RootElement.Clone()) :
                    typeToConvert == typeof(OpenIddictRequest)  ? new OpenIddictRequest(document.RootElement.Clone()) :
-                   typeToConvert == typeof(OpenIddictResponse) ? (OpenIddictMessage) new OpenIddictResponse(document.RootElement.Clone()) :
+                   typeToConvert == typeof(OpenIddictResponse) ? new OpenIddictResponse(document.RootElement.Clone()) :
                    throw new ArgumentException(SR.GetResourceString(SR.ID1175), nameof(typeToConvert));
         }
 
@@ -63,12 +63,12 @@ namespace OpenIddict.Abstractions
         /// <param name="options">The JSON serializer options.</param>
         public override void Write(Utf8JsonWriter writer, OpenIddictMessage value, JsonSerializerOptions options)
         {
-            if (writer == null)
+            if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            if (value == null)
+            if (value is null)
             {
                 throw new ArgumentNullException(nameof(value));
             }

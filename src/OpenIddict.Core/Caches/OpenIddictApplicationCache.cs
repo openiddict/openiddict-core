@@ -45,7 +45,7 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         public async ValueTask AddAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -127,7 +127,7 @@ namespace OpenIddict.Core
 
             async Task<TApplication?> ExecuteAsync()
             {
-                if ((application = await _store.FindByClientIdAsync(identifier, cancellationToken)) != null)
+                if ((application = await _store.FindByClientIdAsync(identifier, cancellationToken)) is not null)
                 {
                     await AddAsync(application, cancellationToken);
                 }
@@ -161,7 +161,7 @@ namespace OpenIddict.Core
 
             async Task<TApplication?> ExecuteAsync()
             {
-                if ((application = await _store.FindByIdAsync(identifier, cancellationToken)) != null)
+                if ((application = await _store.FindByIdAsync(identifier, cancellationToken)) is not null)
                 {
                     await AddAsync(application, cancellationToken);
                 }
@@ -257,7 +257,7 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         public async ValueTask RemoveAsync(TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -284,17 +284,17 @@ namespace OpenIddict.Core
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         protected virtual async ValueTask CreateEntryAsync(object key, TApplication? application, CancellationToken cancellationToken)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
             using var entry = _cache.CreateEntry(key);
 
-            if (application != null)
+            if (application is not null)
             {
                 var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-                if (signal == null)
+                if (signal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
@@ -316,7 +316,7 @@ namespace OpenIddict.Core
         protected virtual async ValueTask CreateEntryAsync(
             object key, ImmutableArray<TApplication> applications, CancellationToken cancellationToken)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -326,7 +326,7 @@ namespace OpenIddict.Core
             foreach (var application in applications)
             {
                 var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-                if (signal == null)
+                if (signal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
@@ -351,7 +351,7 @@ namespace OpenIddict.Core
         protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(
             TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }

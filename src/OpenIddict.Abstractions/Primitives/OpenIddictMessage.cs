@@ -68,7 +68,7 @@ namespace OpenIddict.Abstractions
         /// <param name="parameters">The message parameters.</param>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
         {
-            if (parameters == null)
+            if (parameters is null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
@@ -85,7 +85,7 @@ namespace OpenIddict.Abstractions
         /// <param name="parameters">The message parameters.</param>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?>> parameters)
         {
-            if (parameters == null)
+            if (parameters is null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
@@ -113,7 +113,7 @@ namespace OpenIddict.Abstractions
         /// <param name="parameters">The message parameters.</param>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
         {
-            if (parameters == null)
+            if (parameters is null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
@@ -140,7 +140,7 @@ namespace OpenIddict.Abstractions
         /// <param name="parameters">The message parameters.</param>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
-            if (parameters == null)
+            if (parameters is null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
@@ -279,7 +279,7 @@ namespace OpenIddict.Abstractions
             }
 
             // If the parameter value is null or empty, remove the corresponding entry from the collection.
-            if (value == null || OpenIddictParameter.IsNullOrEmpty(value.GetValueOrDefault()))
+            if (value is null || OpenIddictParameter.IsNullOrEmpty(value.GetValueOrDefault()))
             {
                 Parameters.Remove(name);
             }
@@ -360,7 +360,7 @@ namespace OpenIddict.Abstractions
         /// <param name="writer">The UTF-8 JSON writer.</param>
         public void WriteTo(Utf8JsonWriter writer)
         {
-            if (writer == null)
+            if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }

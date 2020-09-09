@@ -26,7 +26,7 @@ namespace OpenIddict.Server.AspNetCore
         /// <param name="options">The options instance to initialize.</param>
         public void Configure(AuthenticationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -44,7 +44,7 @@ namespace OpenIddict.Server.AspNetCore
 
         public void Configure(OpenIddictServerOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -60,7 +60,7 @@ namespace OpenIddict.Server.AspNetCore
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure(string name, AuthenticationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -95,7 +95,7 @@ namespace OpenIddict.Server.AspNetCore
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure(string name, OpenIddictServerAspNetCoreOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
