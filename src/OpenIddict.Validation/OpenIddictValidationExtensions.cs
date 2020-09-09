@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public static OpenIddictValidationBuilder AddValidation(this OpenIddictBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -83,12 +83,12 @@ namespace Microsoft.Extensions.DependencyInjection
             this OpenIddictBuilder builder,
             Action<OpenIddictValidationBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

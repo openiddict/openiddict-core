@@ -499,7 +499,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
 
                     var feature = context.Features.Get<OpenIddictServerAspNetCoreFeature>();
                     var response = feature?.Transaction.GetProperty<object>("custom_response");
-                    if (response != null)
+                    if (response is not null)
                     {
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
@@ -595,7 +595,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                     else if (context.Request.Path == "/authenticate")
                     {
                         var result = await context.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-                        if (result?.Principal == null)
+                        if (result?.Principal is null)
                         {
                             return;
                         }

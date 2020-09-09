@@ -68,13 +68,13 @@ namespace OpenIddict.Server.DataProtection
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                if (context.Principal is not null)
                 {
                     return default;
                 }
@@ -94,7 +94,7 @@ namespace OpenIddict.Server.DataProtection
                     ValidateToken(context.Token, TokenTypeHints.DeviceCode)        ??
                     ValidateToken(context.Token, TokenTypeHints.UserCode);
 
-                if (principal == null)
+                if (principal is null)
                 {
                     context.Reject(
                         error: context.EndpointType switch
@@ -187,7 +187,7 @@ namespace OpenIddict.Server.DataProtection
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -198,7 +198,7 @@ namespace OpenIddict.Server.DataProtection
                     return default;
                 }
 
-                if (context.AccessTokenPrincipal == null)
+                if (context.AccessTokenPrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -250,7 +250,7 @@ namespace OpenIddict.Server.DataProtection
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -261,7 +261,7 @@ namespace OpenIddict.Server.DataProtection
                     return default;
                 }
 
-                if (context.AuthorizationCodePrincipal == null)
+                if (context.AuthorizationCodePrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -313,7 +313,7 @@ namespace OpenIddict.Server.DataProtection
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -324,7 +324,7 @@ namespace OpenIddict.Server.DataProtection
                     return default;
                 }
 
-                if (context.DeviceCodePrincipal == null)
+                if (context.DeviceCodePrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -376,7 +376,7 @@ namespace OpenIddict.Server.DataProtection
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -387,7 +387,7 @@ namespace OpenIddict.Server.DataProtection
                     return default;
                 }
 
-                if (context.RefreshTokenPrincipal == null)
+                if (context.RefreshTokenPrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
@@ -439,7 +439,7 @@ namespace OpenIddict.Server.DataProtection
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -450,7 +450,7 @@ namespace OpenIddict.Server.DataProtection
                     return default;
                 }
 
-                if (context.UserCodePrincipal == null)
+                if (context.UserCodePrincipal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }

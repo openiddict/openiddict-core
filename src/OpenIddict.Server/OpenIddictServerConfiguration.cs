@@ -29,7 +29,7 @@ namespace OpenIddict.Server
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure(string name, OpenIddictServerOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -48,7 +48,7 @@ namespace OpenIddict.Server
                 options.UseRollingRefreshTokens |= !options.UseRollingRefreshTokens && !options.DisableSlidingRefreshTokenExpiration;
             }
 
-            if (options.JsonWebTokenHandler == null)
+            if (options.JsonWebTokenHandler is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1074));
             }
@@ -284,23 +284,23 @@ namespace OpenIddict.Server
                 (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
 
                 // If one of the keys is a symmetric key, prefer it to the other one.
-                (SymmetricSecurityKey _, SymmetricSecurityKey _) => 0,
-                (SymmetricSecurityKey _, SecurityKey _)          => -1,
-                (SecurityKey _, SymmetricSecurityKey _)          => 1,
+                (SymmetricSecurityKey, SymmetricSecurityKey) => 0,
+                (SymmetricSecurityKey, SecurityKey)          => -1,
+                (SecurityKey, SymmetricSecurityKey)          => 1,
 
                 // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-                (X509SecurityKey first, SecurityKey _)  when first.Certificate.NotBefore  > DateTime.Now => 1,
-                (SecurityKey _, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => 1,
+                (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
+                (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => 1,
 
                 // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
                 (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),
 
                 // If one of the keys is backed by a X.509 certificate, prefer the X.509 security key.
-                (X509SecurityKey _, SecurityKey _) => -1,
-                (SecurityKey _, X509SecurityKey _) => 1,
+                (X509SecurityKey, SecurityKey) => -1,
+                (SecurityKey, X509SecurityKey) => 1,
 
                 // If the two keys are not backed by a X.509 certificate, none should be preferred to the other.
-                (SecurityKey _, SecurityKey _) => 0
+                (SecurityKey, SecurityKey) => 0
             };
 
             static string? GetKeyIdentifier(SecurityKey key)
@@ -319,11 +319,11 @@ namespace OpenIddict.Server
                     // Note: if the RSA parameters are not attached to the signing key,
                     // extract them by calling ExportParameters on the RSA instance.
                     var parameters = rsaSecurityKey.Parameters;
-                    if (parameters.Modulus == null)
+                    if (parameters.Modulus is null)
                     {
                         parameters = rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false);
 
-                        Debug.Assert(parameters.Modulus != null, SR.GetResourceString(SR.ID5003));
+                        Debug.Assert(parameters.Modulus is not null, SR.GetResourceString(SR.ID5003));
                     }
 
                     // Only use the 40 first chars of the base64url-encoded modulus.
@@ -337,7 +337,7 @@ namespace OpenIddict.Server
                     // Extract the ECDSA parameters from the signing credentials.
                     var parameters = ecsdaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false);
 
-                    Debug.Assert(parameters.Q.X != null, SR.GetResourceString(SR.ID5004));
+                    Debug.Assert(parameters.Q.X is not null, SR.GetResourceString(SR.ID5004));
 
                     // Only use the 40 first chars of the base64url-encoded X coordinate.
                     var identifier = Base64UrlEncoder.Encode(parameters.Q.X);

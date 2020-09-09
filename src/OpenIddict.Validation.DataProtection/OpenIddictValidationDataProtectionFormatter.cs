@@ -20,13 +20,13 @@ namespace OpenIddict.Validation.DataProtection
     {
         public ClaimsPrincipal? ReadToken(BinaryReader reader)
         {
-            if (reader == null)
+            if (reader is null)
             {
                 throw new ArgumentNullException(nameof(reader));
             }
 
             var (principal, properties) = Read(reader);
-            if (principal == null)
+            if (principal is null)
             {
                 return null;
             }

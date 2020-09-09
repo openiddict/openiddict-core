@@ -43,7 +43,7 @@ namespace OpenIddict.EntityFramework
         public IOpenIddictTokenStore<TToken> Get<TToken>() where TToken : class
         {
             var store = _provider.GetService<IOpenIddictTokenStore<TToken>>();
-            if (store != null)
+            if (store is not null)
             {
                 return store;
             }
@@ -51,13 +51,13 @@ namespace OpenIddict.EntityFramework
             var type = _cache.GetOrAdd(typeof(TToken), key =>
             {
                 var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkToken<,,>));
-                if (root == null)
+                if (root is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1237));
                 }
 
                 var context = _options.CurrentValue.DbContextType;
-                if (context == null)
+                if (context is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1234));
                 }

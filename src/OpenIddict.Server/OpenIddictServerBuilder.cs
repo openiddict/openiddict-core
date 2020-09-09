@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<OpenIddictServerHandlerDescriptor.Builder<TContext>> configuration)
             where TContext : OpenIddictServerEvents.BaseContext
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictServerBuilder AddEventHandler(OpenIddictServerHandlerDescriptor descriptor)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictServerBuilder RemoveEventHandler(OpenIddictServerHandlerDescriptor descriptor)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder Configure(Action<OpenIddictServerOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
         {
-            if (credentials == null)
+            if (credentials is null)
             {
                 throw new ArgumentNullException(nameof(credentials));
             }
@@ -161,7 +161,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionKey(SecurityKey key)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
         {
-            if (subject == null)
+            if (subject is null)
             {
                 throw new ArgumentNullException(nameof(subject));
             }
@@ -219,7 +219,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .OfType<X509Certificate2>()
                 .SingleOrDefault();
 
-            if (certificate != null && (certificate.NotBefore > DateTime.Now || certificate.NotAfter < DateTime.Now))
+            if (certificate is not null && (certificate.NotBefore > DateTime.Now || certificate.NotAfter < DateTime.Now))
             {
                 store.Remove(certificate);
                 certificate = null;
@@ -227,7 +227,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
 #if SUPPORTS_CERTIFICATE_GENERATION
             // If no appropriate certificate can be found, generate and persist a new certificate in the specified store.
-            if (certificate == null)
+            if (certificate is null)
             {
                 using var algorithm = RSA.Create(keySizeInBits: 2048);
 
@@ -370,7 +370,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionCertificate(X509Certificate2 certificate)
         {
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
@@ -423,7 +423,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Assembly assembly, string resource,
             string password, X509KeyStorageFlags flags)
         {
-            if (assembly == null)
+            if (assembly is null)
             {
                 throw new ArgumentNullException(nameof(assembly));
             }
@@ -439,7 +439,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
-            if (stream == null)
+            if (stream is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1063));
             }
@@ -477,7 +477,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddEncryptionCertificate(Stream stream, string password, X509KeyStorageFlags flags)
         {
-            if (stream == null)
+            if (stream is null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
@@ -506,7 +506,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
@@ -545,7 +545,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .OfType<X509Certificate2>()
                 .SingleOrDefault();
 
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
@@ -560,7 +560,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddSigningCredentials(SigningCredentials credentials)
         {
-            if (credentials == null)
+            if (credentials is null)
             {
                 throw new ArgumentNullException(nameof(credentials));
             }
@@ -575,7 +575,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddSigningKey(SecurityKey key)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -641,7 +641,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
         {
-            if (subject == null)
+            if (subject is null)
             {
                 throw new ArgumentNullException(nameof(subject));
             }
@@ -656,7 +656,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .OfType<X509Certificate2>()
                 .SingleOrDefault();
 
-            if (certificate != null && (certificate.NotBefore > DateTime.Now || certificate.NotAfter < DateTime.Now))
+            if (certificate is not null && (certificate.NotBefore > DateTime.Now || certificate.NotAfter < DateTime.Now))
             {
                 store.Remove(certificate);
                 certificate = null;
@@ -664,7 +664,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
 #if SUPPORTS_CERTIFICATE_GENERATION
             // If no appropriate certificate can be found, generate and persist a new certificate in the specified store.
-            if (certificate == null)
+            if (certificate is null)
             {
                 using var algorithm = RSA.Create(keySizeInBits: 2048);
 
@@ -826,7 +826,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddSigningCertificate(X509Certificate2 certificate)
         {
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
@@ -879,7 +879,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Assembly assembly, string resource,
             string password, X509KeyStorageFlags flags)
         {
-            if (assembly == null)
+            if (assembly is null)
             {
                 throw new ArgumentNullException(nameof(assembly));
             }
@@ -895,7 +895,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
-            if (stream == null)
+            if (stream is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1063));
             }
@@ -933,7 +933,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddSigningCertificate(Stream stream, string password, X509KeyStorageFlags flags)
         {
-            if (stream == null)
+            if (stream is null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
@@ -962,7 +962,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
@@ -1001,7 +1001,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .OfType<X509Certificate2>()
                 .SingleOrDefault();
 
-            if (certificate == null)
+            if (certificate is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
@@ -1085,7 +1085,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetAuthorizationEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1102,7 +1102,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetAuthorizationEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1133,7 +1133,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetConfigurationEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1150,7 +1150,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetConfigurationEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1181,7 +1181,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetCryptographyEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1198,7 +1198,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetCryptographyEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1229,7 +1229,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetDeviceEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1246,7 +1246,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetDeviceEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1277,7 +1277,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetIntrospectionEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1294,7 +1294,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetIntrospectionEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1325,7 +1325,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetLogoutEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1342,7 +1342,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetLogoutEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1373,7 +1373,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetRevocationEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1390,7 +1390,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetRevocationEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1421,7 +1421,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetTokenEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1438,7 +1438,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetTokenEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1469,7 +1469,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetUserinfoEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1486,7 +1486,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetUserinfoEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1517,7 +1517,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetVerificationEndpointUris(params string[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1534,7 +1534,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetVerificationEndpointUris(params Uri[] addresses)
         {
-            if (addresses == null)
+            if (addresses is null)
             {
                 throw new ArgumentNullException(nameof(addresses));
             }
@@ -1646,7 +1646,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder RegisterClaims(params string[] claims)
         {
-            if (claims == null)
+            if (claims is null)
             {
                 throw new ArgumentNullException(nameof(claims));
             }
@@ -1667,7 +1667,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder RegisterScopes(params string[] scopes)
         {
-            if (scopes == null)
+            if (scopes is null)
             {
                 throw new ArgumentNullException(nameof(scopes));
             }
@@ -1754,7 +1754,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetIssuer(Uri address)
         {
-            if (address == null)
+            if (address is null)
             {
                 throw new ArgumentNullException(nameof(address));
             }

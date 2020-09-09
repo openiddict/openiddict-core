@@ -31,7 +31,7 @@ namespace OpenIddict.Server.DataProtection
 
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -53,7 +53,7 @@ namespace OpenIddict.Server.DataProtection
 
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -75,7 +75,7 @@ namespace OpenIddict.Server.DataProtection
 
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -97,7 +97,7 @@ namespace OpenIddict.Server.DataProtection
 
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -119,7 +119,7 @@ namespace OpenIddict.Server.DataProtection
 
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }

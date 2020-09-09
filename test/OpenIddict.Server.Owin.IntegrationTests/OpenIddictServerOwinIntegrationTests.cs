@@ -369,7 +369,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests
 
                     var transaction = context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
                     var response = transaction?.GetProperty<object>("custom_response");
-                    if (response != null)
+                    if (response is not null)
                     {
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
@@ -417,7 +417,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests
                     else if (context.Request.Path == new PathString("/authenticate"))
                     {
                         var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
-                        if (result?.Identity == null)
+                        if (result?.Identity is null)
                         {
                             return;
                         }

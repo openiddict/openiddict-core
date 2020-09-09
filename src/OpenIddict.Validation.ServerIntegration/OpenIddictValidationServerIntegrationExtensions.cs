@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public static OpenIddictValidationServerIntegrationBuilder UseLocalServer(this OpenIddictValidationBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -52,12 +52,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictValidationBuilder UseLocalServer(
             this OpenIddictValidationBuilder builder, Action<OpenIddictValidationServerIntegrationBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
         public static OpenIddictValidationOwinBuilder UseOwin(this OpenIddictValidationBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -65,12 +65,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictValidationBuilder UseOwin(
             this OpenIddictValidationBuilder builder, Action<OpenIddictValidationOwinBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

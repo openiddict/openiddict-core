@@ -106,7 +106,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -117,7 +117,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual async ValueTask CreateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -130,7 +130,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual async ValueTask DeleteAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -204,8 +204,7 @@ namespace OpenIddict.EntityFramework
             var key = ConvertIdentifierFromString(client);
 
             return (from authorization in Authorizations.Include(authorization => authorization.Application)
-                    where authorization.Application != null &&
-                          authorization.Application.Id!.Equals(key) &&
+                    where authorization.Application!.Id!.Equals(key) &&
                           authorization.Subject == subject
                     select authorization).AsAsyncEnumerable(cancellationToken);
         }
@@ -233,8 +232,7 @@ namespace OpenIddict.EntityFramework
             var key = ConvertIdentifierFromString(client);
 
             return (from authorization in Authorizations.Include(authorization => authorization.Application)
-                    where authorization.Application != null &&
-                          authorization.Application.Id!.Equals(key) &&
+                    where authorization.Application!.Id!.Equals(key) &&
                           authorization.Subject == subject &&
                           authorization.Status == status
                     select authorization).AsAsyncEnumerable(cancellationToken);
@@ -268,8 +266,7 @@ namespace OpenIddict.EntityFramework
             var key = ConvertIdentifierFromString(client);
 
             return (from authorization in Authorizations.Include(authorization => authorization.Application)
-                    where authorization.Application != null &&
-                          authorization.Application.Id!.Equals(key) &&
+                    where authorization.Application!.Id!.Equals(key) &&
                           authorization.Subject == subject &&
                           authorization.Status == status &&
                           authorization.Type == type
@@ -309,8 +306,7 @@ namespace OpenIddict.EntityFramework
                 var key = ConvertIdentifierFromString(client);
 
                 var authorizations = (from authorization in Authorizations.Include(authorization => authorization.Application)
-                                      where authorization.Application != null &&
-                                            authorization.Application.Id!.Equals(key) &&
+                                      where authorization.Application!.Id!.Equals(key) &&
                                             authorization.Subject == subject &&
                                             authorization.Status == status &&
                                             authorization.Type == type
@@ -374,13 +370,13 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual async ValueTask<string?> GetApplicationIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
             // If the application is not attached to the authorization, try to load it manually.
-            if (authorization.Application == null)
+            if (authorization.Application is null)
             {
                 var reference = Context.Entry(authorization).Reference(entry => entry.Application);
                 if (reference.EntityEntry.State == EntityState.Detached)
@@ -391,7 +387,7 @@ namespace OpenIddict.EntityFramework
                 await reference.LoadAsync(cancellationToken);
             }
 
-            if (authorization.Application == null)
+            if (authorization.Application is null)
             {
                 return null;
             }
@@ -404,7 +400,7 @@ namespace OpenIddict.EntityFramework
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -416,7 +412,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -427,7 +423,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -438,7 +434,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -465,7 +461,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -492,7 +488,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetStatusAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -503,7 +499,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetSubjectAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -514,7 +510,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask<string?> GetTypeAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -562,7 +558,7 @@ namespace OpenIddict.EntityFramework
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -637,7 +633,7 @@ namespace OpenIddict.EntityFramework
                 }
             }
 
-            if (exceptions != null)
+            if (exceptions is not null)
             {
                 throw new AggregateException(SR.GetResourceString(SR.ID1242), exceptions);
             }
@@ -647,7 +643,7 @@ namespace OpenIddict.EntityFramework
         public virtual async ValueTask SetApplicationIdAsync(TAuthorization authorization,
             string? identifier, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -655,7 +651,7 @@ namespace OpenIddict.EntityFramework
             if (!string.IsNullOrEmpty(identifier))
             {
                 var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
-                if (application == null)
+                if (application is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1243));
                 }
@@ -666,7 +662,7 @@ namespace OpenIddict.EntityFramework
             else
             {
                 // If the application is not attached to the authorization, try to load it manually.
-                if (authorization.Application == null)
+                if (authorization.Application is null)
                 {
                     var reference = Context.Entry(authorization).Reference(entry => entry.Application);
                     if (reference.EntityEntry.State == EntityState.Detached)
@@ -685,7 +681,7 @@ namespace OpenIddict.EntityFramework
         public virtual ValueTask SetCreationDateAsync(TAuthorization authorization,
             DateTimeOffset? date, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -699,12 +695,12 @@ namespace OpenIddict.EntityFramework
         public virtual ValueTask SetPropertiesAsync(TAuthorization authorization,
             ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (properties == null || properties.IsEmpty)
+            if (properties is null || properties.IsEmpty)
             {
                 authorization.Properties = null;
 
@@ -724,7 +720,7 @@ namespace OpenIddict.EntityFramework
         public virtual ValueTask SetScopesAsync(TAuthorization authorization,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -748,7 +744,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask SetStatusAsync(TAuthorization authorization, string? status, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -761,7 +757,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask SetSubjectAsync(TAuthorization authorization, string? subject, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -774,7 +770,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual ValueTask SetTypeAsync(TAuthorization authorization, string? type, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
@@ -787,7 +783,7 @@ namespace OpenIddict.EntityFramework
         /// <inheritdoc/>
         public virtual async ValueTask UpdateAsync(TAuthorization authorization, CancellationToken cancellationToken)
         {
-            if (authorization == null)
+            if (authorization is null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }

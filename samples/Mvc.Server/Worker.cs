@@ -30,7 +30,7 @@ namespace Mvc.Server
             {
                 var manager = provider.GetRequiredService<IOpenIddictApplicationManager>();
 
-                if (await manager.FindByClientIdAsync("mvc") == null)
+                if (await manager.FindByClientIdAsync("mvc") is null)
                 {
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
@@ -74,7 +74,7 @@ namespace Mvc.Server
                 // * Scope: openid email profile roles
                 // * Grant type: authorization code
                 // * Request access token locally: yes
-                if (await manager.FindByClientIdAsync("postman") == null)
+                if (await manager.FindByClientIdAsync("postman") is null)
                 {
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
@@ -106,7 +106,7 @@ namespace Mvc.Server
             {
                 var manager = provider.GetRequiredService<IOpenIddictScopeManager>();
 
-                if (await manager.FindByNameAsync("demo_api") == null)
+                if (await manager.FindByNameAsync("demo_api") is null)
                 {
                     await manager.CreateAsync(new OpenIddictScopeDescriptor
                     {

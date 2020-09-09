@@ -16,7 +16,7 @@ namespace OpenIddict.Validation.Owin
     {
         public void Configure(OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }

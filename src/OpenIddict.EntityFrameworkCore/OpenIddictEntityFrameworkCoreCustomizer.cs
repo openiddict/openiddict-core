@@ -29,12 +29,12 @@ namespace OpenIddict.EntityFrameworkCore
 
         public override void Customize(ModelBuilder modelBuilder, DbContext context)
         {
-            if (modelBuilder == null)
+            if (modelBuilder is null)
             {
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
 
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }

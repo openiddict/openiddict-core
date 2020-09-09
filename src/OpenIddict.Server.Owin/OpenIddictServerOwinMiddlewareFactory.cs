@@ -39,13 +39,13 @@ namespace OpenIddict.Server.Owin
         /// </returns>
         public override Task Invoke(IOwinContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
             var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName);
-            if (provider == null)
+            if (provider is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1120));
             }

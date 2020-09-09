@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public static OpenIddictValidationSystemNetHttpBuilder UseSystemNetHttp(this OpenIddictValidationBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -63,12 +63,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictValidationBuilder UseSystemNetHttp(
             this OpenIddictValidationBuilder builder, Action<OpenIddictValidationSystemNetHttpBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

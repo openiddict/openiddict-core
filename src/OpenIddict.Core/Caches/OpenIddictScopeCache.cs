@@ -46,7 +46,7 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         public async ValueTask AddAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -119,7 +119,7 @@ namespace OpenIddict.Core
 
             async Task<TScope?> ExecuteAsync()
             {
-                if ((scope = await _store.FindByIdAsync(identifier, cancellationToken)) != null)
+                if ((scope = await _store.FindByIdAsync(identifier, cancellationToken)) is not null)
                 {
                     await AddAsync(scope, cancellationToken);
                 }
@@ -151,7 +151,7 @@ namespace OpenIddict.Core
 
             async Task<TScope?> ExecuteAsync()
             {
-                if ((scope = await _store.FindByNameAsync(name, cancellationToken)) != null)
+                if ((scope = await _store.FindByNameAsync(name, cancellationToken)) is not null)
                 {
                     await AddAsync(scope, cancellationToken);
                 }
@@ -231,7 +231,7 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         public async ValueTask RemoveAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
@@ -258,17 +258,17 @@ namespace OpenIddict.Core
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         protected virtual async ValueTask CreateEntryAsync(object key, TScope? scope, CancellationToken cancellationToken)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
             using var entry = _cache.CreateEntry(key);
 
-            if (scope != null)
+            if (scope is not null)
             {
                 var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
-                if (signal == null)
+                if (signal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
@@ -290,7 +290,7 @@ namespace OpenIddict.Core
         protected virtual async ValueTask CreateEntryAsync(
             object key, ImmutableArray<TScope> scopes, CancellationToken cancellationToken)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -300,7 +300,7 @@ namespace OpenIddict.Core
             foreach (var scope in scopes)
             {
                 var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
-                if (signal == null)
+                if (signal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
@@ -324,7 +324,7 @@ namespace OpenIddict.Core
         /// </returns>
         protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TScope scope, CancellationToken cancellationToken)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }

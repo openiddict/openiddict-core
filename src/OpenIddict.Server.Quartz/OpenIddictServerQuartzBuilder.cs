@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
         public OpenIddictServerQuartzBuilder Configure(Action<OpenIddictServerQuartzOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

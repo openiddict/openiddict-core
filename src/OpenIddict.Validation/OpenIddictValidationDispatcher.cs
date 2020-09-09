@@ -35,7 +35,7 @@ namespace OpenIddict.Validation
 
         public async ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -103,11 +103,11 @@ namespace OpenIddict.Validation
                         continue;
                     }
 
-                    var handler = descriptor.ServiceDescriptor.ImplementationInstance != null ?
+                    var handler = descriptor.ServiceDescriptor.ImplementationInstance is not null ?
                         descriptor.ServiceDescriptor.ImplementationInstance as IOpenIddictValidationHandler<TContext> :
                         _provider.GetService(descriptor.ServiceDescriptor.ServiceType) as IOpenIddictValidationHandler<TContext>;
 
-                    if (handler == null)
+                    if (handler is null)
                     {
                         throw new InvalidOperationException(SR.FormatID1137(descriptor.ServiceDescriptor.ServiceType));
                     }

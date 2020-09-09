@@ -27,12 +27,12 @@ namespace OpenIddict.Extensions
         /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
         public static IEnumerable<Type> FindGenericBaseTypes(Type type, Type definition)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (definition == null)
+            if (definition is null)
             {
                 throw new ArgumentNullException(nameof(definition));
             }
@@ -60,7 +60,7 @@ namespace OpenIddict.Extensions
 
             else
             {
-                for (var candidate = type; candidate != null; candidate = candidate.BaseType)
+                for (var candidate = type; candidate is not null; candidate = candidate.BaseType)
                 {
                     if (!candidate.IsGenericType && !candidate.IsConstructedGenericType)
                     {

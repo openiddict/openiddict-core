@@ -21,7 +21,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -37,7 +37,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -53,7 +53,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -69,7 +69,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -85,7 +85,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -101,7 +101,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -117,7 +117,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -133,7 +133,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -149,7 +149,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -165,7 +165,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -181,7 +181,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -197,7 +197,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -213,7 +213,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -229,7 +229,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -245,7 +245,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -261,7 +261,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -277,7 +277,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -293,7 +293,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -309,7 +309,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -325,7 +325,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -341,7 +341,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -357,7 +357,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -373,7 +373,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -389,7 +389,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -405,7 +405,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -421,7 +421,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -437,7 +437,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -453,7 +453,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -469,7 +469,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -485,7 +485,7 @@ namespace OpenIddict.Server
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }

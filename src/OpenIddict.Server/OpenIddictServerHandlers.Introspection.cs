@@ -87,7 +87,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -116,7 +116,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1045));
                     }
@@ -149,7 +149,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -210,7 +210,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -252,17 +252,17 @@ namespace OpenIddict.Server
                         [Claims.ClientId] = notification.ClientId
                     };
 
-                    if (notification.IssuedAt != null)
+                    if (notification.IssuedAt is not null)
                     {
                         response[Claims.IssuedAt] = EpochTime.GetIntDate(notification.IssuedAt.Value.UtcDateTime);
                     }
 
-                    if (notification.NotBefore != null)
+                    if (notification.NotBefore is not null)
                     {
                         response[Claims.NotBefore] = EpochTime.GetIntDate(notification.NotBefore.Value.UtcDateTime);
                     }
 
-                    if (notification.ExpiresAt != null)
+                    if (notification.ExpiresAt is not null)
                     {
                         response[Claims.ExpiresAt] = EpochTime.GetIntDate(notification.ExpiresAt.Value.UtcDateTime);
                     }
@@ -313,7 +313,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -355,7 +355,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -394,7 +394,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -443,7 +443,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -453,7 +453,7 @@ namespace OpenIddict.Server
                     // Retrieve the application details corresponding to the requested client_id.
                     // If no entity can be found, this likely indicates that the client_id is invalid.
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID7099), context.ClientId);
 
@@ -495,7 +495,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -503,7 +503,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -567,7 +567,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -575,7 +575,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -631,7 +631,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -639,7 +639,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -681,7 +681,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -733,12 +733,12 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
                         !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
@@ -779,13 +779,13 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
-                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     // When the introspected token is an access token, the caller must be listed either as a presenter
                     // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
@@ -843,7 +843,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -876,12 +876,12 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     context.TokenId = context.Principal.GetClaim(Claims.JwtId);
                     context.TokenUsage = context.Principal.GetTokenType();
@@ -936,13 +936,13 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(HandleIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
                     Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), SR.FormatID5000(Parameters.ClientId));
-                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     // Don't return application-specific claims if the token is not an access token.
                     if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken))
@@ -959,7 +959,7 @@ namespace OpenIddict.Server
                     }
 
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -1056,7 +1056,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ApplyIntrospectionResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }

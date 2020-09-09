@@ -24,7 +24,7 @@ namespace OpenIddict.EntityFrameworkCore
     {
         public void Configure(EntityTypeBuilder<TScope> builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }

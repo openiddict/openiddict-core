@@ -87,7 +87,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -95,7 +95,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -189,7 +189,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -197,14 +197,14 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 // Don't require that the request host be present if the request is not handled
                 // by an OpenIddict endpoint or if an explicit issuer URL was already set.
-                if (context.Issuer != null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
+                if (context.Issuer is not null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
                 {
                     return default;
                 }
@@ -255,7 +255,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -263,7 +263,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -308,13 +308,13 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties != null)
+                if (properties is not null)
                 {
                     context.Response.Error = properties.GetString(Properties.Error);
                     context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
@@ -346,15 +346,15 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties == null)
+                if (properties is null)
                 {
                     return default;
                 }
@@ -400,7 +400,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -408,7 +408,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -453,7 +453,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -461,7 +461,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -533,7 +533,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -541,7 +541,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -609,17 +609,17 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -708,7 +708,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -716,12 +716,12 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
 
                 string header = request.Headers[HeaderNames.Authorization];
                 if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -759,7 +759,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -790,7 +790,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -798,12 +798,12 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 // When client authentication is made using basic authentication, the authorization server MUST return
                 // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
@@ -850,7 +850,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -858,7 +858,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -897,7 +897,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -905,12 +905,12 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 // When client authentication is made using basic authentication, the authorization server MUST return
                 // a 401 response with a valid WWW-Authenticate header containing the HTTP Basic authentication scheme.
@@ -1011,7 +1011,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1019,7 +1019,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -1057,7 +1057,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1065,7 +1065,7 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
@@ -1114,7 +1114,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1122,12 +1122,12 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
@@ -1162,7 +1162,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1170,12 +1170,12 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
@@ -1186,7 +1186,7 @@ namespace OpenIddict.Server.AspNetCore
                 // If it was not registered or enabled, let the default OpenIddict server handlers render
                 // a default error page instead of delegating the rendering to the status code middleware.
                 var feature = response.HttpContext.Features.Get<IStatusCodePagesFeature>();
-                if (feature == null || !feature.Enabled)
+                if (feature is null || !feature.Enabled)
                 {
                     return default;
                 }
@@ -1221,7 +1221,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1229,12 +1229,12 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
-                Debug.Assert(context.Transaction.Response != null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
 
                 if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
@@ -1298,7 +1298,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -1306,13 +1306,13 @@ namespace OpenIddict.Server.AspNetCore
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
+                if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     response.Redirect(properties.RedirectUri);
 
@@ -1345,7 +1345,7 @@ namespace OpenIddict.Server.AspNetCore
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }

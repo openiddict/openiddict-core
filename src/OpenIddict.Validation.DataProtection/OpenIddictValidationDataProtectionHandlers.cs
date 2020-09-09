@@ -56,13 +56,13 @@ namespace OpenIddict.Validation.DataProtection
             /// <inheritdoc/>
             public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                if (context.Principal is not null)
                 {
                     return default;
                 }
@@ -102,7 +102,7 @@ namespace OpenIddict.Validation.DataProtection
                     context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID7153), context.Token);
                 }
 
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
                     context.Reject(
                         error: Errors.InvalidToken,

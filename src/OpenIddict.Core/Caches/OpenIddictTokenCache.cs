@@ -45,7 +45,7 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         public async ValueTask AddAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -396,7 +396,7 @@ namespace OpenIddict.Core
 
             async Task<TToken?> ExecuteAsync()
             {
-                if ((token = await _store.FindByIdAsync(identifier, cancellationToken)) != null)
+                if ((token = await _store.FindByIdAsync(identifier, cancellationToken)) is not null)
                 {
                     await AddAsync(token, cancellationToken);
                 }
@@ -430,7 +430,7 @@ namespace OpenIddict.Core
 
             async Task<TToken?> ExecuteAsync()
             {
-                if ((token = await _store.FindByReferenceIdAsync(identifier, cancellationToken)) != null)
+                if ((token = await _store.FindByReferenceIdAsync(identifier, cancellationToken)) is not null)
                 {
                     await AddAsync(token, cancellationToken);
                 }
@@ -485,7 +485,7 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         public async ValueTask RemoveAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -512,17 +512,17 @@ namespace OpenIddict.Core
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         protected virtual async ValueTask CreateEntryAsync(object key, TToken? token, CancellationToken cancellationToken)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
             using var entry = _cache.CreateEntry(key);
 
-            if (token != null)
+            if (token is not null)
             {
                 var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                if (signal == null)
+                if (signal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
@@ -544,7 +544,7 @@ namespace OpenIddict.Core
         protected virtual async ValueTask CreateEntryAsync(
             object key, ImmutableArray<TToken> tokens, CancellationToken cancellationToken)
         {
-            if (key == null)
+            if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -554,7 +554,7 @@ namespace OpenIddict.Core
             foreach (var token in tokens)
             {
                 var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                if (signal == null)
+                if (signal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
@@ -578,7 +578,7 @@ namespace OpenIddict.Core
         /// </returns>
         protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }

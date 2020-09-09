@@ -43,7 +43,7 @@ namespace OpenIddict.EntityFrameworkCore
         public IOpenIddictAuthorizationStore<TAuthorization> Get<TAuthorization>() where TAuthorization : class
         {
             var store = _provider.GetService<IOpenIddictAuthorizationStore<TAuthorization>>();
-            if (store != null)
+            if (store is not null)
             {
                 return store;
             }
@@ -51,13 +51,13 @@ namespace OpenIddict.EntityFrameworkCore
             var type = _cache.GetOrAdd(typeof(TAuthorization), key =>
             {
                 var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkCoreAuthorization<,,>));
-                if (root == null)
+                if (root is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1253));
                 }
 
                 var context = _options.CurrentValue.DbContextType;
-                if (context == null)
+                if (context is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1252));
                 }

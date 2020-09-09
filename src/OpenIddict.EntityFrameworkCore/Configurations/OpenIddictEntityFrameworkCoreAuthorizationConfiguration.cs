@@ -28,7 +28,7 @@ namespace OpenIddict.EntityFrameworkCore
     {
         public void Configure(EntityTypeBuilder<TAuthorization> builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }

@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder Configure(Action<OpenIddictCoreOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -74,13 +74,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder AddApplicationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -130,13 +130,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder AddAuthorizationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -186,13 +186,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder AddScopeStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -242,13 +242,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder AddTokenStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -296,13 +296,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceApplicationManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -353,7 +353,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public OpenIddictCoreBuilder ReplaceApplicationStoreResolver(
             Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -390,13 +390,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceAuthorizationManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -447,7 +447,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver(
             Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -484,13 +484,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceScopeManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -541,7 +541,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public OpenIddictCoreBuilder ReplaceScopeStoreResolver(
             Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -578,13 +578,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceTokenManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>));
-            if (root == null)
+            if (root is null)
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
@@ -635,7 +635,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public OpenIddictCoreBuilder ReplaceTokenStoreResolver(
             Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -684,7 +684,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder SetDefaultApplicationEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -711,7 +711,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder SetDefaultAuthorizationEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -738,7 +738,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder SetDefaultScopeEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
@@ -765,7 +765,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder SetDefaultTokenEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }

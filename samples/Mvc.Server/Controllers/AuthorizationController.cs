@@ -62,7 +62,7 @@ namespace Mvc.Server
             // Retrieve the user principal stored in the authentication cookie.
             // If it can't be extracted, redirect the user to the login page.
             var result = await HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-            if (result == null || !result.Succeeded)
+            if (result is null || !result.Succeeded)
             {
                 // If the client application requested promptless authentication,
                 // return an error indicating that the user is not logged in.
@@ -110,7 +110,7 @@ namespace Mvc.Server
 
             // If a max_age parameter was provided, ensure that the cookie is not too old.
             // If it's too old, automatically redirect the user agent to the login page.
-            if (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
+            if (request.MaxAge is not null && result.Properties?.IssuedUtc is not null &&
                 DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value))
             {
                 if (request.HasPrompt(Prompts.None))
@@ -179,7 +179,7 @@ namespace Mvc.Server
                     // Automatically create a permanent authorization to avoid requiring explicit consent
                     // for future authorization or token requests containing the same scopes.
                     var authorization = authorizations.LastOrDefault();
-                    if (authorization == null)
+                    if (authorization is null)
                     {
                         authorization = await _authorizationManager.CreateAsync(
                             principal: principal,
@@ -269,7 +269,7 @@ namespace Mvc.Server
             // Automatically create a permanent authorization to avoid requiring explicit consent
             // for future authorization or token requests containing the same scopes.
             var authorization = authorizations.LastOrDefault();
-            if (authorization == null)
+            if (authorization is null)
             {
                 authorization = await _authorizationManager.CreateAsync(
                     principal: principal,
@@ -433,7 +433,7 @@ namespace Mvc.Server
             if (request.IsPasswordGrantType())
             {
                 var user = await _userManager.FindByNameAsync(request.Username);
-                if (user == null)
+                if (user is null)
                 {
                     return Forbid(
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
@@ -484,7 +484,7 @@ namespace Mvc.Server
                 // when the user password/roles change, use the following line instead:
                 // var user = _signInManager.ValidateSecurityStampAsync(info.Principal);
                 var user = await _userManager.GetUserAsync(principal);
-                if (user == null)
+                if (user is null)
                 {
                     return Forbid(
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,

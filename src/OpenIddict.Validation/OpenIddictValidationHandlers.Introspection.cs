@@ -57,7 +57,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -87,7 +87,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -117,7 +117,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -169,7 +169,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -284,7 +284,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -303,7 +303,7 @@ namespace OpenIddict.Validation
                             return default;
                         }
 
-                        if (context.Issuer != null && context.Issuer != uri)
+                        if (context.Issuer is not null && context.Issuer != uri)
                         {
                             context.Reject(
                                 error: Errors.ServerError,
@@ -335,7 +335,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -379,7 +379,7 @@ namespace OpenIddict.Validation
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }

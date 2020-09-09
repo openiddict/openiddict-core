@@ -34,7 +34,7 @@ namespace OpenIddict.Validation.ServerIntegration
         /// <param name="options">The options instance to initialize.</param>
         public void Configure(OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -67,7 +67,7 @@ namespace OpenIddict.Validation.ServerIntegration
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure(string name, OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }

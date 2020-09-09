@@ -38,7 +38,7 @@ namespace OpenIddict.Validation
         /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
         public async ValueTask<OpenIdConnectConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
         {
-            if (address == null)
+            if (address is null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
@@ -69,7 +69,7 @@ namespace OpenIddict.Validation
                 var response = await ExtractConfigurationResponseAsync();
 
                 var configuration = await HandleConfigurationResponseAsync();
-                if (configuration == null)
+                if (configuration is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1144));
                 }
@@ -131,7 +131,7 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
-                    Debug.Assert(context.Response != null, SR.GetResourceString(SR.ID5007));
+                    Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID5007));
 
                     return context.Response;
                 }
@@ -179,7 +179,7 @@ namespace OpenIddict.Validation
         /// <returns>The security keys retrieved from the remote server.</returns>
         public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri address, CancellationToken cancellationToken = default)
         {
-            if (address == null)
+            if (address is null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
@@ -211,7 +211,7 @@ namespace OpenIddict.Validation
                 var response = await ExtractCryptographyResponseAsync();
 
                 var keys = await HandleCryptographyResponseAsync();
-                if (keys == null)
+                if (keys is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1146));
                 }
@@ -273,7 +273,7 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
-                    Debug.Assert(context.Response != null, SR.GetResourceString(SR.ID5007));
+                    Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID5007));
 
                     return context.Response;
                 }
@@ -334,7 +334,7 @@ namespace OpenIddict.Validation
         public async ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
             Uri address, string token, string? type, CancellationToken cancellationToken = default)
         {
-            if (address == null)
+            if (address is null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
@@ -370,7 +370,7 @@ namespace OpenIddict.Validation
                 var response = await ExtractIntrospectionResponseAsync();
 
                 var principal = await HandleIntrospectionResponseAsync();
-                if (principal == null)
+                if (principal is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1156));
                 }
@@ -434,7 +434,7 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
-                    Debug.Assert(context.Response != null, SR.GetResourceString(SR.ID5007));
+                    Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID5007));
 
                     return context.Response;
                 }
@@ -458,7 +458,7 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
-                    Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                     return context.Principal;
                 }
@@ -521,7 +521,7 @@ namespace OpenIddict.Validation
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                Debug.Assert(context.Principal != null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
 
                 return context.Principal;
             }

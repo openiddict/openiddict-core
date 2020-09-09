@@ -33,7 +33,7 @@ namespace OpenIddict.MongoDb
         public IOpenIddictScopeStore<TScope> Get<TScope>() where TScope : class
         {
             var store = _provider.GetService<IOpenIddictScopeStore<TScope>>();
-            if (store != null)
+            if (store is not null)
             {
                 return store;
             }

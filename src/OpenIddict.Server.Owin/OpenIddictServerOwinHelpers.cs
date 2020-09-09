@@ -27,7 +27,7 @@ namespace Owin
         /// <returns>The <see cref="IAppBuilder"/>.</returns>
         public static IAppBuilder UseOpenIddictServer(this IAppBuilder app)
         {
-            if (app == null)
+            if (app is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
@@ -42,7 +42,7 @@ namespace Owin
         /// <returns>The <see cref="IOwinRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
         public static IOwinRequest? GetOwinRequest(this OpenIddictServerTransaction transaction)
         {
-            if (transaction == null)
+            if (transaction is null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
@@ -67,7 +67,7 @@ namespace Owin
         /// <returns>The <see cref="OpenIddictServerEndpointType"/>.</returns>
         public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType(this IOwinContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -82,7 +82,7 @@ namespace Owin
         /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
         public static OpenIddictRequest? GetOpenIddictServerRequest(this IOwinContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -97,7 +97,7 @@ namespace Owin
         /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
         public static OpenIddictResponse? GetOpenIddictServerResponse(this IOwinContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }

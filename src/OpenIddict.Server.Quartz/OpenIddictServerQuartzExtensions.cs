@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
         public static OpenIddictServerQuartzBuilder UseQuartz(this OpenIddictServerBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -83,12 +83,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictServerBuilder UseQuartz(
             this OpenIddictServerBuilder builder, Action<OpenIddictServerQuartzBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

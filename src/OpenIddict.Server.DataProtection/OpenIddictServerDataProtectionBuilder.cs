@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
         public OpenIddictServerDataProtectionBuilder Configure(Action<OpenIddictServerDataProtectionOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
         public OpenIddictServerDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
         {
-            if (provider == null)
+            if (provider is null)
             {
                 throw new ArgumentNullException(nameof(provider));
             }
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
         public OpenIddictServerDataProtectionBuilder UseFormatter(IOpenIddictServerDataProtectionFormatter formatter)
         {
-            if (formatter == null)
+            if (formatter is null)
             {
                 throw new ArgumentNullException(nameof(formatter));
             }

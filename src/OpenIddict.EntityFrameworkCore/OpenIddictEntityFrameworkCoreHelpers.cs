@@ -68,7 +68,7 @@ namespace Microsoft.EntityFrameworkCore
             where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -122,7 +122,7 @@ namespace Microsoft.EntityFrameworkCore
             where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -145,7 +145,7 @@ namespace Microsoft.EntityFrameworkCore
         internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(
             this IQueryable<T> source, CancellationToken cancellationToken = default)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }

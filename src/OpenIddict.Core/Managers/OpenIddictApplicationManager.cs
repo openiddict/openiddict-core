@@ -111,7 +111,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<long> CountAsync<TResult>(
             Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -143,7 +143,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask CreateAsync(TApplication application, string? secret, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -218,13 +218,13 @@ namespace OpenIddict.Core
         public virtual async ValueTask<TApplication> CreateAsync(
             OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
             var application = await Store.InstantiateAsync(cancellationToken);
-            if (application == null)
+            if (application is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1207));
             }
@@ -255,7 +255,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask DeleteAsync(TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -289,7 +289,7 @@ namespace OpenIddict.Core
                 await Store.FindByClientIdAsync(identifier, cancellationToken) :
                 await Cache.FindByClientIdAsync(identifier, cancellationToken);
 
-            if (application == null)
+            if (application is null)
             {
                 return null;
             }
@@ -326,7 +326,7 @@ namespace OpenIddict.Core
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
-            if (application == null)
+            if (application is null)
             {
                 return null;
             }
@@ -440,7 +440,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<TResult> GetAsync<TResult>(
             Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -464,7 +464,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -484,7 +484,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<string?> GetClientIdAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -504,7 +504,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<string?> GetClientTypeAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -524,7 +524,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<string?> GetConsentTypeAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -550,7 +550,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<string?> GetDisplayNameAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -570,13 +570,13 @@ namespace OpenIddict.Core
         public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
-            if (names == null || names.Count == 0)
+            if (names is null || names.Count == 0)
             {
                 return ImmutableDictionary.Create<CultureInfo, string>();
             }
@@ -595,7 +595,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual ValueTask<string?> GetIdAsync(TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -633,18 +633,18 @@ namespace OpenIddict.Core
         public virtual async ValueTask<string?> GetLocalizedDisplayNameAsync(
             TApplication application, CultureInfo culture, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (culture == null)
+            if (culture is null)
             {
                 throw new ArgumentNullException(nameof(culture));
             }
 
             var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
-            if (names == null || names.IsEmpty)
+            if (names is null || names.IsEmpty)
             {
                 return await Store.GetDisplayNameAsync(application, cancellationToken);
             }
@@ -676,7 +676,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -696,7 +696,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -716,7 +716,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<ImmutableArray<string>> GetRedirectUrisAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -736,7 +736,7 @@ namespace OpenIddict.Core
         public virtual ValueTask<ImmutableArray<string>> GetRequirementsAsync(
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -754,7 +754,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> HasClientTypeAsync(
             TApplication application, string type, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -777,7 +777,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> HasConsentTypeAsync(
             TApplication application, string type, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -800,7 +800,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> HasPermissionAsync(
             TApplication application, string permission, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -823,7 +823,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> HasRequirementAsync(
             TApplication application, string requirement, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -857,7 +857,7 @@ namespace OpenIddict.Core
         public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
             Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -878,7 +878,7 @@ namespace OpenIddict.Core
             Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -898,12 +898,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask PopulateAsync(TApplication application,
             OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -935,12 +935,12 @@ namespace OpenIddict.Core
             OpenIddictApplicationDescriptor descriptor,
             TApplication application, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -1008,7 +1008,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask UpdateAsync(TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -1063,7 +1063,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async ValueTask UpdateAsync(TApplication application, string? secret, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -1094,12 +1094,12 @@ namespace OpenIddict.Core
         public virtual async ValueTask UpdateAsync(TApplication application,
             OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -1129,7 +1129,7 @@ namespace OpenIddict.Core
         public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
             TApplication application, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -1148,7 +1148,7 @@ namespace OpenIddict.Core
                 // the casing is different). To avoid issues when the client identifier is part of an index
                 // using the same collation, an error is added even if the two identifiers don't exactly match.
                 var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
-                if (other != null && !string.Equals(
+                if (other is not null && !string.Equals(
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
                 {
@@ -1232,7 +1232,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> ValidateClientSecretAsync(
             TApplication application, string secret, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -1279,7 +1279,7 @@ namespace OpenIddict.Core
         public virtual async ValueTask<bool> ValidateRedirectUriAsync(
             TApplication application, string address, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }

@@ -23,12 +23,12 @@ namespace OpenIddict.Validation.Owin
         {
             public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Transaction.GetOwinRequest() != null);
+                return new ValueTask<bool>(context.Transaction.GetOwinRequest() is not null);
             }
         }
     }

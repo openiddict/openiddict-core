@@ -67,7 +67,7 @@ namespace Mvc.Server.Controllers
         {
             ManageMessageId? message = ManageMessageId.Error;
             var user = await GetCurrentUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 var result = await _userManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
                 if (result.Succeeded)
@@ -110,7 +110,7 @@ namespace Mvc.Server.Controllers
         public async Task<IActionResult> EnableTwoFactorAuthentication()
         {
             var user = await GetCurrentUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 await _userManager.SetTwoFactorEnabledAsync(user, true);
                 await _signInManager.SignInAsync(user, isPersistent: false);
@@ -126,7 +126,7 @@ namespace Mvc.Server.Controllers
         public async Task<IActionResult> DisableTwoFactorAuthentication()
         {
             var user = await GetCurrentUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 await _userManager.SetTwoFactorEnabledAsync(user, false);
                 await _signInManager.SignInAsync(user, isPersistent: false);
@@ -142,7 +142,7 @@ namespace Mvc.Server.Controllers
         {
             var code = await _userManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
             // Send an SMS to verify the phone number
-            return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
+            return phoneNumber is null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
         }
 
         //
@@ -156,7 +156,7 @@ namespace Mvc.Server.Controllers
                 return View(model);
             }
             var user = await GetCurrentUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 var result = await _userManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
                 if (result.Succeeded)
@@ -177,7 +177,7 @@ namespace Mvc.Server.Controllers
         public async Task<IActionResult> RemovePhoneNumber()
         {
             var user = await GetCurrentUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 var result = await _userManager.SetPhoneNumberAsync(user, null);
                 if (result.Succeeded)
@@ -208,7 +208,7 @@ namespace Mvc.Server.Controllers
                 return View(model);
             }
             var user = await GetCurrentUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                 if (result.Succeeded)
@@ -243,7 +243,7 @@ namespace Mvc.Server.Controllers
             }
 
             var user = await GetCurrentUserAsync();
-            if (user != null)
+            if (user is not null)
             {
                 var result = await _userManager.AddPasswordAsync(user, model.NewPassword);
                 if (result.Succeeded)
@@ -267,13 +267,13 @@ namespace Mvc.Server.Controllers
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
             var user = await GetCurrentUserAsync();
-            if (user == null)
+            if (user is null)
             {
                 return View("Error");
             }
             var userLogins = await _userManager.GetLoginsAsync(user);
             var otherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).Where(auth => userLogins.All(ul => auth.Name != ul.LoginProvider)).ToList();
-            ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLogins.Count > 1;
+            ViewData["ShowRemoveButton"] = user.PasswordHash is not null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
             {
                 CurrentLogins = userLogins,
@@ -299,12 +299,12 @@ namespace Mvc.Server.Controllers
         public async Task<ActionResult> LinkLoginCallback()
         {
             var user = await GetCurrentUserAsync();
-            if (user == null)
+            if (user is null)
             {
                 return View("Error");
             }
             var info = await _signInManager.GetExternalLoginInfoAsync(await _userManager.GetUserIdAsync(user));
-            if (info == null)
+            if (info is null)
             {
                 return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
             }

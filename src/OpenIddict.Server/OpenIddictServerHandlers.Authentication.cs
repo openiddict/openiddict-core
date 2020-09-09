@@ -88,7 +88,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -117,7 +117,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1026));
                     }
@@ -150,7 +150,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -216,7 +216,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -245,7 +245,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Principal != null)
+                    if (notification.Principal is not null)
                     {
                         var @event = new ProcessSignInContext(context.Transaction)
                         {
@@ -305,7 +305,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -347,7 +347,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -386,7 +386,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -425,7 +425,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -465,7 +465,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -546,7 +546,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -599,7 +599,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -679,7 +679,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -728,7 +728,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -776,7 +776,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -817,7 +817,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -923,7 +923,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -931,7 +931,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID7044), context.ClientId);
 
@@ -972,7 +972,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -980,7 +980,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -1030,7 +1030,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1038,7 +1038,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -1107,7 +1107,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1121,7 +1121,7 @@ namespace OpenIddict.Server
                     // even if the service was registered and resolved from the dependency injection container.
                     if (scopes.Count != 0 && !context.Options.EnableDegradedMode)
                     {
-                        Debug.Assert(_scopeManager != null, SR.GetResourceString(SR.ID5011));
+                        Debug.Assert(_scopeManager is not null, SR.GetResourceString(SR.ID5011));
 
                         await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {
@@ -1175,7 +1175,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1183,7 +1183,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -1230,7 +1230,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1238,7 +1238,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -1327,7 +1327,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1335,7 +1335,7 @@ namespace OpenIddict.Server
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -1392,7 +1392,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1407,7 +1407,7 @@ namespace OpenIddict.Server
                     }
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
@@ -1444,12 +1444,12 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Request == null)
+                    if (context.Request is null)
                     {
                         return default;
                     }
@@ -1459,7 +1459,7 @@ namespace OpenIddict.Server
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if an error
                     // is returned from the ExtractAuthorizationRequest/ValidateAuthorizationRequest events).
-                    if (notification != null && !notification.IsRejected)
+                    if (notification is not null && !notification.IsRejected)
                     {
                         context.RedirectUri = notification.RedirectUri;
                     }
@@ -1487,12 +1487,12 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Request == null)
+                    if (context.Request is null)
                     {
                         return default;
                     }
@@ -1529,7 +1529,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }

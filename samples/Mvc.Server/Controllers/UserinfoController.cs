@@ -26,7 +26,7 @@ namespace Mvc.Server.Controllers
         public async Task<IActionResult> Userinfo()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            if (user is null)
             {
                 return Challenge(
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,

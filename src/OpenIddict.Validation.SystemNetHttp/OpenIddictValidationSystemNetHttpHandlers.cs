@@ -48,7 +48,7 @@ namespace OpenIddict.Validation.SystemNetHttp
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -83,7 +83,7 @@ namespace OpenIddict.Validation.SystemNetHttp
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -118,17 +118,17 @@ namespace OpenIddict.Validation.SystemNetHttp
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
                 var request = context.Transaction.GetHttpRequestMessage();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }
@@ -139,7 +139,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 using var content = new FormUrlEncodedContent(
                     from parameter in context.Transaction.Request.GetParameters()
                     let values = (string[]?) parameter.Value
-                    where values != null
+                    where values is not null
                     from value in values
                     select new KeyValuePair<string, string>(parameter.Key, value));
 
@@ -171,17 +171,17 @@ namespace OpenIddict.Validation.SystemNetHttp
             /// <inheritdoc/>
             public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request != null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
                 var request = context.Transaction.GetHttpRequestMessage();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }
@@ -189,7 +189,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 request.Content = new FormUrlEncodedContent(
                     from parameter in context.Transaction.Request.GetParameters()
                     let values = (string[]?) parameter.Value
-                    where values != null
+                    where values is not null
                     from value in values
                     select new KeyValuePair<string, string>(parameter.Key, value));
 
@@ -221,7 +221,7 @@ namespace OpenIddict.Validation.SystemNetHttp
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -229,20 +229,20 @@ namespace OpenIddict.Validation.SystemNetHttp
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
                 var request = context.Transaction.GetHttpRequestMessage();
-                if (request == null)
+                if (request is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }
 
                 var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
                 using var client = _factory.CreateClient(assembly.Name);
-                if (client == null)
+                if (client is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1173));
                 }
 
                 var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1174));
                 }
@@ -271,7 +271,7 @@ namespace OpenIddict.Validation.SystemNetHttp
             /// <inheritdoc/>
             public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -279,7 +279,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
                 var response = context.Transaction.GetHttpResponseMessage();
-                if (response == null)
+                if (response is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }

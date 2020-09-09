@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public static OpenIddictValidationDataProtectionBuilder UseDataProtection(this OpenIddictValidationBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -58,12 +58,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictValidationBuilder UseDataProtection(
             this OpenIddictValidationBuilder builder, Action<OpenIddictValidationDataProtectionBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictCoreBuilder AddCore(this OpenIddictBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped(provider =>
             {
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-                if (options.DefaultApplicationType == null)
+                if (options.DefaultApplicationType is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1272));
                 }
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped(provider =>
             {
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-                if (options.DefaultAuthorizationType == null)
+                if (options.DefaultAuthorizationType is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1273));
                 }
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped(provider =>
             {
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-                if (options.DefaultScopeType == null)
+                if (options.DefaultScopeType is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1274));
                 }
@@ -93,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped(provider =>
             {
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
-                if (options.DefaultTokenType == null)
+                if (options.DefaultTokenType is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1275));
                 }
@@ -126,12 +126,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddCore(this OpenIddictBuilder builder, Action<OpenIddictCoreBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

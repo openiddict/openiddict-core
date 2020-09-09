@@ -33,18 +33,18 @@ namespace OpenIddict.Validation
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure(string name, OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.JsonWebTokenHandler == null)
+            if (options.JsonWebTokenHandler is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1074));
             }
 
-            if (options.Configuration == null && options.ConfigurationManager == null &&
-                options.Issuer == null && options.MetadataAddress == null)
+            if (options.Configuration is null && options.ConfigurationManager is null &&
+                options.Issuer is null && options.MetadataAddress is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1127));
             }
@@ -56,7 +56,7 @@ namespace OpenIddict.Validation
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1128));
                 }
 
-                if (options.Issuer == null && options.MetadataAddress == null)
+                if (options.Issuer is null && options.MetadataAddress is null)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID1129));
                 }
@@ -90,9 +90,9 @@ namespace OpenIddict.Validation
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID1086));
             }
 
-            if (options.ConfigurationManager == null)
+            if (options.ConfigurationManager is null)
             {
-                if (options.Configuration != null)
+                if (options.Configuration is not null)
                 {
                     options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(options.Configuration);
                 }
@@ -105,14 +105,14 @@ namespace OpenIddict.Validation
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1134));
                     }
 
-                    if (options.MetadataAddress == null)
+                    if (options.MetadataAddress is null)
                     {
                         options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
                     }
 
                     if (!options.MetadataAddress.IsAbsoluteUri)
                     {
-                        if (options.Issuer == null || !options.Issuer.IsAbsoluteUri)
+                        if (options.Issuer is null || !options.Issuer.IsAbsoluteUri)
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID1135));
                         }

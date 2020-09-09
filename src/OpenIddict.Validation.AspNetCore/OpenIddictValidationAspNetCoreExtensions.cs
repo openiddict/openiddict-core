@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
         public static OpenIddictValidationAspNetCoreBuilder UseAspNetCore(this OpenIddictValidationBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -68,12 +68,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictValidationBuilder UseAspNetCore(
             this OpenIddictValidationBuilder builder, Action<OpenIddictValidationAspNetCoreBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

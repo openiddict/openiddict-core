@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public static OpenIddictServerDataProtectionBuilder UseDataProtection(this OpenIddictServerBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -68,12 +68,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public static OpenIddictServerBuilder UseDataProtection(
             this OpenIddictServerBuilder builder, Action<OpenIddictServerDataProtectionBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

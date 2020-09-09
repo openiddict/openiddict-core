@@ -90,7 +90,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -119,7 +119,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1036));
                     }
@@ -152,7 +152,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -209,7 +209,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -295,7 +295,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -337,7 +337,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -374,7 +374,7 @@ namespace OpenIddict.Server
                     static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri endpoint)
                     {
                         // If the endpoint is disabled (i.e a null address is specified), return null.
-                        if (endpoint == null)
+                        if (endpoint is null)
                         {
                             return null;
                         }
@@ -386,7 +386,7 @@ namespace OpenIddict.Server
                         }
 
                         // At this stage, throw an exception if the issuer cannot be retrieved.
-                        if (issuer == null || !issuer.IsAbsoluteUri)
+                        if (issuer is null || !issuer.IsAbsoluteUri)
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID1022));
                         }
@@ -428,7 +428,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -457,7 +457,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -486,7 +486,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -516,24 +516,24 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.IntrospectionEndpoint != null)
+                    if (context.IntrospectionEndpoint is not null)
                     {
                         context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                         context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
                     }
 
-                    if (context.RevocationEndpoint != null)
+                    if (context.RevocationEndpoint is not null)
                     {
                         context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                         context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
                     }
 
-                    if (context.TokenEndpoint != null)
+                    if (context.TokenEndpoint is not null)
                     {
                         context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                         context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
@@ -562,7 +562,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -591,7 +591,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -620,7 +620,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -649,7 +649,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -678,7 +678,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -744,7 +744,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -783,7 +783,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -812,7 +812,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID1037));
                     }
@@ -845,7 +845,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -902,7 +902,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1030,7 +1030,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1072,7 +1072,7 @@ namespace OpenIddict.Server
                 /// <inheritdoc/>
                 public ValueTask HandleAsync(HandleCryptographyRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1149,7 +1149,7 @@ namespace OpenIddict.Server
                                 X509SecurityKey x509SecurityKey when x509SecurityKey.PublicKey is RSA algorithm =>
                                     algorithm.ExportParameters(includePrivateParameters: false),
 
-                                RsaSecurityKey rsaSecurityKey when rsaSecurityKey.Rsa != null =>
+                                RsaSecurityKey rsaSecurityKey when rsaSecurityKey.Rsa is not null =>
                                     rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false),
 
                                 RsaSecurityKey rsaSecurityKey => rsaSecurityKey.Parameters,
@@ -1157,15 +1157,15 @@ namespace OpenIddict.Server
                                 _ => (RSAParameters?) null
                             };
 
-                            if (parameters == null)
+                            if (parameters is null)
                             {
                                 context.Logger.LogWarning(SR.GetResourceString(SR.ID7073), credentials.Key.GetType().Name);
 
                                 continue;
                             }
 
-                            Debug.Assert(parameters.Value.Exponent != null &&
-                                         parameters.Value.Modulus != null, SR.GetResourceString(SR.ID5003));
+                            Debug.Assert(parameters.Value.Exponent is not null &&
+                                         parameters.Value.Modulus is not null, SR.GetResourceString(SR.ID5003));
 
                             key.Kty = JsonWebAlgorithmsKeyTypes.RSA;
 
@@ -1185,21 +1185,21 @@ namespace OpenIddict.Server
                                 X509SecurityKey x509SecurityKey when x509SecurityKey.PublicKey is ECDsa algorithm =>
                                     algorithm.ExportParameters(includePrivateParameters: false),
 
-                                ECDsaSecurityKey ecdsaSecurityKey when ecdsaSecurityKey.ECDsa != null =>
+                                ECDsaSecurityKey ecdsaSecurityKey when ecdsaSecurityKey.ECDsa is not null =>
                                     ecdsaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false),
 
                                 _ => (ECParameters?) null
                             };
 
-                            if (parameters == null)
+                            if (parameters is null)
                             {
                                 context.Logger.LogWarning(SR.GetResourceString(SR.ID7074), credentials.Key.GetType().Name);
 
                                 continue;
                             }
 
-                            Debug.Assert(parameters.Value.Q.X != null &&
-                                         parameters.Value.Q.Y != null, SR.GetResourceString(SR.ID5004));
+                            Debug.Assert(parameters.Value.Q.X is not null &&
+                                         parameters.Value.Q.Y is not null, SR.GetResourceString(SR.ID5004));
 
                             Debug.Assert(parameters.Value.Curve.IsNamed, SR.GetResourceString(SR.ID5005));
 
@@ -1218,7 +1218,7 @@ namespace OpenIddict.Server
                         // If the signing key is embedded in a X.509 certificate, set
                         // the x5t and x5c parameters using the certificate details.
                         var certificate = (credentials.Key as X509SecurityKey)?.Certificate;
-                        if (certificate != null)
+                        if (certificate is not null)
                         {
                             // x5t must be base64url-encoded.
                             // See https://tools.ietf.org/html/rfc7517#section-4.8
@@ -1250,7 +1250,7 @@ namespace OpenIddict.Server
                         return certificate.GetCertHash(algorithm);
 #else
                         using var hash = CryptoConfig.CreateFromName(algorithm.Name) as HashAlgorithm;
-                        if (hash == null || hash is KeyedHashAlgorithm)
+                        if (hash is null || hash is KeyedHashAlgorithm)
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID1216));
                         }

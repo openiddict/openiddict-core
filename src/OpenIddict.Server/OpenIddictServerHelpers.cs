@@ -24,7 +24,7 @@ namespace OpenIddict.Server
         public static TProperty? GetProperty<TProperty>(
             this OpenIddictServerTransaction transaction, string name) where TProperty : class
         {
-            if (transaction == null)
+            if (transaction is null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
@@ -54,7 +54,7 @@ namespace OpenIddict.Server
             this OpenIddictServerTransaction transaction,
             string name, TProperty? value) where TProperty : class
         {
-            if (transaction == null)
+            if (transaction is null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
@@ -64,7 +64,7 @@ namespace OpenIddict.Server
                 throw new ArgumentException(SR.GetResourceString(SR.ID1105), nameof(name));
             }
 
-            if (value == null)
+            if (value is null)
             {
                 transaction.Properties.Remove(name);
             }

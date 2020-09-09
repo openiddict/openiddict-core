@@ -28,7 +28,7 @@ namespace OpenIddict.Validation.SystemNetHttp
 
         public void Configure(OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -42,7 +42,7 @@ namespace OpenIddict.Validation.SystemNetHttp
 
         public void Configure(string name, HttpClientFactoryOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -69,7 +69,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
 #endif
                 var policy = options.CurrentValue.HttpErrorPolicy;
-                if (policy != null)
+                if (policy is not null)
                 {
                     builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
                 }

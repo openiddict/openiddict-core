@@ -18,7 +18,7 @@ namespace Mvc.Server
             // If the error was not caused by an invalid
             // OIDC request, display a generic error page.
             var response = HttpContext.GetOpenIddictServerResponse();
-            if (response == null)
+            if (response is null)
             {
                 return View(new ErrorViewModel());
             }
