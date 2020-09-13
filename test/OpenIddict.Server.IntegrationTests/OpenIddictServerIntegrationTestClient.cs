@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
@@ -421,12 +421,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
-                // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
-                // that always return their HTTP responses encoded using UTF-8. As such, the stream
-                // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-                using var stream = await message.Content.ReadAsStreamAsync();
-
-                return await JsonSerializer.DeserializeAsync<OpenIddictResponse>(stream);
+                return await message.Content.ReadFromJsonAsync<OpenIddictResponse>();
             }
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))

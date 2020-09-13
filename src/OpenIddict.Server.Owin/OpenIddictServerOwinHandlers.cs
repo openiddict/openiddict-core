@@ -999,6 +999,8 @@ namespace OpenIddict.Server.Owin
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
+
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
@@ -1010,11 +1012,14 @@ namespace OpenIddict.Server.Owin
                 context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Transaction.Response);
 
                 using var stream = new MemoryStream();
-                await JsonSerializer.SerializeAsync(stream, context.Transaction.Response, new JsonSerializerOptions
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
                 {
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = false
+                    Indented = true
                 });
+
+                context.Transaction.Response.WriteTo(writer);
+                writer.Flush();
 
                 response.ContentLength = stream.Length;
                 response.ContentType = "application/json;charset=UTF-8";

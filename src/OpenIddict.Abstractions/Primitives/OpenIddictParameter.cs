@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -624,18 +626,10 @@ namespace OpenIddict.Abstractions
                 // to a JSON object or array), try to deserialize it to get a JsonElement instance.
                 string value when value.Length != 0 && (value[0] == '{' || value[0] == '[') =>
                     DeserializeElement(value) ??
-                    DeserializeElement(JsonSerializer.Serialize(value, new JsonSerializerOptions
-                    {
-                        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                        WriteIndented = false
-                    })) ?? default,
+                    DeserializeElement(SerializeObject(value)) ?? default,
 
                 // Otherwise, serialize it to get a JsonElement instance.
-                var value => DeserializeElement(JsonSerializer.Serialize(value, new JsonSerializerOptions
-                {
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = false
-                })) ?? default
+                var value => DeserializeElement(SerializeObject(value)) ?? default
             };
 
             static JsonElement? DeserializeElement(string value)
@@ -650,6 +644,48 @@ namespace OpenIddict.Abstractions
                 {
                     return null;
                 }
+            }
+
+            static string SerializeObject(object instance)
+            {
+                using var stream = new MemoryStream();
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+                {
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    Indented = false
+                });
+
+                switch (instance)
+                {
+                    case bool value:
+                        writer.WriteBooleanValue(value);
+                        break;
+
+                    case long value:
+                        writer.WriteNumberValue(value);
+                        break;
+
+                    case string value:
+                        writer.WriteStringValue(value);
+                        break;
+
+                    case string?[] value:
+                        writer.WriteStartArray();
+
+                        for (var index = 0; index < value.Length; index++)
+                        {
+                            writer.WriteStringValue(value[index]);
+                        }
+
+                        writer.WriteEndArray();
+                        break;
+
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1193));
+                }
+
+                writer.Flush();
+
+                return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
 

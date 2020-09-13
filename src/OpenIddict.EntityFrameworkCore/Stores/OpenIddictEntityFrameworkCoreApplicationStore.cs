@@ -450,8 +450,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<Dictionary<string, string>>(application.DisplayNames)
-                    .ToImmutableDictionary(name => CultureInfo.GetCultureInfo(name.Key), name => name.Value);
+                using var document = JsonDocument.Parse(application.DisplayNames);
+                var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    builder[CultureInfo.GetCultureInfo(property.Name)] = property.Value.GetString();
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableDictionary<CultureInfo, string>>(names);
@@ -489,7 +496,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.Permissions);
+                using var document = JsonDocument.Parse(application.Permissions);
+                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    builder.Add(element.GetString());
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableArray<string>>(permissions);
@@ -516,7 +531,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.PostLogoutRedirectUris);
+                using var document = JsonDocument.Parse(application.PostLogoutRedirectUris);
+                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    builder.Add(element.GetString());
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableArray<string>>(addresses);
@@ -543,7 +566,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(application.Properties);
+                using var document = JsonDocument.Parse(application.Properties);
+                var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    builder[property.Name] = property.Value;
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
@@ -570,7 +601,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.RedirectUris);
+                using var document = JsonDocument.Parse(application.RedirectUris);
+                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    builder.Add(element.GetString());
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableArray<string>>(addresses);
@@ -597,7 +636,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.Requirements);
+                using var document = JsonDocument.Parse(application.Requirements);
+                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    builder.Add(element.GetString());
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableArray<string>>(requirements);
@@ -768,11 +815,24 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            application.Permissions = JsonSerializer.Serialize(permissions, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartArray();
+
+            foreach (var permission in permissions)
+            {
+                writer.WriteStringValue(permission);
+            }
+
+            writer.WriteEndArray();
+            writer.Flush();
+
+            application.Permissions = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }
@@ -793,11 +853,24 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            application.PostLogoutRedirectUris = JsonSerializer.Serialize(addresses, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartArray();
+
+            foreach (var address in addresses)
+            {
+                writer.WriteStringValue(address);
+            }
+
+            writer.WriteEndArray();
+            writer.Flush();
+
+            application.PostLogoutRedirectUris = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }
@@ -818,11 +891,25 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            application.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartObject();
+
+            foreach (var property in properties)
+            {
+                writer.WritePropertyName(property.Key);
+                property.Value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            application.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }
@@ -843,11 +930,24 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            application.RedirectUris = JsonSerializer.Serialize(addresses, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartArray();
+
+            foreach (var address in addresses)
+            {
+                writer.WriteStringValue(address);
+            }
+
+            writer.WriteEndArray();
+            writer.Flush();
+
+            application.RedirectUris = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }
@@ -867,11 +967,24 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            application.Requirements = JsonSerializer.Serialize(requirements, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartArray();
+
+            foreach (var requirement in requirements)
+            {
+                writer.WriteStringValue(requirement);
+            }
+
+            writer.WriteEndArray();
+            writer.Flush();
+
+            application.Requirements = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }
