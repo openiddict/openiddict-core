@@ -9,8 +9,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -520,7 +522,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(authorization.Properties);
+                using var document = JsonDocument.Parse(authorization.Properties);
+                var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    builder[property.Name] = property.Value;
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
@@ -547,7 +557,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableArray<string>>(authorization.Scopes);
+                using var document = JsonDocument.Parse(authorization.Scopes);
+                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    builder.Add(element.GetString());
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableArray<string>>(scopes);
@@ -793,11 +811,25 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            authorization.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartObject();
+
+            foreach (var property in properties)
+            {
+                writer.WritePropertyName(property.Key);
+                property.Value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            authorization.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }
@@ -818,11 +850,24 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            authorization.Scopes = JsonSerializer.Serialize(scopes, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartArray();
+
+            foreach (var scope in scopes)
+            {
+                writer.WriteStringValue(scope);
+            }
+
+            writer.WriteEndArray();
+            writer.Flush();
+
+            authorization.Scopes = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }

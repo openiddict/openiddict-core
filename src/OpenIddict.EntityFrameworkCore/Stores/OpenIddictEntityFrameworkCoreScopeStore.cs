@@ -276,8 +276,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<Dictionary<string, string>>(scope.Descriptions)
-                    .ToImmutableDictionary(description => CultureInfo.GetCultureInfo(description.Key), description => description.Value);
+                using var document = JsonDocument.Parse(scope.Descriptions);
+                var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    builder[CultureInfo.GetCultureInfo(property.Name)] = property.Value.GetString();
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableDictionary<CultureInfo, string>>(descriptions);
@@ -315,8 +322,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<Dictionary<string, string>>(scope.DisplayNames)
-                    .ToImmutableDictionary(name => CultureInfo.GetCultureInfo(name.Key), name => name.Value);
+                using var document = JsonDocument.Parse(scope.DisplayNames);
+                var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    builder[CultureInfo.GetCultureInfo(property.Name)] = property.Value.GetString();
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableDictionary<CultureInfo, string>>(names);
@@ -365,7 +379,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(scope.Properties);
+                using var document = JsonDocument.Parse(scope.Properties);
+                var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    builder[property.Name] = property.Value;
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
@@ -392,7 +414,15 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableArray<string>>(scope.Resources);
+                using var document = JsonDocument.Parse(scope.Resources);
+                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    builder.Add(element.GetString());
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableArray<string>>(resources);
@@ -577,11 +607,25 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            scope.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartObject();
+
+            foreach (var property in properties)
+            {
+                writer.WritePropertyName(property.Key);
+                property.Value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            scope.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }
@@ -601,11 +645,24 @@ namespace OpenIddict.EntityFrameworkCore
                 return default;
             }
 
-            scope.Resources = JsonSerializer.Serialize(resources, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartArray();
+
+            foreach (var resource in resources)
+            {
+                writer.WriteStringValue(resource);
+            }
+
+            writer.WriteEndArray();
+            writer.Flush();
+
+            scope.Resources = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }

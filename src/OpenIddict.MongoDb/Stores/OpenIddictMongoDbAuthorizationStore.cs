@@ -7,8 +7,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -396,8 +398,15 @@ namespace OpenIddict.MongoDb
                 return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
 
-            return new ValueTask<ImmutableDictionary<string, JsonElement>>(
-                JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(authorization.Properties.ToJson()));
+            using var document = JsonDocument.Parse(authorization.Properties.ToJson());
+            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                builder[property.Name] = property.Value;
+            }
+
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(builder.ToImmutable());
         }
 
         /// <inheritdoc/>
@@ -615,11 +624,25 @@ namespace OpenIddict.MongoDb
                 return default;
             }
 
-            authorization.Properties = BsonDocument.Parse(JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
-            }));
+                Indented = false
+            });
+
+            writer.WriteStartObject();
+
+            foreach (var property in properties)
+            {
+                writer.WritePropertyName(property.Key);
+                property.Value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            authorization.Properties = BsonDocument.Parse(Encoding.UTF8.GetString(stream.ToArray()));
 
             return default;
         }
@@ -640,7 +663,7 @@ namespace OpenIddict.MongoDb
                 return default;
             }
 
-            authorization.Scopes = scopes.ToArray();
+            authorization.Scopes = scopes;
 
             return default;
         }

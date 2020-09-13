@@ -9,8 +9,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Primitives;
@@ -517,9 +519,21 @@ namespace OpenIddict.Abstractions
                 return ImmutableArray.Create<string>();
             }
 
-            return JsonSerializer.Deserialize<IEnumerable<string>>(destinations)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToImmutableArray();
+            using var document = JsonDocument.Parse(destinations);
+            var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+            foreach (var element in document.RootElement.EnumerateArray())
+            {
+                var value = element.GetString();
+                if (builder.Contains(value, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                builder.Add(value);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -546,8 +560,18 @@ namespace OpenIddict.Abstractions
                 return false;
             }
 
-            return JsonSerializer.Deserialize<IEnumerable<string>>(destinations)
-                .Contains(destination, StringComparer.OrdinalIgnoreCase);
+            using var document = JsonDocument.Parse(destinations);
+
+            foreach (var element in document.RootElement.EnumerateArray())
+            {
+                var value = element.GetString();
+                if (string.Equals(value, destination, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -574,12 +598,24 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException(SR.GetResourceString(SR.ID1181), nameof(destinations));
             }
 
-            claim.Properties[Properties.Destinations] =
-                JsonSerializer.Serialize(destinations.Distinct(StringComparer.OrdinalIgnoreCase), new JsonSerializerOptions
-                {
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = false
-                });
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Indented = false
+            });
+
+            writer.WriteStartArray();
+
+            foreach (var destination in destinations.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                writer.WriteStringValue(destination);
+            }
+
+            writer.WriteEndArray();
+            writer.Flush();
+
+            claim.Properties[Properties.Destinations] = Encoding.UTF8.GetString(stream.ToArray());
 
             return claim;
         }

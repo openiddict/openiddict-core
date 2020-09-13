@@ -5,11 +5,15 @@
  */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -998,8 +1002,8 @@ namespace OpenIddict.Server
                             continue;
                         }
 
-                        var claims = grouping.ToArray();
-                        context.Claims[type] = claims.Length switch
+                        var claims = grouping.ToList();
+                        context.Claims[type] = claims.Count switch
                         {
                             // When there's only one claim with the same type, directly
                             // convert the claim using the specified claim value type.
@@ -1007,12 +1011,7 @@ namespace OpenIddict.Server
 
                             // When multiple claims share the same type, retrieve the underlying
                             // JSON values and add everything to a new unique JSON array.
-                            _ => DeserializeElement(JsonSerializer.Serialize(
-                                claims.Select(claim => ConvertToParameter(claim).Value), new JsonSerializerOptions
-                                {
-                                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                                    WriteIndented = false
-                                }))
+                            _ => DeserializeElement(SerializeClaims(claims))
                         };
                     }
 
@@ -1034,6 +1033,56 @@ namespace OpenIddict.Server
                     {
                         using var document = JsonDocument.Parse(value);
                         return document.RootElement.Clone();
+                    }
+
+                    static string SerializeClaims(IReadOnlyList<Claim> claims)
+                    {
+                        using var stream = new MemoryStream();
+                        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+                        {
+                            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                            Indented = false
+                        });
+
+                        writer.WriteStartArray();
+
+                        for (var index = 0; index < claims.Count; index++)
+                        {
+                            var claim = claims[index];
+
+                            switch (claim.ValueType)
+                            {
+                                case ClaimValueTypes.Boolean:
+                                    writer.WriteBooleanValue(bool.Parse(claim.Value));
+                                    break;
+
+                                case ClaimValueTypes.Integer:
+                                case ClaimValueTypes.Integer32:
+                                    writer.WriteNumberValue(int.Parse(claim.Value, CultureInfo.InvariantCulture));
+                                    break;
+
+                                case ClaimValueTypes.Integer64:
+                                    writer.WriteNumberValue(long.Parse(claim.Value, CultureInfo.InvariantCulture));
+                                    break;
+
+                                case JsonClaimValueTypes.Json:
+                                case JsonClaimValueTypes.JsonArray:
+                                    using (var document = JsonDocument.Parse(claim.Value))
+                                    {
+                                        document.WriteTo(writer);
+                                    }
+                                    break;
+
+                                default:
+                                    writer.WriteStringValue(claim.Value);
+                                    break;
+                            }
+                        }
+
+                        writer.WriteEndArray();
+                        writer.Flush();
+
+                        return Encoding.UTF8.GetString(stream.ToArray());
                     }
                 }
             }

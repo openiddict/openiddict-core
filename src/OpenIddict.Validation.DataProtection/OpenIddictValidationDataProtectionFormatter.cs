@@ -178,8 +178,22 @@ namespace OpenIddict.Validation.DataProtection
                 => properties.TryGetValue(name, out var value) ? value : null;
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ?
-                JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
+            {
+                if (properties.TryGetValue(name, out var value))
+                {
+                    using var document = JsonDocument.Parse(value);
+                    var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                    foreach (var element in document.RootElement.EnumerateArray())
+                    {
+                        builder.Add(element.GetString());
+                    }
+
+                    return builder.ToImmutable();
+                }
+
+                return ImmutableArray.Create<string>();
+            }
         }
     }
 }

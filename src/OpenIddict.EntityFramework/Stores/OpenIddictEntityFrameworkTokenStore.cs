@@ -11,7 +11,9 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -444,7 +446,15 @@ namespace OpenIddict.EntityFramework
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(token.Properties);
+                using var document = JsonDocument.Parse(token.Properties);
+                var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+
+                foreach (var property in document.RootElement.EnumerateObject())
+                {
+                    builder[property.Name] = property.Value;
+                }
+
+                return builder.ToImmutable();
             });
 
             return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
@@ -746,11 +756,25 @@ namespace OpenIddict.EntityFramework
                 return default;
             }
 
-            token.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
+                Indented = false
             });
+
+            writer.WriteStartObject();
+
+            foreach (var property in properties)
+            {
+                writer.WritePropertyName(property.Key);
+                property.Value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            token.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
             return default;
         }

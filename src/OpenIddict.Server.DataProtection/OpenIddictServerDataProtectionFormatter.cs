@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using OpenIddict.Abstractions;
@@ -180,8 +181,22 @@ namespace OpenIddict.Server.DataProtection
                 => properties.TryGetValue(name, out var value) ? value : null;
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ?
-                JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
+            {
+                if (properties.TryGetValue(name, out var value))
+                {
+                    using var document = JsonDocument.Parse(value);
+                    var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                    foreach (var element in document.RootElement.EnumerateArray())
+                    {
+                        builder.Add(element.GetString());
+                    }
+
+                    return builder.ToImmutable();
+                }
+
+                return ImmutableArray.Create<string>();
+            }
         }
 
         public void WriteToken(BinaryWriter writer, ClaimsPrincipal principal)
@@ -381,11 +396,24 @@ namespace OpenIddict.Server.DataProtection
 
                 else
                 {
-                    properties[name] = JsonSerializer.Serialize(values, new JsonSerializerOptions
+                    using var stream = new MemoryStream();
+                    using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
                     {
                         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                        WriteIndented = false
+                        Indented = false
                     });
+
+                    writer.WriteStartArray();
+
+                    foreach (var value in values)
+                    {
+                        writer.WriteStringValue(value);
+                    }
+
+                    writer.WriteEndArray();
+                    writer.Flush();
+
+                    properties[name] = Encoding.UTF8.GetString(stream.ToArray());
                 }
             }
         }
