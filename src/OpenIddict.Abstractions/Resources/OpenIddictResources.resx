@@ -125,7 +125,7 @@ This generally indicates that the OpenIddict server stack was asked to validate 
   <data name="ID1001" xml:space="preserve">
     <value>An identity cannot be extracted from this request.
 This generally indicates that the OpenIddict server stack was asked to validate a token for an endpoint it doesn't manage.
-To validate tokens received by custom API endpoints, the OpenIddict validation services must be used instead.</value>
+To validate tokens received by custom API endpoints, the OpenIddict validation handler (e.g OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme or OpenIddictValidationOwinDefaults.AuthenticationType) must be used instead.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID1002" xml:space="preserve">
