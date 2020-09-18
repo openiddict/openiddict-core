@@ -10,7 +10,7 @@
     <DebugSymbols>true</DebugSymbols>
     <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)eng\CodeAnalysis.ruleset</CodeAnalysisRuleset>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <XlfLanguages>ar;de;es;fr;gu;hi;it;ru;tr;uk;zh-Hans;zh-Hant</XlfLanguages>
+    <XlfLanguages>ar;de;es;fr;gu;hi;it;tr;zh-Hans;zh-Hant</XlfLanguages>
   </PropertyGroup>
 
   <PropertyGroup>
