@@ -6,8 +6,8 @@
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.1.0" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.7.1" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.7.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.8.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.8.0" />
     <PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
     <PackageVersion Include="Microsoft.Owin.Security" Version="4.1.1" />
     <PackageVersion Include="Microsoft.Owin.Testing" Version="4.1.1" />

@@ -2725,28 +2725,19 @@ namespace OpenIddict.Server
 
                 var descriptor = new SecurityTokenDescriptor
                 {
-                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                    {
-                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AccessToken
-                    },
                     Claims = claims,
+                    // Note: unlike other tokens, encryption can be disabled for access tokens.
+                    EncryptingCredentials = !context.Options.DisableAccessTokenEncryption ?
+                        context.Options.EncryptionCredentials.First() : null,
                     Expires = context.AccessTokenPrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.AccessTokenPrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) principal.Identity
+                    Subject = (ClaimsIdentity) principal.Identity,
+                    TokenType = JsonWebTokenTypes.AccessToken
                 };
 
-                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
-
-                if (!context.Options.DisableAccessTokenEncryption)
-                {
-                    token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                        encryptingCredentials: context.Options.EncryptionCredentials.First(),
-                        additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
-                }
-
-                context.AccessToken = token;
+                context.AccessToken = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), principal.GetClaim(Claims.JwtId),
                                         context.AccessToken, principal.Claims);
@@ -2974,15 +2965,13 @@ namespace OpenIddict.Server
 
                 var descriptor = new SecurityTokenDescriptor
                 {
-                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                    {
-                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationCode
-                    },
+                    EncryptingCredentials = context.Options.EncryptionCredentials.First(),
                     Expires = context.AuthorizationCodePrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.AuthorizationCodePrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) principal.Identity
+                    Subject = (ClaimsIdentity) principal.Identity,
+                    TokenType = JsonWebTokenTypes.Private.AuthorizationCode
                 };
 
                 // Attach claims destinations to the JWT claims collection.
@@ -2995,14 +2984,7 @@ namespace OpenIddict.Server
                     };
                 }
 
-                // Sign and encrypt the authorization code.
-                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
-
-                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
-                    additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
-
-                context.AuthorizationCode = token;
+                context.AuthorizationCode = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), principal.GetClaim(Claims.JwtId),
                                         context.AuthorizationCode, principal.Claims);
@@ -3234,15 +3216,13 @@ namespace OpenIddict.Server
 
                 var descriptor = new SecurityTokenDescriptor
                 {
-                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                    {
-                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.DeviceCode
-                    },
+                    EncryptingCredentials = context.Options.EncryptionCredentials.First(),
                     Expires = context.DeviceCodePrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.DeviceCodePrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) principal.Identity
+                    Subject = (ClaimsIdentity) principal.Identity,
+                    TokenType = JsonWebTokenTypes.Private.DeviceCode
                 };
 
                 // Attach claims destinations to the JWT claims collection.
@@ -3255,14 +3235,7 @@ namespace OpenIddict.Server
                     };
                 }
 
-                // Sign and encrypt the device code.
-                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
-
-                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
-                    additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
-
-                context.DeviceCode = token;
+                context.DeviceCode = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6019), principal.GetClaim(Claims.JwtId),
                                         context.DeviceCode, principal.Claims);
@@ -3578,15 +3551,13 @@ namespace OpenIddict.Server
 
                 var descriptor = new SecurityTokenDescriptor
                 {
-                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                    {
-                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.RefreshToken
-                    },
+                    EncryptingCredentials = context.Options.EncryptionCredentials.First(),
                     Expires = context.RefreshTokenPrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.RefreshTokenPrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) principal.Identity
+                    Subject = (ClaimsIdentity) principal.Identity,
+                    TokenType = JsonWebTokenTypes.Private.RefreshToken
                 };
 
                 // Attach claims destinations to the JWT claims collection.
@@ -3599,13 +3570,7 @@ namespace OpenIddict.Server
                     };
                 }
 
-                // Sign and encrypt the refresh token.
-                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
-                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
-                    additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
-
-                context.RefreshToken = token;
+                context.RefreshToken = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6023), principal.GetClaim(Claims.JwtId),
                                         context.RefreshToken, principal.Claims);
@@ -3874,25 +3839,16 @@ namespace OpenIddict.Server
 
                 var descriptor = new SecurityTokenDescriptor
                 {
-                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                    {
-                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.UserCode
-                    },
+                    EncryptingCredentials = context.Options.EncryptionCredentials.First(),
                     Expires = context.UserCodePrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.UserCodePrincipal.GetCreationDate()?.UtcDateTime,
                     Issuer = context.Issuer?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) principal.Identity
+                    Subject = (ClaimsIdentity) principal.Identity,
+                    TokenType = JsonWebTokenTypes.Private.UserCode
                 };
 
-                // Sign and encrypt the user code.
-                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
-
-                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    encryptingCredentials: context.Options.EncryptionCredentials.First(),
-                    additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
-
-                context.UserCode = token;
+                context.UserCode = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6026), principal.GetClaim(Claims.JwtId),
                                         context.UserCode, principal.Claims);
@@ -4295,10 +4251,6 @@ namespace OpenIddict.Server
 
                 var descriptor = new SecurityTokenDescriptor
                 {
-                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                    {
-                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.IdentityToken
-                    },
                     Claims = claims,
                     Expires = context.IdentityTokenPrincipal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.IdentityTokenPrincipal.GetCreationDate()?.UtcDateTime,
@@ -4307,13 +4259,11 @@ namespace OpenIddict.Server
                     // as they are meant to be validated by clients using the public keys exposed by the server.
                     SigningCredentials = context.Options.SigningCredentials.First(credentials =>
                         credentials.Key is AsymmetricSecurityKey),
-                    Subject = (ClaimsIdentity) principal.Identity
+                    Subject = (ClaimsIdentity) principal.Identity,
+                    TokenType = JsonWebTokenTypes.IdentityToken
                 };
 
-                // Sign and attach the identity token.
-                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
-
-                context.IdentityToken = token;
+                context.IdentityToken = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6029), principal.GetClaim(Claims.JwtId),
                                         context.IdentityToken, principal.Claims);
