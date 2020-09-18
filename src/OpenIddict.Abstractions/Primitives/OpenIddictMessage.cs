@@ -46,7 +46,7 @@ namespace OpenIddict.Abstractions
         {
             if (parameters.ValueKind != JsonValueKind.Object)
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1188), nameof(parameters));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0189), nameof(parameters));
             }
 
             foreach (var parameter in parameters.EnumerateObject())
@@ -192,12 +192,12 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
             }
 
             if (Parameters.ContainsKey(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1190), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0191), nameof(name));
             }
 
             Parameters.Add(name, value);
@@ -214,7 +214,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
             }
 
             if (Parameters.TryGetValue(name, out OpenIddictParameter value))
@@ -241,7 +241,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
             }
 
             return Parameters.ContainsKey(name);
@@ -256,7 +256,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
             }
 
             Parameters.Remove(name);
@@ -275,7 +275,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
             }
 
             // If the parameter value is null or empty, remove the corresponding entry from the collection.
@@ -302,7 +302,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
             }
 
             return Parameters.TryGetValue(name, out value);

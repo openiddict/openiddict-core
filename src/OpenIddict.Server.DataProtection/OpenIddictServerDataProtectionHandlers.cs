@@ -102,14 +102,14 @@ namespace OpenIddict.Server.DataProtection
                             OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
                             _                                  => Errors.InvalidToken
                         },
-                        description: context.Localizer[SR.ID3004]);
+                        description: context.Localizer[SR.ID2004]);
 
                     return default;
                 }
 
                 context.Principal = principal;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7152), context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6152), context.Token, context.Principal.Claims);
 
                 return default;
 
@@ -139,7 +139,7 @@ namespace OpenIddict.Server.DataProtection
                         TokenTypeHints.RefreshToken      => new[] { Handlers.Server, Formats.RefreshToken,      Schemes.Server },
                         TokenTypeHints.UserCode          => new[] { Handlers.Server, Formats.UserCode,          Schemes.Server },
 
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                     });
 
                     try
@@ -154,7 +154,7 @@ namespace OpenIddict.Server.DataProtection
 
                     catch (Exception exception)
                     {
-                        context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID7153), token);
+                        context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), token);
 
                         return null;
                     }
@@ -200,7 +200,7 @@ namespace OpenIddict.Server.DataProtection
 
                 if (context.AccessTokenPrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -217,7 +217,7 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.AccessToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7013),
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013),
                     context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
                     context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
 
@@ -263,7 +263,7 @@ namespace OpenIddict.Server.DataProtection
 
                 if (context.AuthorizationCodePrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -280,7 +280,7 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.Code = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7016),
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016),
                     context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
                     context.Response.Code, context.AuthorizationCodePrincipal.Claims);
 
@@ -326,7 +326,7 @@ namespace OpenIddict.Server.DataProtection
 
                 if (context.DeviceCodePrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -343,7 +343,7 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.DeviceCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7019),
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6019),
                     context.DeviceCodePrincipal.GetClaim(Claims.JwtId),
                     context.Response.DeviceCode, context.DeviceCodePrincipal.Claims);
 
@@ -389,7 +389,7 @@ namespace OpenIddict.Server.DataProtection
 
                 if (context.RefreshTokenPrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -406,7 +406,7 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.RefreshToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7023),
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6023),
                     context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
                     context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
 
@@ -452,7 +452,7 @@ namespace OpenIddict.Server.DataProtection
 
                 if (context.UserCodePrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -469,7 +469,7 @@ namespace OpenIddict.Server.DataProtection
 
                 context.Response.UserCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7026),
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6026),
                     context.UserCodePrincipal.GetClaim(Claims.JwtId),
                     context.Response.UserCode, context.UserCodePrincipal.Claims);
 

@@ -103,7 +103,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == authorization.Id &&
                 entity.ConcurrencyToken == authorization.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240));
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0241));
             }
 
             // Delete the tokens associated with the authorization.
@@ -117,12 +117,12 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -148,17 +148,17 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -185,22 +185,22 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -229,22 +229,22 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -274,7 +274,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -297,7 +297,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -313,7 +313,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -469,7 +469,7 @@ namespace OpenIddict.MongoDb
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID1241), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0242), exception)));
             }
         }
 
@@ -727,7 +727,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == authorization.Id &&
                 entity.ConcurrencyToken == timestamp, authorization, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240));
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0241));
             }
         }
     }

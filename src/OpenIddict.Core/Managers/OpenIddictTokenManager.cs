@@ -139,7 +139,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine(SR.GetResourceString(SR.ID1224));
+                builder.AppendLine(SR.GetResourceString(SR.ID0225));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -190,7 +190,7 @@ namespace OpenIddict.Core
             var token = await Store.InstantiateAsync(cancellationToken);
             if (token is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1225));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0226));
             }
 
             await PopulateAsync(token, descriptor, cancellationToken);
@@ -235,12 +235,12 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             var tokens = Options.CurrentValue.DisableEntityCaching ?
@@ -284,17 +284,17 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             var tokens = Options.CurrentValue.DisableEntityCaching ?
@@ -339,22 +339,22 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             var tokens = Options.CurrentValue.DisableEntityCaching ?
@@ -395,7 +395,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var tokens = Options.CurrentValue.DisableEntityCaching ?
@@ -436,7 +436,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var tokens = Options.CurrentValue.DisableEntityCaching ?
@@ -479,7 +479,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var token = Options.CurrentValue.DisableEntityCaching ?
@@ -517,7 +517,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
@@ -555,7 +555,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             var tokens = Options.CurrentValue.DisableEntityCaching ?
@@ -838,7 +838,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             return string.Equals(await Store.GetStatusAsync(token, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
@@ -860,7 +860,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             return string.Equals(await Store.GetTypeAsync(token, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
@@ -1065,12 +1065,12 @@ namespace OpenIddict.Core
 
                 if (date is not null)
                 {
-                    Logger.LogInformation(SR.GetResourceString(SR.ID7167), await Store.GetIdAsync(token, cancellationToken), date);
+                    Logger.LogInformation(SR.GetResourceString(SR.ID6167), await Store.GetIdAsync(token, cancellationToken), date);
                 }
 
                 else
                 {
-                    Logger.LogInformation(SR.GetResourceString(SR.ID7168), await Store.GetIdAsync(token, cancellationToken));
+                    Logger.LogInformation(SR.GetResourceString(SR.ID6168), await Store.GetIdAsync(token, cancellationToken));
                 }
 
                 return true;
@@ -1078,14 +1078,14 @@ namespace OpenIddict.Core
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7169), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6169), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7170), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6170), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1116,21 +1116,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation(SR.GetResourceString(SR.ID7171), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6171), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7172), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6172), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7173), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6173), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1161,21 +1161,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation(SR.GetResourceString(SR.ID7174), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6174), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7175), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6175), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7176), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6176), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1206,21 +1206,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation(SR.GetResourceString(SR.ID7177), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6177), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7178), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6178), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7179), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6179), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1245,7 +1245,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine(SR.GetResourceString(SR.ID1226));
+                builder.AppendLine(SR.GetResourceString(SR.ID0227));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -1343,19 +1343,19 @@ namespace OpenIddict.Core
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID3085]);
+                    yield return new ValidationResult(Localizer[SR.ID2085]);
                 }
             }
 
             var type = await Store.GetTypeAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult(Localizer[SR.ID3086]);
+                yield return new ValidationResult(Localizer[SR.ID2086]);
             }
 
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
             {
-                yield return new ValidationResult(Localizer[SR.ID3038]);
+                yield return new ValidationResult(Localizer[SR.ID2038]);
             }
         }
 
@@ -1372,7 +1372,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             // Compute the digest of the generated identifier and use it as the hashed identifier of the reference token.

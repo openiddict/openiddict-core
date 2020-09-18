@@ -27,7 +27,7 @@ namespace OpenIddict.Server.Quartz
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerQuartzJob"/> class.
         /// </summary>
-        public OpenIddictServerQuartzJob() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1081));
+        public OpenIddictServerQuartzJob() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0082));
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerQuartzJob"/> class.
@@ -76,7 +76,7 @@ namespace OpenIddict.Server.Quartz
                         // Inform Quartz.NET that the triggers associated with this job should be removed,
                         // as the future invocations will always fail until the application is correctly
                         // re-configured to register the OpenIddict core services in the DI container.
-                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID1277)))
+                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
                         {
                             RefireImmediately = false,
                             UnscheduleAllTriggers = true,
@@ -133,7 +133,7 @@ namespace OpenIddict.Server.Quartz
                         // Inform Quartz.NET that the triggers associated with this job should be removed,
                         // as the future invocations will always fail until the application is correctly
                         // re-configured to register the OpenIddict core services in the DI container.
-                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID1277)))
+                        throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
                         {
                             RefireImmediately = false,
                             UnscheduleAllTriggers = true,

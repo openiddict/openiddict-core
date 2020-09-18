@@ -74,7 +74,7 @@ namespace OpenIddict.Validation.ServerIntegration
 
             if (options.ValidationType != OpenIddictValidationType.Direct)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1169));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0170));
             }
 
             // Note: authorization validation requires that authorizations have an entry
@@ -82,7 +82,7 @@ namespace OpenIddict.Validation.ServerIntegration
             // not created if the authorization storage is disabled in the server options.
             if (options.EnableAuthorizationEntryValidation && _options.CurrentValue.DisableAuthorizationStorage)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1170));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0171));
             }
 
             // Note: token validation requires that tokens have an entry in the database
@@ -90,7 +90,7 @@ namespace OpenIddict.Validation.ServerIntegration
             // token storage is disabled in the OpenIddict server options.
             if (options.EnableTokenEntryValidation && _options.CurrentValue.DisableTokenStorage)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1171));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0172));
             }
         }
     }

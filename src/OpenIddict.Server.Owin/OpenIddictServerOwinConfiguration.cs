@@ -37,7 +37,7 @@ namespace OpenIddict.Server.Owin
 
             if (options.AuthenticationMode == AuthenticationMode.Active)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1118));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0119));
             }
         }
     }

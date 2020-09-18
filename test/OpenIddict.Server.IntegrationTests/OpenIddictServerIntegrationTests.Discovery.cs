@@ -40,7 +40,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
         }
 
         [Theory]
@@ -1015,7 +1015,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
         }
 
         [Theory]

@@ -19,7 +19,7 @@ namespace OpenIddict.Server.Quartz.Tests
             // Arrange, act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => new OpenIddictServerQuartzJob());
 
-            Assert.Equal(SR.GetResourceString(SR.ID1081), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0082), exception.Message);
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace OpenIddict.Server.Quartz.Tests
             Assert.True(exception.UnscheduleFiringTrigger);
 
             Assert.IsType<InvalidOperationException>(exception.InnerException);
-            Assert.Equal(SR.GetResourceString(SR.ID1277), exception.InnerException!.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0278), exception.InnerException!.Message);
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace OpenIddict.Server.Quartz.Tests
             Assert.True(exception.UnscheduleFiringTrigger);
 
             Assert.IsType<InvalidOperationException>(exception.InnerException);
-            Assert.Equal(SR.GetResourceString(SR.ID1277), exception.InnerException!.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0278), exception.InnerException!.Message);
         }
 
         [Fact]

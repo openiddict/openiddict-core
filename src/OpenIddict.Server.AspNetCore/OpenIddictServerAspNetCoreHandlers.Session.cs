@@ -67,7 +67,7 @@ namespace OpenIddict.Server.AspNetCore
             {
                 private readonly IDistributedCache _cache;
 
-                public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
+                public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
                 public RestoreCachedRequestParameters(IDistributedCache cache)
                     => _cache = cache;
@@ -92,7 +92,7 @@ namespace OpenIddict.Server.AspNetCore
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID5008));
+                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                     // If a request_id parameter can be found in the logout request,
                     // restore the complete logout request from the distributed cache.
@@ -107,11 +107,11 @@ namespace OpenIddict.Server.AspNetCore
                     var token = await _cache.GetStringAsync(Cache.LogoutRequest + context.Request.RequestId);
                     if (token is null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7150), Parameters.RequestId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3052, Parameters.RequestId]);
+                            description: context.Localizer[SR.ID2052, Parameters.RequestId]);
 
                         return;
                     }
@@ -124,11 +124,11 @@ namespace OpenIddict.Server.AspNetCore
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7150), Parameters.RequestId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3052, Parameters.RequestId]);
+                            description: context.Localizer[SR.ID2052, Parameters.RequestId]);
 
                         return;
                     }
@@ -137,7 +137,7 @@ namespace OpenIddict.Server.AspNetCore
                         Base64UrlEncoder.Decode(((JsonWebToken) result.SecurityToken).InnerToken.EncodedPayload));
                     if (document.RootElement.ValueKind != JsonValueKind.Object)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1117));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0118));
                     }
 
                     // Restore the authorization request parameters from the serialized payload.
@@ -163,7 +163,7 @@ namespace OpenIddict.Server.AspNetCore
                 private readonly IDistributedCache _cache;
                 private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
-                public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
+                public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
                 public CacheRequestParameters(
                     IDistributedCache cache,
@@ -193,14 +193,14 @@ namespace OpenIddict.Server.AspNetCore
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID5008));
+                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                     // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                     // this may indicate that the request was incorrectly processed by another server stack.
                     var request = context.Transaction.GetHttpRequest();
                     if (request is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
                     }
 
                     // Don't cache the request if the request doesn't include any parameter.
@@ -272,7 +272,7 @@ namespace OpenIddict.Server.AspNetCore
             {
                 private readonly IDistributedCache _cache;
 
-                public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
+                public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
                 public RemoveCachedRequest(IDistributedCache cache)
                     => _cache = cache;
@@ -342,7 +342,7 @@ namespace OpenIddict.Server.AspNetCore
                     var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
                     if (response is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
                     }
 
                     if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
@@ -350,7 +350,7 @@ namespace OpenIddict.Server.AspNetCore
                         return default;
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7151), context.PostLogoutRedirectUri, response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, response);
 
                     var location = context.PostLogoutRedirectUri;
 

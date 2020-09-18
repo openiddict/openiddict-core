@@ -184,7 +184,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasAcrValue(value));
 
             Assert.Equal("value", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1176), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0177), exception.Message);
         }
 
         [Theory]
@@ -248,7 +248,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasPrompt(prompt));
 
             Assert.Equal("prompt", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1177), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0178), exception.Message);
         }
 
         [Theory]
@@ -312,7 +312,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasResponseType(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1178), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0179), exception.Message);
         }
 
         [Theory]
@@ -376,7 +376,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasScope(scope));
 
             Assert.Equal("scope", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1179), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0180), exception.Message);
         }
 
         [Theory]
@@ -986,7 +986,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null));
 
             Assert.Equal("destination", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1180), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0181), exception.Message);
         }
 
         [Fact]
@@ -1056,7 +1056,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => claim.SetDestinations(destination));
 
             Assert.Equal("destinations", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1181), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0182), exception.Message);
         }
 
         [Theory]
@@ -1979,7 +1979,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasAudience(audience));
 
             Assert.Equal("audience", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1185), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0186), exception.Message);
         }
 
         [Theory]
@@ -2043,7 +2043,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasPresenter(presenter));
 
             Assert.Equal("presenter", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1186), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0187), exception.Message);
         }
 
         [Theory]
@@ -2107,7 +2107,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasResource(resource));
 
             Assert.Equal("resource", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1061), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0062), exception.Message);
         }
 
         [Theory]
@@ -2171,7 +2171,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasScope(scope));
 
             Assert.Equal("scope", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1179), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0180), exception.Message);
         }
 
         [Theory]
@@ -2236,7 +2236,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasTokenType(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1187), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0188), exception.Message);
         }
 
         [Fact]
@@ -2265,7 +2265,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type, "value"));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
         }
 
         [Fact]
@@ -2305,7 +2305,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.GetClaims(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
         }
 
         [Fact]
@@ -2347,7 +2347,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasClaim(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
         }
 
         [Fact]
@@ -2391,7 +2391,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.RemoveClaims(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
         }
 
         [Fact]
@@ -2434,7 +2434,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
         }
 
         [Fact]

@@ -267,7 +267,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1191), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0192), exception.Message);
         }
 
         [Fact]
@@ -337,7 +337,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("index", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1192), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0193), exception.Message);
         }
 
         [Fact]
@@ -699,7 +699,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1191), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0192), exception.Message);
         }
 
         [Fact]
@@ -774,7 +774,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("index", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1192), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0193), exception.Message);
         }
 
         [Fact]

@@ -72,10 +72,10 @@ namespace OpenIddict.Server.Owin
             // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
 
             var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName!) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             if (context.IsRequestHandled)
             {
@@ -110,7 +110,7 @@ namespace OpenIddict.Server.Owin
                 {
                     return false;
                 }
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
 
             }
 
@@ -123,7 +123,7 @@ namespace OpenIddict.Server.Owin
             var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
             if (transaction is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
             }
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
@@ -167,9 +167,9 @@ namespace OpenIddict.Server.Owin
 
             else
             {
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
-                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID5009));
-                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID5010));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID4009));
+                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
 
                 // Store the token to allow any OWIN/Katana component (e.g a controller)
                 // to retrieve it (e.g to make an API request to another application).
@@ -204,7 +204,7 @@ namespace OpenIddict.Server.Owin
             if (challenge is not null && (Response.StatusCode == 401 || Response.StatusCode == 403))
             {
                 var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName!] = challenge.Properties ?? new AuthenticationProperties();
 
@@ -239,7 +239,7 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
                 }
             }
 
@@ -247,7 +247,7 @@ namespace OpenIddict.Server.Owin
             if (signin is not null)
             {
                 var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName!] = signin.Properties ?? new AuthenticationProperties();
 
@@ -283,7 +283,7 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
                 }
             }
 
@@ -291,7 +291,7 @@ namespace OpenIddict.Server.Owin
             if (signout is not null)
             {
                 var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName!] = signout.Properties ?? new AuthenticationProperties();
 
@@ -326,7 +326,7 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
                 }
             }
         }

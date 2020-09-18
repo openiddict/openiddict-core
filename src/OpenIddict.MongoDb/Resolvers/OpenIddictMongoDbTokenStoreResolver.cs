@@ -42,7 +42,7 @@ namespace OpenIddict.MongoDb
             {
                 if (!typeof(OpenIddictMongoDbToken).IsAssignableFrom(key))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1259));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0260));
                 }
 
                 return typeof(OpenIddictMongoDbTokenStore<>).MakeGenericType(key);

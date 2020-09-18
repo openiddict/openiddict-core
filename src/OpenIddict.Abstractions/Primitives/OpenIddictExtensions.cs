@@ -97,7 +97,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1176), nameof(value));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0177), nameof(value));
             }
 
             return HasValue(request.AcrValues, value, Separators.Space);
@@ -117,7 +117,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(prompt))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1177), nameof(prompt));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0178), nameof(prompt));
             }
 
             return HasValue(request.Prompt, prompt, Separators.Space);
@@ -137,7 +137,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1178), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0179), nameof(type));
             }
 
             return HasValue(request.ResponseType, type, Separators.Space);
@@ -157,7 +157,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(scope))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1179), nameof(scope));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0180), nameof(scope));
             }
 
             return HasValue(request.Scope, scope, Separators.Space);
@@ -550,7 +550,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(destination))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1180), nameof(destination));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0181), nameof(destination));
             }
 
             claim.Properties.TryGetValue(Properties.Destinations, out string? destinations);
@@ -595,7 +595,7 @@ namespace OpenIddict.Abstractions
 
             if (destinations.Any(destination => string.IsNullOrEmpty(destination)))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1181), nameof(destinations));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0182), nameof(destinations));
             }
 
             using var stream = new MemoryStream();
@@ -662,7 +662,7 @@ namespace OpenIddict.Abstractions
                     {
                         if (!destinations.SetEquals(claims[index].GetDestinations()))
                         {
-                            throw new InvalidOperationException(SR.FormatID1182(group.Key));
+                            throw new InvalidOperationException(SR.FormatID0183(group.Key));
                         }
                     }
 
@@ -787,12 +787,12 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1184), nameof(value));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0185), nameof(value));
             }
 
             identity.AddClaim(new Claim(type, value));
@@ -815,12 +815,12 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1184), nameof(value));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0185), nameof(value));
             }
 
             identity.AddClaim(new Claim(type, value).SetDestinations(destinations));
@@ -852,7 +852,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             return identity.FindFirst(type)?.Value;
@@ -873,7 +873,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             return principal.FindFirst(type)?.Value;
@@ -894,7 +894,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             return identity.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
@@ -915,7 +915,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             return identity.FindAll(type).Any();
@@ -936,7 +936,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             return principal.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
@@ -957,7 +957,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             return principal.FindAll(type).Any();
@@ -978,7 +978,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             foreach (var claim in identity.FindAll(type).ToList())
@@ -1004,7 +1004,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             foreach (var identity in principal.Identities)
@@ -1034,7 +1034,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             identity.RemoveClaims(type);
@@ -1063,7 +1063,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             principal.RemoveClaims(type);
@@ -1092,7 +1092,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             identity.RemoveClaims(type);
@@ -1121,7 +1121,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
             }
 
             principal.RemoveClaims(type);
@@ -1313,7 +1313,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(audience))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1185), nameof(audience));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0186), nameof(audience));
             }
 
             return principal.HasClaim(Claims.Private.Audience, audience);
@@ -1342,7 +1342,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(presenter))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1186), nameof(presenter));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0187), nameof(presenter));
             }
 
             return principal.HasClaim(Claims.Private.Presenter, presenter);
@@ -1371,7 +1371,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
             }
 
             return principal.HasClaim(Claims.Private.Resource, resource);
@@ -1400,7 +1400,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(scope))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1179), nameof(scope));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0180), nameof(scope));
             }
 
             return principal.HasClaim(Claims.Private.Scope, scope);
@@ -1421,7 +1421,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1187), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0188), nameof(type));
             }
 
             return string.Equals(principal.GetTokenType(), type, StringComparison.OrdinalIgnoreCase);
@@ -1648,7 +1648,7 @@ namespace OpenIddict.Abstractions
 
         private static ImmutableArray<string> GetValues(string? source, char[] separators)
         {
-            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
 
             if (string.IsNullOrEmpty(source))
             {
@@ -1678,8 +1678,8 @@ namespace OpenIddict.Abstractions
 
         private static bool HasValue(string? source, string value, char[] separators)
         {
-            Debug.Assert(!string.IsNullOrEmpty(value), SR.GetResourceString(SR.ID5002));
-            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(!string.IsNullOrEmpty(value), SR.GetResourceString(SR.ID4002));
+            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
 
             if (string.IsNullOrEmpty(source))
             {
@@ -1705,7 +1705,7 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment TrimStart(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
 
             var index = segment.Offset;
 
@@ -1724,7 +1724,7 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment TrimEnd(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
 
             var index = segment.Offset + segment.Length - 1;
 
@@ -1743,14 +1743,14 @@ namespace OpenIddict.Abstractions
 
         private static StringSegment Trim(StringSegment segment, char[] separators)
         {
-            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
 
             return TrimEnd(TrimStart(segment, separators), separators);
         }
 
         private static bool IsSeparator(char character, char[] separators)
         {
-            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID5001));
+            Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
 
             for (var index = 0; index < separators!.Length; index++)
             {

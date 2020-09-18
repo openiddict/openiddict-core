@@ -32,7 +32,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("parameters", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1188), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0189), exception.Message);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1190), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0191), exception.Message);
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -211,7 +211,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -277,7 +277,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Theory]
@@ -307,7 +307,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -336,7 +336,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name, null));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -408,7 +408,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]

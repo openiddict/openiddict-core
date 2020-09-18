@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(realm))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1106), nameof(realm));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0107), nameof(realm));
             }
 
             return Configure(options => options.Realm = realm);

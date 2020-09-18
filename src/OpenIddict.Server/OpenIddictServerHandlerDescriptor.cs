@@ -86,7 +86,7 @@ namespace OpenIddict.Server
 
                 if (!typeof(IOpenIddictServerHandlerFilter<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1103));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0104));
                 }
 
                 _filterTypes.Add(type);
@@ -118,7 +118,7 @@ namespace OpenIddict.Server
                 var type = descriptor.ServiceType;
                 if (!typeof(IOpenIddictServerHandler<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1103));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0104));
                 }
 
                 _descriptor = descriptor;
@@ -216,7 +216,7 @@ namespace OpenIddict.Server
                 ContextType = typeof(TContext),
                 FilterTypes = _filterTypes.ToImmutableArray(),
                 Order = _order,
-                ServiceDescriptor = _descriptor ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID1104)),
+                ServiceDescriptor = _descriptor ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0105)),
                 Type = _type
             };
         }

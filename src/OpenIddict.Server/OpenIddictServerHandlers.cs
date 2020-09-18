@@ -158,9 +158,9 @@ namespace OpenIddict.Server
                         return default;
 
                     case OpenIddictServerEndpointType.Token:
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1000));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0001));
 
-                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1001));
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0002));
                 }
             }
         }
@@ -216,7 +216,7 @@ namespace OpenIddict.Server
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID3000]);
+                        description: context.Localizer[SR.ID2000]);
 
                     return default;
                 }
@@ -290,7 +290,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ValidateReferenceTokenIdentifier(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -341,13 +341,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID3001],
+                                => context.Localizer[SR.ID2001],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID3002],
+                                => context.Localizer[SR.ID2002],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID3003],
+                                => context.Localizer[SR.ID2003],
 
-                            _ => context.Localizer[SR.ID3004]
+                            _ => context.Localizer[SR.ID2004]
                         });
 
                     return;
@@ -356,7 +356,7 @@ namespace OpenIddict.Server
                 var payload = await _tokenManager.GetPayloadAsync(token);
                 if (string.IsNullOrEmpty(payload))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1025));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0026));
                 }
 
                 // Replace the token parameter by the payload resolved from the token entry.
@@ -438,13 +438,13 @@ namespace OpenIddict.Server
                     // For user codes, only the short "oi_usrc+jwt" form is valid.
                     TokenTypeHints.UserCode => new[] { JsonWebTokenTypes.Private.UserCode },
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                 };
 
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
                 if (!result.IsValid)
                 {
-                    context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID7000), context.Token);
+                    context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -455,17 +455,17 @@ namespace OpenIddict.Server
                         description: (result.Exception, context.EndpointType) switch
                         {
                             (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsAuthorizationCodeGrantType() => context.Localizer[SR.ID3005],
+                                when context.Request.IsAuthorizationCodeGrantType() => context.Localizer[SR.ID2005],
 
                             (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsDeviceCodeGrantType() => context.Localizer[SR.ID3006],
+                                when context.Request.IsDeviceCodeGrantType() => context.Localizer[SR.ID2006],
 
                             (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsRefreshTokenGrantType() => context.Localizer[SR.ID3007],
+                                when context.Request.IsRefreshTokenGrantType() => context.Localizer[SR.ID2007],
 
-                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Userinfo) => context.Localizer[SR.ID3008],
+                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Userinfo) => context.Localizer[SR.ID2008],
 
-                            _ => context.Localizer[SR.ID3004]
+                            _ => context.Localizer[SR.ID2004]
                         });
 
                     return default;
@@ -484,7 +484,7 @@ namespace OpenIddict.Server
                 // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal.SetTokenType(result.TokenType switch
                 {
-                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException(SR.GetResourceString(SR.ID1024)),
+                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
                     JsonWebTokenTypes.AccessToken                                            => TokenTypeHints.AccessToken,
                     JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
@@ -497,7 +497,7 @@ namespace OpenIddict.Server
                     JsonWebTokenTypes.Private.RefreshToken      => TokenTypeHints.RefreshToken,
                     JsonWebTokenTypes.Private.UserCode          => TokenTypeHints.UserCode,
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                 });
 
                 // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
@@ -506,7 +506,7 @@ namespace OpenIddict.Server
                     context.Principal.SetDestinations(destinations);
                 }
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7001), context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
 
                 return default;
             }
@@ -668,7 +668,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public RestoreReferenceTokenProperties(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -706,7 +706,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
                 }
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
@@ -752,17 +752,17 @@ namespace OpenIddict.Server
                         },
                         description: context.EndpointType switch
                         {
-                            OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID3009],
-                            OpenIddictServerEndpointType.Logout        => context.Localizer[SR.ID3009],
+                            OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID2009],
+                            OpenIddictServerEndpointType.Logout        => context.Localizer[SR.ID2009],
 
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID3001],
+                                => context.Localizer[SR.ID2001],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID3002],
+                                => context.Localizer[SR.ID2002],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID3003],
+                                => context.Localizer[SR.ID2003],
 
-                            _ => context.Localizer[SR.ID3004]
+                            _ => context.Localizer[SR.ID2004]
                         });
 
 
@@ -778,12 +778,12 @@ namespace OpenIddict.Server
                     var type = context.Principal.GetTokenType();
                     if (string.IsNullOrEmpty(type))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1003));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0004));
                     }
 
                     if (!string.Equals(type, context.TokenType, StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new InvalidOperationException(SR.FormatID1004(type, context.TokenType));
+                        throw new InvalidOperationException(SR.FormatID0005(type, context.TokenType));
                     }
                 }
 
@@ -800,7 +800,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ValidateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ValidateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ValidateTokenEntry(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -824,7 +824,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token
@@ -848,13 +848,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID3001],
+                                => context.Localizer[SR.ID2001],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID3002],
+                                => context.Localizer[SR.ID2002],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID3003],
+                                => context.Localizer[SR.ID2003],
 
-                            _ => context.Localizer[SR.ID3004]
+                            _ => context.Localizer[SR.ID2004]
                         });
 
                     return;
@@ -877,7 +877,7 @@ namespace OpenIddict.Server
                         // Then, try to revoke the token entries associated with the authorization.
                         await TryRevokeChainAsync(context.Principal.GetAuthorizationId());
 
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7002), identifier);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6002), identifier);
 
                         context.Reject(
                             error: context.EndpointType switch
@@ -888,13 +888,13 @@ namespace OpenIddict.Server
                             description: context.EndpointType switch
                             {
                                 OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => context.Localizer[SR.ID3010],
+                                    => context.Localizer[SR.ID2010],
                                 OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => context.Localizer[SR.ID3011],
+                                    => context.Localizer[SR.ID2011],
                                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => context.Localizer[SR.ID3012],
+                                    => context.Localizer[SR.ID2012],
 
-                                _ => context.Localizer[SR.ID3013]
+                                _ => context.Localizer[SR.ID2013]
                             });
 
                         return;
@@ -905,11 +905,11 @@ namespace OpenIddict.Server
                         // If the device code is not marked as valid yet, return an authorization_pending error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Inactive))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID7003), identifier);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6003), identifier);
 
                             context.Reject(
                                 error: Errors.AuthorizationPending,
-                                description: context.Localizer[SR.ID3014]);
+                                description: context.Localizer[SR.ID2014]);
 
                             return;
                         }
@@ -917,11 +917,11 @@ namespace OpenIddict.Server
                         // If the device code is marked as rejected, return an authorization_pending error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Rejected))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID7004), identifier);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6004), identifier);
 
                             context.Reject(
                                 error: Errors.AccessDenied,
-                                description: context.Localizer[SR.ID3015]);
+                                description: context.Localizer[SR.ID2015]);
 
                             return;
                         }
@@ -930,7 +930,7 @@ namespace OpenIddict.Server
 
                 if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID7005), identifier);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID6005), identifier);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -941,13 +941,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID3016],
+                                => context.Localizer[SR.ID2016],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID3017],
+                                => context.Localizer[SR.ID2017],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID3018],
+                                => context.Localizer[SR.ID2018],
 
-                            _ => context.Localizer[SR.ID3019]
+                            _ => context.Localizer[SR.ID2019]
                         });
 
                     return;
@@ -991,7 +991,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 
-            public ValidateAuthorizationEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ValidateAuthorizationEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ValidateAuthorizationEntry(IOpenIddictAuthorizationManager authorizationManager)
                 => _authorizationManager = authorizationManager;
@@ -1015,7 +1015,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 var identifier = context.Principal.GetAuthorizationId();
                 if (string.IsNullOrEmpty(identifier))
@@ -1026,7 +1026,7 @@ namespace OpenIddict.Server
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
                 if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID7006), identifier);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID6006), identifier);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -1037,13 +1037,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID3020],
+                                => context.Localizer[SR.ID2020],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID3021],
+                                => context.Localizer[SR.ID2021],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID3022],
+                                => context.Localizer[SR.ID2022],
 
-                            _ => context.Localizer[SR.ID3023]
+                            _ => context.Localizer[SR.ID2023]
                         });
 
                     return;
@@ -1074,7 +1074,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Don't validate the lifetime of id_tokens used as id_token_hints.
                 switch (context.EndpointType)
@@ -1100,13 +1100,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID3016],
+                                => context.Localizer[SR.ID2016],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID3017],
+                                => context.Localizer[SR.ID2017],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID3018],
+                                => context.Localizer[SR.ID2018],
 
-                            _ => context.Localizer[SR.ID3019]
+                            _ => context.Localizer[SR.ID2019]
                         });
 
                     return default;
@@ -1147,7 +1147,7 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         return default;
 
-                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1005));
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
                 }
             }
         }
@@ -1182,17 +1182,17 @@ namespace OpenIddict.Server
                     OpenIddictServerEndpointType.Userinfo      => Errors.InsufficientAccess,
                     OpenIddictServerEndpointType.Verification  => Errors.AccessDenied,
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1005))
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
                 };
 
                 context.Response.ErrorDescription ??= context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID3015],
-                    OpenIddictServerEndpointType.Verification  => context.Localizer[SR.ID3015],
-                    OpenIddictServerEndpointType.Token         => context.Localizer[SR.ID3024],
-                    OpenIddictServerEndpointType.Userinfo      => context.Localizer[SR.ID3025],
+                    OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID2015],
+                    OpenIddictServerEndpointType.Verification  => context.Localizer[SR.ID2015],
+                    OpenIddictServerEndpointType.Token         => context.Localizer[SR.ID2024],
+                    OpenIddictServerEndpointType.Userinfo      => context.Localizer[SR.ID2025],
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1005))
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
                 };
 
                 return default;
@@ -1207,7 +1207,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RejectDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public RejectDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public RejectDeviceCodeEntry(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -1239,15 +1239,15 @@ namespace OpenIddict.Server
 
                 var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                     typeof(ProcessAuthenticationContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Extract the device code identifier from the user code principal.
                 var identifier = notification.Principal.GetClaim(Claims.Private.DeviceCodeId);
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1007));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
@@ -1266,7 +1266,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RejectUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public RejectUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public RejectUserCodeEntry(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -1298,15 +1298,15 @@ namespace OpenIddict.Server
 
                 var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                     typeof(ProcessAuthenticationContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Extract the device code identifier from the authentication principal.
                 var identifier = notification.Principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
@@ -1341,7 +1341,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 switch (context.EndpointType)
                 {
@@ -1351,12 +1351,12 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         break;
 
-                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1009));
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0010));
                 }
 
                 if (context.Principal.Identity is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1010));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0011));
                 }
 
                 // Note: sign-in operations triggered from the device endpoint can't be associated to specific users
@@ -1366,12 +1366,12 @@ namespace OpenIddict.Server
                 {
                     if (context.Principal.Identity.IsAuthenticated)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1011));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0012));
                     }
 
                     if (!string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1012));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0013));
                     }
 
                     return default;
@@ -1379,12 +1379,12 @@ namespace OpenIddict.Server
 
                 if (!context.Principal.Identity.IsAuthenticated)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1013));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0014));
                 }
 
                 if (string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1014));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0015));
                 }
 
                 return default;
@@ -1414,7 +1414,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 switch (context.EndpointType)
                 {
@@ -1431,7 +1431,7 @@ namespace OpenIddict.Server
 
                 var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                     typeof(ProcessAuthenticationContext).FullName!) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 if (notification.Principal is null)
                 {
@@ -1486,7 +1486,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Always include the "openid" scope when the developer doesn't explicitly call SetScopes.
                 // Note: the application is allowed to specify a different "scopes": in this case,
@@ -1523,7 +1523,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Add the validated client_id to the list of authorized presenters,
                 // unless the presenters were explicitly set by the developer.
@@ -1559,7 +1559,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // When a "resources" property cannot be found in the ticket, infer it from the "audiences" property.
                 if (context.Principal.HasAudience() && !context.Principal.HasResource())
@@ -1597,7 +1597,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 context.IncludeAccessToken = context.EndpointType switch
                 {
@@ -1681,7 +1681,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 
-            public AttachAuthorization() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public AttachAuthorization() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public AttachAuthorization(
                 IOpenIddictApplicationManager applicationManager,
@@ -1711,7 +1711,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // If no authorization code, device code or refresh token is returned, don't create an authorization.
                 if (!context.IncludeAuthorizationCode && !context.IncludeDeviceCode && !context.IncludeRefreshToken)
@@ -1742,7 +1742,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -1751,19 +1751,19 @@ namespace OpenIddict.Server
                 var authorization = await _authorizationManager.CreateAsync(descriptor);
                 if (authorization is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1017));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0018));
                 }
 
                 var identifier = await _authorizationManager.GetIdAsync(authorization);
 
                 if (string.IsNullOrEmpty(context.Request.ClientId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7007), identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6007), identifier);
                 }
 
                 else
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7008), context.Request.ClientId, identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6008), context.Request.ClientId, identifier);
                 }
 
                 // Attach the unique identifier of the ad hoc authorization to the authentication principal
@@ -1797,7 +1797,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -1844,7 +1844,7 @@ namespace OpenIddict.Server
                     // contain "access_token" are not included in the access token.
                     if (!claim.HasDestination(Destinations.AccessToken))
                     {
-                        context.Logger.LogDebug(SR.GetResourceString(SR.ID7009), claim.Type);
+                        context.Logger.LogDebug(SR.GetResourceString(SR.ID6009), claim.Type);
 
                         return false;
                     }
@@ -1882,7 +1882,7 @@ namespace OpenIddict.Server
                     var scopes = context.Request.GetScopes();
                     principal.SetScopes(scopes.Intersect(context.Principal.GetScopes()));
 
-                    context.Logger.LogDebug(SR.GetResourceString(SR.ID7010), scopes);
+                    context.Logger.LogDebug(SR.GetResourceString(SR.ID6010), scopes);
                 }
 
                 context.AccessTokenPrincipal = principal;
@@ -1916,7 +1916,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2002,7 +2002,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Note: a device code principal is produced when a device code is included in the response or when a
                 // device code entry is replaced when processing a sign-in response sent to the verification endpoint.
@@ -2083,7 +2083,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2120,9 +2120,9 @@ namespace OpenIddict.Server
                 {
                     var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                         typeof(ProcessAuthenticationContext).FullName!) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                    Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(notification.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                     principal.SetExpirationDate(notification.Principal.GetExpirationDate());
                 }
@@ -2167,7 +2167,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Replace the principal by a new one containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2207,7 +2207,7 @@ namespace OpenIddict.Server
                     // contain "id_token" are not included in the identity token.
                     if (!claim.HasDestination(Destinations.IdentityToken))
                     {
-                        context.Logger.LogDebug(SR.GetResourceString(SR.ID7011), claim.Type);
+                        context.Logger.LogDebug(SR.GetResourceString(SR.ID6011), claim.Type);
 
                         return false;
                     }
@@ -2281,7 +2281,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2335,7 +2335,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RedeemTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public RedeemTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public RedeemTokenEntry(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -2381,7 +2381,7 @@ namespace OpenIddict.Server
                     }
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token has no backing database entry.
@@ -2403,16 +2403,16 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID3016],
+                                => context.Localizer[SR.ID2016],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID3017],
+                                => context.Localizer[SR.ID2017],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID3018],
+                                => context.Localizer[SR.ID2018],
 
                             OpenIddictServerEndpointType.Verification
-                                => context.Localizer[SR.ID3026],
+                                => context.Localizer[SR.ID2026],
 
-                            _ => context.Localizer[SR.ID3019]
+                            _ => context.Localizer[SR.ID2019]
                         });
 
                     return;
@@ -2428,7 +2428,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RevokeExistingTokenEntries() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public RevokeExistingTokenEntries() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public RevokeExistingTokenEntries(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -2459,7 +2459,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // When rolling tokens are enabled, try to revoke all the previously issued tokens
                 // associated with the authorization if the request is a refresh_token request.
@@ -2494,7 +2494,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ExtendRefreshTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ExtendRefreshTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ExtendRefreshTokenEntry(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -2526,7 +2526,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token has no backing database entry.
@@ -2539,7 +2539,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1264));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0265));
                 }
 
                 // Compute the new expiration date of the refresh token and update the token entry.
@@ -2565,7 +2565,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateAccessTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public CreateAccessTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public CreateAccessTokenEntry(
                 IOpenIddictApplicationManager applicationManager,
@@ -2599,7 +2599,7 @@ namespace OpenIddict.Server
                 var principal = context.AccessTokenPrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -2619,7 +2619,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -2628,7 +2628,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -2636,7 +2636,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7012), identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6012), identifier);
             }
         }
 
@@ -2672,7 +2672,7 @@ namespace OpenIddict.Server
 
                 if (context.AccessTokenPrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Clone the principal and exclude the private claims mapped to standard JWT claims.
@@ -2689,7 +2689,7 @@ namespace OpenIddict.Server
 
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var claims = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -2741,7 +2741,7 @@ namespace OpenIddict.Server
 
                 context.Response.AccessToken = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7013), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -2755,7 +2755,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceAccessToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ConvertReferenceAccessToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ConvertReferenceAccessToken(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -2790,19 +2790,19 @@ namespace OpenIddict.Server
                 var principal = context.AccessTokenPrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -2826,7 +2826,7 @@ namespace OpenIddict.Server
 
                 context.Response.AccessToken = descriptor.ReferenceId;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7014), identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6014), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -2839,7 +2839,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateAuthorizationCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public CreateAuthorizationCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public CreateAuthorizationCodeEntry(
                 IOpenIddictApplicationManager applicationManager,
@@ -2873,7 +2873,7 @@ namespace OpenIddict.Server
                 var principal = context.AuthorizationCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -2893,7 +2893,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -2902,7 +2902,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -2910,7 +2910,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7015), identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6015), identifier);
             }
         }
 
@@ -2946,7 +2946,7 @@ namespace OpenIddict.Server
 
                 if (context.AuthorizationCodePrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
@@ -2961,7 +2961,7 @@ namespace OpenIddict.Server
 
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -2996,7 +2996,7 @@ namespace OpenIddict.Server
 
                 context.Response.Code = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7016), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -3010,7 +3010,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceAuthorizationCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ConvertReferenceAuthorizationCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ConvertReferenceAuthorizationCode(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3044,19 +3044,19 @@ namespace OpenIddict.Server
                 var principal = context.AuthorizationCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -3080,7 +3080,7 @@ namespace OpenIddict.Server
 
                 context.Response.Code = descriptor.ReferenceId;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7017), identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6017), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3093,7 +3093,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public CreateDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public CreateDeviceCodeEntry(
                 IOpenIddictApplicationManager applicationManager,
@@ -3132,7 +3132,7 @@ namespace OpenIddict.Server
                 var principal = context.DeviceCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -3152,7 +3152,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -3161,7 +3161,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -3169,7 +3169,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7018), identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6018), identifier);
             }
         }
 
@@ -3205,7 +3205,7 @@ namespace OpenIddict.Server
 
                 if (context.DeviceCodePrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
@@ -3220,7 +3220,7 @@ namespace OpenIddict.Server
 
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -3255,7 +3255,7 @@ namespace OpenIddict.Server
 
                 context.Response.DeviceCode = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7019), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6019), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -3269,7 +3269,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceDeviceCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ConvertReferenceDeviceCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ConvertReferenceDeviceCode(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3309,19 +3309,19 @@ namespace OpenIddict.Server
                 var principal = context.DeviceCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -3345,7 +3345,7 @@ namespace OpenIddict.Server
 
                 context.Response.DeviceCode = descriptor.ReferenceId;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7020), identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6020), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3357,7 +3357,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public UpdateReferenceDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public UpdateReferenceDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public UpdateReferenceDeviceCodeEntry(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3393,25 +3393,25 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 var principal = context.DeviceCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 // Extract the token identifier from the authentication principal.
                 var identifier = context.Principal.GetClaim(Claims.Private.DeviceCodeId);
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1007));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1264));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0265));
                 }
 
                 // Replace the device code details by the payload derived from the new device code principal,
@@ -3431,7 +3431,7 @@ namespace OpenIddict.Server
                 // Don't return the prepared device code directly from the verification endpoint.
                 context.Response.DeviceCode = null;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7021), await _tokenManager.GetIdAsync(token));
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6021), await _tokenManager.GetIdAsync(token));
             }
         }
 
@@ -3444,7 +3444,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateRefreshTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public CreateRefreshTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public CreateRefreshTokenEntry(
                 IOpenIddictApplicationManager applicationManager,
@@ -3478,7 +3478,7 @@ namespace OpenIddict.Server
                 var principal = context.RefreshTokenPrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -3498,7 +3498,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -3507,7 +3507,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -3515,7 +3515,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7022), identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6022), identifier);
             }
         }
 
@@ -3551,7 +3551,7 @@ namespace OpenIddict.Server
 
                 if (context.RefreshTokenPrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
@@ -3566,7 +3566,7 @@ namespace OpenIddict.Server
 
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -3601,7 +3601,7 @@ namespace OpenIddict.Server
 
                 context.Response.RefreshToken = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7023), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6023), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -3615,7 +3615,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceRefreshToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ConvertReferenceRefreshToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ConvertReferenceRefreshToken(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3650,19 +3650,19 @@ namespace OpenIddict.Server
                 var principal = context.RefreshTokenPrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -3686,7 +3686,7 @@ namespace OpenIddict.Server
 
                 context.Response.RefreshToken = descriptor.ReferenceId;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7024), identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6024), identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3718,7 +3718,7 @@ namespace OpenIddict.Server
                 var principal = context.UserCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var identifier = context.DeviceCodePrincipal?.GetTokenId();
@@ -3740,7 +3740,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public CreateUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public CreateUserCodeEntry(
                 IOpenIddictApplicationManager applicationManager,
@@ -3774,7 +3774,7 @@ namespace OpenIddict.Server
                 var principal = context.UserCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -3794,7 +3794,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -3803,7 +3803,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -3811,7 +3811,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7025), identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6025), identifier);
             }
         }
 
@@ -3847,7 +3847,7 @@ namespace OpenIddict.Server
 
                 if (context.UserCodePrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
@@ -3862,7 +3862,7 @@ namespace OpenIddict.Server
 
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -3887,7 +3887,7 @@ namespace OpenIddict.Server
 
                 context.Response.UserCode = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7026), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6026), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -3901,7 +3901,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceUserCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public ConvertReferenceUserCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public ConvertReferenceUserCode(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3936,19 +3936,19 @@ namespace OpenIddict.Server
                 var principal = context.UserCodePrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
                 }
 
                 // Note: unlike other reference tokens, user codes are meant to be used by humans,
@@ -3970,7 +3970,7 @@ namespace OpenIddict.Server
 
                 context.Response.UserCode = descriptor.ReferenceId;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7027), identifier, descriptor.ReferenceId);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6027), identifier, descriptor.ReferenceId);
 
                 static async ValueTask<string> GenerateReferenceIdentifierAsync(IOpenIddictTokenManager manager)
                 {
@@ -4032,7 +4032,7 @@ namespace OpenIddict.Server
                 var principal = context.IdentityTokenPrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 if (string.IsNullOrEmpty(context.Response.AccessToken) &&
@@ -4045,13 +4045,13 @@ namespace OpenIddict.Server
                     credentials => credentials.Key is AsymmetricSecurityKey);
                 if (credentials is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1265));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
                 }
 
                 using var hash = GetHashAlgorithm(credentials);
                 if (hash is null || hash is KeyedHashAlgorithm)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1266));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0267));
                 }
 
                 if (!string.IsNullOrEmpty(context.Response.AccessToken))
@@ -4125,7 +4125,7 @@ namespace OpenIddict.Server
                                 SecurityAlgorithms.RsaSsaPssSha384Signature => HashAlgorithmName.SHA384,
                                 SecurityAlgorithms.RsaSsaPssSha512Signature => HashAlgorithmName.SHA512,
 
-                                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1266))
+                                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
                             }
                         };
 
@@ -4146,7 +4146,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateIdentityTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+            public CreateIdentityTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
             public CreateIdentityTokenEntry(
                 IOpenIddictApplicationManager applicationManager,
@@ -4180,7 +4180,7 @@ namespace OpenIddict.Server
                 var principal = context.IdentityTokenPrincipal;
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -4200,7 +4200,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -4209,7 +4209,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -4217,7 +4217,7 @@ namespace OpenIddict.Server
                 // Attach the token identifier to the principal so that it can be stored in the token.
                 principal.SetTokenId(identifier);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7028), identifier);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6028), identifier);
             }
         }
 
@@ -4253,7 +4253,7 @@ namespace OpenIddict.Server
 
                 if (context.IdentityTokenPrincipal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
@@ -4269,7 +4269,7 @@ namespace OpenIddict.Server
 
                 if (principal is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 var claims = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -4308,7 +4308,7 @@ namespace OpenIddict.Server
 
                 context.Response.IdToken = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7029), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6029), principal.GetClaim(Claims.JwtId), token, principal.Claims);
 
                 return default;
             }
@@ -4391,7 +4391,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.AccessTokenPrincipal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.AccessTokenPrincipal is not null, SR.GetResourceString(SR.ID4006));
 
                 context.Response.TokenType = TokenTypes.Bearer;
 
@@ -4439,7 +4439,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.DeviceCodePrincipal is not null, SR.GetResourceString(SR.ID5006));
+                Debug.Assert(context.DeviceCodePrincipal is not null, SR.GetResourceString(SR.ID4006));
 
                 var address = GetEndpointAbsoluteUri(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
                 if (address is not null)
@@ -4479,7 +4479,7 @@ namespace OpenIddict.Server
                     // At this stage, throw an exception if the issuer cannot be retrieved.
                     if (issuer is null || !issuer.IsAbsoluteUri)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1022));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
                     }
 
                     // Ensure the issuer ends with a trailing slash, as it is necessary
@@ -4527,7 +4527,7 @@ namespace OpenIddict.Server
 
                 if (context.EndpointType != OpenIddictServerEndpointType.Logout)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1023));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
                 }
 
                 return default;

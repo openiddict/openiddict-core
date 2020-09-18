@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
                 if (options.DefaultApplicationType is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1272));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0273));
                 }
 
                 return (IOpenIddictApplicationManager) provider.GetRequiredService(
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
                 if (options.DefaultAuthorizationType is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1273));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0274));
                 }
 
                 return (IOpenIddictAuthorizationManager) provider.GetRequiredService(
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
                 if (options.DefaultScopeType is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1274));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0275));
                 }
 
                 return (IOpenIddictScopeManager) provider.GetRequiredService(
@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
                 if (options.DefaultTokenType is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1275));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0276));
                 }
 
                 return (IOpenIddictTokenManager) provider.GetRequiredService(

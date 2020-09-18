@@ -39,7 +39,7 @@ namespace OpenIddict.Extensions
 
             if (!definition.IsGenericTypeDefinition)
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1262), nameof(definition));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0263), nameof(definition));
             }
 
             if (definition.IsInterface)

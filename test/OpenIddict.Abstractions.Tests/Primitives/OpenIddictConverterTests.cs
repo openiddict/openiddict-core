@@ -87,7 +87,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 return converter.Read(ref reader, type, options: null);
             });
 
-            Assert.StartsWith(SR.GetResourceString(SR.ID1175), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0176), exception.Message);
             Assert.Equal("typeToConvert", exception.ParamName);
         }
 

@@ -23,6 +23,6 @@ namespace OpenIddict.Core
         /// <returns>An <see cref="IOpenIddictScopeStore{TScope}"/>.</returns>
         public IOpenIddictScopeStore<TScope> Get<TScope>() where TScope : class
             => _provider.GetService<IOpenIddictScopeStore<TScope>>() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1229));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0230));
     }
 }

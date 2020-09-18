@@ -43,7 +43,7 @@ namespace OpenIddict.MongoDb.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomAuthorization>());
 
-            Assert.Equal(SR.GetResourceString(SR.ID1257), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0258), exception.Message);
         }
 
         [Fact]

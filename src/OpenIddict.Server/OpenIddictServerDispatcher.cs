@@ -49,14 +49,14 @@ namespace OpenIddict.Server
 
                 catch (Exception exception) when (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug(exception, SR.GetResourceString(SR.ID7132), handler.GetType().FullName, typeof(TContext).FullName);
+                    _logger.LogDebug(exception, SR.GetResourceString(SR.ID6132), handler.GetType().FullName, typeof(TContext).FullName);
 
                     throw;
                 }
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug(SR.GetResourceString(SR.ID7133), typeof(TContext).FullName, handler.GetType().FullName);
+                    _logger.LogDebug(SR.GetResourceString(SR.ID6133), typeof(TContext).FullName, handler.GetType().FullName);
                 }
 
                 switch (context)
@@ -64,21 +64,21 @@ namespace OpenIddict.Server
                     case BaseRequestContext notification when notification.IsRequestHandled:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug(SR.GetResourceString(SR.ID7134), typeof(TContext).FullName, handler.GetType().FullName);
+                            _logger.LogDebug(SR.GetResourceString(SR.ID6134), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
                     case BaseRequestContext notification when notification.IsRequestSkipped:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug(SR.GetResourceString(SR.ID7135), typeof(TContext).FullName, handler.GetType().FullName);
+                            _logger.LogDebug(SR.GetResourceString(SR.ID6135), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
                     case BaseValidatingContext notification when notification.IsRejected:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
-                            _logger.LogDebug(SR.GetResourceString(SR.ID7136), typeof(TContext).FullName, handler.GetType().FullName);
+                            _logger.LogDebug(SR.GetResourceString(SR.ID6136), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
@@ -109,7 +109,7 @@ namespace OpenIddict.Server
 
                     if (handler is null)
                     {
-                        throw new InvalidOperationException(SR.FormatID1097(descriptor.ServiceDescriptor.ServiceType));
+                        throw new InvalidOperationException(SR.FormatID0098(descriptor.ServiceDescriptor.ServiceType));
                     }
 
                     yield return handler;
@@ -122,7 +122,7 @@ namespace OpenIddict.Server
                 {
                     if (!(_provider.GetService(descriptor.FilterTypes[index]) is IOpenIddictServerHandlerFilter<TContext> filter))
                     {
-                        throw new InvalidOperationException(SR.FormatID1098(descriptor.FilterTypes[index]));
+                        throw new InvalidOperationException(SR.FormatID0099(descriptor.FilterTypes[index]));
                     }
 
                     if (!await filter.IsActiveAsync(context))

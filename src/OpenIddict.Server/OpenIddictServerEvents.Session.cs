@@ -72,7 +72,7 @@ namespace OpenIddict.Server
             {
                 if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException(SR.GetResourceString(SR.ID1101), nameof(address));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0102), nameof(address));
                 }
 
                 // Don't allow validation to alter the post_logout_redirect_uri parameter extracted
@@ -80,7 +80,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(Request?.PostLogoutRedirectUri) &&
                     !string.Equals(Request.PostLogoutRedirectUri, address, StringComparison.Ordinal))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1102));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0103));
                 }
 
                 PostLogoutRedirectUri = address;

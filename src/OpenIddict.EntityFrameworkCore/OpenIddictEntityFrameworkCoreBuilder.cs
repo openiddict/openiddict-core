@@ -108,7 +108,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!typeof(DbContext).IsAssignableFrom(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             return Configure(options => options.DbContextType = type);

@@ -37,7 +37,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
         }
 
         [Theory]
@@ -133,10 +133,10 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Theory]
-        [InlineData("/path", SR.ID3030)]
-        [InlineData("/tmp/file.xml", SR.ID3030)]
-        [InlineData("C:\\tmp\\file.xml", SR.ID3030)]
-        [InlineData("http://www.fabrikam.com/path#param=value", SR.ID3031)]
+        [InlineData("/path", SR.ID2030)]
+        [InlineData("/tmp/file.xml", SR.ID2030)]
+        [InlineData("C:\\tmp\\file.xml", SR.ID2030)]
+        [InlineData("http://www.fabrikam.com/path#param=value", SR.ID2031)]
         public async Task ValidateLogoutRequest_InvalidRedirectUriCausesAnError(string address, string message)
         {
             // Arrange
@@ -179,7 +179,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -223,7 +223,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(applications[0], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());

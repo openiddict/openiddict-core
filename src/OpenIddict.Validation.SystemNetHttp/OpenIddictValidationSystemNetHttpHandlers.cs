@@ -123,14 +123,14 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
                 var request = context.Transaction.GetHttpRequestMessage();
                 if (request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
                 }
 
                 // Note: System.Net.Http doesn't expose convenient methods allowing to create
@@ -176,14 +176,14 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID5008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
                 var request = context.Transaction.GetHttpRequestMessage();
                 if (request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
                 }
 
                 request.Content = new FormUrlEncodedContent(
@@ -231,20 +231,20 @@ namespace OpenIddict.Validation.SystemNetHttp
                 var request = context.Transaction.GetHttpRequestMessage();
                 if (request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
                 }
 
                 var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
                 using var client = _factory.CreateClient(assembly.Name);
                 if (client is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1173));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0174));
                 }
 
                 var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
                 if (response is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1174));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0175));
                 }
 
                 // Store the HttpResponseMessage in the transaction properties.
@@ -281,7 +281,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 var response = context.Transaction.GetHttpResponseMessage();
                 if (response is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
                 }
 
                 // The status code is deliberately not validated to ensure even errored responses

@@ -79,7 +79,7 @@ namespace OpenIddict.EntityFramework.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
