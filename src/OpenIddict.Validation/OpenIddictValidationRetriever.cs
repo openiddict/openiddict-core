@@ -35,26 +35,26 @@ namespace OpenIddict.Validation
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
             if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1143), nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
             }
 
             cancel.ThrowIfCancellationRequested();
 
             var configuration = await _service.GetConfigurationAsync(uri, cancel) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1144));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
 
             if (!Uri.TryCreate(configuration.JwksUri, UriKind.Absolute, out uri) || !uri.IsWellFormedOriginalString())
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1145));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0146));
             }
 
             configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(uri, cancel) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1146));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
             // Copy the signing keys found in the JSON Web Key Set to the SigningKeys collection.
             foreach (var key in configuration.JsonWebKeySet.GetSigningKeys())

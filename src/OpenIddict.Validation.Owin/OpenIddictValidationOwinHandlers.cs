@@ -92,7 +92,7 @@ namespace OpenIddict.Validation.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // Only use the current host as the issuer if the
@@ -106,7 +106,7 @@ namespace OpenIddict.Validation.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID3081, "Host"]);
+                        description: context.Localizer[SR.ID2081, "Host"]);
 
                     return default;
                 }
@@ -116,7 +116,7 @@ namespace OpenIddict.Validation.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID3082, "Host"]);
+                        description: context.Localizer[SR.ID2082, "Host"]);
 
                     return default;
                 }
@@ -163,7 +163,7 @@ namespace OpenIddict.Validation.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // Resolve the access token from the standard Authorization header.
@@ -217,7 +217,7 @@ namespace OpenIddict.Validation.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 if (string.IsNullOrEmpty(request.ContentType) ||
@@ -276,7 +276,7 @@ namespace OpenIddict.Validation.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // Resolve the access token from the standard access_token query parameter.
@@ -360,14 +360,14 @@ namespace OpenIddict.Validation.Owin
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 response.StatusCode = context.Transaction.Response.Error switch
@@ -417,7 +417,7 @@ namespace OpenIddict.Validation.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // Prevent the response from being cached.
@@ -459,14 +459,14 @@ namespace OpenIddict.Validation.Owin
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 if (string.IsNullOrEmpty(context.Transaction.Response.Error))
@@ -574,7 +574,7 @@ namespace OpenIddict.Validation.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
@@ -583,7 +583,7 @@ namespace OpenIddict.Validation.Owin
                     return default;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID7141), context.Transaction.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6141), context.Transaction.Response);
                 context.HandleRequest();
 
                 return default;
@@ -615,17 +615,17 @@ namespace OpenIddict.Validation.Owin
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID5007));
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID7142), context.Transaction.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6142), context.Transaction.Response);
 
                 using var stream = new MemoryStream();
                 using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions

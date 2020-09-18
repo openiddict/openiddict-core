@@ -50,13 +50,13 @@ namespace OpenIddict.Server
 
             if (options.JsonWebTokenHandler is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1074));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
             }
 
             // Ensure at least one flow has been enabled.
             if (options.GrantTypes.Count == 0)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1075));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
             }
 
             // Ensure the authorization endpoint has been enabled when
@@ -64,13 +64,13 @@ namespace OpenIddict.Server
             if (options.AuthorizationEndpointUris.Count == 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
                                                                  options.GrantTypes.Contains(GrantTypes.Implicit)))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1076));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0077));
             }
 
             // Ensure the device endpoint has been enabled when the device grant is supported.
             if (options.DeviceEndpointUris.Count == 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1077));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0078));
             }
 
             // Ensure the token endpoint has been enabled when the authorization code,
@@ -81,50 +81,50 @@ namespace OpenIddict.Server
                                                          options.GrantTypes.Contains(GrantTypes.Password) ||
                                                          options.GrantTypes.Contains(GrantTypes.RefreshToken)))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1078));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0079));
             }
 
             // Ensure the verification endpoint has been enabled when the device grant is supported.
             if (options.VerificationEndpointUris.Count == 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1079));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0080));
             }
 
             if (options.DisableTokenStorage)
             {
                 if (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1082));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0083));
                 }
 
                 if (!options.DisableSlidingRefreshTokenExpiration && !options.UseRollingRefreshTokens)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1083));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0084));
                 }
             }
 
             if (options.EncryptionCredentials.Count == 0)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1084));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0085));
             }
 
             if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1085));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
             }
 
             // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
             if (options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                    (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1086));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
             }
 
             // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
             if (options.SigningCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                    (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1087));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));
             }
 
             if (options.EnableDegradedMode)
@@ -137,7 +137,7 @@ namespace OpenIddict.Server
                                   descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1088));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0089));
                 }
 
                 if (options.DeviceEndpointUris.Count != 0 && !options.Handlers.Any(
@@ -145,7 +145,7 @@ namespace OpenIddict.Server
                                   descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1089));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0090));
                 }
 
                 if (options.IntrospectionEndpointUris.Count != 0 && !options.Handlers.Any(
@@ -153,7 +153,7 @@ namespace OpenIddict.Server
                                   descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1090));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0091));
                 }
 
                 if (options.LogoutEndpointUris.Count != 0 && !options.Handlers.Any(
@@ -161,7 +161,7 @@ namespace OpenIddict.Server
                                   descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1091));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0092));
                 }
 
                 if (options.RevocationEndpointUris.Count != 0 && !options.Handlers.Any(
@@ -169,7 +169,7 @@ namespace OpenIddict.Server
                                   descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1092));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0093));
                 }
 
                 if (options.TokenEndpointUris.Count != 0 && !options.Handlers.Any(
@@ -177,7 +177,7 @@ namespace OpenIddict.Server
                                   descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1093));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0094));
                 }
 
                 if (options.VerificationEndpointUris.Count != 0 && !options.Handlers.Any(
@@ -185,7 +185,7 @@ namespace OpenIddict.Server
                                   descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1094));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0095));
                 }
 
                 // If the degraded mode was enabled, ensure custom authentication/sign-in handlers
@@ -198,7 +198,7 @@ namespace OpenIddict.Server
                                       descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1095));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0096));
                     }
 
                     if (!options.Handlers.Any(
@@ -206,7 +206,7 @@ namespace OpenIddict.Server
                                       descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1096));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0097));
                     }
                 }
             }
@@ -323,7 +323,7 @@ namespace OpenIddict.Server
                     {
                         parameters = rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false);
 
-                        Debug.Assert(parameters.Modulus is not null, SR.GetResourceString(SR.ID5003));
+                        Debug.Assert(parameters.Modulus is not null, SR.GetResourceString(SR.ID4003));
                     }
 
                     // Only use the 40 first chars of the base64url-encoded modulus.
@@ -337,7 +337,7 @@ namespace OpenIddict.Server
                     // Extract the ECDSA parameters from the signing credentials.
                     var parameters = ecsdaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false);
 
-                    Debug.Assert(parameters.Q.X is not null, SR.GetResourceString(SR.ID5004));
+                    Debug.Assert(parameters.Q.X is not null, SR.GetResourceString(SR.ID4004));
 
                     // Only use the 40 first chars of the base64url-encoded X coordinate.
                     var identifier = Base64UrlEncoder.Encode(parameters.Q.X);

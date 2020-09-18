@@ -31,7 +31,7 @@ namespace OpenIddict.Server
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1105), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));
             }
 
             if (transaction.Properties.TryGetValue(name, out var property) && property is TProperty result)
@@ -61,7 +61,7 @@ namespace OpenIddict.Server
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1105), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));
             }
 
             if (value is null)

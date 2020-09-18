@@ -124,7 +124,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine(SR.GetResourceString(SR.ID1221));
+                builder.AppendLine(SR.GetResourceString(SR.ID0222));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -175,7 +175,7 @@ namespace OpenIddict.Core
             var scope = await Store.InstantiateAsync(cancellationToken);
             if (scope is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1222));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0223));
             }
 
             await PopulateAsync(scope, descriptor, cancellationToken);
@@ -220,7 +220,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var scope = Options.CurrentValue.DisableEntityCaching ?
@@ -257,7 +257,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1201), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
             }
 
             var scope = Options.CurrentValue.DisableEntityCaching ?
@@ -293,7 +293,7 @@ namespace OpenIddict.Core
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1202), nameof(names));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
             }
 
             var scopes = Options.CurrentValue.DisableEntityCaching ?
@@ -334,7 +334,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
             }
 
             var scopes = Options.CurrentValue.DisableEntityCaching ?
@@ -841,7 +841,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine(SR.GetResourceString(SR.ID1223));
+                builder.AppendLine(SR.GetResourceString(SR.ID0224));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -919,12 +919,12 @@ namespace OpenIddict.Core
             var name = await Store.GetNameAsync(scope, cancellationToken);
             if (string.IsNullOrEmpty(name))
             {
-                yield return new ValidationResult(Localizer[SR.ID3044]);
+                yield return new ValidationResult(Localizer[SR.ID2044]);
             }
 
             else if (name!.Contains(Separators.Space[0]))
             {
-                yield return new ValidationResult(Localizer[SR.ID3045]);
+                yield return new ValidationResult(Localizer[SR.ID2045]);
             }
 
             else
@@ -938,7 +938,7 @@ namespace OpenIddict.Core
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID3060]);
+                    yield return new ValidationResult(Localizer[SR.ID2060]);
                 }
             }
         }

@@ -72,10 +72,10 @@ namespace OpenIddict.Validation.Owin
             // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
 
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
             var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName!) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
             if (context.IsRequestHandled)
             {
@@ -111,7 +111,7 @@ namespace OpenIddict.Validation.Owin
                     return false;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
             }
 
             return false;
@@ -121,7 +121,7 @@ namespace OpenIddict.Validation.Owin
         protected override async Task<AuthenticationTicket?> AuthenticateCoreAsync()
         {
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -164,9 +164,9 @@ namespace OpenIddict.Validation.Owin
 
             else
             {
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
-                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID5009));
-                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID5010));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID4009));
+                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
 
                 // Store the token to allow any OWIN/Katana component (e.g a controller)
                 // to retrieve it (e.g to make an API request to another application).
@@ -201,7 +201,7 @@ namespace OpenIddict.Validation.Owin
             if (challenge is not null && (Response.StatusCode == 401 || Response.StatusCode == 403))
             {
                 var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName!] = challenge.Properties ?? new AuthenticationProperties();
 
@@ -236,7 +236,7 @@ namespace OpenIddict.Validation.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
                 }
             }
         }

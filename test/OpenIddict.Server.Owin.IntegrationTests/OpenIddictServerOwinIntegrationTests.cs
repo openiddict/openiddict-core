@@ -245,7 +245,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3083), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2083), response.ErrorDescription);
         }
 
         [Theory]

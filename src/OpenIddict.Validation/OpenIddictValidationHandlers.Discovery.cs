@@ -63,7 +63,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3096]);
+                            description: context.Localizer[SR.ID2096]);
 
                         return default;
                     }
@@ -72,7 +72,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3097]);
+                            description: context.Localizer[SR.ID2097]);
 
                         return default;
                     }
@@ -81,7 +81,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3098]);
+                            description: context.Localizer[SR.ID2098]);
 
                         return default;
                     }
@@ -122,7 +122,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3099]);
+                            description: context.Localizer[SR.ID2099]);
 
                         return default;
                     }
@@ -131,7 +131,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3100]);
+                            description: context.Localizer[SR.ID2100]);
 
                         return default;
                     }
@@ -170,7 +170,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3101]);
+                            description: context.Localizer[SR.ID2101]);
 
                         return default;
                     }
@@ -224,7 +224,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3102, JsonWebKeySetParameterNames.Keys]);
+                            description: context.Localizer[SR.ID2102, JsonWebKeySetParameterNames.Keys]);
 
                         return default;
                     }
@@ -270,7 +270,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: context.Localizer[SR.ID3103]);
+                                description: context.Localizer[SR.ID2103]);
 
                             return default;
                         }
@@ -281,7 +281,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: context.Localizer[SR.ID3104]);
+                                description: context.Localizer[SR.ID2104]);
 
                             return default;
                         }
@@ -292,7 +292,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: context.Localizer[SR.ID3104]);
+                                description: context.Localizer[SR.ID2104]);
 
                             return default;
                         }

@@ -170,7 +170,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
                 asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1054));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0055));
             }
 
             if (key.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW))
@@ -185,7 +185,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512));
             }
 
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID1055));
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0056));
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddEncryptionCertificate(certificate);
 #else
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1263));
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
 #endif
         }
 
@@ -299,7 +299,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(algorithm))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1056), nameof(algorithm));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0057), nameof(algorithm));
             }
 
             switch (algorithm)
@@ -313,7 +313,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     return AddEncryptionCredentials(new EncryptingCredentials(CreateRsaSecurityKey(2048),
                         algorithm, SecurityAlgorithms.Aes256CbcHmacSha512));
 
-                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1057));
+                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0058));
             }
 
             static SymmetricSecurityKey CreateSymmetricSecurityKey(int size)
@@ -355,7 +355,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (algorithm.KeySize < size)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1058));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0059));
                 }
 
                 return new RsaSecurityKey(algorithm);
@@ -382,13 +382,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
                 if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1059));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0060));
                 }
             }
 
             if (!certificate.HasPrivateKey)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1060));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0061));
             }
 
             return AddEncryptionKey(new X509SecurityKey(certificate));
@@ -430,18 +430,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0063), nameof(password));
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
             if (stream is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1063));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
             }
 
             return AddEncryptionCertificate(stream, password, flags);
@@ -484,7 +484,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0063), nameof(password));
             }
 
             using var buffer = new MemoryStream();
@@ -502,13 +502,13 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
             }
 
             var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
             if (certificate is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
             }
 
             return AddEncryptionCertificate(certificate);
@@ -535,7 +535,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
             }
 
             using var store = new X509Store(name, location);
@@ -547,7 +547,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (certificate is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
             }
 
             return AddEncryptionCertificate(certificate);
@@ -584,7 +584,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
                 asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1066));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
             }
 
             if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
@@ -618,11 +618,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
                 key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
             {
-                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1068));
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
             }
 #endif
 
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID1067));
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0068));
         }
 
         /// <summary>
@@ -710,7 +710,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddSigningCertificate(certificate);
 #else
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1263));
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
 #endif
         }
 
@@ -738,7 +738,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(algorithm))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1056), nameof(algorithm));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0057), nameof(algorithm));
             }
 
             switch (algorithm)
@@ -780,10 +780,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 case SecurityAlgorithms.EcdsaSha256Signature:
                 case SecurityAlgorithms.EcdsaSha384Signature:
                 case SecurityAlgorithms.EcdsaSha512Signature:
-                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1068));
+                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
 #endif
 
-                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1057));
+                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0058));
             }
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
@@ -811,7 +811,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (algorithm.KeySize < size)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1058));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0059));
                 }
 
                 return new RsaSecurityKey(algorithm);
@@ -838,13 +838,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
                 if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1069));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0070));
                 }
             }
 
             if (!certificate.HasPrivateKey)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1060));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0061));
             }
 
             return AddSigningKey(new X509SecurityKey(certificate));
@@ -886,18 +886,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0063), nameof(password));
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
             if (stream is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1063));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
             }
 
             return AddSigningCertificate(stream, password, flags);
@@ -940,7 +940,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0063), nameof(password));
             }
 
             using var buffer = new MemoryStream();
@@ -958,13 +958,13 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
             }
 
             var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
             if (certificate is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
             }
 
             return AddSigningCertificate(certificate);
@@ -991,7 +991,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
             }
 
             using var store = new X509Store(name, location);
@@ -1003,7 +1003,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (certificate is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
             }
 
             return AddSigningCertificate(certificate);
@@ -1036,7 +1036,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1070), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0071), nameof(type));
             }
 
             return Configure(options => options.GrantTypes.Add(type));
@@ -1109,12 +1109,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1157,12 +1157,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1205,12 +1205,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1253,12 +1253,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1301,12 +1301,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1349,12 +1349,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1397,12 +1397,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1445,12 +1445,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1493,12 +1493,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1541,12 +1541,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
             }
 
             if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(SR.FormatID1080("~"), nameof(addresses));
+                throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1653,7 +1653,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (claims.Any(claim => string.IsNullOrEmpty(claim)))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1072), nameof(claims));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0073), nameof(claims));
             }
 
             return Configure(options => options.Claims.UnionWith(claims));
@@ -1674,7 +1674,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1073), nameof(scopes));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
             }
 
             return Configure(options => options.Scopes.UnionWith(scopes));

@@ -151,7 +151,7 @@ namespace OpenIddict.Server
                         TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
                         TokenTypeHints.IdToken     => JsonWebTokenTypes.IdentityToken,
 
-                        _ => throw new NotSupportedException(SR.GetResourceString(SR.ID1268))
+                        _ => throw new NotSupportedException(SR.GetResourceString(SR.ID0269))
                     };
                 }
 
@@ -159,14 +159,14 @@ namespace OpenIddict.Server
                 // (provided via the type delegate parameter) or inferred from the token_usage claim.
                 if (string.IsNullOrEmpty(type))
                 {
-                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID1269));
+                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID0270));
                 }
 
                 // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
                 if (parameters.ValidTypes is not null && parameters.ValidTypes.Any() &&
                    !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID1270))
+                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID0271))
                     {
                         InvalidType = type
                     };

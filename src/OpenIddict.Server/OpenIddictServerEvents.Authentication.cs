@@ -80,7 +80,7 @@ namespace OpenIddict.Server
             {
                 if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException(SR.GetResourceString(SR.ID1099), nameof(address));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0100), nameof(address));
                 }
 
                 // Don't allow validation to alter the redirect_uri parameter extracted
@@ -88,7 +88,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(Request?.RedirectUri) &&
                     !string.Equals(Request.RedirectUri, address, StringComparison.Ordinal))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1100));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0101));
                 }
 
                 RedirectUri = address;

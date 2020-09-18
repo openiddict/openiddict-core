@@ -104,7 +104,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == scope.Id &&
                 entity.ConcurrencyToken == scope.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244));
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245));
             }
         }
 
@@ -113,7 +113,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -127,7 +127,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1201), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -141,7 +141,7 @@ namespace OpenIddict.MongoDb
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1202), nameof(names));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -165,7 +165,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -325,7 +325,7 @@ namespace OpenIddict.MongoDb
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TScope>(Task.FromException<TScope>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID1245), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0246), exception)));
             }
         }
 
@@ -524,7 +524,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == scope.Id &&
                 entity.ConcurrencyToken == timestamp, scope, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244));
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245));
             }
         }
     }

@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (typeof(TApplication).IsGenericType || typeof(TAuthorization).IsGenericType ||
                 typeof(TScope).IsGenericType || typeof(TToken).IsGenericType)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1276));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0277));
             }
 
             Services.Configure<OpenIddictCoreOptions>(options =>
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!typeof(DbContext).IsAssignableFrom(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             Services.TryAddScoped(type);

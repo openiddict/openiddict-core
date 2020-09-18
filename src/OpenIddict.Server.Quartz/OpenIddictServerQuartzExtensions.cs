@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     JobBuilder.Create<OpenIddictServerQuartzJob>()
                         .StoreDurably()
                         .WithIdentity(OpenIddictServerQuartzJob.Identity)
-                        .WithDescription(SR.GetResourceString(SR.ID9000))
+                        .WithDescription(SR.GetResourceString(SR.ID8000))
                         .Build());
             }
 
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     TriggerBuilder.Create()
                         .ForJob(OpenIddictServerQuartzJob.Identity)
                         .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
-                        .WithDescription(SR.GetResourceString(SR.ID9001))
+                        .WithDescription(SR.GetResourceString(SR.ID8001))
                         .StartNow()
                         .Build());
             }

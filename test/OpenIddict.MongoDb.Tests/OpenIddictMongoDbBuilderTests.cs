@@ -111,7 +111,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetApplicationsCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationsCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetScopesCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]
@@ -210,7 +210,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetTokensCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]

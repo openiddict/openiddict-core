@@ -77,14 +77,14 @@ namespace OpenIddict.Validation.DataProtection
                 // Create a Data Protection protector using the provider registered in the options.
                 var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(context.TokenType switch
                 {
-                    null => throw new InvalidOperationException(SR.GetResourceString(SR.ID1166)),
+                    null => throw new InvalidOperationException(SR.GetResourceString(SR.ID0167)),
 
                     TokenTypeHints.AccessToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                         => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
 
                     TokenTypeHints.AccessToken => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                 });
 
                 try
@@ -99,19 +99,19 @@ namespace OpenIddict.Validation.DataProtection
 
                 catch (Exception exception)
                 {
-                    context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID7153), context.Token);
+                    context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), context.Token);
                 }
 
                 if (context.Principal is null)
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: context.Localizer[SR.ID3004]);
+                        description: context.Localizer[SR.ID2004]);
 
                     return default;
                 }
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID7152), context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6152), context.Token, context.Principal.Claims);
 
                 return default;
             }

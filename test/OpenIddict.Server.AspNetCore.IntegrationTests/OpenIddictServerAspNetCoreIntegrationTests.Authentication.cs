@@ -31,7 +31,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3028(Parameters.RequestId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2028(Parameters.RequestId), response.ErrorDescription);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.RequestId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.RequestId), response.ErrorDescription);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictToken>());
 
-            Assert.Equal(SR.GetResourceString(SR.ID1230), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0231), exception.Message);
         }
 
         [Fact]

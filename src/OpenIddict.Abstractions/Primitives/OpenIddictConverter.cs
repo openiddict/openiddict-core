@@ -52,7 +52,7 @@ namespace OpenIddict.Abstractions
             return typeToConvert == typeof(OpenIddictMessage)  ? new OpenIddictMessage(document.RootElement.Clone()) :
                    typeToConvert == typeof(OpenIddictRequest)  ? new OpenIddictRequest(document.RootElement.Clone()) :
                    typeToConvert == typeof(OpenIddictResponse) ? new OpenIddictResponse(document.RootElement.Clone()) :
-                   throw new ArgumentException(SR.GetResourceString(SR.ID1175), nameof(typeToConvert));
+                   throw new ArgumentException(SR.GetResourceString(SR.ID0176), nameof(typeToConvert));
         }
 
         /// <summary>

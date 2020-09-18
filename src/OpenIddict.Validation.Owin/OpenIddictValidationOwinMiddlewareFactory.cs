@@ -47,7 +47,7 @@ namespace OpenIddict.Validation.Owin
             var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName);
             if (provider is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1167));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0168));
             }
 
             // Note: the Microsoft.Extensions.DependencyInjection container doesn't support resolving services
@@ -63,7 +63,7 @@ namespace OpenIddict.Validation.Owin
             return middleware.Invoke(context);
 
             static T GetRequiredService<T>(IServiceProvider provider) => provider.GetService<T>() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1168));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0169));
         }
     }
 }

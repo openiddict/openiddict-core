@@ -45,7 +45,7 @@ namespace OpenIddict.MongoDb
             if (database is null)
             {
                 return new ValueTask<IMongoDatabase>(Task.FromException<IMongoDatabase>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID1261))));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0262))));
             }
 
             return new ValueTask<IMongoDatabase>(database);

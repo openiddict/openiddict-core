@@ -69,7 +69,7 @@ namespace OpenIddict.Server.Owin
             {
                 private readonly IDistributedCache _cache;
 
-                public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
+                public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
                 public RestoreCachedRequestParameters(IDistributedCache cache)
                     => _cache = cache;
@@ -94,7 +94,7 @@ namespace OpenIddict.Server.Owin
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID5008));
+                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                     // If a request_id parameter can be found in the authorization request,
                     // restore the complete authorization request from the distributed cache.
@@ -109,11 +109,11 @@ namespace OpenIddict.Server.Owin
                     var token = await _cache.GetStringAsync(Cache.AuthorizationRequest + context.Request.RequestId);
                     if (token is null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7146), Parameters.RequestId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6146), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3052, Parameters.RequestId]);
+                            description: context.Localizer[SR.ID2052, Parameters.RequestId]);
 
                         return;
                     }
@@ -126,11 +126,11 @@ namespace OpenIddict.Server.Owin
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7146), Parameters.RequestId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6146), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3052, Parameters.RequestId]);
+                            description: context.Localizer[SR.ID2052, Parameters.RequestId]);
 
                         return;
                     }
@@ -139,7 +139,7 @@ namespace OpenIddict.Server.Owin
                         Base64UrlEncoder.Decode(((JsonWebToken) result.SecurityToken).InnerToken.EncodedPayload));
                     if (document.RootElement.ValueKind != JsonValueKind.Object)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1116));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0117));
                     }
 
                     // Restore the authorization request parameters from the serialized payload.
@@ -165,7 +165,7 @@ namespace OpenIddict.Server.Owin
                 private readonly IDistributedCache _cache;
                 private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-                public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
+                public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
                 public CacheRequestParameters(
                     IDistributedCache cache,
@@ -195,14 +195,14 @@ namespace OpenIddict.Server.Owin
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID5008));
+                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                     // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                     // this may indicate that the request was incorrectly processed by another server stack.
                     var request = context.Transaction.GetOwinRequest();
                     if (request is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                     }
 
                     // Don't cache the request if the request doesn't include any parameter.
@@ -269,7 +269,7 @@ namespace OpenIddict.Server.Owin
             {
                 private readonly IDistributedCache _cache;
 
-                public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
+                public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
                 public RemoveCachedRequest(IDistributedCache cache)
                     => _cache = cache;
@@ -344,7 +344,7 @@ namespace OpenIddict.Server.Owin
                     var response = context.Transaction.GetOwinRequest()?.Context.Response;
                     if (response is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                     }
 
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
@@ -353,7 +353,7 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7147), context.RedirectUri, context.Response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6147), context.RedirectUri, context.Response);
 
                     using (var buffer = new MemoryStream())
                     using (var writer = new StreamWriter(buffer))
@@ -435,7 +435,7 @@ namespace OpenIddict.Server.Owin
                     var response = context.Transaction.GetOwinRequest()?.Context.Response;
                     if (response is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                     }
 
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
@@ -444,7 +444,7 @@ namespace OpenIddict.Server.Owin
                         return default;
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7148), context.RedirectUri, context.Response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6148), context.RedirectUri, context.Response);
 
                     var location = context.RedirectUri;
 
@@ -499,7 +499,7 @@ namespace OpenIddict.Server.Owin
                     var response = context.Transaction.GetOwinRequest()?.Context.Response;
                     if (response is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                     }
 
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
@@ -508,7 +508,7 @@ namespace OpenIddict.Server.Owin
                         return default;
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7149), context.RedirectUri, context.Response);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6149), context.RedirectUri, context.Response);
 
                     var builder = new StringBuilder(context.RedirectUri);
 

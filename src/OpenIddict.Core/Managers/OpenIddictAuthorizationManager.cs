@@ -131,7 +131,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine(SR.GetResourceString(SR.ID1218));
+                builder.AppendLine(SR.GetResourceString(SR.ID0219));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -182,7 +182,7 @@ namespace OpenIddict.Core
             var authorization = await Store.InstantiateAsync(cancellationToken);
             if (authorization is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1219));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0220));
             }
 
             await PopulateAsync(authorization, descriptor, cancellationToken);
@@ -214,17 +214,17 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             var descriptor = new OpenIddictAuthorizationDescriptor
@@ -277,12 +277,12 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -330,17 +330,17 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -385,22 +385,22 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -447,22 +447,22 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -510,7 +510,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -553,7 +553,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var authorization = Options.CurrentValue.DisableEntityCaching ?
@@ -588,7 +588,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -838,7 +838,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             return string.Equals(await Store.GetStatusAsync(authorization, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
@@ -861,7 +861,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             return string.Equals(await Store.GetTypeAsync(authorization, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
@@ -1041,21 +1041,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(authorization, cancellationToken);
 
-                Logger.LogInformation(SR.GetResourceString(SR.ID7164), await Store.GetIdAsync(authorization, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6164), await Store.GetIdAsync(authorization, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID7165), await Store.GetIdAsync(authorization, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6165), await Store.GetIdAsync(authorization, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID7166), await Store.GetIdAsync(authorization, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6166), await Store.GetIdAsync(authorization, cancellationToken));
 
                 return false;
             }
@@ -1080,7 +1080,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine(SR.GetResourceString(SR.ID1220));
+                builder.AppendLine(SR.GetResourceString(SR.ID0221));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -1156,18 +1156,18 @@ namespace OpenIddict.Core
             var type = await Store.GetTypeAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult(Localizer[SR.ID3116]);
+                yield return new ValidationResult(Localizer[SR.ID2116]);
             }
 
             else if (!string.Equals(type, AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(type, AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
             {
-                yield return new ValidationResult(Localizer[SR.ID3117]);
+                yield return new ValidationResult(Localizer[SR.ID2117]);
             }
 
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
             {
-                yield return new ValidationResult(Localizer[SR.ID3038]);
+                yield return new ValidationResult(Localizer[SR.ID2038]);
             }
 
             // Ensure that the scopes are not null or empty and do not contain spaces.
@@ -1175,14 +1175,14 @@ namespace OpenIddict.Core
             {
                 if (string.IsNullOrEmpty(scope))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID3039]);
+                    yield return new ValidationResult(Localizer[SR.ID2039]);
 
                     break;
                 }
 
                 if (scope.Contains(Separators.Space[0]))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID3042]);
+                    yield return new ValidationResult(Localizer[SR.ID2042]);
 
                     break;
                 }

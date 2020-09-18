@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), SR.GetResourceString(SR.ID1278));
+                throw new ArgumentOutOfRangeException(nameof(count), SR.GetResourceString(SR.ID0279));
             }
 
             return Configure(options => options.MaximumRefireCount = count);
@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (lifespan < TimeSpan.FromMinutes(10))
             {
-                throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID1279));
+                throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID0280));
             }
 
             return Configure(options => options.MinimumAuthorizationLifespan = lifespan);
@@ -101,7 +101,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (lifespan < TimeSpan.FromMinutes(10))
             {
-                throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID1279));
+                throw new ArgumentOutOfRangeException(nameof(lifespan), SR.GetResourceString(SR.ID0280));
             }
 
             return Configure(options => options.MinimumTokenLifespan = lifespan);

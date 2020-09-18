@@ -143,7 +143,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictApplicationManager>();
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1272), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0273), exception.Message);
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictAuthorizationManager>();
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1273), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0274), exception.Message);
         }
 
         [Fact]
@@ -185,7 +185,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictScopeManager>();
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1274), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0275), exception.Message);
         }
 
         [Fact]
@@ -206,7 +206,7 @@ namespace OpenIddict.Core.Tests
                 return provider.GetRequiredService<IOpenIddictTokenManager>();
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1275), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0276), exception.Message);
         }
 
         [Fact]

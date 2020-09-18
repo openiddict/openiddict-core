@@ -223,7 +223,7 @@ namespace OpenIddict.EntityFrameworkCore
                     Context.Entry(token).State = EntityState.Unchanged;
                 }
 
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
             }
         }
 
@@ -233,12 +233,12 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
@@ -262,17 +262,17 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
@@ -296,22 +296,22 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
@@ -338,22 +338,22 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -391,7 +391,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
@@ -412,7 +412,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var key = ConvertIdentifierFromString(identifier);
@@ -428,7 +428,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             return (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
@@ -615,7 +615,7 @@ namespace OpenIddict.EntityFrameworkCore
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID1241), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0242), exception)));
             }
         }
 
@@ -733,7 +733,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (exceptions is not null)
             {
-                throw new AggregateException(SR.GetResourceString(SR.ID1242), exceptions);
+                throw new AggregateException(SR.GetResourceString(SR.ID0243), exceptions);
             }
         }
 
@@ -757,7 +757,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 if (application is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1243));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
                 }
 
                 authorization.Application = application;
@@ -940,7 +940,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(authorization).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0241), exception);
             }
         }
 

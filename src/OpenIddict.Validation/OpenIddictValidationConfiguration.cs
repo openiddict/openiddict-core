@@ -40,45 +40,45 @@ namespace OpenIddict.Validation
 
             if (options.JsonWebTokenHandler is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1074));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
             }
 
             if (options.Configuration is null && options.ConfigurationManager is null &&
                 options.Issuer is null && options.MetadataAddress is null)
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1127));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
             }
 
             if (options.ValidationType == OpenIddictValidationType.Introspection)
             {
                 if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1128));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0129));
                 }
 
                 if (options.Issuer is null && options.MetadataAddress is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1129));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0130));
                 }
 
                 if (string.IsNullOrEmpty(options.ClientId))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1130));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0131));
                 }
 
                 if (string.IsNullOrEmpty(options.ClientSecret))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1131));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0132));
                 }
 
                 if (options.EnableAuthorizationEntryValidation)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1132));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0133));
                 }
 
                 if (options.EnableTokenEntryValidation)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1133));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0134));
                 }
             }
 
@@ -87,7 +87,7 @@ namespace OpenIddict.Validation
                 options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                     (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1086));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
             }
 
             if (options.ConfigurationManager is null)
@@ -102,7 +102,7 @@ namespace OpenIddict.Validation
                     if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
                         !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1134));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
                     }
 
                     if (options.MetadataAddress is null)
@@ -114,12 +114,12 @@ namespace OpenIddict.Validation
                     {
                         if (options.Issuer is null || !options.Issuer.IsAbsoluteUri)
                         {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1135));
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
                         }
 
                         if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
                         {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1136));
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
                         }
 
                         if (!options.Issuer.OriginalString.EndsWith("/"))

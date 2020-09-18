@@ -102,7 +102,7 @@ namespace OpenIddict.Server.AspNetCore
                     return false;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
             }
 
             return false;
@@ -112,7 +112,7 @@ namespace OpenIddict.Server.AspNetCore
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -150,14 +150,14 @@ namespace OpenIddict.Server.AspNetCore
                     [OpenIddictServerAspNetCoreConstants.Properties.ErrorUri] = context.ErrorUri
                 });
 
-                return AuthenticateResult.Fail(SR.GetResourceString(SR.ID1112), properties);
+                return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
             }
 
             else
             {
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
-                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID5009));
-                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID5010));
+                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID4009));
+                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
 
                 // Store the token to allow any OWIN/Katana component (e.g a controller)
                 // to retrieve it (e.g to make an API request to another application).
@@ -181,7 +181,7 @@ namespace OpenIddict.Server.AspNetCore
         protected override async Task HandleChallengeAsync(AuthenticationProperties? properties)
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
@@ -216,7 +216,7 @@ namespace OpenIddict.Server.AspNetCore
                     return;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
             }
         }
 
@@ -233,7 +233,7 @@ namespace OpenIddict.Server.AspNetCore
             }
 
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 
@@ -269,7 +269,7 @@ namespace OpenIddict.Server.AspNetCore
                     return;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
             }
         }
 
@@ -277,7 +277,7 @@ namespace OpenIddict.Server.AspNetCore
         public async Task SignOutAsync(AuthenticationProperties? properties)
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 
             var context = new ProcessSignOutContext(transaction)
             {
@@ -312,7 +312,7 @@ namespace OpenIddict.Server.AspNetCore
                     return;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
             }
         }
     }

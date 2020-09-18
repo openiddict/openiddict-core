@@ -131,7 +131,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3105, Parameters.Active]);
+                            description: context.Localizer[SR.ID2105, Parameters.Active]);
 
                         return default;
                     }
@@ -142,7 +142,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID3106]);
+                            description: context.Localizer[SR.ID2106]);
 
                         return default;
                     }
@@ -183,7 +183,7 @@ namespace OpenIddict.Validation
 
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID3107, parameter.Key]);
+                            description: context.Localizer[SR.ID2107, parameter.Key]);
 
                         return default;
                     }
@@ -298,7 +298,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: context.Localizer[SR.ID3108]);
+                                description: context.Localizer[SR.ID2108]);
 
                             return default;
                         }
@@ -307,7 +307,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: context.Localizer[SR.ID3109]);
+                                description: context.Localizer[SR.ID2109]);
 
                             return default;
                         }
@@ -351,7 +351,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.InvalidToken,
-                                description: context.Localizer[SR.ID3110]);
+                                description: context.Localizer[SR.ID2110]);
 
                             return default;
                         }

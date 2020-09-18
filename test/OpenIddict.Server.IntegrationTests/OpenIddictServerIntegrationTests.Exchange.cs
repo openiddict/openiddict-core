@@ -42,7 +42,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
         }
 
         [Theory]
@@ -152,7 +152,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.GrantType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.GrantType), response.ErrorDescription);
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
         }
 
         [Fact]
@@ -192,7 +192,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.Code), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.Code), response.ErrorDescription);
         }
 
         [Fact]
@@ -211,7 +211,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.RefreshToken), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.RefreshToken), response.ErrorDescription);
         }
 
         [Theory]
@@ -234,7 +234,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3057(Parameters.ClientId, Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2057(Parameters.ClientId, Parameters.ClientSecret), response.ErrorDescription);
         }
 
         [Theory]
@@ -257,7 +257,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3059(Parameters.Username, Parameters.Password), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2059(Parameters.Username, Parameters.Password), response.ErrorDescription);
         }
 
         [Fact]
@@ -277,7 +277,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3001), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2001), response.ErrorDescription);
         }
 
         [Fact]
@@ -296,7 +296,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3003), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2003), response.ErrorDescription);
         }
 
         [Fact]
@@ -338,7 +338,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3016), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2016), response.ErrorDescription);
         }
 
         [Fact]
@@ -379,7 +379,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3018), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2018), response.ErrorDescription);
         }
 
         [Fact]
@@ -422,7 +422,7 @@ namespace OpenIddict.Server.IntegrationTests
                 });
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1042), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0043), exception.Message);
         }
 
         [Fact]
@@ -464,7 +464,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3069), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2069), response.ErrorDescription);
         }
 
         [Fact]
@@ -506,7 +506,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3071), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2071), response.ErrorDescription);
         }
 
         [Fact]
@@ -550,7 +550,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.RedirectUri), response.ErrorDescription);
         }
 
         [Fact]
@@ -594,7 +594,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.FormatID3072(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2072(Parameters.RedirectUri), response.ErrorDescription);
         }
 
         [Fact]
@@ -637,7 +637,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3073(Parameters.CodeVerifier, Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2073(Parameters.CodeVerifier, Parameters.CodeChallenge), response.ErrorDescription);
         }
 
         [Fact]
@@ -682,7 +682,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.CodeVerifier), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.CodeVerifier), response.ErrorDescription);
         }
 
         [Fact]
@@ -728,7 +728,7 @@ namespace OpenIddict.Server.IntegrationTests
                 });
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1267), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0268), exception.Message);
         }
 
         [Fact]
@@ -774,7 +774,7 @@ namespace OpenIddict.Server.IntegrationTests
                 });
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1044), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0045), exception.Message);
         }
 
         [Theory]
@@ -821,7 +821,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.CodeVerifier), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.CodeVerifier), response.ErrorDescription);
         }
 
         [Theory]
@@ -921,7 +921,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.FormatID3074(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2074(Parameters.Scope), response.ErrorDescription);
         }
 
         [Fact]
@@ -966,7 +966,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.Scope), response.ErrorDescription);
         }
 
         [Fact]
@@ -1009,7 +1009,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.FormatID3074(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2074(Parameters.Scope), response.ErrorDescription);
         }
 
         [Fact]
@@ -1052,7 +1052,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.Scope), response.ErrorDescription);
         }
 
         [Theory]
@@ -1084,7 +1084,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.UnsupportedGrantType, response.Error);
-            Assert.Equal(SR.FormatID3032(Parameters.GrantType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2032(Parameters.GrantType), response.ErrorDescription);
         }
 
         [Fact]
@@ -1111,7 +1111,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3035(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2035(Scopes.OfflineAccess), response.ErrorDescription);
         }
 
         [Fact]
@@ -1142,7 +1142,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidScope, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.Scope), response.ErrorDescription);
         }
 
         [Fact]
@@ -1255,7 +1255,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3057(Parameters.ClientId, Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2057(Parameters.ClientId, Parameters.ClientSecret), response.ErrorDescription);
         }
 
         [Fact]
@@ -1281,7 +1281,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.FormatID3029(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
         }
 
         [Fact]
@@ -1312,7 +1312,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.FormatID3052(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -1349,7 +1349,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal(SR.FormatID3043(Parameters.GrantType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2043(Parameters.GrantType), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -1389,7 +1389,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.FormatID3053(Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2053(Parameters.ClientSecret), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -1429,7 +1429,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.FormatID3054(Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2054(Parameters.ClientSecret), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -1472,7 +1472,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3055), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2055), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
@@ -1518,7 +1518,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3063), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2063), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -1564,7 +1564,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3064), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2064), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -1615,7 +1615,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3065(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2065(Scopes.OfflineAccess), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
@@ -1666,7 +1666,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3051), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2051), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
@@ -1716,7 +1716,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID3054(Parameters.CodeVerifier), response.ErrorDescription);
+            Assert.Equal(SR.FormatID2054(Parameters.CodeVerifier), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
                 Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Once());
@@ -2145,7 +2145,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3001), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2001), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -2204,7 +2204,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3003), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2003), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -2284,7 +2284,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3010), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2010), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()), Times.Once());
@@ -2351,7 +2351,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3012), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2012), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()), Times.Once());
@@ -2448,7 +2448,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3010), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2010), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()), Times.Once());
@@ -2535,7 +2535,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3012), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2012), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()), Times.Once());
@@ -2623,7 +2623,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3016), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2016), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()), Times.Once());
@@ -2696,7 +2696,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3018), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2018), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
@@ -2975,7 +2975,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3020), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2020), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -3073,7 +3073,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3020), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2020), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
@@ -3153,7 +3153,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3022), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2022), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -3237,7 +3237,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID3022), response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2022), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());

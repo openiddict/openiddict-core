@@ -48,7 +48,7 @@ namespace OpenIddict.EntityFramework.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomScope>());
 
-            Assert.Equal(SR.GetResourceString(SR.ID1236), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0237), exception.Message);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace OpenIddict.EntityFramework.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictEntityFrameworkScope>());
 
-            Assert.Equal(SR.GetResourceString(SR.ID1234), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0235), exception.Message);
         }
 
         [Fact]

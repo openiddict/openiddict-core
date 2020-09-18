@@ -53,13 +53,13 @@ namespace OpenIddict.EntityFrameworkCore
                 var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkCoreScope<>));
                 if (root is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1254));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0255));
                 }
 
                 var context = _options.CurrentValue.DbContextType;
                 if (context is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1252));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0253));
                 }
 
                 return typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>).MakeGenericType(

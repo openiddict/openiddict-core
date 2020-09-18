@@ -82,7 +82,7 @@ namespace OpenIddict.MongoDb.Tests
                 await context.GetDatabaseAsync(CancellationToken.None);
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID1261), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0262), exception.Message);
         }
 
         [Fact]

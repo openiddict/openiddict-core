@@ -107,7 +107,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.ApplicationsCollectionName = name);
@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.AuthorizationsCollectionName = name);
@@ -137,7 +137,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.ScopesCollectionName = name);
@@ -152,7 +152,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.TokensCollectionName = name);

@@ -41,7 +41,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceApplicationManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceApplicationStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceAuthorizationManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -189,7 +189,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceAuthorizationStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -222,7 +222,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceScopeManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -280,7 +280,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceScopeStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -313,7 +313,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceTokenManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -371,7 +371,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceTokenStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -457,7 +457,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -507,7 +507,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -557,7 +557,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -607,7 +607,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]

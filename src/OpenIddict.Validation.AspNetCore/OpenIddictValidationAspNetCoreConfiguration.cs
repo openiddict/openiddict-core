@@ -34,7 +34,7 @@ namespace OpenIddict.Validation.AspNetCore
             if (options.SchemeMap.TryGetValue(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
                 builder.HandlerType != typeof(OpenIddictValidationAspNetCoreHandler))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1163));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0164));
             }
 
             options.AddScheme<OpenIddictValidationAspNetCoreHandler>(
@@ -67,7 +67,7 @@ namespace OpenIddict.Validation.AspNetCore
             if (!TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
                 !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1164));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0165));
             }
 
             static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)

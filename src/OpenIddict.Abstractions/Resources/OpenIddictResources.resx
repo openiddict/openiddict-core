@@ -117,2384 +117,2384 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ID1000" xml:space="preserve">
+  <data name="ID0001" xml:space="preserve">
     <value>An identity cannot be extracted from this token request.
 This generally indicates that the OpenIddict server stack was asked to validate a token for an invalid grant type (e.g password).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1001" xml:space="preserve">
+  <data name="ID0002" xml:space="preserve">
     <value>An identity cannot be extracted from this request.
 This generally indicates that the OpenIddict server stack was asked to validate a token for an endpoint it doesn't manage.
 To validate tokens received by custom API endpoints, the OpenIddict validation handler (e.g OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme or OpenIddictValidationOwinDefaults.AuthenticationType) must be used instead.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1002" xml:space="preserve">
+  <data name="ID0003" xml:space="preserve">
     <value>The token type is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1003" xml:space="preserve">
+  <data name="ID0004" xml:space="preserve">
     <value>The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.
 When implementing custom token deserialization, a 'oi_tkn_typ' claim containing the type of the token being processed must be added to the security principal.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1004" xml:space="preserve">
+  <data name="ID0005" xml:space="preserve">
     <value>The type of token associated with the deserialized principal ({0}) doesn't match the expected token type ({1}).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1005" xml:space="preserve">
+  <data name="ID0006" xml:space="preserve">
     <value>A challenge response cannot be returned from this endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1006" xml:space="preserve">
+  <data name="ID0007" xml:space="preserve">
     <value>The authentication context cannot be found.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1007" xml:space="preserve">
+  <data name="ID0008" xml:space="preserve">
     <value>The device code identifier cannot be extracted from the principal.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1008" xml:space="preserve">
+  <data name="ID0009" xml:space="preserve">
     <value>The token identifier cannot be extracted from the principal.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1009" xml:space="preserve">
+  <data name="ID0010" xml:space="preserve">
     <value>A sign-in response cannot be returned from this endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1010" xml:space="preserve">
+  <data name="ID0011" xml:space="preserve">
     <value>The specified principal doesn't contain any claims-based identity.
 Make sure that 'ClaimsPrincipal.Identity' is not null.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1011" xml:space="preserve">
+  <data name="ID0012" xml:space="preserve">
     <value>The specified principal contains an authenticated identity, which is not valid when the sign-in operation is triggered from the device authorization endpoint.
 Make sure that 'ClaimsPrincipal.Identity.AuthenticationType' is null and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'false'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1012" xml:space="preserve">
+  <data name="ID0013" xml:space="preserve">
     <value>The specified principal contains a subject claim, which is not valid when the sign-in operation is triggered from the device authorization endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1013" xml:space="preserve">
+  <data name="ID0014" xml:space="preserve">
     <value>The specified principal doesn't contain a valid/authenticated identity.
 Make sure that 'ClaimsPrincipal.Identity.AuthenticationType' is not null and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'true'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1014" xml:space="preserve">
+  <data name="ID0015" xml:space="preserve">
     <value>The specified principal was rejected because the mandatory subject claim was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1015" xml:space="preserve">
+  <data name="ID0016" xml:space="preserve">
     <value>The core services must be registered when enabling the OpenIddict server feature.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.
 Alternatively, you can disable the built-in database-based server features by enabling the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1016" xml:space="preserve">
+  <data name="ID0017" xml:space="preserve">
     <value>The application entry cannot be found in the database.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1017" xml:space="preserve">
+  <data name="ID0018" xml:space="preserve">
     <value>An unknown error occurred while creating an authorization entry.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1018" xml:space="preserve">
+  <data name="ID0019" xml:space="preserve">
     <value>An unknown error occurred while creating a token entry.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1019" xml:space="preserve">
+  <data name="ID0020" xml:space="preserve">
     <value>A token entry cannot be created from a null principal.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1020" xml:space="preserve">
+  <data name="ID0021" xml:space="preserve">
     <value>The token entry cannot be found in the database.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1021" xml:space="preserve">
+  <data name="ID0022" xml:space="preserve">
     <value>A token cannot be created from a null principal.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1022" xml:space="preserve">
+  <data name="ID0023" xml:space="preserve">
     <value>The issuer must be a non-null, non-empty absolute URL.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1023" xml:space="preserve">
+  <data name="ID0024" xml:space="preserve">
     <value>A sign-out response cannot be returned from this endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1024" xml:space="preserve">
+  <data name="ID0025" xml:space="preserve">
     <value>The token type cannot be resolved.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1025" xml:space="preserve">
+  <data name="ID0026" xml:space="preserve">
     <value>The payload associated with a reference token cannot be retrieved.
 This may indicate that the token entry was corrupted.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1026" xml:space="preserve">
+  <data name="ID0027" xml:space="preserve">
     <value>The authorization request was not correctly extracted.
 To extract authorization requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractAuthorizationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1027" xml:space="preserve">
+  <data name="ID0028" xml:space="preserve">
     <value>The request cannot be validated because no redirect_uri was specified.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1028" xml:space="preserve">
+  <data name="ID0029" xml:space="preserve">
     <value>The authorization request was not handled.
 To handle authorization requests in a controller, create a custom action with the same route as the authorization endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableAuthorizationEndpointPassthrough()'.
 Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleAuthorizationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1029" xml:space="preserve">
+  <data name="ID0030" xml:space="preserve">
     <value>The authorization response was not correctly applied.
 To apply authorization responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyAuthorizationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1030" xml:space="preserve">
+  <data name="ID0031" xml:space="preserve">
     <value>The device request was not correctly extracted.
 To extract device requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractDeviceRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1031" xml:space="preserve">
+  <data name="ID0032" xml:space="preserve">
     <value>The client application details cannot be found in the database.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1032" xml:space="preserve">
+  <data name="ID0033" xml:space="preserve">
     <value>The device response was not correctly applied.
 To apply device responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyDeviceResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1033" xml:space="preserve">
+  <data name="ID0034" xml:space="preserve">
     <value>The verification request was not correctly extracted.
 To extract verification requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractVerificationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1034" xml:space="preserve">
+  <data name="ID0035" xml:space="preserve">
     <value>The verification request was not handled.
 To handle verification requests in a controller, create a custom action with the same route as the verification endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableVerificationEndpointPassthrough()'.
 Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleVerificationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1035" xml:space="preserve">
+  <data name="ID0036" xml:space="preserve">
     <value>The verification response was not correctly applied.
 To apply verification responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyVerificationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1036" xml:space="preserve">
+  <data name="ID0037" xml:space="preserve">
     <value>The configuration request was not correctly extracted.
 To extract configuration requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractConfigurationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1037" xml:space="preserve">
+  <data name="ID0038" xml:space="preserve">
     <value>The cryptography request was not correctly extracted.
 To extract configuration requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractCryptographyRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1038" xml:space="preserve">
+  <data name="ID0039" xml:space="preserve">
     <value>The cryptography response was not correctly applied.
 To apply cryptography responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyCryptographyResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1039" xml:space="preserve">
+  <data name="ID0040" xml:space="preserve">
     <value>The token request was not correctly extracted.
 To extract token requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractTokenRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1040" xml:space="preserve">
+  <data name="ID0041" xml:space="preserve">
     <value>The token request was not handled.
 To handle token requests in a controller, create a custom action with the same route as the token endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableTokenEndpointPassthrough()'.
 Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleTokenRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1041" xml:space="preserve">
+  <data name="ID0042" xml:space="preserve">
     <value>The token response was not correctly applied.
 To apply token responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyTokenResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1042" xml:space="preserve">
+  <data name="ID0043" xml:space="preserve">
     <value>The presenters list cannot be extracted from the authorization code.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1043" xml:space="preserve">
+  <data name="ID0044" xml:space="preserve">
     <value>The presenters list cannot be extracted from the device code.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1044" xml:space="preserve">
+  <data name="ID0045" xml:space="preserve">
     <value>The specified code challenge method is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1045" xml:space="preserve">
+  <data name="ID0046" xml:space="preserve">
     <value>The introspection request was not correctly extracted.
 To extract introspection requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractIntrospectionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1046" xml:space="preserve">
+  <data name="ID0047" xml:space="preserve">
     <value>The introspection response was not correctly applied.
 To apply introspection responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyIntrospectionResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1047" xml:space="preserve">
+  <data name="ID0048" xml:space="preserve">
     <value>The revocation request was not correctly extracted.
 To extract revocation requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractRevocationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1048" xml:space="preserve">
+  <data name="ID0049" xml:space="preserve">
     <value>The revocation response was not correctly applied.
 To apply revocation responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyRevocationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1049" xml:space="preserve">
+  <data name="ID0050" xml:space="preserve">
     <value>The logout request was not correctly extracted.
 To extract logout requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractLogoutRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1050" xml:space="preserve">
+  <data name="ID0051" xml:space="preserve">
     <value>The logout request was not handled.
 To handle logout requests in a controller, create a custom controller action with the same route as the logout endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddServer().UseAspNetCore().EnableLogoutEndpointPassthrough()'.
 Alternatively, create a class implementing 'IOpenIddictServerHandler&lt;HandleLogoutRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1051" xml:space="preserve">
+  <data name="ID0052" xml:space="preserve">
     <value>The logout response was not correctly applied.
 To apply logout responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyLogoutResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1052" xml:space="preserve">
+  <data name="ID0053" xml:space="preserve">
     <value>The userinfo request was not correctly extracted.
 To extract userinfo requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractUserinfoRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1053" xml:space="preserve">
+  <data name="ID0054" xml:space="preserve">
     <value>The userinfo response was not correctly applied.
 To apply userinfo responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyUserinfoResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1054" xml:space="preserve">
+  <data name="ID0055" xml:space="preserve">
     <value>The asymmetric encryption key doesn't contain the required private key.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1055" xml:space="preserve">
+  <data name="ID0056" xml:space="preserve">
     <value>An encryption algorithm cannot be automatically inferred from the encrypting key.
 Consider using 'options.AddEncryptionCredentials(EncryptingCredentials)' instead.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1056" xml:space="preserve">
+  <data name="ID0057" xml:space="preserve">
     <value>The algorithm cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1057" xml:space="preserve">
+  <data name="ID0058" xml:space="preserve">
     <value>The specified algorithm is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1058" xml:space="preserve">
+  <data name="ID0059" xml:space="preserve">
     <value>RSA key generation failed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1059" xml:space="preserve">
+  <data name="ID0060" xml:space="preserve">
     <value>The specified certificate is not a key encryption certificate.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1060" xml:space="preserve">
+  <data name="ID0061" xml:space="preserve">
     <value>The specified certificate doesn't contain the required private key.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1061" xml:space="preserve">
+  <data name="ID0062" xml:space="preserve">
     <value>The resource cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1062" xml:space="preserve">
+  <data name="ID0063" xml:space="preserve">
     <value>The password cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1063" xml:space="preserve">
+  <data name="ID0064" xml:space="preserve">
     <value>The certificate was not found in the specified assembly.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1064" xml:space="preserve">
+  <data name="ID0065" xml:space="preserve">
     <value>The thumbprint cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1065" xml:space="preserve">
+  <data name="ID0066" xml:space="preserve">
     <value>The certificate corresponding to the specified thumbprint was not found.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1066" xml:space="preserve">
+  <data name="ID0067" xml:space="preserve">
     <value>The asymmetric signing key doesn't contain the required private key.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1067" xml:space="preserve">
+  <data name="ID0068" xml:space="preserve">
     <value>A signature algorithm cannot be automatically inferred from the signing key.
 Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1068" xml:space="preserve">
+  <data name="ID0069" xml:space="preserve">
     <value>ECDSA signing keys are not supported on this platform.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1069" xml:space="preserve">
+  <data name="ID0070" xml:space="preserve">
     <value>The specified certificate is not a signing certificate.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1070" xml:space="preserve">
+  <data name="ID0071" xml:space="preserve">
     <value>The grant type cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1071" xml:space="preserve">
+  <data name="ID0072" xml:space="preserve">
     <value>Endpoint addresses must be valid URLs.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1072" xml:space="preserve">
+  <data name="ID0073" xml:space="preserve">
     <value>Claims cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1073" xml:space="preserve">
+  <data name="ID0074" xml:space="preserve">
     <value>Scopes cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1074" xml:space="preserve">
+  <data name="ID0075" xml:space="preserve">
     <value>The security token handler cannot be null.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1075" xml:space="preserve">
+  <data name="ID0076" xml:space="preserve">
     <value>At least one OAuth 2.0/OpenID Connect flow must be enabled.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1076" xml:space="preserve">
+  <data name="ID0077" xml:space="preserve">
     <value>The authorization endpoint must be enabled to use the authorization code and implicit flows.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1077" xml:space="preserve">
+  <data name="ID0078" xml:space="preserve">
     <value>The device endpoint must be enabled to use the device flow.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1078" xml:space="preserve">
+  <data name="ID0079" xml:space="preserve">
     <value>The token endpoint must be enabled to use the authorization code, client credentials, device, password and refresh token flows.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1079" xml:space="preserve">
+  <data name="ID0080" xml:space="preserve">
     <value>The verification endpoint must be enabled to use the device flow.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1080" xml:space="preserve">
+  <data name="ID0081" xml:space="preserve">
     <value>Endpoint addresses cannot start with '{0}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1081" xml:space="preserve">
+  <data name="ID0082" xml:space="preserve">
     <value>Dependency injection support must be enabled in Quartz.NET when using the OpenIddict server integration.
 To enable DI support, call 'services.AddQuartz(options =&gt; options.UseMicrosoftDependencyInjectionJobFactory())'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1082" xml:space="preserve">
+  <data name="ID0083" xml:space="preserve">
     <value>Reference tokens cannot be used when disabling token storage.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1083" xml:space="preserve">
+  <data name="ID0084" xml:space="preserve">
     <value>Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1084" xml:space="preserve">
+  <data name="ID0085" xml:space="preserve">
     <value>At least one encryption key must be registered in the OpenIddict server options.
 Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddEncryptionCertificate()' or 'services.AddOpenIddict().AddServer().AddDevelopmentEncryptionCertificate()' or call 'services.AddOpenIddict().AddServer().AddEphemeralEncryptionKey()' to use an ephemeral key.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1085" xml:space="preserve">
+  <data name="ID0086" xml:space="preserve">
     <value>At least one asymmetric signing key must be registered in the OpenIddict server options.
 Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddSigningCertificate()' or 'services.AddOpenIddict().AddServer().AddDevelopmentSigningCertificate()' or call 'services.AddOpenIddict().AddServer().AddEphemeralSigningKey()' to use an ephemeral key.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1086" xml:space="preserve">
+  <data name="ID0087" xml:space="preserve">
     <value>When using X.509 encryption credentials, at least one of the registered certificates must be valid.
 To use key rollover, register both the new certificate and the old one in the credentials collection.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1087" xml:space="preserve">
+  <data name="ID0088" xml:space="preserve">
     <value>When using X.509 signing credentials, at least one of the registered certificates must be valid.
 To use key rollover, register both the new certificate and the old one in the credentials collection.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1088" xml:space="preserve">
+  <data name="ID0089" xml:space="preserve">
     <value>No custom authorization request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateAuthorizationRequestContext&gt;' must be implemented to validate authorization requests (e.g to ensure the client_id and redirect_uri are valid).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1089" xml:space="preserve">
+  <data name="ID0090" xml:space="preserve">
     <value>No custom device request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateDeviceRequestContext&gt;' must be implemented to validate device requests (e.g to ensure the client_id and client_secret are valid).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1090" xml:space="preserve">
+  <data name="ID0091" xml:space="preserve">
     <value>No custom introspection request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateIntrospectionRequestContext&gt;' must be implemented to validate introspection requests (e.g to ensure the client_id and client_secret are valid).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1091" xml:space="preserve">
+  <data name="ID0092" xml:space="preserve">
     <value>No custom logout request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateLogoutRequestContext&gt;' must be implemented to validate logout requests (e.g to ensure the post_logout_redirect_uri is valid).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1092" xml:space="preserve">
+  <data name="ID0093" xml:space="preserve">
     <value>No custom revocation request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateRevocationRequestContext&gt;' must be implemented to validate revocation requests (e.g to ensure the client_id and client_secret are valid).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1093" xml:space="preserve">
+  <data name="ID0094" xml:space="preserve">
     <value>No custom token request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateTokenRequestContext&gt;' must be implemented to validate token requests (e.g to ensure the client_id and client_secret are valid).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1094" xml:space="preserve">
+  <data name="ID0095" xml:space="preserve">
     <value>No custom verification request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateVerificationRequestContext&gt;' must be implemented to validate verification requests (e.g to ensure the user_code is valid).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1095" xml:space="preserve">
+  <data name="ID0096" xml:space="preserve">
     <value>No custom verification authentication handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;' must be implemented to validate device and user codes (e.g by retrieving them from a database).</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1096" xml:space="preserve">
+  <data name="ID0097" xml:space="preserve">
     <value>No custom verification sign-in handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessSignInContext&gt;' must be implemented to generate device and user codes and storing them in a database, if applicable.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1097" xml:space="preserve">
+  <data name="ID0098" xml:space="preserve">
     <value>The event handler of type '{0}' couldn't be resolved.
 This may indicate that it was not properly registered in the dependency injection container. To register an event handler, use 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1098" xml:space="preserve">
+  <data name="ID0099" xml:space="preserve">
     <value>The event handler filter of type '{0}' couldn't be resolved.
 This may indicate that it was not properly registered in the dependency injection container.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1099" xml:space="preserve">
+  <data name="ID0100" xml:space="preserve">
     <value>The redirect_uri cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1100" xml:space="preserve">
+  <data name="ID0101" xml:space="preserve">
     <value>The authorization request cannot be validated because a different redirect_uri was specified by the client application.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1101" xml:space="preserve">
+  <data name="ID0102" xml:space="preserve">
     <value>The post_logout_redirect_uri cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1102" xml:space="preserve">
+  <data name="ID0103" xml:space="preserve">
     <value>The end session request cannot be validated because a different post_logout_redirect_uri was specified by the client application.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1103" xml:space="preserve">
+  <data name="ID0104" xml:space="preserve">
     <value>The specified service type is not valid.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1104" xml:space="preserve">
+  <data name="ID0105" xml:space="preserve">
     <value>No service descriptor was set.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1105" xml:space="preserve">
+  <data name="ID0106" xml:space="preserve">
     <value>The property name cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1106" xml:space="preserve">
+  <data name="ID0107" xml:space="preserve">
     <value>The realm cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1107" xml:space="preserve">
+  <data name="ID0108" xml:space="preserve">
     <value>The OpenIddict ASP.NET Core server handler cannot be registered as an authentication scheme.
 This may indicate that an instance of another handler was registered with the same scheme.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1108" xml:space="preserve">
+  <data name="ID0109" xml:space="preserve">
     <value>The OpenIddict ASP.NET Core server cannot be used as the default scheme handler.
 Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, DefaultForbidScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme point to an instance of the OpenIddict ASP.NET Core server handler.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1109" xml:space="preserve">
+  <data name="ID0110" xml:space="preserve">
     <value>The error pass-through mode cannot be used when the status code pages integration is enabled.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1110" xml:space="preserve">
+  <data name="ID0111" xml:space="preserve">
     <value>The OpenID Connect response was not correctly processed.
 This may indicate that the event handler responsible of processing OpenID Connect responses was not registered or was explicitly removed from the handlers list.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1111" xml:space="preserve">
+  <data name="ID0112" xml:space="preserve">
     <value>An unknown error occurred while retrieving the OpenIddict server context.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1112" xml:space="preserve">
+  <data name="ID0113" xml:space="preserve">
     <value>An error occurred while authenticating the current request.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1113" xml:space="preserve">
+  <data name="ID0114" xml:space="preserve">
     <value>The ASP.NET Core HTTP request cannot be resolved.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1114" xml:space="preserve">
+  <data name="ID0115" xml:space="preserve">
     <value>Only strings, booleans, integers, arrays of strings and instances of type 'OpenIddictParameter' or 'JsonElement' can be returned as custom parameters.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1115" xml:space="preserve">
+  <data name="ID0116" xml:space="preserve">
     <value>A distributed cache instance must be registered when enabling request caching.
 To register the default in-memory distributed cache implementation, reference the 'Microsoft.Extensions.Caching.Memory' package and call 'services.AddDistributedMemoryCache()' from 'ConfigureServices'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1116" xml:space="preserve">
+  <data name="ID0117" xml:space="preserve">
     <value>The authorization request payload is malformed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1117" xml:space="preserve">
+  <data name="ID0118" xml:space="preserve">
     <value>The logout request payload is malformed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1118" xml:space="preserve">
+  <data name="ID0119" xml:space="preserve">
     <value>The OpenIddict OWIN server handler cannot be used as an active authentication handler.
 Make sure that 'OpenIddictServerOwinOptions.AuthenticationMode' is not set to 'Active'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1119" xml:space="preserve">
+  <data name="ID0120" xml:space="preserve">
     <value>The OWIN request cannot be resolved.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1120" xml:space="preserve">
+  <data name="ID0121" xml:space="preserve">
     <value>No service provider was found in the OWIN context.
 For the OpenIddict server services to work correctly, a per-request 'IServiceProvider' must be attached to the OWIN environment with the dictionary key 'System.IServiceProvider'.
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictServer()' extension MUST NOT be called.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1121" xml:space="preserve">
+  <data name="ID0122" xml:space="preserve">
     <value>The OpenIddict server services cannot be resolved from the DI container.
 To register the server services, use 'services.AddOpenIddict().AddServer()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1122" xml:space="preserve">
+  <data name="ID0123" xml:space="preserve">
     <value>Audiences cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1123" xml:space="preserve">
+  <data name="ID0124" xml:space="preserve">
     <value>The client identifier cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1124" xml:space="preserve">
+  <data name="ID0125" xml:space="preserve">
     <value>The client secret cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1125" xml:space="preserve">
+  <data name="ID0126" xml:space="preserve">
     <value>The issuer cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1126" xml:space="preserve">
+  <data name="ID0127" xml:space="preserve">
     <value>The issuer must be a valid absolute URL.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1127" xml:space="preserve">
+  <data name="ID0128" xml:space="preserve">
     <value>An OAuth 2.0/OpenID Connect server configuration or an issuer address must be registered.
 To use a local OpenIddict server, reference the 'OpenIddict.Validation.ServerIntegration' package and call 'services.AddOpenIddict().AddValidation().UseLocalServer()' to import the server settings.
 To use a remote server, reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' and 'services.AddOpenIddict().AddValidation().SetIssuer()' to use server discovery.
 Alternatively, you can register a static server configuration by calling 'services.AddOpenIddict().AddValidation().SetConfiguration()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1128" xml:space="preserve">
+  <data name="ID0129" xml:space="preserve">
     <value>An introspection client must be registered when using introspection.
 Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1129" xml:space="preserve">
+  <data name="ID0130" xml:space="preserve">
     <value>The issuer or the metadata address must be set when using introspection.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1130" xml:space="preserve">
+  <data name="ID0131" xml:space="preserve">
     <value>The client identifier cannot be null or empty when using introspection.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1131" xml:space="preserve">
+  <data name="ID0132" xml:space="preserve">
     <value>The client secret cannot be null or empty when using introspection.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1132" xml:space="preserve">
+  <data name="ID0133" xml:space="preserve">
     <value>Authorization validation cannot be enabled when using introspection.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1133" xml:space="preserve">
+  <data name="ID0134" xml:space="preserve">
     <value>Token validation cannot be enabled when using introspection.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1134" xml:space="preserve">
+  <data name="ID0135" xml:space="preserve">
     <value>A discovery client must be registered when using server discovery.
 Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1135" xml:space="preserve">
+  <data name="ID0136" xml:space="preserve">
     <value>The authority must be provided and must be an absolute URL.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1136" xml:space="preserve">
+  <data name="ID0137" xml:space="preserve">
     <value>The authority cannot contain a fragment or a query string.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1137" xml:space="preserve">
+  <data name="ID0138" xml:space="preserve">
     <value>The event handler of type '{0}' couldn't be resolved.
 This may indicate that it was not properly registered in the dependency injection container. To register an event handler, use 'services.AddOpenIddict().AddValidation().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1138" xml:space="preserve">
+  <data name="ID0139" xml:space="preserve">
     <value>The core services must be registered when enabling token entry validation.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1139" xml:space="preserve">
+  <data name="ID0140" xml:space="preserve">
     <value>An unknown error occurred while retrieving the server configuration.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1140" xml:space="preserve">
+  <data name="ID0141" xml:space="preserve">
     <value>An unknown error occurred while introspecting the access token.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1141" xml:space="preserve">
+  <data name="ID0142" xml:space="preserve">
     <value>The core services must be registered when enabling authorization entry validation.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1142" xml:space="preserve">
+  <data name="ID0143" xml:space="preserve">
     <value>The address cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1143" xml:space="preserve">
+  <data name="ID0144" xml:space="preserve">
     <value>The address must be a valid absolute URI.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1144" xml:space="preserve">
+  <data name="ID0145" xml:space="preserve">
     <value>The server configuration couldn't be retrieved.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1145" xml:space="preserve">
+  <data name="ID0146" xml:space="preserve">
     <value>The JWKS URI couldn't be resolved from the provider metadata.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1146" xml:space="preserve">
+  <data name="ID0147" xml:space="preserve">
     <value>The server JSON Web Key set couldn't be retrieved.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1147" xml:space="preserve">
+  <data name="ID0148" xml:space="preserve">
     <value>An error occurred while preparing the configuration request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1148" xml:space="preserve">
+  <data name="ID0149" xml:space="preserve">
     <value>An error occurred while sending the configuration request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1149" xml:space="preserve">
+  <data name="ID0150" xml:space="preserve">
     <value>An error occurred while extracting the configuration response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1150" xml:space="preserve">
+  <data name="ID0151" xml:space="preserve">
     <value>An error occurred while handling the configuration response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1151" xml:space="preserve">
+  <data name="ID0152" xml:space="preserve">
     <value>An error occurred while preparing the cryptography request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1152" xml:space="preserve">
+  <data name="ID0153" xml:space="preserve">
     <value>An error occurred while sending the cryptography request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1153" xml:space="preserve">
+  <data name="ID0154" xml:space="preserve">
     <value>An error occurred while extracting the cryptography response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1154" xml:space="preserve">
+  <data name="ID0155" xml:space="preserve">
     <value>An error occurred while handling the cryptography response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1155" xml:space="preserve">
+  <data name="ID0156" xml:space="preserve">
     <value>The token cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1156" xml:space="preserve">
+  <data name="ID0157" xml:space="preserve">
     <value>An unknown error occurred while introspecting the token.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1157" xml:space="preserve">
+  <data name="ID0158" xml:space="preserve">
     <value>An error occurred while preparing the introspection request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1158" xml:space="preserve">
+  <data name="ID0159" xml:space="preserve">
     <value>An error occurred while sending the introspection request.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1159" xml:space="preserve">
+  <data name="ID0160" xml:space="preserve">
     <value>An error occurred while extracting the introspection response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1160" xml:space="preserve">
+  <data name="ID0161" xml:space="preserve">
     <value>An error occurred while handling the introspection response.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1161" xml:space="preserve">
+  <data name="ID0162" xml:space="preserve">
     <value>The access token cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1162" xml:space="preserve">
+  <data name="ID0163" xml:space="preserve">
     <value>An error occurred while validating the access token.
   Error: {0}
   Error description: {1}
   Error URI: {2}</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1163" xml:space="preserve">
+  <data name="ID0164" xml:space="preserve">
     <value>The OpenIddict ASP.NET Core validation handler cannot be registered as an authentication scheme.
 This may indicate that an instance of another handler was registered with the same scheme.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1164" xml:space="preserve">
+  <data name="ID0165" xml:space="preserve">
     <value>The OpenIddict ASP.NET Core validation cannot be used as the default sign-in/sign-out handler.
 Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme point to an instance of the OpenIddict ASP.NET Core validation handler.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1165" xml:space="preserve">
+  <data name="ID0166" xml:space="preserve">
     <value>An unknown error occurred while retrieving the OpenIddict validation context.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1166" xml:space="preserve">
+  <data name="ID0167" xml:space="preserve">
     <value>Generic token validation is not supported by the validation handler.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1167" xml:space="preserve">
+  <data name="ID0168" xml:space="preserve">
     <value>No service provider was found in the OWIN context.
 For the OpenIddict validation services to work correctly, a per-request 'IServiceProvider' must be attached to the OWIN environment with the dictionary key 'System.IServiceProvider'.
 Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictValidation()' extension MUST NOT be called.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1168" xml:space="preserve">
+  <data name="ID0169" xml:space="preserve">
     <value>The OpenIddict validation services cannot be resolved from the DI container.
 To register the validation services, use 'services.AddOpenIddict().AddValidation()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1169" xml:space="preserve">
+  <data name="ID0170" xml:space="preserve">
     <value>The local server integration can only be used with direct validation.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1170" xml:space="preserve">
+  <data name="ID0171" xml:space="preserve">
     <value>Authorization entry validation cannot be enabled when authorization storage is disabled in the OpenIddict server options.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1171" xml:space="preserve">
+  <data name="ID0172" xml:space="preserve">
     <value>Token entry validation cannot be enabled when token storage is disabled in the OpenIddict server options.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1172" xml:space="preserve">
+  <data name="ID0173" xml:space="preserve">
     <value>The System.Net.Http request cannot be resolved.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1173" xml:space="preserve">
+  <data name="ID0174" xml:space="preserve">
     <value>An unknown error occurred while creating a System.Net.Http client.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1174" xml:space="preserve">
+  <data name="ID0175" xml:space="preserve">
     <value>An unknown error occurred while sending a System.Net.Http request.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1175" xml:space="preserve">
+  <data name="ID0176" xml:space="preserve">
     <value>The specified type is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1176" xml:space="preserve">
+  <data name="ID0177" xml:space="preserve">
     <value>The value cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1177" xml:space="preserve">
+  <data name="ID0178" xml:space="preserve">
     <value>The prompt cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1178" xml:space="preserve">
+  <data name="ID0179" xml:space="preserve">
     <value>The response type cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1179" xml:space="preserve">
+  <data name="ID0180" xml:space="preserve">
     <value>The scope cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1180" xml:space="preserve">
+  <data name="ID0181" xml:space="preserve">
     <value>The destination cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1181" xml:space="preserve">
+  <data name="ID0182" xml:space="preserve">
     <value>Destinations cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1182" xml:space="preserve">
+  <data name="ID0183" xml:space="preserve">
     <value>Conflicting destinations for the claim '{0}' were specified.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1183" xml:space="preserve">
+  <data name="ID0184" xml:space="preserve">
     <value>The claim type cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1184" xml:space="preserve">
+  <data name="ID0185" xml:space="preserve">
     <value>The claim value cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1185" xml:space="preserve">
+  <data name="ID0186" xml:space="preserve">
     <value>The audience cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1186" xml:space="preserve">
+  <data name="ID0187" xml:space="preserve">
     <value>The presenter cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1187" xml:space="preserve">
+  <data name="ID0188" xml:space="preserve">
     <value>The token type cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1188" xml:space="preserve">
+  <data name="ID0189" xml:space="preserve">
     <value>The specified JSON element is not an object.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1189" xml:space="preserve">
+  <data name="ID0190" xml:space="preserve">
     <value>The parameter name cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1190" xml:space="preserve">
+  <data name="ID0191" xml:space="preserve">
     <value>A parameter with the same name already exists.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1191" xml:space="preserve">
+  <data name="ID0192" xml:space="preserve">
     <value>The item name cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1192" xml:space="preserve">
+  <data name="ID0193" xml:space="preserve">
     <value>The item index cannot be negative.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1193" xml:space="preserve">
+  <data name="ID0194" xml:space="preserve">
     <value>The type of the parameter value is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1194" xml:space="preserve">
+  <data name="ID0195" xml:space="preserve">
     <value>The identifier cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1195" xml:space="preserve">
+  <data name="ID0196" xml:space="preserve">
     <value>The application identifier cannot be extracted.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1196" xml:space="preserve">
+  <data name="ID0197" xml:space="preserve">
     <value>An error occurred while creating an expiration signal.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1197" xml:space="preserve">
+  <data name="ID0198" xml:space="preserve">
     <value>The subject cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1198" xml:space="preserve">
+  <data name="ID0199" xml:space="preserve">
     <value>The status cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1199" xml:space="preserve">
+  <data name="ID0200" xml:space="preserve">
     <value>The type cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1200" xml:space="preserve">
+  <data name="ID0201" xml:space="preserve">
     <value>The authorization identifier cannot be extracted.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1201" xml:space="preserve">
+  <data name="ID0202" xml:space="preserve">
     <value>The scope name cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1202" xml:space="preserve">
+  <data name="ID0203" xml:space="preserve">
     <value>Scope names cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1203" xml:space="preserve">
+  <data name="ID0204" xml:space="preserve">
     <value>The scope identifier cannot be extracted.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1204" xml:space="preserve">
+  <data name="ID0205" xml:space="preserve">
     <value>The token identifier cannot be extracted.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1205" xml:space="preserve">
+  <data name="ID0206" xml:space="preserve">
     <value>The client secret hash cannot be set on the application entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1206" xml:space="preserve">
+  <data name="ID0207" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to create a new application:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1207" xml:space="preserve">
+  <data name="ID0208" xml:space="preserve">
     <value>An error occurred while trying to create a new application.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1208" xml:space="preserve">
+  <data name="ID0209" xml:space="preserve">
     <value>The client type cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1209" xml:space="preserve">
+  <data name="ID0210" xml:space="preserve">
     <value>The consent type cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1210" xml:space="preserve">
+  <data name="ID0211" xml:space="preserve">
     <value>The permission name cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1211" xml:space="preserve">
+  <data name="ID0212" xml:space="preserve">
     <value>The requirement name cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1212" xml:space="preserve">
+  <data name="ID0213" xml:space="preserve">
     <value>Callback URLs cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1213" xml:space="preserve">
+  <data name="ID0214" xml:space="preserve">
     <value>Callback URLs must be valid absolute URLs.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1214" xml:space="preserve">
+  <data name="ID0215" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to update an existing application:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1215" xml:space="preserve">
+  <data name="ID0216" xml:space="preserve">
     <value>The secret cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1216" xml:space="preserve">
+  <data name="ID0217" xml:space="preserve">
     <value>The specified hash algorithm is not valid.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1217" xml:space="preserve">
+  <data name="ID0218" xml:space="preserve">
     <value>The comparand cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1218" xml:space="preserve">
+  <data name="ID0219" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to create a new authorization:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1219" xml:space="preserve">
+  <data name="ID0220" xml:space="preserve">
     <value>An error occurred while trying to create a new authorization.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1220" xml:space="preserve">
+  <data name="ID0221" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to update an existing authorization:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1221" xml:space="preserve">
+  <data name="ID0222" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to create a new scope:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1222" xml:space="preserve">
+  <data name="ID0223" xml:space="preserve">
     <value>An error occurred while trying to create a new scope.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1223" xml:space="preserve">
+  <data name="ID0224" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to update an existing scope:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1224" xml:space="preserve">
+  <data name="ID0225" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to create a new token:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1225" xml:space="preserve">
+  <data name="ID0226" xml:space="preserve">
     <value>An error occurred while trying to create a new token</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1226" xml:space="preserve">
+  <data name="ID0227" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to update an existing token:</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1227" xml:space="preserve">
+  <data name="ID0228" xml:space="preserve">
     <value>No application store has been registered in the dependency injection container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
 To register a custom store, create an implementation of 'IOpenIddictApplicationStore' and use 'services.AddOpenIddict().AddCore().AddApplicationStore()' to add it to the DI container.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1228" xml:space="preserve">
+  <data name="ID0229" xml:space="preserve">
     <value>No authorization store has been registered in the dependency injection container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
 To register a custom store, create an implementation of 'IOpenIddictAuthorizationStore' and use 'services.AddOpenIddict().AddCore().AddAuthorizationStore()' to add it to the DI container.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1229" xml:space="preserve">
+  <data name="ID0230" xml:space="preserve">
     <value>No scope store has been registered in the dependency injection container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
 To register a custom store, create an implementation of 'IOpenIddictScopeStore' and use 'services.AddOpenIddict().AddCore().AddScopeStore()' to add it to the DI container.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1230" xml:space="preserve">
+  <data name="ID0231" xml:space="preserve">
     <value>No token store has been registered in the dependency injection container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.
 To register a custom store, create an implementation of 'IOpenIddictTokenStore' and use 'services.AddOpenIddict().AddCore().AddTokenStore()' to add it to the DI container.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1231" xml:space="preserve">
+  <data name="ID0232" xml:space="preserve">
     <value>The specified type is invalid.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1232" xml:space="preserve">
+  <data name="ID0233" xml:space="preserve">
     <value>The cache size cannot be less than 10.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1233" xml:space="preserve">
+  <data name="ID0234" xml:space="preserve">
     <value>The specified application type is not compatible with the Entity Framework 6.x stores.
 When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkApplication' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkApplication' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1234" xml:space="preserve">
+  <data name="ID0235" xml:space="preserve">
     <value>No Entity Framework 6.x context was specified in the OpenIddict options.
 To configure the OpenIddict Entity Framework 6.x stores to use a specific 'DbContext', use 'options.UseEntityFramework().UseDbContext&lt;TContext&gt;()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1235" xml:space="preserve">
+  <data name="ID0236" xml:space="preserve">
     <value>The specified authorization type is not compatible with the Entity Framework 6.x stores.
 When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkAuthorization' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkAuthorization' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1236" xml:space="preserve">
+  <data name="ID0237" xml:space="preserve">
     <value>The specified scope type is not compatible with the Entity Framework 6.x stores.
 When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkScope' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkScope' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1237" xml:space="preserve">
+  <data name="ID0238" xml:space="preserve">
     <value>The specified token type is not compatible with the Entity Framework 6.x stores.
 When enabling the Entity Framework 6.x stores, make sure you use the built-in 'OpenIddictEntityFrameworkToken' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkToken' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1238" xml:space="preserve">
+  <data name="ID0239" xml:space="preserve">
     <value>The application was concurrently updated and cannot be persisted in its current state.
 Reload the application from the database and retry the operation.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1239" xml:space="preserve">
+  <data name="ID0240" xml:space="preserve">
     <value>An error occurred while trying to create a new application instance.
 Make sure that the application entity is not abstract and has a public parameterless constructor or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1240" xml:space="preserve">
+  <data name="ID0241" xml:space="preserve">
     <value>The authorization was concurrently updated and cannot be persisted in its current state.
 Reload the authorization from the database and retry the operation.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1241" xml:space="preserve">
+  <data name="ID0242" xml:space="preserve">
     <value>An error occurred while trying to create a new authorization instance.
 Make sure that the authorization entity is not abstract and has a public parameterless constructor or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1242" xml:space="preserve">
+  <data name="ID0243" xml:space="preserve">
     <value>An error occurred while pruning authorizations.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1243" xml:space="preserve">
+  <data name="ID0244" xml:space="preserve">
     <value>The application associated with the authorization cannot be found.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1244" xml:space="preserve">
+  <data name="ID0245" xml:space="preserve">
     <value>The scope was concurrently updated and cannot be persisted in its current state.
 Reload the scope from the database and retry the operation.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1245" xml:space="preserve">
+  <data name="ID0246" xml:space="preserve">
     <value>An error occurred while trying to create a new scope instance.
 Make sure that the scope entity is not abstract and has a public parameterless constructor or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1246" xml:space="preserve">
+  <data name="ID0247" xml:space="preserve">
     <value>The token was concurrently updated and cannot be persisted in its current state.
 Reload the token from the database and retry the operation.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1247" xml:space="preserve">
+  <data name="ID0248" xml:space="preserve">
     <value>An error occurred while trying to create a new token instance.
 Make sure that the token entity is not abstract and has a public parameterless constructor or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1248" xml:space="preserve">
+  <data name="ID0249" xml:space="preserve">
     <value>An error occurred while pruning tokens.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1249" xml:space="preserve">
+  <data name="ID0250" xml:space="preserve">
     <value>The application associated with the token cannot be found.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1250" xml:space="preserve">
+  <data name="ID0251" xml:space="preserve">
     <value>The authorization associated with the token cannot be found.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1251" xml:space="preserve">
+  <data name="ID0252" xml:space="preserve">
     <value>The specified application type is not compatible with the Entity Framework Core stores.
 When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreApplication' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreApplication' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1252" xml:space="preserve">
+  <data name="ID0253" xml:space="preserve">
     <value>No Entity Framework Core context was specified in the OpenIddict options.
 To configure the OpenIddict Entity Framework Core stores to use a specific 'DbContext', use 'options.UseEntityFrameworkCore().UseDbContext&lt;TContext&gt;()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1253" xml:space="preserve">
+  <data name="ID0254" xml:space="preserve">
     <value>The specified authorization type is not compatible with the Entity Framework Core stores.
 When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreAuthorization' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreAuthorization' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1254" xml:space="preserve">
+  <data name="ID0255" xml:space="preserve">
     <value>The specified scope type is not compatible with the Entity Framework Core stores.
 When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreScope' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreScope' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1255" xml:space="preserve">
+  <data name="ID0256" xml:space="preserve">
     <value>The specified token type is not compatible with the Entity Framework Core stores.
 When enabling the Entity Framework Core stores, make sure you use the built-in 'OpenIddictEntityFrameworkCoreToken' entity or a custom entity that inherits from the generic 'OpenIddictEntityFrameworkCoreToken' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1256" xml:space="preserve">
+  <data name="ID0257" xml:space="preserve">
     <value>The specified application type is not compatible with the MongoDB stores.
 When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbApplication' entity or a custom entity that inherits from the 'OpenIddictMongoDbApplication' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1257" xml:space="preserve">
+  <data name="ID0258" xml:space="preserve">
     <value>The specified authorization type is not compatible with the MongoDB stores.
 When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbAuthorization' entity or a custom entity that inherits from the 'OpenIddictMongoDbAuthorization' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1258" xml:space="preserve">
+  <data name="ID0259" xml:space="preserve">
     <value>The specified scope type is not compatible with the MongoDB stores.
 When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbScope' entity or a custom entity that inherits from the 'OpenIddictMongoDbScope' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1259" xml:space="preserve">
+  <data name="ID0260" xml:space="preserve">
     <value>The specified token type is not compatible with the MongoDB stores.
 When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictMongoDbToken' entity or a custom entity that inherits from the 'OpenIddictMongoDbToken' entity.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1260" xml:space="preserve">
+  <data name="ID0261" xml:space="preserve">
     <value>The collection name cannot be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1261" xml:space="preserve">
+  <data name="ID0262" xml:space="preserve">
     <value>No suitable MongoDB database service can be found.
 To configure the OpenIddict MongoDB stores to use a specific database, use 'services.AddOpenIddict().AddCore().UseMongoDb().UseDatabase()' or register an 'IMongoDatabase' in the dependency injection container in 'ConfigureServices()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1262" xml:space="preserve">
+  <data name="ID0263" xml:space="preserve">
     <value>The second parameter must be a generic type definition.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1263" xml:space="preserve">
+  <data name="ID0264" xml:space="preserve">
     <value>X.509 certificate generation is not supported on this platform.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1264" xml:space="preserve">
+  <data name="ID0265" xml:space="preserve">
     <value>The token details cannot be found in the database.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1265" xml:space="preserve">
+  <data name="ID0266" xml:space="preserve">
     <value>No suitable signing credentials could be found.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1266" xml:space="preserve">
+  <data name="ID0267" xml:space="preserve">
     <value>The signing credentials algorithm is not valid.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1267" xml:space="preserve">
+  <data name="ID0268" xml:space="preserve">
     <value>The code challenge method cannot be retrieved from the authorization code.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1268" xml:space="preserve">
+  <data name="ID0269" xml:space="preserve">
     <value>The token usage of the JWT token is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1269" xml:space="preserve">
+  <data name="ID0270" xml:space="preserve">
     <value>The type of the JWT token cannot be resolved or inferred.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1270" xml:space="preserve">
+  <data name="ID0271" xml:space="preserve">
     <value>The type of the JWT token doesn't match the expected type.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1271" xml:space="preserve">
+  <data name="ID0272" xml:space="preserve">
     <value>The configuration response was not correctly applied.
 To apply configuration responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyConfigurationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1272" xml:space="preserve">
+  <data name="ID0273" xml:space="preserve">
     <value>No default application entity type was configured in the OpenIddict core options, which generally indicates that no application store was registered in the DI container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1273" xml:space="preserve">
+  <data name="ID0274" xml:space="preserve">
     <value>No default authorization entity type was configured in the OpenIddict core options, which generally indicates that no authorization store was registered in the DI container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1274" xml:space="preserve">
+  <data name="ID0275" xml:space="preserve">
     <value>No default scope entity type was configured in the OpenIddict core options, which generally indicates that no scope store was registered in the DI container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1275" xml:space="preserve">
+  <data name="ID0276" xml:space="preserve">
     <value>No default token entity type was configured in the OpenIddict core options, which generally indicates that no token store was registered in the DI container.
 To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1276" xml:space="preserve">
+  <data name="ID0277" xml:space="preserve">
     <value>The Entity Framework 6.x stores cannot be used with generic types.
 Consider creating non-generic classes derived from the default entities for the application, authorization, scope and token entities.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1277" xml:space="preserve">
+  <data name="ID0278" xml:space="preserve">
     <value>The core services must be registered when enabling the OpenIddict server Quartz.NET integration.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1278" xml:space="preserve">
+  <data name="ID0279" xml:space="preserve">
     <value>The maximum refire count cannot be negative.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID1279" xml:space="preserve">
+  <data name="ID0280" xml:space="preserve">
     <value>The duration cannot be less than 10 minutes.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID3000" xml:space="preserve">
+  <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
-  <data name="ID3001" xml:space="preserve">
+  <data name="ID2001" xml:space="preserve">
     <value>The specified authorization code is invalid.</value>
   </data>
-  <data name="ID3002" xml:space="preserve">
+  <data name="ID2002" xml:space="preserve">
     <value>The specified device code is invalid.</value>
   </data>
-  <data name="ID3003" xml:space="preserve">
+  <data name="ID2003" xml:space="preserve">
     <value>The specified refresh token is invalid.</value>
   </data>
-  <data name="ID3004" xml:space="preserve">
+  <data name="ID2004" xml:space="preserve">
     <value>The specified token is invalid.</value>
   </data>
-  <data name="ID3005" xml:space="preserve">
+  <data name="ID2005" xml:space="preserve">
     <value>The specified token is not an authorization code.</value>
   </data>
-  <data name="ID3006" xml:space="preserve">
+  <data name="ID2006" xml:space="preserve">
     <value>The specified token is not an device code.</value>
   </data>
-  <data name="ID3007" xml:space="preserve">
+  <data name="ID2007" xml:space="preserve">
     <value>The specified token is not a refresh token.</value>
   </data>
-  <data name="ID3008" xml:space="preserve">
+  <data name="ID2008" xml:space="preserve">
     <value>The specified token is not an access token.</value>
   </data>
-  <data name="ID3009" xml:space="preserve">
+  <data name="ID2009" xml:space="preserve">
     <value>The specified identity token is invalid.</value>
   </data>
-  <data name="ID3010" xml:space="preserve">
+  <data name="ID2010" xml:space="preserve">
     <value>The specified authorization code has already been redeemed.</value>
   </data>
-  <data name="ID3011" xml:space="preserve">
+  <data name="ID2011" xml:space="preserve">
     <value>The specified device code has already been redeemed.</value>
   </data>
-  <data name="ID3012" xml:space="preserve">
+  <data name="ID2012" xml:space="preserve">
     <value>The specified refresh token has already been redeemed.</value>
   </data>
-  <data name="ID3013" xml:space="preserve">
+  <data name="ID2013" xml:space="preserve">
     <value>The specified token has already been redeemed.</value>
   </data>
-  <data name="ID3014" xml:space="preserve">
+  <data name="ID2014" xml:space="preserve">
     <value>The authorization has not been granted yet by the end user.</value>
   </data>
-  <data name="ID3015" xml:space="preserve">
+  <data name="ID2015" xml:space="preserve">
     <value>The authorization was denied by the end user.</value>
   </data>
-  <data name="ID3016" xml:space="preserve">
+  <data name="ID2016" xml:space="preserve">
     <value>The specified authorization code is no longer valid.</value>
   </data>
-  <data name="ID3017" xml:space="preserve">
+  <data name="ID2017" xml:space="preserve">
     <value>The specified device code is no longer valid.</value>
   </data>
-  <data name="ID3018" xml:space="preserve">
+  <data name="ID2018" xml:space="preserve">
     <value>The specified refresh token is no longer valid.</value>
   </data>
-  <data name="ID3019" xml:space="preserve">
+  <data name="ID2019" xml:space="preserve">
     <value>The specified token is no longer valid.</value>
   </data>
-  <data name="ID3020" xml:space="preserve">
+  <data name="ID2020" xml:space="preserve">
     <value>The authorization associated with the authorization code is no longer valid.</value>
   </data>
-  <data name="ID3021" xml:space="preserve">
+  <data name="ID2021" xml:space="preserve">
     <value>The authorization associated with the device code is no longer valid.</value>
   </data>
-  <data name="ID3022" xml:space="preserve">
+  <data name="ID2022" xml:space="preserve">
     <value>The authorization associated with the refresh token is no longer valid.</value>
   </data>
-  <data name="ID3023" xml:space="preserve">
+  <data name="ID2023" xml:space="preserve">
     <value>The authorization associated with the token is no longer valid.</value>
   </data>
-  <data name="ID3024" xml:space="preserve">
+  <data name="ID2024" xml:space="preserve">
     <value>The token request was rejected by the authentication server.</value>
   </data>
-  <data name="ID3025" xml:space="preserve">
+  <data name="ID2025" xml:space="preserve">
     <value>The user information access demand was rejected by the authentication server.</value>
   </data>
-  <data name="ID3026" xml:space="preserve">
+  <data name="ID2026" xml:space="preserve">
     <value>The specified user code is no longer valid.</value>
   </data>
-  <data name="ID3028" xml:space="preserve">
+  <data name="ID2028" xml:space="preserve">
     <value>The '{0}' parameter is not supported.</value>
   </data>
-  <data name="ID3029" xml:space="preserve">
+  <data name="ID2029" xml:space="preserve">
     <value>The mandatory '{0}' parameter is missing.</value>
   </data>
-  <data name="ID3030" xml:space="preserve">
+  <data name="ID2030" xml:space="preserve">
     <value>The '{0}' parameter must be a valid absolute URL.</value>
   </data>
-  <data name="ID3031" xml:space="preserve">
+  <data name="ID2031" xml:space="preserve">
     <value>The '{0}' parameter must not include a fragment.</value>
   </data>
-  <data name="ID3032" xml:space="preserve">
+  <data name="ID2032" xml:space="preserve">
     <value>The specified '{0}' is not supported.</value>
   </data>
-  <data name="ID3033" xml:space="preserve">
+  <data name="ID2033" xml:space="preserve">
     <value>The specified '{0}'/'{1}' combination is invalid.</value>
   </data>
-  <data name="ID3034" xml:space="preserve">
+  <data name="ID2034" xml:space="preserve">
     <value>The mandatory '{0}' scope is missing.</value>
   </data>
-  <data name="ID3035" xml:space="preserve">
+  <data name="ID2035" xml:space="preserve">
     <value>The '{0}' scope is not allowed.</value>
   </data>
-  <data name="ID3036" xml:space="preserve">
+  <data name="ID2036" xml:space="preserve">
     <value>The client identifier cannot be null or empty.</value>
   </data>
-  <data name="ID3037" xml:space="preserve">
+  <data name="ID2037" xml:space="preserve">
     <value>The '{0}' parameter cannot be used without '{1}'.</value>
   </data>
-  <data name="ID3038" xml:space="preserve">
+  <data name="ID2038" xml:space="preserve">
     <value>The status cannot be null or empty.</value>
   </data>
-  <data name="ID3039" xml:space="preserve">
+  <data name="ID2039" xml:space="preserve">
     <value>Scopes cannot be null or empty.</value>
   </data>
-  <data name="ID3040" xml:space="preserve">
+  <data name="ID2040" xml:space="preserve">
     <value>The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</value>
   </data>
-  <data name="ID3041" xml:space="preserve">
+  <data name="ID2041" xml:space="preserve">
     <value>The specified '{0}' is not allowed when using PKCE.</value>
   </data>
-  <data name="ID3042" xml:space="preserve">
+  <data name="ID2042" xml:space="preserve">
     <value>Scopes cannot contain spaces.</value>
   </data>
-  <data name="ID3043" xml:space="preserve">
+  <data name="ID2043" xml:space="preserve">
     <value>The specified '{0}' is not valid for this client application.</value>
   </data>
-  <data name="ID3044" xml:space="preserve">
+  <data name="ID2044" xml:space="preserve">
     <value>The scope name cannot be null or empty.</value>
   </data>
-  <data name="ID3045" xml:space="preserve">
+  <data name="ID2045" xml:space="preserve">
     <value>The scope name cannot contain spaces.</value>
   </data>
-  <data name="ID3046" xml:space="preserve">
+  <data name="ID2046" xml:space="preserve">
     <value>This client application is not allowed to use the authorization endpoint.</value>
   </data>
-  <data name="ID3047" xml:space="preserve">
+  <data name="ID2047" xml:space="preserve">
     <value>The client application is not allowed to use the authorization code flow.</value>
   </data>
-  <data name="ID3048" xml:space="preserve">
+  <data name="ID2048" xml:space="preserve">
     <value>The client application is not allowed to use the implicit flow.</value>
   </data>
-  <data name="ID3049" xml:space="preserve">
+  <data name="ID2049" xml:space="preserve">
     <value>The client application is not allowed to use the hybrid flow.</value>
   </data>
-  <data name="ID3051" xml:space="preserve">
+  <data name="ID2051" xml:space="preserve">
     <value>This client application is not allowed to use the specified scope.</value>
   </data>
-  <data name="ID3052" xml:space="preserve">
+  <data name="ID2052" xml:space="preserve">
     <value>The specified '{0}' is invalid.</value>
   </data>
-  <data name="ID3053" xml:space="preserve">
+  <data name="ID2053" xml:space="preserve">
     <value>The '{0}' parameter is not valid for this client application.</value>
   </data>
-  <data name="ID3054" xml:space="preserve">
+  <data name="ID2054" xml:space="preserve">
     <value>The '{0}' parameter required for this client application is missing.</value>
   </data>
-  <data name="ID3055" xml:space="preserve">
+  <data name="ID2055" xml:space="preserve">
     <value>The specified client credentials are invalid.</value>
   </data>
-  <data name="ID3056" xml:space="preserve">
+  <data name="ID2056" xml:space="preserve">
     <value>This client application is not allowed to use the device endpoint.</value>
   </data>
-  <data name="ID3057" xml:space="preserve">
+  <data name="ID2057" xml:space="preserve">
     <value>The '{0}' and '{1}' parameters are required when using the client credentials grant.</value>
   </data>
-  <data name="ID3058" xml:space="preserve">
+  <data name="ID2058" xml:space="preserve">
     <value>The '{0}' parameter is required when using the device code grant.</value>
   </data>
-  <data name="ID3059" xml:space="preserve">
+  <data name="ID2059" xml:space="preserve">
     <value>The mandatory '{0}' and/or '{1}' parameters are missing.</value>
   </data>
-  <data name="ID3060" xml:space="preserve">
+  <data name="ID2060" xml:space="preserve">
     <value>A scope with the same name already exists.</value>
   </data>
-  <data name="ID3063" xml:space="preserve">
+  <data name="ID2063" xml:space="preserve">
     <value>This client application is not allowed to use the token endpoint.</value>
   </data>
-  <data name="ID3064" xml:space="preserve">
+  <data name="ID2064" xml:space="preserve">
     <value>This client application is not allowed to use the specified grant type.</value>
   </data>
-  <data name="ID3065" xml:space="preserve">
+  <data name="ID2065" xml:space="preserve">
     <value>The client application is not allowed to use the '{0}' scope.</value>
   </data>
-  <data name="ID3066" xml:space="preserve">
+  <data name="ID2066" xml:space="preserve">
     <value>The specified authorization code cannot be used without sending a client identifier.</value>
   </data>
-  <data name="ID3067" xml:space="preserve">
+  <data name="ID2067" xml:space="preserve">
     <value>The specified device code cannot be used without sending a client identifier.</value>
   </data>
-  <data name="ID3068" xml:space="preserve">
+  <data name="ID2068" xml:space="preserve">
     <value>The specified refresh token cannot be used without sending a client identifier.</value>
   </data>
-  <data name="ID3069" xml:space="preserve">
+  <data name="ID2069" xml:space="preserve">
     <value>The specified authorization code cannot be used by this client application.</value>
   </data>
-  <data name="ID3070" xml:space="preserve">
+  <data name="ID2070" xml:space="preserve">
     <value>The specified device code cannot be used by this client application.</value>
   </data>
-  <data name="ID3071" xml:space="preserve">
+  <data name="ID2071" xml:space="preserve">
     <value>The specified refresh token cannot be used by this client application.</value>
   </data>
-  <data name="ID3072" xml:space="preserve">
+  <data name="ID2072" xml:space="preserve">
     <value>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</value>
   </data>
-  <data name="ID3073" xml:space="preserve">
+  <data name="ID2073" xml:space="preserve">
     <value>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</value>
   </data>
-  <data name="ID3074" xml:space="preserve">
+  <data name="ID2074" xml:space="preserve">
     <value>The '{0}' parameter is not valid in this context.</value>
   </data>
-  <data name="ID3075" xml:space="preserve">
+  <data name="ID2075" xml:space="preserve">
     <value>This client application is not allowed to use the introspection endpoint.</value>
   </data>
-  <data name="ID3076" xml:space="preserve">
+  <data name="ID2076" xml:space="preserve">
     <value>The specified token cannot be introspected.</value>
   </data>
-  <data name="ID3077" xml:space="preserve">
+  <data name="ID2077" xml:space="preserve">
     <value>The client application is not allowed to introspect the specified token.</value>
   </data>
-  <data name="ID3078" xml:space="preserve">
+  <data name="ID2078" xml:space="preserve">
     <value>This client application is not allowed to use the revocation endpoint.</value>
   </data>
-  <data name="ID3079" xml:space="preserve">
+  <data name="ID2079" xml:space="preserve">
     <value>This token cannot be revoked.</value>
   </data>
-  <data name="ID3080" xml:space="preserve">
+  <data name="ID2080" xml:space="preserve">
     <value>The client application is not allowed to revoke the specified token.</value>
   </data>
-  <data name="ID3081" xml:space="preserve">
+  <data name="ID2081" xml:space="preserve">
     <value>The mandatory '{0}' header is missing.</value>
   </data>
-  <data name="ID3082" xml:space="preserve">
+  <data name="ID2082" xml:space="preserve">
     <value>The specified '{0}' header is invalid.</value>
   </data>
-  <data name="ID3083" xml:space="preserve">
+  <data name="ID2083" xml:space="preserve">
     <value>This server only accepts HTTPS requests.</value>
   </data>
-  <data name="ID3084" xml:space="preserve">
+  <data name="ID2084" xml:space="preserve">
     <value>The specified HTTP method is not valid.</value>
   </data>
-  <data name="ID3085" xml:space="preserve">
+  <data name="ID2085" xml:space="preserve">
     <value>A token with the same reference identifier already exists.</value>
   </data>
-  <data name="ID3086" xml:space="preserve">
+  <data name="ID2086" xml:space="preserve">
     <value>The token type cannot be null or empty.</value>
   </data>
-  <data name="ID3087" xml:space="preserve">
+  <data name="ID2087" xml:space="preserve">
     <value>Multiple client credentials cannot be specified.</value>
   </data>
-  <data name="ID3088" xml:space="preserve">
+  <data name="ID2088" xml:space="preserve">
     <value>The issuer associated to the specified token is not valid.</value>
   </data>
-  <data name="ID3089" xml:space="preserve">
+  <data name="ID2089" xml:space="preserve">
     <value>The specified token is not of the expected type.</value>
   </data>
-  <data name="ID3090" xml:space="preserve">
+  <data name="ID2090" xml:space="preserve">
     <value>The signing key associated to the specified token was not found.</value>
   </data>
-  <data name="ID3091" xml:space="preserve">
+  <data name="ID2091" xml:space="preserve">
     <value>The signature associated to the specified token is not valid.</value>
   </data>
-  <data name="ID3092" xml:space="preserve">
+  <data name="ID2092" xml:space="preserve">
     <value>This resource server is currently unavailable.</value>
   </data>
-  <data name="ID3093" xml:space="preserve">
+  <data name="ID2093" xml:space="preserve">
     <value>The specified token doesn't contain any audience.</value>
   </data>
-  <data name="ID3094" xml:space="preserve">
+  <data name="ID2094" xml:space="preserve">
     <value>The specified token cannot be used with this resource server.</value>
   </data>
-  <data name="ID3095" xml:space="preserve">
+  <data name="ID2095" xml:space="preserve">
     <value>The user represented by the token is not allowed to perform the requested action.</value>
   </data>
-  <data name="ID3096" xml:space="preserve">
+  <data name="ID2096" xml:space="preserve">
     <value>No issuer could be found in the server configuration.</value>
   </data>
-  <data name="ID3097" xml:space="preserve">
+  <data name="ID2097" xml:space="preserve">
     <value>A server configuration containing an invalid issuer was returned.</value>
   </data>
-  <data name="ID3098" xml:space="preserve">
+  <data name="ID2098" xml:space="preserve">
     <value>The issuer returned in the server configuration is not valid.</value>
   </data>
-  <data name="ID3099" xml:space="preserve">
+  <data name="ID2099" xml:space="preserve">
     <value>No JWKS endpoint could be found in the server configuration.</value>
   </data>
-  <data name="ID3100" xml:space="preserve">
+  <data name="ID2100" xml:space="preserve">
     <value>A server configuration containing an invalid JWKS endpoint URL was returned.</value>
   </data>
-  <data name="ID3101" xml:space="preserve">
+  <data name="ID2101" xml:space="preserve">
     <value>A server configuration containing an invalid introspection endpoint URL was returned.</value>
   </data>
-  <data name="ID3102" xml:space="preserve">
+  <data name="ID2102" xml:space="preserve">
     <value>The JWKS document didn't contain a valid '{0}' node with at least one key.</value>
   </data>
-  <data name="ID3103" xml:space="preserve">
+  <data name="ID2103" xml:space="preserve">
     <value>A JWKS response containing an unsupported key was returned.</value>
   </data>
-  <data name="ID3104" xml:space="preserve">
+  <data name="ID2104" xml:space="preserve">
     <value>A JWKS response containing an invalid key was returned.</value>
   </data>
-  <data name="ID3105" xml:space="preserve">
+  <data name="ID2105" xml:space="preserve">
     <value>The mandatory '{0}' parameter couldn't be found in the introspection response.</value>
   </data>
-  <data name="ID3106" xml:space="preserve">
+  <data name="ID2106" xml:space="preserve">
     <value>The token was rejected by the remote authentication server.</value>
   </data>
-  <data name="ID3107" xml:space="preserve">
+  <data name="ID2107" xml:space="preserve">
     <value>The '{0}' claim is malformed or isn't of the expected type.</value>
   </data>
-  <data name="ID3108" xml:space="preserve">
+  <data name="ID2108" xml:space="preserve">
     <value>An introspection response containing a malformed issuer was returned.</value>
   </data>
-  <data name="ID3109" xml:space="preserve">
+  <data name="ID2109" xml:space="preserve">
     <value>The issuer returned in the introspection response is not valid.</value>
   </data>
-  <data name="ID3110" xml:space="preserve">
+  <data name="ID2110" xml:space="preserve">
     <value>The type of the introspected token doesn't match the expected type.</value>
   </data>
-  <data name="ID3111" xml:space="preserve">
+  <data name="ID2111" xml:space="preserve">
     <value>An application with the same client identifier already exists.</value>
   </data>
-  <data name="ID3112" xml:space="preserve">
+  <data name="ID2112" xml:space="preserve">
     <value>Only confidential, hybrid or public applications are supported by the default application manager.</value>
   </data>
-  <data name="ID3113" xml:space="preserve">
+  <data name="ID2113" xml:space="preserve">
     <value>The client secret cannot be null or empty for a confidential application.</value>
   </data>
-  <data name="ID3114" xml:space="preserve">
+  <data name="ID2114" xml:space="preserve">
     <value>A client secret cannot be associated with a public application.</value>
   </data>
-  <data name="ID3115" xml:space="preserve">
+  <data name="ID2115" xml:space="preserve">
     <value>Callback URLs cannot contain a fragment.</value>
   </data>
-  <data name="ID3116" xml:space="preserve">
+  <data name="ID2116" xml:space="preserve">
     <value>The authorization type cannot be null or empty.</value>
   </data>
-  <data name="ID3117" xml:space="preserve">
+  <data name="ID2117" xml:space="preserve">
     <value>The specified authorization type is not supported by the default token manager.</value>
   </data>
-  <data name="ID3118" xml:space="preserve">
+  <data name="ID2118" xml:space="preserve">
     <value>The client type cannot be null or empty.</value>
   </data>
-  <data name="ID3119" xml:space="preserve">
+  <data name="ID2119" xml:space="preserve">
     <value>Callback URLs cannot be null or empty.</value>
   </data>
-  <data name="ID3120" xml:space="preserve">
+  <data name="ID2120" xml:space="preserve">
     <value>Callback URLs must be valid absolute URLs.</value>
   </data>
-  <data name="ID5000" xml:space="preserve">
+  <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5001" xml:space="preserve">
+  <data name="ID4001" xml:space="preserve">
     <value>The separators collection shouldn't be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5002" xml:space="preserve">
+  <data name="ID4002" xml:space="preserve">
     <value>The value string shouldn't be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5003" xml:space="preserve">
+  <data name="ID4003" xml:space="preserve">
     <value>RSA.ExportParameters() shouldn't return invalid values.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5004" xml:space="preserve">
+  <data name="ID4004" xml:space="preserve">
     <value>ECDsa.ExportParameters() shouldn't return invalid values.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5005" xml:space="preserve">
+  <data name="ID4005" xml:space="preserve">
     <value>ECDsa.ExportParameters() shouldn't return an unnamed curve.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5006" xml:space="preserve">
+  <data name="ID4006" xml:space="preserve">
     <value>The principal shouldn't be null at this point.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5007" xml:space="preserve">
+  <data name="ID4007" xml:space="preserve">
     <value>The response shouldn't be null at this point.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5008" xml:space="preserve">
+  <data name="ID4008" xml:space="preserve">
     <value>The request shouldn't be null at this point.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5009" xml:space="preserve">
+  <data name="ID4009" xml:space="preserve">
     <value>The token type shouldn't be null or empty.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5010" xml:space="preserve">
+  <data name="ID4010" xml:space="preserve">
     <value>The token shouldn't be null or empty at this point.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID5011" xml:space="preserve">
+  <data name="ID4011" xml:space="preserve">
     <value>The OpenIddict Core services should be registered.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7000" xml:space="preserve">
+  <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7001" xml:space="preserve">
+  <data name="ID6001" xml:space="preserve">
     <value>The token '{Token}' was successfully validated and the following claims could be extracted: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7002" xml:space="preserve">
+  <data name="ID6002" xml:space="preserve">
     <value>The token '{Identifier}' has already been redeemed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7003" xml:space="preserve">
+  <data name="ID6003" xml:space="preserve">
     <value>The token '{Identifier}' is not active yet.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7004" xml:space="preserve">
+  <data name="ID6004" xml:space="preserve">
     <value>The token '{Identifier}' was marked as rejected.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7005" xml:space="preserve">
+  <data name="ID6005" xml:space="preserve">
     <value>The token '{Identifier}' was no longer valid.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7006" xml:space="preserve">
+  <data name="ID6006" xml:space="preserve">
     <value>The authorization '{Identifier}' was no longer valid.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7007" xml:space="preserve">
+  <data name="ID6007" xml:space="preserve">
     <value>An ad hoc authorization was automatically created and associated with an unknown application: {Identifier}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7008" xml:space="preserve">
+  <data name="ID6008" xml:space="preserve">
     <value>An ad hoc authorization was automatically created and associated with the '{ClientId}' application: {Identifier}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7009" xml:space="preserve">
+  <data name="ID6009" xml:space="preserve">
     <value>'{Claim}' was excluded from the access token claims.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7010" xml:space="preserve">
+  <data name="ID6010" xml:space="preserve">
     <value>The access token scopes will be limited to the scopes requested by the client application: {Scopes}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7011" xml:space="preserve">
+  <data name="ID6011" xml:space="preserve">
     <value>'{Claim}' was excluded from the identity token claims.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7012" xml:space="preserve">
+  <data name="ID6012" xml:space="preserve">
     <value>The token entry for access token '{Identifier}' was successfully created.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7013" xml:space="preserve">
+  <data name="ID6013" xml:space="preserve">
     <value>The access token '{Identifier}' was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7014" xml:space="preserve">
+  <data name="ID6014" xml:space="preserve">
     <value>The token entry for access token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7015" xml:space="preserve">
+  <data name="ID6015" xml:space="preserve">
     <value>The token entry for authorization code '{Identifier}' was successfully created.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7016" xml:space="preserve">
+  <data name="ID6016" xml:space="preserve">
     <value>The authorization code '{Identifier}' was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7017" xml:space="preserve">
+  <data name="ID6017" xml:space="preserve">
     <value>The token entry for authorization code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7018" xml:space="preserve">
+  <data name="ID6018" xml:space="preserve">
     <value>The token entry for device code '{Identifier}' was successfully created.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7019" xml:space="preserve">
+  <data name="ID6019" xml:space="preserve">
     <value>The device code '{Identifier}' was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7020" xml:space="preserve">
+  <data name="ID6020" xml:space="preserve">
     <value>The token entry for device code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7021" xml:space="preserve">
+  <data name="ID6021" xml:space="preserve">
     <value>The reference token entry for device code '{Identifier}' was successfully updated'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7022" xml:space="preserve">
+  <data name="ID6022" xml:space="preserve">
     <value>The token entry for refresh token '{Identifier}' was successfully created.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7023" xml:space="preserve">
+  <data name="ID6023" xml:space="preserve">
     <value>The refresh token '{Identifier}' was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7024" xml:space="preserve">
+  <data name="ID6024" xml:space="preserve">
     <value>The token entry for refresh token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7025" xml:space="preserve">
+  <data name="ID6025" xml:space="preserve">
     <value>The token entry for user code '{Identifier}' was successfully created.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7026" xml:space="preserve">
+  <data name="ID6026" xml:space="preserve">
     <value>The user code '{Identifier}' was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7027" xml:space="preserve">
+  <data name="ID6027" xml:space="preserve">
     <value>The token entry for user code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7028" xml:space="preserve">
+  <data name="ID6028" xml:space="preserve">
     <value>The token entry for identity token '{Identifier}' was successfully created.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7029" xml:space="preserve">
+  <data name="ID6029" xml:space="preserve">
     <value>The identity token '{Identifier}' was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7030" xml:space="preserve">
+  <data name="ID6030" xml:space="preserve">
     <value>The authorization request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7031" xml:space="preserve">
+  <data name="ID6031" xml:space="preserve">
     <value>The authorization request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7032" xml:space="preserve">
+  <data name="ID6032" xml:space="preserve">
     <value>The authorization request was rejected because it contained an unsupported parameter: {Parameter}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7033" xml:space="preserve">
+  <data name="ID6033" xml:space="preserve">
     <value>The authorization request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7034" xml:space="preserve">
+  <data name="ID6034" xml:space="preserve">
     <value>The authorization request was rejected because the '{Parameter}' parameter wasn't a valid absolute URL: {RedirectUri}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7035" xml:space="preserve">
+  <data name="ID6035" xml:space="preserve">
     <value>The authorization request was rejected because the '{Parameter}' contained a URL fragment: {RedirectUri}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7036" xml:space="preserve">
+  <data name="ID6036" xml:space="preserve">
     <value>The authorization request was rejected because the '{ResponseType}' response type is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7037" xml:space="preserve">
+  <data name="ID6037" xml:space="preserve">
     <value>The authorization request was rejected because the 'response_type'/'response_mode' combination was invalid: {ResponseType} ; {ResponseMode}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7038" xml:space="preserve">
+  <data name="ID6038" xml:space="preserve">
     <value>The authorization request was rejected because the '{ResponseMode}' response mode is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7039" xml:space="preserve">
+  <data name="ID6039" xml:space="preserve">
     <value>The authorization request was rejected because the '{Scope}' scope was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7040" xml:space="preserve">
+  <data name="ID6040" xml:space="preserve">
     <value>The authorization request was rejected because an invalid prompt parameter was specified.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7041" xml:space="preserve">
+  <data name="ID6041" xml:space="preserve">
     <value>The authorization request was rejected because the specified code challenge method was not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7042" xml:space="preserve">
+  <data name="ID6042" xml:space="preserve">
     <value>The authorization request was rejected because the response type was not compatible with 'code_challenge'/'code_challenge_method'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7043" xml:space="preserve">
+  <data name="ID6043" xml:space="preserve">
     <value>The authorization request was rejected because the specified response type was not compatible with PKCE.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7044" xml:space="preserve">
+  <data name="ID6044" xml:space="preserve">
     <value>The authorization request was rejected because the client application was not found: '{ClientId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7045" xml:space="preserve">
+  <data name="ID6045" xml:space="preserve">
     <value>The authorization request was rejected because the confidential application '{ClientId}' was not allowed to retrieve an access token from the authorization endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7046" xml:space="preserve">
+  <data name="ID6046" xml:space="preserve">
     <value>The authorization request was rejected because the redirect_uri was invalid: '{RedirectUri}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7047" xml:space="preserve">
+  <data name="ID6047" xml:space="preserve">
     <value>The authentication request was rejected because invalid scopes were specified: {Scopes}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7048" xml:space="preserve">
+  <data name="ID6048" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the authorization endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7049" xml:space="preserve">
+  <data name="ID6049" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the authorization code flow.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7050" xml:space="preserve">
+  <data name="ID6050" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the implicit flow.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7051" xml:space="preserve">
+  <data name="ID6051" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the hybrid flow.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7052" xml:space="preserve">
+  <data name="ID6052" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the '{Scope}' scope.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7053" xml:space="preserve">
+  <data name="ID6053" xml:space="preserve">
     <value>The request address matched a server endpoint: {Endpoint}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7054" xml:space="preserve">
+  <data name="ID6054" xml:space="preserve">
     <value>The device request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7055" xml:space="preserve">
+  <data name="ID6055" xml:space="preserve">
     <value>The device request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7056" xml:space="preserve">
+  <data name="ID6056" xml:space="preserve">
     <value>The device request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7057" xml:space="preserve">
+  <data name="ID6057" xml:space="preserve">
     <value>The device request was rejected because invalid scopes were specified: {Scopes}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7058" xml:space="preserve">
+  <data name="ID6058" xml:space="preserve">
     <value>The device request was rejected because the client application was not found: '{ClientId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7059" xml:space="preserve">
+  <data name="ID6059" xml:space="preserve">
     <value>The device request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7060" xml:space="preserve">
+  <data name="ID6060" xml:space="preserve">
     <value>The device request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7061" xml:space="preserve">
+  <data name="ID6061" xml:space="preserve">
     <value>The device request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7062" xml:space="preserve">
+  <data name="ID6062" xml:space="preserve">
     <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7063" xml:space="preserve">
+  <data name="ID6063" xml:space="preserve">
     <value>The device request was rejected because the application '{ClientId}' was not allowed to use the scope {Scope}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7064" xml:space="preserve">
+  <data name="ID6064" xml:space="preserve">
     <value>The verification request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7065" xml:space="preserve">
+  <data name="ID6065" xml:space="preserve">
     <value>The verification request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7066" xml:space="preserve">
+  <data name="ID6066" xml:space="preserve">
     <value>The configuration request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7067" xml:space="preserve">
+  <data name="ID6067" xml:space="preserve">
     <value>The configuration request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7068" xml:space="preserve">
+  <data name="ID6068" xml:space="preserve">
     <value>The cryptography request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7069" xml:space="preserve">
+  <data name="ID6069" xml:space="preserve">
     <value>The cryptography request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7070" xml:space="preserve">
+  <data name="ID6070" xml:space="preserve">
     <value>A JSON Web Key was excluded from the key set because it didn't contain the mandatory '{Parameter}' parameter.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7071" xml:space="preserve">
+  <data name="ID6071" xml:space="preserve">
     <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA and ECDSA asymmetric security keys can be exposed via the JWKS endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7072" xml:space="preserve">
+  <data name="ID6072" xml:space="preserve">
     <value>An unsupported signing key of type '{Type}' was ignored and excluded from the key set. Only RSA asymmetric security keys can be exposed via the JWKS endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7073" xml:space="preserve">
+  <data name="ID6073" xml:space="preserve">
     <value>A signing key of type '{Type}' was ignored because its RSA public parameters couldn't be extracted.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7074" xml:space="preserve">
+  <data name="ID6074" xml:space="preserve">
     <value>A signing key of type '{Type}' was ignored because its EC public parameters couldn't be extracted.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7075" xml:space="preserve">
+  <data name="ID6075" xml:space="preserve">
     <value>The token request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7076" xml:space="preserve">
+  <data name="ID6076" xml:space="preserve">
     <value>The token request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7077" xml:space="preserve">
+  <data name="ID6077" xml:space="preserve">
     <value>The token request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7078" xml:space="preserve">
+  <data name="ID6078" xml:space="preserve">
     <value>The token request was rejected because the '{GrantType}' grant type is not supported.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7079" xml:space="preserve">
+  <data name="ID6079" xml:space="preserve">
     <value>The token request was rejected because the resource owner credentials were missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7080" xml:space="preserve">
+  <data name="ID6080" xml:space="preserve">
     <value>The token request was rejected because invalid scopes were specified: {Scopes}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7081" xml:space="preserve">
+  <data name="ID6081" xml:space="preserve">
     <value>The token request was rejected because the client application was not found: '{ClientId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7082" xml:space="preserve">
+  <data name="ID6082" xml:space="preserve">
     <value>The token request was rejected because the public client application '{ClientId}' was not allowed to use the client credentials grant.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7083" xml:space="preserve">
+  <data name="ID6083" xml:space="preserve">
     <value>The token request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7084" xml:space="preserve">
+  <data name="ID6084" xml:space="preserve">
     <value>The token request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7085" xml:space="preserve">
+  <data name="ID6085" xml:space="preserve">
     <value>The token request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7086" xml:space="preserve">
+  <data name="ID6086" xml:space="preserve">
     <value>The token request was rejected because the application '{ClientId}' was not allowed to use the token endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7087" xml:space="preserve">
+  <data name="ID6087" xml:space="preserve">
     <value>The token request was rejected because the application '{ClientId}' was not allowed to use the specified grant type: {GrantType}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7088" xml:space="preserve">
+  <data name="ID6088" xml:space="preserve">
     <value>The token request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7089" xml:space="preserve">
+  <data name="ID6089" xml:space="preserve">
     <value>The token request was rejected because the application '{ClientId}' was not allowed to use the scope {Scope}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7090" xml:space="preserve">
+  <data name="ID6090" xml:space="preserve">
     <value>The token request was rejected because the client identifier of the application was not available and could not be compared to the presenters list stored in the authorization code, the device code or the refresh token.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7091" xml:space="preserve">
+  <data name="ID6091" xml:space="preserve">
     <value>The token request was rejected because the authorization code, the device code or the refresh token was issued to a different client application.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7092" xml:space="preserve">
+  <data name="ID6092" xml:space="preserve">
     <value>The token request was rejected because the '{Parameter}' parameter didn't correspond to the expected value.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7093" xml:space="preserve">
+  <data name="ID6093" xml:space="preserve">
     <value>The token request was rejected because a '{0}' parameter was presented with an authorization code to which no code challenge was attached when processing the initial authorization request.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7094" xml:space="preserve">
+  <data name="ID6094" xml:space="preserve">
     <value>The token request was rejected because the '{Parameter}' parameter was not allowed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7095" xml:space="preserve">
+  <data name="ID6095" xml:space="preserve">
     <value>The token request was rejected because the '{Parameter}' parameter was not valid.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7096" xml:space="preserve">
+  <data name="ID6096" xml:space="preserve">
     <value>The introspection request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7097" xml:space="preserve">
+  <data name="ID6097" xml:space="preserve">
     <value>The introspection request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7098" xml:space="preserve">
+  <data name="ID6098" xml:space="preserve">
     <value>The introspection request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7099" xml:space="preserve">
+  <data name="ID6099" xml:space="preserve">
     <value>The introspection request was rejected because the client application was not found: '{ClientId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7100" xml:space="preserve">
+  <data name="ID6100" xml:space="preserve">
     <value>The introspection request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7101" xml:space="preserve">
+  <data name="ID6101" xml:space="preserve">
     <value>The introspection request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7102" xml:space="preserve">
+  <data name="ID6102" xml:space="preserve">
     <value>The introspection request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7103" xml:space="preserve">
+  <data name="ID6103" xml:space="preserve">
     <value>The introspection request was rejected because the application '{ClientId}' was not allowed to use the introspection endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7104" xml:space="preserve">
+  <data name="ID6104" xml:space="preserve">
     <value>The introspection request was rejected because the received token was of an unsupported type.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7106" xml:space="preserve">
+  <data name="ID6106" xml:space="preserve">
     <value>The introspection request was rejected because the access token was issued to a different client or for another resource server.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7108" xml:space="preserve">
+  <data name="ID6108" xml:space="preserve">
     <value>The introspection request was rejected because the refresh token was issued to a different client.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7109" xml:space="preserve">
+  <data name="ID6109" xml:space="preserve">
     <value>The revocation request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7110" xml:space="preserve">
+  <data name="ID6110" xml:space="preserve">
     <value>The revocation request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7111" xml:space="preserve">
+  <data name="ID6111" xml:space="preserve">
     <value>The revocation request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7112" xml:space="preserve">
+  <data name="ID6112" xml:space="preserve">
     <value>The revocation request was rejected because the client application was not found: '{ClientId}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7113" xml:space="preserve">
+  <data name="ID6113" xml:space="preserve">
     <value>The revocation request was rejected because the public application '{ClientId}' was not allowed to send a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7114" xml:space="preserve">
+  <data name="ID6114" xml:space="preserve">
     <value>The revocation request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7115" xml:space="preserve">
+  <data name="ID6115" xml:space="preserve">
     <value>The revocation request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7116" xml:space="preserve">
+  <data name="ID6116" xml:space="preserve">
     <value>The revocation request was rejected because the application '{ClientId}' was not allowed to use the revocation endpoint.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7117" xml:space="preserve">
+  <data name="ID6117" xml:space="preserve">
     <value>The revocation request was rejected because the received token was of an unsupported type.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7119" xml:space="preserve">
+  <data name="ID6119" xml:space="preserve">
     <value>The revocation request was rejected because the access token was issued to a different client or for another resource server.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7121" xml:space="preserve">
+  <data name="ID6121" xml:space="preserve">
     <value>The revocation request was rejected because the refresh token was issued to a different client.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7122" xml:space="preserve">
+  <data name="ID6122" xml:space="preserve">
     <value>The revocation request was rejected because the token had no internal identifier.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7123" xml:space="preserve">
+  <data name="ID6123" xml:space="preserve">
     <value>The token '{Identifier}' was not revoked because it couldn't be found.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7124" xml:space="preserve">
+  <data name="ID6124" xml:space="preserve">
     <value>The logout request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7125" xml:space="preserve">
+  <data name="ID6125" xml:space="preserve">
     <value>The logout request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7126" xml:space="preserve">
+  <data name="ID6126" xml:space="preserve">
     <value>The logout request was rejected because the '{Parameter}' parameter wasn't a valid absolute URL: {PostLogoutRedirectUri}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7127" xml:space="preserve">
+  <data name="ID6127" xml:space="preserve">
     <value>The logout request was rejected because the '{Parameter}' contained a URL fragment: {PostLogoutRedirectUri}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7128" xml:space="preserve">
+  <data name="ID6128" xml:space="preserve">
     <value>The logout request was rejected because the specified post_logout_redirect_uri was invalid: {PostLogoutRedirectUri}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7129" xml:space="preserve">
+  <data name="ID6129" xml:space="preserve">
     <value>The userinfo request was successfully extracted: {Request}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7130" xml:space="preserve">
+  <data name="ID6130" xml:space="preserve">
     <value>The userinfo request was successfully validated.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7131" xml:space="preserve">
+  <data name="ID6131" xml:space="preserve">
     <value>The userinfo request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7132" xml:space="preserve">
+  <data name="ID6132" xml:space="preserve">
     <value>An exception was thrown by {HandlerName} while handling the {EventName} event.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7133" xml:space="preserve">
+  <data name="ID6133" xml:space="preserve">
     <value>The event {EventName} was successfully processed by {HandlerName}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7134" xml:space="preserve">
+  <data name="ID6134" xml:space="preserve">
     <value>The event {EventName} was marked as handled by {HandlerName}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7135" xml:space="preserve">
+  <data name="ID6135" xml:space="preserve">
     <value>The event {EventName} was marked as skipped by {HandlerName}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7136" xml:space="preserve">
+  <data name="ID6136" xml:space="preserve">
     <value>The event {EventName} was marked as rejected by {HandlerName}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7137" xml:space="preserve">
+  <data name="ID6137" xml:space="preserve">
     <value>The request was rejected because an invalid HTTP method was specified: {Method}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7138" xml:space="preserve">
+  <data name="ID6138" xml:space="preserve">
     <value>The request was rejected because the mandatory '{Header}' header was missing.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7139" xml:space="preserve">
+  <data name="ID6139" xml:space="preserve">
     <value>The request was rejected because an invalid '{Header}' header was specified: {Value}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7140" xml:space="preserve">
+  <data name="ID6140" xml:space="preserve">
     <value>The request was rejected because multiple client credentials were specified.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7141" xml:space="preserve">
+  <data name="ID6141" xml:space="preserve">
     <value>The response was successfully returned as a challenge response: {Response}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7142" xml:space="preserve">
+  <data name="ID6142" xml:space="preserve">
     <value>The response was successfully returned as a JSON document: {Response}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7143" xml:space="preserve">
+  <data name="ID6143" xml:space="preserve">
     <value>The response was successfully returned as a plain-text document: {Response}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7144" xml:space="preserve">
+  <data name="ID6144" xml:space="preserve">
     <value>The response was successfully returned as a 302 response.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7145" xml:space="preserve">
+  <data name="ID6145" xml:space="preserve">
     <value>The response was successfully returned as an empty 200 response.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7146" xml:space="preserve">
+  <data name="ID6146" xml:space="preserve">
     <value>The authorization request was rejected because an unknown or invalid '{Parameter}' was specified.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7147" xml:space="preserve">
+  <data name="ID6147" xml:space="preserve">
     <value>The authorization response was successfully returned to '{RedirectUri}' using the form post response mode: {Response}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7148" xml:space="preserve">
+  <data name="ID6148" xml:space="preserve">
     <value>The authorization response was successfully returned to '{RedirectUri}' using the query response mode: {Response}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7149" xml:space="preserve">
+  <data name="ID6149" xml:space="preserve">
     <value>The authorization response was successfully returned to '{RedirectUri}' using the fragment response mode: {Response}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7150" xml:space="preserve">
+  <data name="ID6150" xml:space="preserve">
     <value>The logout request was rejected because an unknown or invalid '{Parameter}' was specified.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7151" xml:space="preserve">
+  <data name="ID6151" xml:space="preserve">
     <value>The logout response was successfully returned to '{PostLogoutRedirectUri}': {Response}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7152" xml:space="preserve">
+  <data name="ID6152" xml:space="preserve">
     <value>The ASP.NET Core Data Protection token '{Token}' was successfully validated and the following claims could be extracted: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7153" xml:space="preserve">
+  <data name="ID6153" xml:space="preserve">
     <value>An exception occured while deserializing the token '{Token}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7154" xml:space="preserve">
+  <data name="ID6154" xml:space="preserve">
     <value>The token '{Token}' was successfully introspected and the following claims could be extracted: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7155" xml:space="preserve">
+  <data name="ID6155" xml:space="preserve">
     <value>An error occurred while introspecting the token.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7156" xml:space="preserve">
+  <data name="ID6156" xml:space="preserve">
     <value>The authentication demand was rejected because the token was expired.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7157" xml:space="preserve">
+  <data name="ID6157" xml:space="preserve">
     <value>The authentication demand was rejected because the token had no audience attached.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7158" xml:space="preserve">
+  <data name="ID6158" xml:space="preserve">
     <value>The authentication demand was rejected because the token had no valid audience.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7159" xml:space="preserve">
+  <data name="ID6159" xml:space="preserve">
     <value>Client authentication cannot be enforced for public applications.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7160" xml:space="preserve">
+  <data name="ID6160" xml:space="preserve">
     <value>Client authentication failed for {Client} because no client secret was associated with the application.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7161" xml:space="preserve">
+  <data name="ID6161" xml:space="preserve">
     <value>Client authentication failed for {Client}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7162" xml:space="preserve">
+  <data name="ID6162" xml:space="preserve">
     <value>Client validation failed because '{RedirectUri}' was not a valid redirect_uri for {Client}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7163" xml:space="preserve">
+  <data name="ID6163" xml:space="preserve">
     <value>An error occurred while trying to verify a client secret.
 This may indicate that the hashed entry is corrupted or malformed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7164" xml:space="preserve">
+  <data name="ID6164" xml:space="preserve">
     <value>The authorization '{Identifier}' was successfully revoked.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7165" xml:space="preserve">
+  <data name="ID6165" xml:space="preserve">
     <value>A concurrency exception occurred while trying to revoke the authorization '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7166" xml:space="preserve">
+  <data name="ID6166" xml:space="preserve">
     <value>An exception occurred while trying to revoke the authorization '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7167" xml:space="preserve">
+  <data name="ID6167" xml:space="preserve">
     <value>The expiration date of the refresh token '{Identifier}' was successfully updated: {Date}.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7168" xml:space="preserve">
+  <data name="ID6168" xml:space="preserve">
     <value>The expiration date of the refresh token '{Identifier}' was successfully removed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7169" xml:space="preserve">
+  <data name="ID6169" xml:space="preserve">
     <value>A concurrency exception occurred while trying to update the expiration date of the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7170" xml:space="preserve">
+  <data name="ID6170" xml:space="preserve">
     <value>An exception occurred while trying to update the expiration date of the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7171" xml:space="preserve">
+  <data name="ID6171" xml:space="preserve">
     <value>The token '{Identifier}' was successfully marked as redeemed.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7172" xml:space="preserve">
+  <data name="ID6172" xml:space="preserve">
     <value>A concurrency exception occurred while trying to redeem the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7173" xml:space="preserve">
+  <data name="ID6173" xml:space="preserve">
     <value>An exception occurred while trying to redeem the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7174" xml:space="preserve">
+  <data name="ID6174" xml:space="preserve">
     <value>The token '{Identifier}' was successfully marked as rejected.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7175" xml:space="preserve">
+  <data name="ID6175" xml:space="preserve">
     <value>A concurrency exception occurred while trying to reject the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7176" xml:space="preserve">
+  <data name="ID6176" xml:space="preserve">
     <value>An exception occurred while trying to reject the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7177" xml:space="preserve">
+  <data name="ID6177" xml:space="preserve">
     <value>The token '{Identifier}' was successfully revoked.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7178" xml:space="preserve">
+  <data name="ID6178" xml:space="preserve">
     <value>A concurrency exception occurred while trying to revoke the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID7179" xml:space="preserve">
+  <data name="ID6179" xml:space="preserve">
     <value>An exception occurred while trying to revoke the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID9000" xml:space="preserve">
+  <data name="ID8000" xml:space="preserve">
     <value>Removes orphaned tokens and authorizations from the database.</value>
   </data>
-  <data name="ID9001" xml:space="preserve">
+  <data name="ID8001" xml:space="preserve">
     <value>Starts the scheduled task at regular intervals.</value>
   </data>
 </root>

@@ -110,10 +110,10 @@ namespace OpenIddict.Server
 
                     if (notification.Request is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1047));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0048));
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7109), notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6109), notification.Request);
                 }
             }
 
@@ -174,7 +174,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7110));
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6110));
                 }
             }
 
@@ -279,7 +279,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1048));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0049));
                 }
             }
 
@@ -309,11 +309,11 @@ namespace OpenIddict.Server
                     // Reject revocation requests missing the mandatory token parameter.
                     if (string.IsNullOrEmpty(context.Request.Token))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7111), Parameters.Token);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6111), Parameters.Token);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3029, Parameters.Token]);
+                            description: context.Localizer[SR.ID2029, Parameters.Token]);
 
                         return default;
                     }
@@ -348,11 +348,11 @@ namespace OpenIddict.Server
                     // At this stage, reject the revocation request unless the client identification requirement was disabled.
                     if (!context.Options.AcceptAnonymousClients && string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7111), Parameters.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6111), Parameters.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID3029, Parameters.ClientId]);
+                            description: context.Localizer[SR.ID2029, Parameters.ClientId]);
 
                         return default;
                     }
@@ -369,7 +369,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateClientId(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -394,18 +394,18 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     // Retrieve the application details corresponding to the requested client_id.
                     // If no entity can be found, this likely indicates that the client_id is invalid.
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7112), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6112), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID3052, Parameters.ClientId]);
+                            description: context.Localizer[SR.ID2052, Parameters.ClientId]);
 
                         return;
                     }
@@ -421,7 +421,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateClientType(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -446,12 +446,12 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
@@ -459,11 +459,11 @@ namespace OpenIddict.Server
                         // Reject revocation requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID7113), context.ClientId);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6113), context.ClientId);
 
                             context.Reject(
                                 error: Errors.InvalidClient,
-                                description: context.Localizer[SR.ID3053, Parameters.ClientSecret]);
+                                description: context.Localizer[SR.ID2053, Parameters.ClientSecret]);
 
                             return;
                         }
@@ -474,11 +474,11 @@ namespace OpenIddict.Server
                     // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
                     if (string.IsNullOrEmpty(context.ClientSecret))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7114), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6114), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID3054, Parameters.ClientSecret]);
+                            description: context.Localizer[SR.ID2054, Parameters.ClientSecret]);
 
                         return;
                     }
@@ -493,7 +493,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -518,12 +518,12 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // If the application is a public client, don't validate the client secret.
@@ -532,15 +532,15 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID5000(Parameters.ClientSecret));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
 
                     if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7115), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6115), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID3055]);
+                            description: context.Localizer[SR.ID2055]);
 
                         return;
                     }
@@ -556,7 +556,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -582,22 +582,22 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // Reject the request if the application is not allowed to use the revocation endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Revocation))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7116), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6116), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: context.Localizer[SR.ID3078]);
+                            description: context.Localizer[SR.ID2078]);
 
                         return;
                     }
@@ -684,16 +684,16 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                     if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
                         !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7117));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6117));
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: context.Localizer[SR.ID3079]);
+                            description: context.Localizer[SR.ID2079]);
 
                         return default;
                     }
@@ -730,8 +730,8 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                     // When the revoked token is an access token, the caller must be listed either as a presenter
                     // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
@@ -741,11 +741,11 @@ namespace OpenIddict.Server
                         context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId) &&
                         context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7119));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6119));
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID3080]);
+                            description: context.Localizer[SR.ID2080]);
 
                         return default;
                     }
@@ -757,11 +757,11 @@ namespace OpenIddict.Server
                     if (context.Principal.HasTokenType(TokenTypeHints.RefreshToken) &&
                         context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7121));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6121));
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID3080]);
+                            description: context.Localizer[SR.ID2080]);
 
                         return default;
                     }
@@ -796,7 +796,7 @@ namespace OpenIddict.Server
 
                     var notification = context.Transaction.GetProperty<ValidateRevocationRequestContext>(
                         typeof(ValidateRevocationRequestContext).FullName!) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                     context.Principal ??= notification.Principal;
 
@@ -812,7 +812,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictTokenManager _tokenManager;
 
-                public RevokeToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public RevokeToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public RevokeToken(IOpenIddictTokenManager tokenManager)
                     => _tokenManager = tokenManager;
@@ -836,17 +836,17 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID5006));
+                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                     // Extract the token identifier from the authentication principal.
                     var identifier = context.Principal.GetTokenId();
                     if (string.IsNullOrEmpty(identifier))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7122));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6122));
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: context.Localizer[SR.ID3079]);
+                            description: context.Localizer[SR.ID2079]);
 
                         return;
                     }
@@ -854,11 +854,11 @@ namespace OpenIddict.Server
                     var token = await _tokenManager.FindByIdAsync(identifier);
                     if (token is null)
                     {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID7123), identifier);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6123), identifier);
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID3004]);
+                            description: context.Localizer[SR.ID2004]);
 
                         return;
                     }
@@ -868,7 +868,7 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: context.Localizer[SR.ID3079]);
+                            description: context.Localizer[SR.ID2079]);
 
                         return;
                     }

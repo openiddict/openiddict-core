@@ -92,7 +92,7 @@ namespace OpenIddict.Server.Quartz.Tests
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetMaximumRefireCount(-1));
 
             Assert.Equal("count", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1278), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0279), exception.Message);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ namespace OpenIddict.Server.Quartz.Tests
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetMinimumAuthorizationLifespan(TimeSpan.FromSeconds(-1)));
 
             Assert.Equal("lifespan", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1279), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0280), exception.Message);
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace OpenIddict.Server.Quartz.Tests
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetMinimumTokenLifespan(TimeSpan.FromSeconds(-1)));
 
             Assert.Equal("lifespan", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID1279), exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0280), exception.Message);
         }
 
         [Fact]

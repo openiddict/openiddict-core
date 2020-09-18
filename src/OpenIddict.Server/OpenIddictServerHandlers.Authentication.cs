@@ -119,10 +119,10 @@ namespace OpenIddict.Server
 
                     if (notification.Request is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1026));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0027));
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7030), notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6030), notification.Request);
                 }
             }
 
@@ -185,10 +185,10 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(notification.RedirectUri))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1027));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0028));
                     }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID7031));
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6031));
                 }
             }
 
@@ -277,7 +277,7 @@ namespace OpenIddict.Server
                         }
                     }
 
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1028));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0029));
                 }
             }
 
@@ -325,7 +325,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1029));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0030));
                 }
             }
 
@@ -355,11 +355,11 @@ namespace OpenIddict.Server
                     // Reject requests using the unsupported request parameter.
                     if (!string.IsNullOrEmpty(context.Request.Request))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7032), Parameters.Request);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6032), Parameters.Request);
 
                         context.Reject(
                             error: Errors.RequestNotSupported,
-                            description: context.Localizer[SR.ID3028, Parameters.Request]);
+                            description: context.Localizer[SR.ID2028, Parameters.Request]);
 
                         return default;
                     }
@@ -394,11 +394,11 @@ namespace OpenIddict.Server
                     // Reject requests using the unsupported request_uri parameter.
                     if (!string.IsNullOrEmpty(context.Request.RequestUri))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7032), Parameters.RequestUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6032), Parameters.RequestUri);
 
                         context.Reject(
                             error: Errors.RequestUriNotSupported,
-                            description: context.Localizer[SR.ID3028, Parameters.RequestUri]);
+                            description: context.Localizer[SR.ID2028, Parameters.RequestUri]);
 
                         return default;
                     }
@@ -434,11 +434,11 @@ namespace OpenIddict.Server
                     // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                     if (string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3029, Parameters.ClientId]);
+                            description: context.Localizer[SR.ID2029, Parameters.ClientId]);
 
                         return default;
                     }
@@ -479,11 +479,11 @@ namespace OpenIddict.Server
                     {
                         if (context.Request.HasScope(Scopes.OpenId))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.RedirectUri);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: context.Localizer[SR.ID3029, Parameters.RedirectUri]);
+                                description: context.Localizer[SR.ID2029, Parameters.RedirectUri]);
 
                             return default;
                         }
@@ -501,11 +501,11 @@ namespace OpenIddict.Server
                     // See https://github.com/dotnet/corefx/issues/22098 for more information.
                     if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7034), Parameters.RedirectUri, context.RedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6034), Parameters.RedirectUri, context.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3030, Parameters.RedirectUri]);
+                            description: context.Localizer[SR.ID2030, Parameters.RedirectUri]);
 
                         return default;
                     }
@@ -515,11 +515,11 @@ namespace OpenIddict.Server
                     // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
                     if (!string.IsNullOrEmpty(uri.Fragment))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7035), Parameters.RedirectUri, context.RedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6035), Parameters.RedirectUri, context.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3031, Parameters.RedirectUri]);
+                            description: context.Localizer[SR.ID2031, Parameters.RedirectUri]);
 
                         return default;
                     }
@@ -554,11 +554,11 @@ namespace OpenIddict.Server
                     // Reject requests missing the mandatory response_type parameter.
                     if (string.IsNullOrEmpty(context.Request.ResponseType))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.ResponseType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.ResponseType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3029, Parameters.ResponseType]);
+                            description: context.Localizer[SR.ID2029, Parameters.ResponseType]);
 
                         return default;
                     }
@@ -568,11 +568,11 @@ namespace OpenIddict.Server
                     if (!context.Options.ResponseTypes.Any(type =>
                         types.SetEquals(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7036), context.Request.ResponseType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
 
                         context.Reject(
                             error: Errors.UnsupportedResponseType,
-                            description: context.Localizer[SR.ID3032, Parameters.ResponseType]);
+                            description: context.Localizer[SR.ID2032, Parameters.ResponseType]);
 
                         return default;
                     }
@@ -610,11 +610,11 @@ namespace OpenIddict.Server
                     if (context.Request.IsQueryResponseMode() && (context.Request.HasResponseType(ResponseTypes.IdToken) ||
                                                                   context.Request.HasResponseType(ResponseTypes.Token)))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7037), context.Request.ResponseType, context.Request.ResponseMode);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6037), context.Request.ResponseType, context.Request.ResponseMode);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3033, Parameters.ResponseType, Parameters.ResponseMode]);
+                            description: context.Localizer[SR.ID2033, Parameters.ResponseType, Parameters.ResponseMode]);
 
                         return default;
                     }
@@ -623,11 +623,11 @@ namespace OpenIddict.Server
                     // if the default response_mode inferred from the response_type was explicitly disabled in the options.
                     if (!ValidateResponseMode(context.Request, context.Options))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7038), context.Request.ResponseMode);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6038), context.Request.ResponseMode);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3032, Parameters.ResponseMode]);
+                            description: context.Localizer[SR.ID2032, Parameters.ResponseMode]);
 
                         return default;
                     }
@@ -687,11 +687,11 @@ namespace OpenIddict.Server
                     // Reject authorization requests containing the id_token response_type if no openid scope has been received.
                     if (context.Request.HasResponseType(ResponseTypes.IdToken) && !context.Request.HasScope(Scopes.OpenId))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7039), Scopes.OpenId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6039), Scopes.OpenId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3034, Scopes.OpenId]);
+                            description: context.Localizer[SR.ID2034, Scopes.OpenId]);
 
                         return default;
                     }
@@ -701,7 +701,7 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3035, Scopes.OfflineAccess]);
+                            description: context.Localizer[SR.ID2035, Scopes.OfflineAccess]);
 
                         return default;
                     }
@@ -745,11 +745,11 @@ namespace OpenIddict.Server
 
                     if (context.Request.IsImplicitFlow() || context.Request.IsHybridFlow())
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.Nonce);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.Nonce);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3029, Parameters.Nonce]);
+                            description: context.Localizer[SR.ID2029, Parameters.Nonce]);
 
                         return default;
                     }
@@ -786,11 +786,11 @@ namespace OpenIddict.Server
                                                                     context.Request.HasPrompt(Prompts.Login) ||
                                                                     context.Request.HasPrompt(Prompts.SelectAccount)))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7040));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6040));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3052, Parameters.Prompt]);
+                            description: context.Localizer[SR.ID2052, Parameters.Prompt]);
 
                         return default;
                     }
@@ -831,11 +831,11 @@ namespace OpenIddict.Server
                     // Ensure a code_challenge was specified if a code_challenge_method was used.
                     if (string.IsNullOrEmpty(context.Request.CodeChallenge))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.CodeChallenge);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3037, Parameters.CodeChallengeMethod, Parameters.CodeChallenge]);
+                            description: context.Localizer[SR.ID2037, Parameters.CodeChallengeMethod, Parameters.CodeChallenge]);
 
                         return default;
                     }
@@ -845,11 +845,11 @@ namespace OpenIddict.Server
                     if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                         !context.Options.CodeChallengeMethods.Contains(CodeChallengeMethods.Plain))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.CodeChallengeMethod);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallengeMethod);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3029, Parameters.CodeChallengeMethod]);
+                            description: context.Localizer[SR.ID2029, Parameters.CodeChallengeMethod]);
 
                         return default;
                     }
@@ -858,11 +858,11 @@ namespace OpenIddict.Server
                     if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                         !context.Options.CodeChallengeMethods.Contains(context.Request.CodeChallengeMethod))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7041));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6041));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3032, Parameters.CodeChallengeMethod]);
+                            description: context.Localizer[SR.ID2032, Parameters.CodeChallengeMethod]);
 
                         return default;
                     }
@@ -870,11 +870,11 @@ namespace OpenIddict.Server
                     // When code_challenge or code_challenge_method is specified, ensure the response_type includes "code".
                     if (!context.Request.HasResponseType(ResponseTypes.Code))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7042));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6042));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3040, Parameters.CodeChallenge,
+                            description: context.Localizer[SR.ID2040, Parameters.CodeChallenge,
                                 Parameters.CodeChallengeMethod, ResponseTypes.Code]);
 
                         return default;
@@ -883,11 +883,11 @@ namespace OpenIddict.Server
                     // Reject authorization requests that contain response_type=token when a code_challenge is specified.
                     if (context.Request.HasResponseType(ResponseTypes.Token))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7043));
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6043));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3041, Parameters.ResponseType]);
+                            description: context.Localizer[SR.ID2041, Parameters.ResponseType]);
 
                         return default;
                     }
@@ -904,7 +904,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateClientId(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -928,16 +928,16 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7044), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6044), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3052, Parameters.ClientId]);
+                            description: context.Localizer[SR.ID2052, Parameters.ClientId]);
 
                         return;
                     }
@@ -953,7 +953,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateClientType(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -977,12 +977,12 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // To prevent downgrade attacks, ensure that authorization requests returning an access token directly
@@ -992,11 +992,11 @@ namespace OpenIddict.Server
                     if (context.Request.HasResponseType(ResponseTypes.Token) &&
                         await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7045), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6045), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: context.Localizer[SR.ID3043, Parameters.ResponseType]);
+                            description: context.Localizer[SR.ID2043, Parameters.ResponseType]);
 
                         return;
                     }
@@ -1011,7 +1011,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateClientRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateClientRedirectUri(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1035,12 +1035,12 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // If no explicit redirect_uri was specified, retrieve the addresses associated with
@@ -1050,11 +1050,11 @@ namespace OpenIddict.Server
                         var addresses = await _applicationManager.GetRedirectUrisAsync(application);
                         if (addresses.Length != 1)
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.RedirectUri);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: context.Localizer[SR.ID3029, Parameters.RedirectUri]);
+                                description: context.Localizer[SR.ID2029, Parameters.RedirectUri]);
 
                             return;
                         }
@@ -1067,11 +1067,11 @@ namespace OpenIddict.Server
                     // Otherwise, ensure that the specified redirect_uri is valid and is associated with the client application.
                     if (!await _applicationManager.ValidateRedirectUriAsync(application, context.RedirectUri))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7046), context.RedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6046), context.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3043, Parameters.RedirectUri]);
+                            description: context.Localizer[SR.ID2043, Parameters.RedirectUri]);
 
                         return;
                     }
@@ -1121,7 +1121,7 @@ namespace OpenIddict.Server
                     // even if the service was registered and resolved from the dependency injection container.
                     if (scopes.Count != 0 && !context.Options.EnableDegradedMode)
                     {
-                        Debug.Assert(_scopeManager is not null, SR.GetResourceString(SR.ID5011));
+                        Debug.Assert(_scopeManager is not null, SR.GetResourceString(SR.ID4011));
 
                         await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {
@@ -1136,11 +1136,11 @@ namespace OpenIddict.Server
                     // If at least one scope was not recognized, return an error.
                     if (scopes.Count != 0)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7047), scopes);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6047), scopes);
 
                         context.Reject(
                             error: Errors.InvalidScope,
-                            description: context.Localizer[SR.ID3052, Parameters.Scope]);
+                            description: context.Localizer[SR.ID2052, Parameters.Scope]);
 
                         return;
                     }
@@ -1155,7 +1155,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1180,22 +1180,22 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // Reject the request if the application is not allowed to use the authorization endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Authorization))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7048), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6048), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: context.Localizer[SR.ID3046]);
+                            description: context.Localizer[SR.ID2046]);
 
                         return;
                     }
@@ -1210,7 +1210,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1235,23 +1235,23 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // Reject the request if the application is not allowed to use the authorization code flow.
                     if (context.Request.IsAuthorizationCodeFlow() &&
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7049), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6049), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: context.Localizer[SR.ID3047]);
+                            description: context.Localizer[SR.ID2047]);
 
                         return;
                     }
@@ -1260,11 +1260,11 @@ namespace OpenIddict.Server
                     if (context.Request.IsImplicitFlow() &&
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7050), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6050), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: context.Localizer[SR.ID3048]);
+                            description: context.Localizer[SR.ID2048]);
 
                         return;
                     }
@@ -1274,11 +1274,11 @@ namespace OpenIddict.Server
                        (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode) ||
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit)))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7051), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6051), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: context.Localizer[SR.ID3049]);
+                            description: context.Localizer[SR.ID2049]);
 
                         return;
                     }
@@ -1288,11 +1288,11 @@ namespace OpenIddict.Server
                     if (context.Request.HasScope(Scopes.OfflineAccess) &&
                        !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7052), context.ClientId, Scopes.OfflineAccess);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6052), context.ClientId, Scopes.OfflineAccess);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3065, Scopes.OfflineAccess]);
+                            description: context.Localizer[SR.ID2065, Scopes.OfflineAccess]);
 
                         return;
                     }
@@ -1307,7 +1307,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateScopePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateScopePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateScopePermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1332,12 +1332,12 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     foreach (var scope in context.Request.GetScopes())
@@ -1352,11 +1352,11 @@ namespace OpenIddict.Server
                         // Reject the request if the application is not allowed to use the iterated scope.
                         if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID7052), context.ClientId, scope);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6052), context.ClientId, scope);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: context.Localizer[SR.ID3051]);
+                                description: context.Localizer[SR.ID2051]);
 
                             return;
                         }
@@ -1373,7 +1373,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
+                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 public ValidateProofKeyForCodeExchangeRequirement(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1397,7 +1397,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID5000(Parameters.ClientId));
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     // If a code_challenge was provided, the request is always considered valid,
                     // whether the proof key for code exchange requirement is enforced or not.
@@ -1409,16 +1409,16 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID7033), Parameters.CodeChallenge);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID3054, Parameters.CodeChallenge]);
+                            description: context.Localizer[SR.ID2054, Parameters.CodeChallenge]);
 
                         return;
                     }

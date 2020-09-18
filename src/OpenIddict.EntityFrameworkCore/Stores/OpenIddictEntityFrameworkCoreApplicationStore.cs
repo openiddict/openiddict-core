@@ -261,7 +261,7 @@ namespace OpenIddict.EntityFrameworkCore
                     Context.Entry(token).State = EntityState.Unchanged;
                 }
 
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1238), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
             }
         }
 
@@ -270,7 +270,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             return await (from application in Applications.AsTracking()
@@ -283,7 +283,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var key = ConvertIdentifierFromString(identifier);
@@ -299,7 +299,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
             // To optimize the efficiency of the query a bit, only applications whose stringified
@@ -333,7 +333,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
             // To optimize the efficiency of the query a bit, only applications whose stringified
@@ -661,7 +661,7 @@ namespace OpenIddict.EntityFrameworkCore
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TApplication>(Task.FromException<TApplication>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID1239), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0240), exception)));
             }
         }
 
@@ -1015,7 +1015,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(application).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1238), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
             }
         }
 

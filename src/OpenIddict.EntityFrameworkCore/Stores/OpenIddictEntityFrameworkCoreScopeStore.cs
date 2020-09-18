@@ -149,7 +149,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(scope).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
             }
         }
 
@@ -158,7 +158,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var key = ConvertIdentifierFromString(identifier);
@@ -173,7 +173,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1201), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
             }
 
             return await (from scope in Scopes.AsTracking()
@@ -187,7 +187,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1202), nameof(names));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
             }
 
             // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
@@ -203,7 +203,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
             }
 
             // To optimize the efficiency of the query a bit, only scopes whose stringified
@@ -439,7 +439,7 @@ namespace OpenIddict.EntityFrameworkCore
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TScope>(Task.FromException<TScope>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID1245), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID0246), exception)));
             }
         }
 
@@ -693,7 +693,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(scope).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
             }
         }
 

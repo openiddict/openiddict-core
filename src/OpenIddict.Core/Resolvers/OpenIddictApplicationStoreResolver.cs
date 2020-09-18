@@ -23,6 +23,6 @@ namespace OpenIddict.Core
         /// <returns>An <see cref="IOpenIddictApplicationStore{TApplication}"/>.</returns>
         public IOpenIddictApplicationStore<TApplication> Get<TApplication>() where TApplication : class
             => _provider.GetService<IOpenIddictApplicationStore<TApplication>>() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID1227));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0228));
     }
 }

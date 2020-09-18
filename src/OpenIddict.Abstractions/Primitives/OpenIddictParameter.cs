@@ -300,7 +300,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1191), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0192), nameof(name));
             }
 
             if (Value is JsonElement element && element.ValueKind == JsonValueKind.Object)
@@ -326,7 +326,7 @@ namespace OpenIddict.Abstractions
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID1192));
+                throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID0193));
             }
 
             if (Value is string?[] array)
@@ -439,7 +439,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID1191), nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0192), nameof(name));
             }
 
             if (Value is JsonElement element && element.ValueKind == JsonValueKind.Object &&
@@ -465,7 +465,7 @@ namespace OpenIddict.Abstractions
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID1192));
+                throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID0193));
             }
 
             if (Value is string?[] array)
@@ -547,7 +547,7 @@ namespace OpenIddict.Abstractions
                     value.WriteTo(writer);
                     break;
 
-                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1193));
+                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0194));
             }
         }
 
@@ -680,7 +680,7 @@ namespace OpenIddict.Abstractions
                         writer.WriteEndArray();
                         break;
 
-                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1193));
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0194));
                 }
 
                 writer.Flush();
