@@ -346,7 +346,7 @@ namespace OpenIddict.Validation.AspNetCore
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
-                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(100_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -398,7 +398,7 @@ namespace OpenIddict.Validation.AspNetCore
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
-                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachHttpResponseCode<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -445,7 +445,7 @@ namespace OpenIddict.Validation.AspNetCore
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
-                    .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -550,7 +550,7 @@ namespace OpenIddict.Validation.AspNetCore
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
-                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -596,7 +596,7 @@ namespace OpenIddict.Validation.AspNetCore
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessJsonResponse<TContext>>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 

@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -52,11 +53,11 @@ namespace OpenIddict.Server.AspNetCore
                 RemoveCachedRequest.Descriptor,
                 AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
                 AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
-                ProcessRedirectionResponse.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
-                ProcessHostRedirectionResponse<ApplyLogoutResponseContext>.Descriptor,
+                ProcessQueryResponse.Descriptor,
+                ProcessHostRedirectionResponse.Descriptor,
                 ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
 
             /// <summary>
@@ -285,7 +286,7 @@ namespace OpenIddict.Server.AspNetCore
                         .AddFilter<RequireHttpRequest>()
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
-                        .SetOrder(ProcessRedirectionResponse.Descriptor.Order - 1_000)
+                        .SetOrder(int.MinValue + 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -316,7 +317,7 @@ namespace OpenIddict.Server.AspNetCore
             /// Contains the logic responsible of processing logout responses.
             /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
             /// </summary>
-            public class ProcessRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+            public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -324,8 +325,8 @@ namespace OpenIddict.Server.AspNetCore
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireHttpRequest>()
-                        .UseSingletonHandler<ProcessRedirectionResponse>()
-                        .SetOrder(ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order - 1_000)
+                        .UseSingletonHandler<ProcessQueryResponse>()
+                        .SetOrder(ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order + 250)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -370,6 +371,52 @@ namespace OpenIddict.Server.AspNetCore
 
                     response.Redirect(location);
                     context.HandleRequest();
+
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of processing logout responses that should trigger a host redirection.
+            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+            /// </summary>
+            public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                        .AddFilter<RequireHttpRequest>()
+                        .UseSingletonHandler<ProcessHostRedirectionResponse>()
+                        .SetOrder(ProcessQueryResponse.Descriptor.Order + 250)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                    // this may indicate that the request was incorrectly processed by another server stack.
+                    var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                    if (response is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                    }
+
+                    var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+                    if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
+                    {
+                        response.Redirect(properties.RedirectUri);
+
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6144));
+                        context.HandleRequest();
+                    }
 
                     return default;
                 }

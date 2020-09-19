@@ -720,7 +720,7 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
-                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -780,7 +780,7 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
-                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachHttpResponseCode<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -827,7 +827,7 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
-                    .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -941,7 +941,7 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
-                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -987,7 +987,7 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessJsonResponse<TContext>>()
-                    .SetOrder(ProcessPassthroughErrorResponse<TContext, IOpenIddictServerHandlerFilter<TContext>>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1049,7 +1049,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireErrorPassthroughEnabled>()
                     .AddFilter<TFilter>()
                     .UseSingletonHandler<ProcessPassthroughErrorResponse<TContext, TFilter>>()
-                    .SetOrder(ProcessLocalErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1099,7 +1099,7 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessLocalErrorResponse<TContext>>()
-                    .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessPassthroughErrorResponse<TContext, IOpenIddictServerHandlerFilter<TContext>>.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1159,53 +1159,6 @@ namespace OpenIddict.Server.Owin
                 await stream.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
 
                 context.HandleRequest();
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of processing empty OpenID Connect responses that should trigger a host redirection.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-        /// </summary>
-        public class ProcessHostRedirectionResponse<TContext> : IOpenIddictServerHandler<TContext>
-            where TContext : BaseRequestContext
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
-                    .AddFilter<RequireOwinRequest>()
-                    .UseSingletonHandler<ProcessHostRedirectionResponse<TContext>>()
-                    .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(TContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
-                // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
-
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
-                {
-                    response.Redirect(properties.RedirectUri);
-
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6144));
-                    context.HandleRequest();
-                }
-
-                return default;
             }
         }
 
