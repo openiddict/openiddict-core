@@ -19,6 +19,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin.Infrastructure;
+using Microsoft.Owin.Security;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -52,10 +53,10 @@ namespace OpenIddict.Server.Owin
                 RemoveCachedRequest.Descriptor,
                 AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
                 AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
-                ProcessRedirectionResponse.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
-                ProcessHostRedirectionResponse<ApplyLogoutResponseContext>.Descriptor,
+                ProcessQueryResponse.Descriptor,
+                ProcessHostRedirectionResponse.Descriptor,
                 ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
 
             /// <summary>
@@ -279,7 +280,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireOwinRequest>()
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
-                        .SetOrder(ProcessRedirectionResponse.Descriptor.Order - 1_000)
+                        .SetOrder(int.MinValue + 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -310,7 +311,7 @@ namespace OpenIddict.Server.Owin
             /// Contains the logic responsible of processing logout responses.
             /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
             /// </summary>
-            public class ProcessRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+            public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -318,8 +319,8 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .UseSingletonHandler<ProcessRedirectionResponse>()
-                        .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, IOpenIddictServerHandlerFilter<ApplyLogoutResponseContext>>.Descriptor.Order - 1_000)
+                        .UseSingletonHandler<ProcessQueryResponse>()
+                        .SetOrder(ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order + 250)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -364,6 +365,59 @@ namespace OpenIddict.Server.Owin
 
                     response.Redirect(location);
                     context.HandleRequest();
+
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of processing verification responses that should trigger a host redirection.
+            /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+            /// </summary>
+            public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyVerificationResponseContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyVerificationResponseContext>()
+                        .AddFilter<RequireOwinRequest>()
+                        .UseSingletonHandler<ProcessHostRedirectionResponse>()
+                        .SetOrder(ProcessQueryResponse.Descriptor.Order + 250)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyVerificationResponseContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                    // this may indicate that the request was incorrectly processed by another server stack.
+                    var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                    if (response is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+                    }
+
+                    // Note: this handler only redirects the user agent to the address specified
+                    // in the AuthenticationProperties if the error is an access_denied error.
+                    if (!string.Equals(context.Response.Error, Errors.AccessDenied, StringComparison.Ordinal))
+                    {
+                        return default;
+                    }
+
+                    var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+                    if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
+                    {
+                        response.Redirect(properties.RedirectUri);
+
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6144));
+                        context.HandleRequest();
+                    }
 
                     return default;
                 }

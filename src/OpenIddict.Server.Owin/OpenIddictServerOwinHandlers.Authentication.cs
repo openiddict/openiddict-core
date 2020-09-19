@@ -282,7 +282,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireOwinRequest>()
                         .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
-                        .SetOrder(ProcessFormPostResponse.Descriptor.Order - 1_000)
+                        .SetOrder(int.MinValue + 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -327,7 +327,7 @@ namespace OpenIddict.Server.Owin
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessFormPostResponse>()
-                        .SetOrder(ProcessQueryResponse.Descriptor.Order - 1_000)
+                        .SetOrder(50_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -418,7 +418,7 @@ namespace OpenIddict.Server.Owin
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessQueryResponse>()
-                        .SetOrder(ProcessFragmentResponse.Descriptor.Order - 1_000)
+                        .SetOrder(ProcessFormPostResponse.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -482,7 +482,7 @@ namespace OpenIddict.Server.Owin
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessFragmentResponse>()
-                        .SetOrder(ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor.Order - 1_000)
+                        .SetOrder(ProcessQueryResponse.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
