@@ -53,11 +53,11 @@ namespace OpenIddict.Server.AspNetCore
                 RemoveCachedRequest.Descriptor,
                 AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
                 AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
+                ProcessHostRedirectionResponse.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessQueryResponse.Descriptor,
-                ProcessHostRedirectionResponse.Descriptor,
                 ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
 
             /// <summary>
@@ -389,7 +389,7 @@ namespace OpenIddict.Server.AspNetCore
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireHttpRequest>()
                         .UseSingletonHandler<ProcessHostRedirectionResponse>()
-                        .SetOrder(ProcessQueryResponse.Descriptor.Order + 250)
+                        .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor.Order + 250)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -407,6 +407,14 @@ namespace OpenIddict.Server.AspNetCore
                     if (response is null)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                    }
+
+                    // Note: this handler only executes if no post_logout_redirect_uri was specified
+                    // and if the response doesn't correspond to an error, that must be handled locally.
+                    if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) ||
+                        !string.IsNullOrEmpty(context.Response.Error))
+                    {
+                        return default;
                     }
 
                     var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);

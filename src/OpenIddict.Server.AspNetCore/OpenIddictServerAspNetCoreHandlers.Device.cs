@@ -91,9 +91,10 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
                 }
 
-                // Note: this handler only redirects the user agent to the address specified
-                // in the AuthenticationProperties if the error is an access_denied error.
-                if (!string.Equals(context.Response.Error, Errors.AccessDenied, StringComparison.Ordinal))
+                // Note: this handler only redirects the user agent to the address specified in
+                // the properties when there's no error or if the error is an access_denied error.
+                if (!string.IsNullOrEmpty(context.Response.Error) &&
+                    !string.Equals(context.Response.Error, Errors.AccessDenied, StringComparison.Ordinal))
                 {
                     return default;
                 }

@@ -53,10 +53,10 @@ namespace OpenIddict.Server.Owin
                 RemoveCachedRequest.Descriptor,
                 AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
                 AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
+                ProcessHostRedirectionResponse.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessQueryResponse.Descriptor,
-                ProcessHostRedirectionResponse.Descriptor,
                 ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
 
             /// <summary>
@@ -371,24 +371,24 @@ namespace OpenIddict.Server.Owin
             }
 
             /// <summary>
-            /// Contains the logic responsible of processing verification responses that should trigger a host redirection.
+            /// Contains the logic responsible of processing logout responses that should trigger a host redirection.
             /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
             /// </summary>
-            public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyVerificationResponseContext>
+            public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyVerificationResponseContext>()
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessHostRedirectionResponse>()
-                        .SetOrder(ProcessQueryResponse.Descriptor.Order + 250)
+                        .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor.Order + 250)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
                 /// <inheritdoc/>
-                public ValueTask HandleAsync(ApplyVerificationResponseContext context)
+                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
                 {
                     if (context is null)
                     {
@@ -403,9 +403,10 @@ namespace OpenIddict.Server.Owin
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                     }
 
-                    // Note: this handler only redirects the user agent to the address specified
-                    // in the AuthenticationProperties if the error is an access_denied error.
-                    if (!string.Equals(context.Response.Error, Errors.AccessDenied, StringComparison.Ordinal))
+                    // Note: this handler only executes if no post_logout_redirect_uri was specified
+                    // and if the response doesn't correspond to an error, that must be handled locally.
+                    if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) ||
+                        !string.IsNullOrEmpty(context.Response.Error))
                     {
                         return default;
                     }
