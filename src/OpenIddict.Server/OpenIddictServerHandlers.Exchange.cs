@@ -686,7 +686,10 @@ namespace OpenIddict.Server
                     // even if the service was registered and resolved from the dependency injection container.
                     if (scopes.Count != 0 && !context.Options.EnableDegradedMode)
                     {
-                        Debug.Assert(_scopeManager is not null, SR.GetResourceString(SR.ID4011));
+                        if (_scopeManager is null)
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                        }
 
                         await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {

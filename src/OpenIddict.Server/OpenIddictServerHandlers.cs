@@ -63,7 +63,7 @@ namespace OpenIddict.Server
             AttachDefaultScopes.Descriptor,
             AttachDefaultPresenters.Descriptor,
             InferResources.Descriptor,
-            EvaluateReturnedTokens.Descriptor,
+            EvaluateTokenTypes.Descriptor,
             AttachAuthorization.Descriptor,
 
             PrepareAccessTokenPrincipal.Descriptor,
@@ -104,8 +104,7 @@ namespace OpenIddict.Server
             GenerateIdentityModelIdentityToken.Descriptor,
 
             BeautifyUserCode.Descriptor,
-            AttachAccessTokenProperties.Descriptor,
-            AttachDeviceCodeProperties.Descriptor,
+            AttachTokenParameters.Descriptor,
 
             /*
              * Sign-out processing:
@@ -1575,16 +1574,17 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of selecting the token types returned to the client application.
+        /// Contains the logic responsible of selecting the token types that
+        /// should be generated and optionally returned in the response.
         /// </summary>
-        public class EvaluateReturnedTokens : IOpenIddictServerHandler<ProcessSignInContext>
+        public class EvaluateTokenTypes : IOpenIddictServerHandler<ProcessSignInContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .UseSingletonHandler<EvaluateReturnedTokens>()
+                    .UseSingletonHandler<EvaluateTokenTypes>()
                     .SetOrder(InferResources.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1599,73 +1599,80 @@ namespace OpenIddict.Server
 
                 Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
-                context.IncludeAccessToken = context.EndpointType switch
+                (context.GenerateAccessToken, context.IncludeAccessToken) = context.EndpointType switch
                 {
-                    // For authorization requests, return an access token if a response type containing token was specified.
-                    OpenIddictServerEndpointType.Authorization => context.Request.HasResponseType(ResponseTypes.Token),
+                    // For authorization requests, generate and return an access token
+                    // if a response type containing the "token" value was specified.
+                    OpenIddictServerEndpointType.Authorization when context.Request.HasResponseType(ResponseTypes.Token)
+                        => (true, true),
 
-                    // For token requests, always return an access token.
-                    OpenIddictServerEndpointType.Token => true,
+                    // For token requests, always generate and return an access token.
+                    OpenIddictServerEndpointType.Token => (true, true),
 
-                    _ => false
+                    _ => (false, false)
                 };
 
-                context.IncludeAuthorizationCode = context.EndpointType switch
+                (context.GenerateAuthorizationCode, context.IncludeAuthorizationCode) = context.EndpointType switch
                 {
-                    // For authorization requests, return an authorization code if a response type containing code was specified.
-                    OpenIddictServerEndpointType.Authorization => context.Request.HasResponseType(ResponseTypes.Code),
+                    // For authorization requests, generate and return an authorization code
+                    // if a response type containing the "code" value was specified.
+                    OpenIddictServerEndpointType.Authorization when context.Request.HasResponseType(ResponseTypes.Code)
+                        => (true, true),
 
-                    _ => false
+                    _ => (false, false)
                 };
 
-                context.IncludeDeviceCode = context.EndpointType switch
+                (context.GenerateDeviceCode, context.IncludeDeviceCode) = context.EndpointType switch
                 {
-                    // For device requests, always return a device code.
-                    OpenIddictServerEndpointType.Device => true,
+                    // For device requests, always generate and return a device code.
+                    OpenIddictServerEndpointType.Device => (true, true),
 
                     // Note: a device code is not directly returned by the verification endpoint (that generally
                     // returns an empty response or redirects the user agent to another page), but a device code
                     // must be generated to replace the payload of the device code initially returned to the client.
-                    // In this case, the new device code is not returned as part of the response but persisted in the DB.
-                    OpenIddictServerEndpointType.Verification => true,
+                    // In this case, the device code is not returned as part of the response but persisted in the DB.
+                    OpenIddictServerEndpointType.Verification => (true, false),
 
-                    _ => false
+                    _ => (false, false)
                 };
 
-                context.IncludeRefreshToken = context.EndpointType switch
+                (context.GenerateIdentityToken, context.IncludeIdentityToken) = context.EndpointType switch
                 {
-                    // For token requests, never return a refresh token if the offline_access scope was not granted.
-                    OpenIddictServerEndpointType.Token when !context.Principal.HasScope(Scopes.OfflineAccess) => false,
+                    // For authorization requests, generate and return an identity token if a response type
+                    // containing code was specified and if the openid scope was explicitly or implicitly granted.
+                    OpenIddictServerEndpointType.Authorization when
+                        context.Principal.HasScope(Scopes.OpenId) &&
+                        context.Request.HasResponseType(ResponseTypes.IdToken) => (true, true),
 
-                    // For grant_type=refresh_token token requests, only return a refresh token if rolling tokens are enabled.
-                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                        => context.Options.UseRollingRefreshTokens,
+                    // For token requests, only generate and return an identity token if the openid scope was granted.
+                    OpenIddictServerEndpointType.Token when context.Principal.HasScope(Scopes.OpenId) => (true, true),
+
+                    _ => (false, false)
+                };
+
+                (context.GenerateRefreshToken, context.IncludeRefreshToken) = context.EndpointType switch
+                {
+                    // For token requests, never generate a refresh token if the offline_access scope was not granted.
+                    OpenIddictServerEndpointType.Token when !context.Principal.HasScope(Scopes.OfflineAccess)
+                        => (false, false),
+
+                    // For grant_type=refresh_token token requests, only generate
+                    // and return a refresh token if rolling tokens are enabled.
+                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() &&
+                                                            context.Options.UseRollingRefreshTokens => (true, true),
 
                     // For token requests that don't meet the previous criteria, allow a refresh token to be returned.
-                    OpenIddictServerEndpointType.Token => true,
+                    OpenIddictServerEndpointType.Token when !context.Request.IsRefreshTokenGrantType() => (true, true),
 
-                    _ => false
+                    _ => (false, false)
                 };
 
-                context.IncludeIdentityToken = context.EndpointType switch
+                (context.GenerateUserCode, context.IncludeUserCode) = context.EndpointType switch
                 {
-                    // For authorization requests, return an identity token if a response type containing code
-                    // was specified and if the openid scope was explicitly or implicitly granted.
-                    OpenIddictServerEndpointType.Authorization => context.Principal.HasScope(Scopes.OpenId) &&
-                                                                  context.Request.HasResponseType(ResponseTypes.IdToken),
+                    // Only generate and return a user code if the request is a device authorization request.
+                    OpenIddictServerEndpointType.Device => (true, true),
 
-                    // For token requests, only return an identity token if the openid scope was granted.
-                    OpenIddictServerEndpointType.Token => context.Principal.HasScope(Scopes.OpenId),
-
-                    _ => false
-                };
-
-                context.IncludeUserCode = context.EndpointType switch
-                {
-                    // Only return a user code if the request is a device authorization request.
-                    OpenIddictServerEndpointType.Device => true,
-
-                    _ => false
+                    _ => (false, false)
                 };
 
                 return default;
@@ -1699,7 +1706,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireAuthorizationStorageEnabled>()
                     .UseScopedHandler<AttachAuthorization>()
-                    .SetOrder(EvaluateReturnedTokens.Descriptor.Order + 1_000)
+                    .SetOrder(EvaluateTokenTypes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1714,7 +1721,7 @@ namespace OpenIddict.Server
                 Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // If no authorization code, device code or refresh token is returned, don't create an authorization.
-                if (!context.IncludeAuthorizationCode && !context.IncludeDeviceCode && !context.IncludeRefreshToken)
+                if (!context.GenerateAuthorizationCode && !context.GenerateDeviceCode && !context.GenerateRefreshToken)
                 {
                     return;
                 }
@@ -1783,7 +1790,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAccessTokenIncluded>()
+                    .AddFilter<RequireAccessTokenGenerated>()
                     .UseSingletonHandler<PrepareAccessTokenPrincipal>()
                     .SetOrder(AttachAuthorization.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1902,7 +1909,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAuthorizationCodeIncluded>()
+                    .AddFilter<RequireAuthorizationCodeGenerated>()
                     .UseSingletonHandler<PrepareAuthorizationCodePrincipal>()
                     .SetOrder(PrepareAccessTokenPrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2006,7 +2013,7 @@ namespace OpenIddict.Server
 
                 // Note: a device code principal is produced when a device code is included in the response or when a
                 // device code entry is replaced when processing a sign-in response sent to the verification endpoint.
-                if (context.EndpointType != OpenIddictServerEndpointType.Verification && !context.IncludeDeviceCode)
+                if (context.EndpointType != OpenIddictServerEndpointType.Verification && !context.GenerateDeviceCode)
                 {
                     return default;
                 }
@@ -2069,7 +2076,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireRefreshTokenIncluded>()
+                    .AddFilter<RequireRefreshTokenGenerated>()
                     .UseSingletonHandler<PrepareRefreshTokenPrincipal>()
                     .SetOrder(PrepareDeviceCodePrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2153,7 +2160,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireIdentityTokenIncluded>()
+                    .AddFilter<RequireIdentityTokenGenerated>()
                     .UseSingletonHandler<PrepareIdentityTokenPrincipal>()
                     .SetOrder(PrepareRefreshTokenPrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2267,7 +2274,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireUserCodeIncluded>()
+                    .AddFilter<RequireUserCodeGenerated>()
                     .UseSingletonHandler<PrepareUserCodePrincipal>()
                     .SetOrder(PrepareIdentityTokenPrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2582,7 +2589,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireAccessTokenIncluded>()
+                    .AddFilter<RequireAccessTokenGenerated>()
                     .UseScopedHandler<CreateAccessTokenEntry>()
                     .SetOrder(ExtendRefreshTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2650,7 +2657,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAccessTokenIncluded>()
+                    .AddFilter<RequireAccessTokenGenerated>()
                     .UseSingletonHandler<GenerateIdentityModelAccessToken>()
                     .SetOrder(CreateAccessTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2665,7 +2672,7 @@ namespace OpenIddict.Server
                 }
 
                 // If an access token was already attached by another handler, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Response.AccessToken))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
                     return default;
                 }
@@ -2739,9 +2746,10 @@ namespace OpenIddict.Server
                         additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
                 }
 
-                context.Response.AccessToken = token;
+                context.AccessToken = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), principal.GetClaim(Claims.JwtId),
+                                        context.AccessToken, principal.Claims);
 
                 return default;
             }
@@ -2768,7 +2776,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
                     .AddFilter<RequireReferenceAccessTokensEnabled>()
-                    .AddFilter<RequireAccessTokenIncluded>()
+                    .AddFilter<RequireAccessTokenGenerated>()
                     .UseScopedHandler<ConvertReferenceAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2782,7 +2790,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.AccessToken))
+                if (string.IsNullOrEmpty(context.AccessToken))
                 {
                     return;
                 }
@@ -2818,13 +2826,13 @@ namespace OpenIddict.Server
 
                 // Attach the generated token to the token entry, persist the change
                 // and replace the returned token by the reference identifier.
-                descriptor.Payload = context.Response.AccessToken;
+                descriptor.Payload = context.AccessToken;
                 descriptor.Principal = principal;
                 descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
-                context.Response.AccessToken = descriptor.ReferenceId;
+                context.AccessToken = descriptor.ReferenceId;
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6014), identifier, descriptor.ReferenceId);
             }
@@ -2856,7 +2864,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireAuthorizationCodeIncluded>()
+                    .AddFilter<RequireAuthorizationCodeGenerated>()
                     .UseScopedHandler<CreateAuthorizationCodeEntry>()
                     .SetOrder(ConvertReferenceAccessToken.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2924,7 +2932,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAuthorizationCodeIncluded>()
+                    .AddFilter<RequireAuthorizationCodeGenerated>()
                     .UseSingletonHandler<GenerateIdentityModelAuthorizationCode>()
                     .SetOrder(CreateAuthorizationCodeEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -2939,7 +2947,7 @@ namespace OpenIddict.Server
                 }
 
                 // If an authorization code was already attached by another handler, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Response.Code))
+                if (!string.IsNullOrEmpty(context.AuthorizationCode))
                 {
                     return default;
                 }
@@ -2994,9 +3002,10 @@ namespace OpenIddict.Server
                     encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
-                context.Response.Code = token;
+                context.AuthorizationCode = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), principal.GetClaim(Claims.JwtId),
+                                        context.AuthorizationCode, principal.Claims);
 
                 return default;
             }
@@ -3022,7 +3031,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireAuthorizationCodeIncluded>()
+                    .AddFilter<RequireAuthorizationCodeGenerated>()
                     .UseScopedHandler<ConvertReferenceAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3036,7 +3045,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Code))
+                if (string.IsNullOrEmpty(context.AuthorizationCode))
                 {
                     return;
                 }
@@ -3072,13 +3081,13 @@ namespace OpenIddict.Server
 
                 // Attach the generated token to the token entry, persist the change
                 // and replace the returned token by the reference identifier.
-                descriptor.Payload = context.Response.Code;
+                descriptor.Payload = context.AuthorizationCode;
                 descriptor.Principal = principal;
                 descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
-                context.Response.Code = descriptor.ReferenceId;
+                context.AuthorizationCode = descriptor.ReferenceId;
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6017), identifier, descriptor.ReferenceId);
             }
@@ -3110,7 +3119,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireDeviceCodeIncluded>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
                     .UseScopedHandler<CreateDeviceCodeEntry>()
                     .SetOrder(ConvertReferenceAuthorizationCode.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3183,7 +3192,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDeviceCodeIncluded>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
                     .UseSingletonHandler<GenerateIdentityModelDeviceCode>()
                     .SetOrder(CreateDeviceCodeEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3198,7 +3207,7 @@ namespace OpenIddict.Server
                 }
 
                 // If a device code was already attached by another handler, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Response.DeviceCode))
+                if (!string.IsNullOrEmpty(context.DeviceCode))
                 {
                     return default;
                 }
@@ -3253,9 +3262,10 @@ namespace OpenIddict.Server
                     encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
-                context.Response.DeviceCode = token;
+                context.DeviceCode = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6019), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6019), principal.GetClaim(Claims.JwtId),
+                                        context.DeviceCode, principal.Claims);
 
                 return default;
             }
@@ -3282,7 +3292,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
                     // Note: device codes are always reference tokens.
-                    .AddFilter<RequireDeviceCodeIncluded>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
                     .UseScopedHandler<ConvertReferenceDeviceCode>()
                     .SetOrder(GenerateIdentityModelDeviceCode.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3296,7 +3306,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.DeviceCode))
+                if (string.IsNullOrEmpty(context.DeviceCode))
                 {
                     return;
                 }
@@ -3337,13 +3347,13 @@ namespace OpenIddict.Server
 
                 // Attach the generated token to the token entry, persist the change
                 // and replace the returned token by the reference identifier.
-                descriptor.Payload = context.Response.DeviceCode;
+                descriptor.Payload = context.DeviceCode;
                 descriptor.Principal = principal;
                 descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
-                context.Response.DeviceCode = descriptor.ReferenceId;
+                context.DeviceCode = descriptor.ReferenceId;
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6020), identifier, descriptor.ReferenceId);
             }
@@ -3369,7 +3379,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireDeviceCodeIncluded>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
                     .UseScopedHandler<UpdateReferenceDeviceCodeEntry>()
                     .SetOrder(ConvertReferenceDeviceCode.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3383,7 +3393,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.DeviceCode))
+                if (string.IsNullOrEmpty(context.DeviceCode))
                 {
                     return;
                 }
@@ -3421,15 +3431,12 @@ namespace OpenIddict.Server
 
                 // Note: the lifetime is deliberately extended to give more time to the client to redeem the code.
                 descriptor.ExpirationDate = principal.GetExpirationDate();
-                descriptor.Payload = context.Response.DeviceCode;
+                descriptor.Payload = context.DeviceCode;
                 descriptor.Principal = principal;
                 descriptor.Status = Statuses.Valid;
                 descriptor.Subject = principal.GetClaim(Claims.Subject);
 
                 await _tokenManager.UpdateAsync(token, descriptor);
-
-                // Don't return the prepared device code directly from the verification endpoint.
-                context.Response.DeviceCode = null;
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6021), await _tokenManager.GetIdAsync(token));
             }
@@ -3461,7 +3468,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireRefreshTokenIncluded>()
+                    .AddFilter<RequireRefreshTokenGenerated>()
                     .UseScopedHandler<CreateRefreshTokenEntry>()
                     .SetOrder(UpdateReferenceDeviceCodeEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3529,7 +3536,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireRefreshTokenIncluded>()
+                    .AddFilter<RequireRefreshTokenGenerated>()
                     .UseSingletonHandler<GenerateIdentityModelRefreshToken>()
                     .SetOrder(CreateRefreshTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3544,7 +3551,7 @@ namespace OpenIddict.Server
                 }
 
                 // If a refresh token was already attached by another handler, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Response.RefreshToken))
+                if (!string.IsNullOrEmpty(context.RefreshToken))
                 {
                     return default;
                 }
@@ -3594,14 +3601,14 @@ namespace OpenIddict.Server
 
                 // Sign and encrypt the refresh token.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
-
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
                     encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
-                context.Response.RefreshToken = token;
+                context.RefreshToken = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6023), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6023), principal.GetClaim(Claims.JwtId),
+                                        context.RefreshToken, principal.Claims);
 
                 return default;
             }
@@ -3628,7 +3635,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
                     .AddFilter<RequireReferenceRefreshTokensEnabled>()
-                    .AddFilter<RequireRefreshTokenIncluded>()
+                    .AddFilter<RequireRefreshTokenGenerated>()
                     .UseScopedHandler<ConvertReferenceRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3642,7 +3649,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.RefreshToken))
+                if (string.IsNullOrEmpty(context.RefreshToken))
                 {
                     return;
                 }
@@ -3678,13 +3685,13 @@ namespace OpenIddict.Server
 
                 // Attach the generated token to the token entry, persist the change
                 // and replace the returned token by the reference identifier.
-                descriptor.Payload = context.Response.RefreshToken;
+                descriptor.Payload = context.RefreshToken;
                 descriptor.Principal = principal;
                 descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
-                context.Response.RefreshToken = descriptor.ReferenceId;
+                context.RefreshToken = descriptor.ReferenceId;
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6024), identifier, descriptor.ReferenceId);
             }
@@ -3700,8 +3707,8 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDeviceCodeIncluded>()
-                    .AddFilter<RequireUserCodeIncluded>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
+                    .AddFilter<RequireUserCodeGenerated>()
                     .UseSingletonHandler<AttachDeviceCodeIdentifier>()
                     .SetOrder(ConvertReferenceRefreshToken.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3757,7 +3764,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireUserCodeIncluded>()
+                    .AddFilter<RequireUserCodeGenerated>()
                     .UseScopedHandler<CreateUserCodeEntry>()
                     .SetOrder(AttachDeviceCodeIdentifier.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3825,7 +3832,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireUserCodeIncluded>()
+                    .AddFilter<RequireUserCodeGenerated>()
                     .UseSingletonHandler<GenerateIdentityModelUserCode>()
                     .SetOrder(CreateUserCodeEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3840,7 +3847,7 @@ namespace OpenIddict.Server
                 }
 
                 // If a user code was already attached by another handler, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Response.UserCode))
+                if (!string.IsNullOrEmpty(context.UserCode))
                 {
                     return default;
                 }
@@ -3885,9 +3892,10 @@ namespace OpenIddict.Server
                     encryptingCredentials: context.Options.EncryptionCredentials.First(),
                     additionalHeaderClaims: descriptor.AdditionalHeaderClaims);
 
-                context.Response.UserCode = token;
+                context.UserCode = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6026), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6026), principal.GetClaim(Claims.JwtId),
+                                        context.UserCode, principal.Claims);
 
                 return default;
             }
@@ -3914,7 +3922,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
                     // Note: user codes are always reference tokens.
-                    .AddFilter<RequireUserCodeIncluded>()
+                    .AddFilter<RequireUserCodeGenerated>()
                     .UseScopedHandler<ConvertReferenceUserCode>()
                     .SetOrder(GenerateIdentityModelUserCode.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -3928,7 +3936,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.UserCode))
+                if (string.IsNullOrEmpty(context.UserCode))
                 {
                     return;
                 }
@@ -3962,13 +3970,13 @@ namespace OpenIddict.Server
 
                 // Attach the generated token to the token entry, persist the change
                 // and replace the returned token by the reference identifier.
-                descriptor.Payload = context.Response.UserCode;
+                descriptor.Payload = context.UserCode;
                 descriptor.Principal = principal;
                 descriptor.ReferenceId = await GenerateReferenceIdentifierAsync(_tokenManager);
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 
-                context.Response.UserCode = descriptor.ReferenceId;
+                context.UserCode = descriptor.ReferenceId;
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6027), identifier, descriptor.ReferenceId);
 
@@ -4015,7 +4023,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireIdentityTokenIncluded>()
+                    .AddFilter<RequireIdentityTokenGenerated>()
                     .UseSingletonHandler<AttachTokenDigests>()
                     .SetOrder(ConvertReferenceUserCode.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -4035,8 +4043,7 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.AccessToken) &&
-                    string.IsNullOrEmpty(context.Response.Code))
+                if (string.IsNullOrEmpty(context.AccessToken) && string.IsNullOrEmpty(context.AuthorizationCode))
                 {
                     return default;
                 }
@@ -4054,18 +4061,18 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0267));
                 }
 
-                if (!string.IsNullOrEmpty(context.Response.AccessToken))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
-                    var digest = hash.ComputeHash(Encoding.ASCII.GetBytes(context.Response.AccessToken));
+                    var digest = hash.ComputeHash(Encoding.ASCII.GetBytes(context.AccessToken));
 
                     // Note: only the left-most half of the hash is used.
                     // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
                     principal.SetClaim(Claims.AccessTokenHash, Base64UrlEncoder.Encode(digest, 0, digest.Length / 2));
                 }
 
-                if (!string.IsNullOrEmpty(context.Response.Code))
+                if (!string.IsNullOrEmpty(context.AuthorizationCode))
                 {
-                    var digest = hash.ComputeHash(Encoding.ASCII.GetBytes(context.Response.Code));
+                    var digest = hash.ComputeHash(Encoding.ASCII.GetBytes(context.AuthorizationCode));
 
                     // Note: only the left-most half of the hash is used.
                     // See http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
@@ -4163,7 +4170,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireIdentityTokenIncluded>()
+                    .AddFilter<RequireIdentityTokenGenerated>()
                     .UseScopedHandler<CreateIdentityTokenEntry>()
                     .SetOrder(AttachTokenDigests.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -4231,7 +4238,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireIdentityTokenIncluded>()
+                    .AddFilter<RequireIdentityTokenGenerated>()
                     .UseSingletonHandler<GenerateIdentityModelIdentityToken>()
                     .SetOrder(CreateIdentityTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -4246,7 +4253,7 @@ namespace OpenIddict.Server
                 }
 
                 // If an identity token was already attached by another handler, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Response.IdToken))
+                if (!string.IsNullOrEmpty(context.IdentityToken))
                 {
                     return default;
                 }
@@ -4306,9 +4313,10 @@ namespace OpenIddict.Server
                 // Sign and attach the identity token.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
-                context.Response.IdToken = token;
+                context.IdentityToken = token;
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6029), principal.GetClaim(Claims.JwtId), token, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6029), principal.GetClaim(Claims.JwtId),
+                                        context.IdentityToken, principal.Claims);
 
                 return default;
             }
@@ -4329,7 +4337,7 @@ namespace OpenIddict.Server
                     // but the default CreateReferenceUserCodeEntry that creates the user code
                     // reference identifiers only works when the degraded mode is disabled.
                     .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireUserCodeIncluded>()
+                    .AddFilter<RequireUserCodeGenerated>()
                     .UseSingletonHandler<BeautifyUserCode>()
                     .SetOrder(GenerateIdentityModelIdentityToken.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -4347,7 +4355,7 @@ namespace OpenIddict.Server
                 // appended before each new block of 4 integers. These dashes are expected to be
                 // stripped from the user codes when receiving them at the verification endpoint.
 
-                var builder = new StringBuilder(context.Response.UserCode);
+                var builder = new StringBuilder(context.UserCode);
                 if (builder.Length % 4 != 0)
                 {
                     return default;
@@ -4361,24 +4369,23 @@ namespace OpenIddict.Server
                     }
                 }
 
-                context.Response.UserCode = builder.ToString();
+                context.UserCode = builder.ToString();
 
                 return default;
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching additional access token properties to the sign-in response.
+        /// Contains the logic responsible of attaching the tokens and their metadata to the sign-in response.
         /// </summary>
-        public class AttachAccessTokenProperties : IOpenIddictServerHandler<ProcessSignInContext>
+        public class AttachTokenParameters : IOpenIddictServerHandler<ProcessSignInContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAccessTokenIncluded>()
-                    .UseSingletonHandler<AttachAccessTokenProperties>()
+                    .UseSingletonHandler<AttachTokenParameters>()
                     .SetOrder(BeautifyUserCode.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -4391,73 +4398,78 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.AccessTokenPrincipal is not null, SR.GetResourceString(SR.ID4006));
-
-                context.Response.TokenType = TokenTypes.Bearer;
-
-                // If an expiration date was set on the access token principal, return it to the client application.
-                var date = context.AccessTokenPrincipal.GetExpirationDate();
-                if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
+                if (context.IncludeAccessToken)
                 {
-                    context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
-                }
+                    context.Response.AccessToken = context.AccessToken;
+                    context.Response.TokenType = TokenTypes.Bearer;
 
-                // If the granted access token scopes differ from the requested scopes, return the granted scopes
-                // list as a parameter to inform the client application of the fact the scopes set will be reduced.
-                var scopes = new HashSet<string>(context.AccessTokenPrincipal.GetScopes(), StringComparer.Ordinal);
-                if ((context.EndpointType == OpenIddictServerEndpointType.Token && context.Request.IsAuthorizationCodeGrantType()) ||
-                    !scopes.SetEquals(context.Request.GetScopes()))
-                {
-                    context.Response.Scope = string.Join(" ", scopes);
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of attaching additional device code properties to the sign-in response.
-        /// </summary>
-        public class AttachDeviceCodeProperties : IOpenIddictServerHandler<ProcessSignInContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDeviceCodeIncluded>()
-                    .UseSingletonHandler<AttachDeviceCodeProperties>()
-                    .SetOrder(AttachAccessTokenProperties.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ProcessSignInContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(context.DeviceCodePrincipal is not null, SR.GetResourceString(SR.ID4006));
-
-                var address = GetEndpointAbsoluteUri(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
-                if (address is not null)
-                {
-                    var builder = new UriBuilder(address)
+                    // If the principal is available, attach additional metadata.
+                    if (context.AccessTokenPrincipal is not null)
                     {
-                        Query = string.Concat(Parameters.UserCode, "=", context.Response.UserCode)
-                    };
+                        // If an expiration date was set on the access token principal, return it to the client application.
+                        var date = context.AccessTokenPrincipal.GetExpirationDate();
+                        if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
+                        {
+                            context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
+                        }
 
-                    context.Response[Parameters.VerificationUri] = address.AbsoluteUri;
-                    context.Response[Parameters.VerificationUriComplete] = builder.Uri.AbsoluteUri;
+                        // If the granted access token scopes differ from the requested scopes, return the granted scopes
+                        // list as a parameter to inform the client application of the fact the scopes set will be reduced.
+                        var scopes = new HashSet<string>(context.AccessTokenPrincipal.GetScopes(), StringComparer.Ordinal);
+                        if ((context.EndpointType == OpenIddictServerEndpointType.Token && context.Request.IsAuthorizationCodeGrantType()) ||
+                            !scopes.SetEquals(context.Request.GetScopes()))
+                        {
+                            context.Response.Scope = string.Join(" ", scopes);
+                        }
+                    }
                 }
 
-                // If an expiration date was set on the device code principal, return it to the client application.
-                var date = context.DeviceCodePrincipal.GetExpirationDate();
-                if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
+                if (context.IncludeAuthorizationCode)
                 {
-                    context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
+                    context.Response.Code = context.AuthorizationCode;
+                }
+
+                if (context.IncludeDeviceCode)
+                {
+                    context.Response.DeviceCode = context.DeviceCode;
+
+                    // If the principal is available, attach additional metadata.
+                    if (context.DeviceCodePrincipal is not null)
+                    {
+                        // If an expiration date was set on the device code principal, return it to the client application.
+                        var date = context.DeviceCodePrincipal.GetExpirationDate();
+                        if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
+                        {
+                            context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
+                        }
+                    }
+                }
+
+                if (context.IncludeIdentityToken)
+                {
+                    context.Response.IdToken = context.IdentityToken;
+                }
+
+                if (context.IncludeRefreshToken)
+                {
+                    context.Response.RefreshToken = context.RefreshToken;
+                }
+
+                if (context.IncludeUserCode)
+                {
+                    context.Response.UserCode = context.UserCode;
+
+                    var address = GetEndpointAbsoluteUri(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
+                    if (address is not null)
+                    {
+                        var builder = new UriBuilder(address)
+                        {
+                            Query = string.Concat(Parameters.UserCode, "=", context.UserCode)
+                        };
+
+                        context.Response[Parameters.VerificationUri] = address.AbsoluteUri;
+                        context.Response[Parameters.VerificationUriComplete] = builder.Uri.AbsoluteUri;
+                    }
                 }
 
                 return default;

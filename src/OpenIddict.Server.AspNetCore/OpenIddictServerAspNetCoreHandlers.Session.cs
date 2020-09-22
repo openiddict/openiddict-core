@@ -244,13 +244,13 @@ namespace OpenIddict.Server.AspNetCore
                         encryptingCredentials: context.Options.EncryptionCredentials.First(),
                         additionalHeaderClaims: new Dictionary<string, object>
                         {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationRequest
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.LogoutRequest
                         });
 
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
                     await _cache.SetStringAsync(Cache.LogoutRequest + context.Request.RequestId,
-                        token, _options.CurrentValue.AuthorizationEndpointCachingPolicy);
+                        token, _options.CurrentValue.LogoutEndpointCachingPolicy);
 
                     // Create a new GET logout request containing only the request_id parameter.
                     var address = QueryHelpers.AddQueryString(
