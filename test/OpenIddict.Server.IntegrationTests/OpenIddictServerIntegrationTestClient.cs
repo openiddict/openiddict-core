@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Server.IntegrationTests
 {
@@ -381,7 +382,7 @@ namespace OpenIddict.Server.IntegrationTests
                 // this is required for derived drafts like the OAuth2 token exchange specification.
                 var parameters = new List<KeyValuePair<string, string>>();
 
-                foreach (var element in new StringTokenizer(payload, OpenIddictConstants.Separators.Ampersand))
+                foreach (var element in new StringTokenizer(payload, Separators.Ampersand))
                 {
                     var segment = element;
                     if (segment.Length == 0)

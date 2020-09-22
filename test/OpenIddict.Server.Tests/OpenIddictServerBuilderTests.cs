@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -428,7 +429,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIddictConstants.GrantTypes.AuthorizationCode, options.GrantTypes);
+            Assert.Contains(GrantTypes.AuthorizationCode, options.GrantTypes);
         }
 
         [Fact]
@@ -444,7 +445,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIddictConstants.GrantTypes.ClientCredentials, options.GrantTypes);
+            Assert.Contains(GrantTypes.ClientCredentials, options.GrantTypes);
         }
 
         [Fact]
@@ -474,7 +475,8 @@ namespace OpenIddict.Server.Tests
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.AllowCustomFlow(type));
-            Assert.Equal(nameof(type), exception.ParamName);
+
+            Assert.Equal("type", exception.ParamName);
             Assert.Contains("The grant type cannot be null or empty.", exception.Message);
         }
 
@@ -491,7 +493,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIddictConstants.GrantTypes.Implicit, options.GrantTypes);
+            Assert.Contains(GrantTypes.Implicit, options.GrantTypes);
         }
 
         [Fact]
@@ -507,7 +509,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIddictConstants.GrantTypes.Password, options.GrantTypes);
+            Assert.Contains(GrantTypes.Password, options.GrantTypes);
         }
 
         [Fact]
@@ -523,7 +525,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIddictConstants.GrantTypes.RefreshToken, options.GrantTypes);
+            Assert.Contains(GrantTypes.RefreshToken, options.GrantTypes);
         }
 
         [Fact]
@@ -619,7 +621,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIddictConstants.GrantTypes.DeviceCode, options.GrantTypes);
+            Assert.Contains(GrantTypes.DeviceCode, options.GrantTypes);
         }
 
         [Fact]
@@ -1740,7 +1742,8 @@ namespace OpenIddict.Server.Tests
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.RegisterClaims(claims));
-            Assert.Equal(nameof(claims), exception.ParamName);
+
+            Assert.Equal("claims", exception.ParamName);
             Assert.Contains("Claims cannot be null or empty.", exception.Message);
         }
 
@@ -1785,7 +1788,8 @@ namespace OpenIddict.Server.Tests
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => builder.RegisterScopes(scopes));
-            Assert.Equal(nameof(scopes), exception.ParamName);
+
+            Assert.Equal("scopes", exception.ParamName);
             Assert.Contains("Scopes cannot be null or empty.", exception.Message);
         }
 

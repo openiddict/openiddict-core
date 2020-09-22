@@ -24,6 +24,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFrameworkCore
@@ -702,8 +703,8 @@ namespace OpenIddict.EntityFrameworkCore
                 var authorizations =
                     await (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
                            where authorization.CreationDate < threshold
-                           where authorization.Status != OpenIddictConstants.Statuses.Valid ||
-                                (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
+                           where authorization.Status != Statuses.Valid ||
+                                (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
                            orderby authorization.Id
                            select authorization).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
 
