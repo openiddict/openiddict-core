@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
@@ -19,287 +20,287 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.AccessToken),
-                    /* name: */ OpenIddictConstants.Parameters.AccessToken,
+                    /* name: */ Parameters.AccessToken,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.AcrValues),
-                    /* name: */ OpenIddictConstants.Parameters.AcrValues,
+                    /* name: */ Parameters.AcrValues,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Assertion),
-                    /* name: */ OpenIddictConstants.Parameters.Assertion,
+                    /* name: */ Parameters.Assertion,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Audiences),
-                    /* name: */ OpenIddictConstants.Parameters.Audience,
+                    /* name: */ Parameters.Audience,
                     /* value: */ new OpenIddictParameter(new[] { "Fabrikam", "Contoso" })
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Claims),
-                    /* name: */ OpenIddictConstants.Parameters.Claims,
+                    /* name: */ Parameters.Claims,
                     /* value: */ new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(@"{""userinfo"": {}}"))
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.ClaimsLocales),
-                    /* name: */ OpenIddictConstants.Parameters.ClaimsLocales,
+                    /* name: */ Parameters.ClaimsLocales,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.ClientAssertion),
-                    /* name: */ OpenIddictConstants.Parameters.ClientAssertion,
+                    /* name: */ Parameters.ClientAssertion,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.ClientAssertionType),
-                    /* name: */ OpenIddictConstants.Parameters.ClientAssertionType,
+                    /* name: */ Parameters.ClientAssertionType,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.ClientId),
-                    /* name: */ OpenIddictConstants.Parameters.ClientId,
+                    /* name: */ Parameters.ClientId,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.ClientSecret),
-                    /* name: */ OpenIddictConstants.Parameters.ClientSecret,
+                    /* name: */ Parameters.ClientSecret,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Code),
-                    /* name: */ OpenIddictConstants.Parameters.Code,
+                    /* name: */ Parameters.Code,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.CodeChallenge),
-                    /* name: */ OpenIddictConstants.Parameters.CodeChallenge,
+                    /* name: */ Parameters.CodeChallenge,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.CodeChallengeMethod),
-                    /* name: */ OpenIddictConstants.Parameters.CodeChallengeMethod,
+                    /* name: */ Parameters.CodeChallengeMethod,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.CodeVerifier),
-                    /* name: */ OpenIddictConstants.Parameters.CodeVerifier,
+                    /* name: */ Parameters.CodeVerifier,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.DeviceCode),
-                    /* name: */ OpenIddictConstants.Parameters.DeviceCode,
+                    /* name: */ Parameters.DeviceCode,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Display),
-                    /* name: */ OpenIddictConstants.Parameters.Display,
+                    /* name: */ Parameters.Display,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.GrantType),
-                    /* name: */ OpenIddictConstants.Parameters.GrantType,
+                    /* name: */ Parameters.GrantType,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.IdentityProvider),
-                    /* name: */ OpenIddictConstants.Parameters.IdentityProvider,
+                    /* name: */ Parameters.IdentityProvider,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.IdTokenHint),
-                    /* name: */ OpenIddictConstants.Parameters.IdTokenHint,
+                    /* name: */ Parameters.IdTokenHint,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.LoginHint),
-                    /* name: */ OpenIddictConstants.Parameters.LoginHint,
+                    /* name: */ Parameters.LoginHint,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Nonce),
-                    /* name: */ OpenIddictConstants.Parameters.Nonce,
+                    /* name: */ Parameters.Nonce,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.MaxAge),
-                    /* name: */ OpenIddictConstants.Parameters.MaxAge,
+                    /* name: */ Parameters.MaxAge,
                     /* value: */ new OpenIddictParameter((long?) 42)
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Password),
-                    /* name: */ OpenIddictConstants.Parameters.Password,
+                    /* name: */ Parameters.Password,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.PostLogoutRedirectUri),
-                    /* name: */ OpenIddictConstants.Parameters.PostLogoutRedirectUri,
+                    /* name: */ Parameters.PostLogoutRedirectUri,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Prompt),
-                    /* name: */ OpenIddictConstants.Parameters.Prompt,
+                    /* name: */ Parameters.Prompt,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.RedirectUri),
-                    /* name: */ OpenIddictConstants.Parameters.RedirectUri,
+                    /* name: */ Parameters.RedirectUri,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.RefreshToken),
-                    /* name: */ OpenIddictConstants.Parameters.RefreshToken,
+                    /* name: */ Parameters.RefreshToken,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Registration),
-                    /* name: */ OpenIddictConstants.Parameters.Registration,
+                    /* name: */ Parameters.Registration,
                     /* value: */ new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(@"{""policy_uri"": ""http://www.fabrikam.com/policy""}"))
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Request),
-                    /* name: */ OpenIddictConstants.Parameters.Request,
+                    /* name: */ Parameters.Request,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.RequestId),
-                    /* name: */ OpenIddictConstants.Parameters.RequestId,
+                    /* name: */ Parameters.RequestId,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.RequestUri),
-                    /* name: */ OpenIddictConstants.Parameters.RequestUri,
+                    /* name: */ Parameters.RequestUri,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Resources),
-                    /* name: */ OpenIddictConstants.Parameters.Resource,
+                    /* name: */ Parameters.Resource,
                     /* value: */ new OpenIddictParameter(new[] { "https://fabrikam.com/", "https://contoso.com/" })
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.ResponseMode),
-                    /* name: */ OpenIddictConstants.Parameters.ResponseMode,
+                    /* name: */ Parameters.ResponseMode,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.ResponseType),
-                    /* name: */ OpenIddictConstants.Parameters.ResponseType,
+                    /* name: */ Parameters.ResponseType,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Scope),
-                    /* name: */ OpenIddictConstants.Parameters.Scope,
+                    /* name: */ Parameters.Scope,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.State),
-                    /* name: */ OpenIddictConstants.Parameters.State,
+                    /* name: */ Parameters.State,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Token),
-                    /* name: */ OpenIddictConstants.Parameters.Token,
+                    /* name: */ Parameters.Token,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.TokenTypeHint),
-                    /* name: */ OpenIddictConstants.Parameters.TokenTypeHint,
+                    /* name: */ Parameters.TokenTypeHint,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.UiLocales),
-                    /* name: */ OpenIddictConstants.Parameters.UiLocales,
+                    /* name: */ Parameters.UiLocales,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.UserCode),
-                    /* name: */ OpenIddictConstants.Parameters.UserCode,
+                    /* name: */ Parameters.UserCode,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictRequest.Username),
-                    /* name: */ OpenIddictConstants.Parameters.Username,
+                    /* name: */ Parameters.Username,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
             }

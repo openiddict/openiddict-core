@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Xunit;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
@@ -461,16 +462,16 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Theory]
-        [InlineData(OpenIddictConstants.Parameters.AccessToken)]
-        [InlineData(OpenIddictConstants.Parameters.Assertion)]
-        [InlineData(OpenIddictConstants.Parameters.ClientAssertion)]
-        [InlineData(OpenIddictConstants.Parameters.ClientSecret)]
-        [InlineData(OpenIddictConstants.Parameters.Code)]
-        [InlineData(OpenIddictConstants.Parameters.IdToken)]
-        [InlineData(OpenIddictConstants.Parameters.IdTokenHint)]
-        [InlineData(OpenIddictConstants.Parameters.Password)]
-        [InlineData(OpenIddictConstants.Parameters.RefreshToken)]
-        [InlineData(OpenIddictConstants.Parameters.Token)]
+        [InlineData(Parameters.AccessToken)]
+        [InlineData(Parameters.Assertion)]
+        [InlineData(Parameters.ClientAssertion)]
+        [InlineData(Parameters.ClientSecret)]
+        [InlineData(Parameters.Code)]
+        [InlineData(Parameters.IdToken)]
+        [InlineData(Parameters.IdTokenHint)]
+        [InlineData(Parameters.Password)]
+        [InlineData(Parameters.RefreshToken)]
+        [InlineData(Parameters.Token)]
         public void ToString_ExcludesSensitiveParameters(string parameter)
         {
             // Arrange

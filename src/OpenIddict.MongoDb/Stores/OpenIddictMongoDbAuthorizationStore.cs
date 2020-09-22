@@ -21,6 +21,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
@@ -537,8 +538,8 @@ namespace OpenIddict.MongoDb
                        join token in database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName).AsQueryable()
                                   on authorization.Id equals token.AuthorizationId into tokens
                        where authorization.CreationDate < threshold.UtcDateTime
-                       where authorization.Status != OpenIddictConstants.Statuses.Valid ||
-                            (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc && !tokens.Any())
+                       where authorization.Status != Statuses.Valid ||
+                            (authorization.Type == AuthorizationTypes.AdHoc && !tokens.Any())
                        select authorization.Id).ToListAsync(cancellationToken);
 
             // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
