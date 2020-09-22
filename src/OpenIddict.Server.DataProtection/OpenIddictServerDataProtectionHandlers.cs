@@ -215,11 +215,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.AccessTokenPrincipal);
 
-                context.Response.AccessToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.AccessToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6013),
                     context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
-                    context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
+                    context.AccessToken, context.AccessTokenPrincipal.Claims);
 
                 return default;
             }
@@ -278,11 +278,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.AuthorizationCodePrincipal);
 
-                context.Response.Code = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.AuthorizationCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6016),
                     context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
-                    context.Response.Code, context.AuthorizationCodePrincipal.Claims);
+                    context.AuthorizationCode, context.AuthorizationCodePrincipal.Claims);
 
                 return default;
             }
@@ -341,11 +341,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.DeviceCodePrincipal);
 
-                context.Response.DeviceCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.DeviceCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6019),
                     context.DeviceCodePrincipal.GetClaim(Claims.JwtId),
-                    context.Response.DeviceCode, context.DeviceCodePrincipal.Claims);
+                    context.DeviceCode, context.DeviceCodePrincipal.Claims);
 
                 return default;
             }
@@ -404,11 +404,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.RefreshTokenPrincipal);
 
-                context.Response.RefreshToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.RefreshToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6023),
                     context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
-                    context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
+                    context.RefreshToken, context.RefreshTokenPrincipal.Claims);
 
                 return default;
             }
@@ -467,11 +467,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.UserCodePrincipal);
 
-                context.Response.UserCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.UserCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6026),
                     context.UserCodePrincipal.GetClaim(Claims.JwtId),
-                    context.Response.UserCode, context.UserCodePrincipal.Claims);
+                    context.UserCode, context.UserCodePrincipal.Claims);
 
                 return default;
             }
