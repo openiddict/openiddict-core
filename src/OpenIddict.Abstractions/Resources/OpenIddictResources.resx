@@ -1776,10 +1776,6 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>The token shouldn't be null or empty at this point.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID4011" xml:space="preserve">
-    <value>The OpenIddict Core services should be registered.</value>
-    <comment>{Locked}</comment>
-  </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
     <comment>{Locked}</comment>

@@ -387,51 +387,106 @@ namespace OpenIddict.Server
 
             /// <summary>
             /// Gets or sets a boolean indicating whether an access token
-            /// should be returned to the client application.
+            /// should be generated (and optionally returned to the client).
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool GenerateAccessToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether an authorization code
+            /// should be generated (and optionally returned to the client).
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool GenerateAuthorizationCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a device code
+            /// should be generated (and optionally returned to the client).
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool GenerateDeviceCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether an identity token
+            /// should be generated (and optionally returned to the client).
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool GenerateIdentityToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a refresh token
+            /// should be generated (and optionally returned to the client).
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool GenerateRefreshToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a user code
+            /// should be generated (and optionally returned to the client).
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool GenerateUserCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether the generated access token
+            /// should be returned to the client application as part of the response.
             /// Note: overriding the value of this property is generally not
             /// recommended, except when dealing with non-standard clients.
             /// </summary>
             public bool IncludeAccessToken { get; set; }
 
             /// <summary>
-            /// Gets or sets a boolean indicating whether an authorization code
-            /// should be returned to the client application.
+            /// Gets or sets a boolean indicating whether the generated authorization code
+            /// should be returned to the client application as part of the response.
             /// Note: overriding the value of this property is generally not
             /// recommended, except when dealing with non-standard clients.
             /// </summary>
             public bool IncludeAuthorizationCode { get; set; }
 
             /// <summary>
-            /// Gets or sets a boolean indicating whether a device code
-            /// should be returned to the client application.
+            /// Gets or sets a boolean indicating whether the generated device code
+            /// should be returned to the client application as part of the response.
             /// Note: overriding the value of this property is generally not
             /// recommended, except when dealing with non-standard clients.
             /// </summary>
             public bool IncludeDeviceCode { get; set; }
 
             /// <summary>
-            /// Gets or sets a boolean indicating whether an identity token
-            /// should be returned to the client application.
+            /// Gets or sets a boolean indicating whether the generated identity token
+            /// should be returned to the client application as part of the response.
             /// Note: overriding the value of this property is generally not
             /// recommended, except when dealing with non-standard clients.
             /// </summary>
             public bool IncludeIdentityToken { get; set; }
 
             /// <summary>
-            /// Gets or sets a boolean indicating whether a refresh token
-            /// should be returned to the client application.
+            /// Gets or sets a boolean indicating whether the generated refresh token
+            /// should be returned to the client application as part of the response.
             /// Note: overriding the value of this property is generally not
             /// recommended, except when dealing with non-standard clients.
             /// </summary>
             public bool IncludeRefreshToken { get; set; }
 
             /// <summary>
-            /// Gets or sets a boolean indicating whether a user code
-            /// should be returned to the client application.
+            /// Gets or sets a boolean indicating whether the generated user code
+            /// should be returned to the client application as part of the response.
             /// Note: overriding the value of this property is generally not
             /// recommended, except when dealing with non-standard clients.
             /// </summary>
             public bool IncludeUserCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the generated access token, if applicable.
+            /// The access token will only be returned if
+            /// <see cref="IncludeAccessToken"/> is set to <c>true</c>.
+            /// </summary>
+            public string? AccessToken { get; set; }
 
             /// <summary>
             /// Gets or sets the principal containing the claims that
@@ -440,10 +495,24 @@ namespace OpenIddict.Server
             public ClaimsPrincipal? AccessTokenPrincipal { get; set; }
 
             /// <summary>
+            /// Gets or sets the generated authorization code, if applicable.
+            /// The authorization code will only be returned if
+            /// <see cref="IncludeAuthorizationCode"/> is set to <c>true</c>.
+            /// </summary>
+            public string? AuthorizationCode { get; set; }
+
+            /// <summary>
             /// Gets or sets the principal containing the claims that
             /// will be used to create the authorization code, if applicable.
             /// </summary>
             public ClaimsPrincipal? AuthorizationCodePrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the generated device code, if applicable.
+            /// The device code will only be returned if
+            /// <see cref="IncludeDeviceCode"/> is set to <c>true</c>.
+            /// </summary>
+            public string? DeviceCode { get; set; }
 
             /// <summary>
             /// Gets or sets the principal containing the claims that
@@ -452,16 +521,37 @@ namespace OpenIddict.Server
             public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
 
             /// <summary>
+            /// Gets or sets the generated identity token, if applicable.
+            /// The identity token will only be returned if
+            /// <see cref="IncludeIdentityToken"/> is set to <c>true</c>.
+            /// </summary>
+            public string? IdentityToken { get; set; }
+
+            /// <summary>
             /// Gets or sets the principal containing the claims that
             /// will be used to create the identity token, if applicable.
             /// </summary>
             public ClaimsPrincipal? IdentityTokenPrincipal { get; set; }
 
             /// <summary>
+            /// Gets or sets the generated refresh token, if applicable.
+            /// The refresh token will only be returned if
+            /// <see cref="IncludeRefreshToken"/> is set to <c>true</c>.
+            /// </summary>
+            public string? RefreshToken { get; set; }
+
+            /// <summary>
             /// Gets or sets the principal containing the claims that
             /// will be used to create the refresh token, if applicable.
             /// </summary>
             public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the generated user code, if applicable.
+            /// The user code will only be returned if
+            /// <see cref="IncludeUserCode"/> is set to <c>true</c>.
+            /// </summary>
+            public string? UserCode { get; set; }
 
             /// <summary>
             /// Gets or sets the principal containing the claims that

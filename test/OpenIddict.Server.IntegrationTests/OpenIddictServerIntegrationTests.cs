@@ -1608,15 +1608,15 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
-                        context.IncludeAccessToken = false;
-                        context.IncludeAuthorizationCode = true;
-                        context.IncludeIdentityToken = true;
-                        context.IncludeRefreshToken = true;
+                        context.GenerateAccessToken = context.IncludeAccessToken = false;
+                        context.GenerateAuthorizationCode = context.IncludeAuthorizationCode = true;
+                        context.GenerateIdentityToken = context.IncludeIdentityToken = true;
+                        context.GenerateRefreshToken = context.IncludeRefreshToken = true;
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -1662,12 +1662,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateAuthorizationCode);
                         Assert.True(context.IncludeAuthorizationCode);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -1801,12 +1802,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateAccessToken);
                         Assert.True(context.IncludeAccessToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -1856,12 +1858,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateAccessToken);
                         Assert.True(context.IncludeAccessToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -1908,12 +1911,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateAccessToken);
                         Assert.True(context.IncludeAccessToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -1951,12 +1955,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateAccessToken);
                         Assert.True(context.IncludeAccessToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -1995,12 +2000,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateAccessToken);
                         Assert.True(context.IncludeAccessToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2040,12 +2046,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateAccessToken);
                         Assert.True(context.IncludeAccessToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2114,12 +2121,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.False(context.GenerateRefreshToken);
                         Assert.False(context.IncludeRefreshToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2168,12 +2176,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateRefreshToken);
                         Assert.True(context.IncludeRefreshToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2221,12 +2230,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateRefreshToken);
                         Assert.True(context.IncludeRefreshToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2255,12 +2265,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateRefreshToken);
                         Assert.True(context.IncludeRefreshToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2300,12 +2311,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateRefreshToken);
                         Assert.True(context.IncludeRefreshToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2346,12 +2358,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateRefreshToken);
                         Assert.True(context.IncludeRefreshToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2398,12 +2411,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.False(context.GenerateIdentityToken);
                         Assert.False(context.IncludeIdentityToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2446,12 +2460,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateIdentityToken);
                         Assert.True(context.IncludeIdentityToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2502,12 +2517,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateIdentityToken);
                         Assert.True(context.IncludeIdentityToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2555,12 +2571,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateIdentityToken);
                         Assert.True(context.IncludeIdentityToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2589,12 +2606,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateIdentityToken);
                         Assert.True(context.IncludeIdentityToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2643,12 +2661,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateIdentityToken);
                         Assert.True(context.IncludeIdentityToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 
@@ -2689,12 +2708,13 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
+                        Assert.True(context.GenerateIdentityToken);
                         Assert.True(context.IncludeIdentityToken);
 
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateReturnedTokens.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
                 });
             });
 

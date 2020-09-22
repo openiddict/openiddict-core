@@ -177,7 +177,7 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAccessTokenIncluded>()
+                    .AddFilter<RequireAccessTokenGenerated>()
                     .AddFilter<RequireDataProtectionAccessTokenFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order - 500)
@@ -240,7 +240,7 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAuthorizationCodeIncluded>()
+                    .AddFilter<RequireAuthorizationCodeGenerated>()
                     .AddFilter<RequireDataProtectionAuthorizationCodeFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order - 500)
@@ -303,7 +303,7 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDeviceCodeIncluded>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
                     .AddFilter<RequireDataProtectionDeviceCodeFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionDeviceCode>()
                     .SetOrder(GenerateIdentityModelDeviceCode.Descriptor.Order - 500)
@@ -366,7 +366,7 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireRefreshTokenIncluded>()
+                    .AddFilter<RequireRefreshTokenGenerated>()
                     .AddFilter<RequireDataProtectionRefreshTokenFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order - 500)
@@ -429,7 +429,7 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireUserCodeIncluded>()
+                    .AddFilter<RequireUserCodeGenerated>()
                     .AddFilter<RequireDataProtectionUserCodeFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionUserCode>()
                     .SetOrder(GenerateIdentityModelUserCode.Descriptor.Order - 500)
