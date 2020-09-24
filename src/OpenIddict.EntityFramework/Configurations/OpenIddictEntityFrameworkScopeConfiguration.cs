@@ -29,7 +29,7 @@ namespace OpenIddict.EntityFramework
             // Entity Framework would throw an exception due to the TKey generic parameter
             // being non-nullable when using value types like short, int, long or Guid.
 
-            HasKey(scope => scope.Id!);
+            HasKey(scope => scope.Id);
 
             Property(scope => scope.ConcurrencyToken)
                 .HasMaxLength(50)

@@ -33,7 +33,7 @@ namespace OpenIddict.EntityFramework
             // Entity Framework would throw an exception due to the TKey generic parameter
             // being non-nullable when using value types like short, int, long or Guid.
 
-            HasKey(token => token.Id!);
+            HasKey(token => token.Id);
 
             Property(token => token.ConcurrencyToken)
                 .HasMaxLength(50)
@@ -47,13 +47,13 @@ namespace OpenIddict.EntityFramework
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
             Property(token => token.Status)
-                .HasMaxLength(25);
+                .HasMaxLength(50);
 
             Property(token => token.Subject)
-                .HasMaxLength(450);
+                .HasMaxLength(400);
 
             Property(token => token.Type)
-                .HasMaxLength(25);
+                .HasMaxLength(50);
 
             ToTable("OpenIddictTokens");
         }

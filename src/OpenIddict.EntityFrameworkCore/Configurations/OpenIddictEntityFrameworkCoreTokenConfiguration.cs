@@ -55,20 +55,20 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
-            builder.Property(token => token.Id!)
+            builder.Property(token => token.Id)
                    .ValueGeneratedOnAdd();
 
             builder.Property(token => token.ReferenceId)
                    .HasMaxLength(100);
 
             builder.Property(token => token.Status)
-                   .HasMaxLength(25);
+                   .HasMaxLength(50);
 
             builder.Property(token => token.Subject)
-                   .HasMaxLength(450);
+                   .HasMaxLength(400);
 
             builder.Property(token => token.Type)
-                   .HasMaxLength(25);
+                   .HasMaxLength(50);
 
             builder.ToTable("OpenIddictTokens");
         }
