@@ -6,22 +6,21 @@
 
 using System;
 using System.ComponentModel;
-using OpenIddict.Server.Quartz;
+using OpenIddict.Quartz;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Exposes the necessary methods required to configure
-    /// the OpenIddict server Quartz.NET integration.
+    /// Exposes the necessary methods required to configure the OpenIddict Quartz.NET integration.
     /// </summary>
-    public class OpenIddictServerQuartzBuilder
+    public class OpenIddictQuartzBuilder
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="OpenIddictServerQuartzBuilder"/>.
+        /// Initializes a new instance of <see cref="OpenIddictQuartzBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictServerQuartzBuilder(IServiceCollection services)
+        public OpenIddictQuartzBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -31,12 +30,12 @@ namespace Microsoft.Extensions.DependencyInjection
         public IServiceCollection Services { get; }
 
         /// <summary>
-        /// Amends the default OpenIddict server Quartz.NET configuration.
+        /// Amends the default OpenIddict Quartz.NET configuration.
         /// </summary>
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder Configure(Action<OpenIddictServerQuartzOptions> configuration)
+        /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+        public OpenIddictQuartzBuilder Configure(Action<OpenIddictQuartzOptions> configuration)
         {
             if (configuration is null)
             {
@@ -51,23 +50,23 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Disables authorizations pruning.
         /// </summary>
-        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder DisableAuthorizationPruning()
+        /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+        public OpenIddictQuartzBuilder DisableAuthorizationPruning()
             => Configure(options => options.DisableAuthorizationPruning = true);
 
         /// <summary>
         /// Disables tokens pruning.
         /// </summary>
-        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder DisableTokenPruning()
+        /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+        public OpenIddictQuartzBuilder DisableTokenPruning()
             => Configure(options => options.DisableTokenPruning = true);
 
         /// <summary>
         /// Sets the number of times a failed Quartz.NET job can be retried.
         /// </summary>
         /// <param name="count">The number of times a failed Quartz.NET job can be retried.</param>
-        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder SetMaximumRefireCount(int count)
+        /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+        public OpenIddictQuartzBuilder SetMaximumRefireCount(int count)
         {
             if (count < 0)
             {
@@ -81,8 +80,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Sets the minimum lifespan authorizations must have to be pruned.
         /// </summary>
         /// <param name="lifespan">The minimum lifespan authorizations must have to be pruned.</param>
-        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder SetMinimumAuthorizationLifespan(TimeSpan lifespan)
+        /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+        public OpenIddictQuartzBuilder SetMinimumAuthorizationLifespan(TimeSpan lifespan)
         {
             if (lifespan < TimeSpan.FromMinutes(10))
             {
@@ -96,8 +95,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Sets the minimum lifespan tokens must have to be pruned.
         /// </summary>
         /// <param name="lifespan">The minimum lifespan tokens must have to be pruned.</param>
-        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public OpenIddictServerQuartzBuilder SetMinimumTokenLifespan(TimeSpan lifespan)
+        /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+        public OpenIddictQuartzBuilder SetMinimumTokenLifespan(TimeSpan lifespan)
         {
             if (lifespan < TimeSpan.FromMinutes(10))
             {

@@ -7,24 +7,24 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using OpenIddict.Server.Quartz;
+using OpenIddict.Quartz;
 using Quartz;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Exposes extensions allowing to register the OpenIddict server Quartz.NET integration.
+    /// Exposes extensions allowing to register the OpenIddict Quartz.NET integration.
     /// </summary>
-    public static class OpenIddictServerQuartzExtensions
+    public static class OpenIddictQuartzExtensions
     {
         /// <summary>
-        /// Registers the OpenIddict server Quartz.NET integration in the DI container.
+        /// Registers the OpenIddict Quartz.NET integration in the DI container.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerQuartzBuilder"/>.</returns>
-        public static OpenIddictServerQuartzBuilder UseQuartz(this OpenIddictServerBuilder builder)
+        /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+        public static OpenIddictQuartzBuilder UseQuartz(this OpenIddictCoreBuilder builder)
         {
             if (builder is null)
             {
@@ -34,54 +34,54 @@ namespace Microsoft.Extensions.DependencyInjection
             // Warning: the AddQuartz() method is deliberately not used as it's not idempotent.
             // Calling it at this point may override user-defined services (e.g Quartz DI support).
 
-            builder.Services.TryAddTransient<OpenIddictServerQuartzJob>();
+            builder.Services.TryAddTransient<OpenIddictQuartzJob>();
 
             // To ensure this method can be safely called multiple times, the job details
-            // of the OpenIddict server job are only added if no existing IJobDetail instance
-            // pointing to OpenIddictServerQuartzJob was already registered in the DI container.
+            // of the OpenIddict job are only added if no existing IJobDetail instance
+            // pointing to OpenIddictQuartzJob was already registered in the DI container.
             if (!builder.Services.Any(descriptor => descriptor.ServiceType == typeof(IJobDetail) &&
                                                     descriptor.ImplementationInstance is IJobDetail job &&
-                                                    job.Key.Equals(OpenIddictServerQuartzJob.Identity)))
+                                                    job.Key.Equals(OpenIddictQuartzJob.Identity)))
             {
                 builder.Services.AddSingleton(
-                    JobBuilder.Create<OpenIddictServerQuartzJob>()
+                    JobBuilder.Create<OpenIddictQuartzJob>()
                         .StoreDurably()
-                        .WithIdentity(OpenIddictServerQuartzJob.Identity)
+                        .WithIdentity(OpenIddictQuartzJob.Identity)
                         .WithDescription(SR.GetResourceString(SR.ID8000))
                         .Build());
             }
 
             // To ensure this method can be safely called multiple times, the trigger details
-            // of the OpenIddict server job are only added if no existing ITrigger instance
-            // pointing to OpenIddictServerQuartzJob was already registered in the DI container.
+            // of the OpenIddict job are only added if no existing ITrigger instance
+            // pointing to OpenIddictQuartzJob was already registered in the DI container.
             if (!builder.Services.Any(descriptor => descriptor.ServiceType == typeof(ITrigger) &&
                                                     descriptor.ImplementationInstance is ITrigger trigger &&
-                                                    trigger.JobKey.Equals(OpenIddictServerQuartzJob.Identity)))
+                                                    trigger.JobKey.Equals(OpenIddictQuartzJob.Identity)))
             {
                 // Note: this trigger uses a quite long interval (1 hour), which means it may be
                 // potentially never reached if the application is shut down or recycled. As such,
                 // this trigger is set up to fire immediately to ensure it's executed at least once.
                 builder.Services.AddSingleton(
                     TriggerBuilder.Create()
-                        .ForJob(OpenIddictServerQuartzJob.Identity)
+                        .ForJob(OpenIddictQuartzJob.Identity)
                         .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
                         .WithDescription(SR.GetResourceString(SR.ID8001))
                         .StartNow()
                         .Build());
             }
 
-            return new OpenIddictServerQuartzBuilder(builder.Services);
+            return new OpenIddictQuartzBuilder(builder.Services);
         }
 
         /// <summary>
-        /// Registers the OpenIddict server Quartz.NET integration in the DI container.
+        /// Registers the OpenIddict Quartz.NET integration in the DI container.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        /// <param name="configuration">The configuration delegate used to configure the server services.</param>
+        /// <param name="configuration">The configuration delegate used to configure the Quartz.NET services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public static OpenIddictServerBuilder UseQuartz(
-            this OpenIddictServerBuilder builder, Action<OpenIddictServerQuartzBuilder> configuration)
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public static OpenIddictCoreBuilder UseQuartz(
+            this OpenIddictCoreBuilder builder, Action<OpenIddictQuartzBuilder> configuration)
         {
             if (builder is null)
             {

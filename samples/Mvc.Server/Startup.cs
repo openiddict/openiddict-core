@@ -73,6 +73,9 @@ namespace Mvc.Server
                     // and configure OpenIddict to use the specified MongoDB database:
                     // options.UseMongoDb()
                     //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
+
+                    // Enable Quartz.NET integration.
+                    options.UseQuartz();
                 })
 
                 // Register the OpenIddict server components.
@@ -109,9 +112,6 @@ namespace Mvc.Server
                            .EnableUserinfoEndpointPassthrough()
                            .EnableVerificationEndpointPassthrough()
                            .DisableTransportSecurityRequirement(); // During development, you can disable the HTTPS requirement.
-
-                    // Enable Quartz.NET integration.
-                    options.UseQuartz();
 
                     // Note: if you don't want to specify a client_id when sending
                     // a token or revocation request, uncomment the following line:

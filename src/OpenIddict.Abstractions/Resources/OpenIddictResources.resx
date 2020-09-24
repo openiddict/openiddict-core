@@ -481,7 +481,7 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
     <comment>{Locked}</comment>
   </data>
   <data name="ID0082" xml:space="preserve">
-    <value>Dependency injection support must be enabled in Quartz.NET when using the OpenIddict server integration.
+    <value>Dependency injection support must be enabled in Quartz.NET when using the OpenIddict integration.
 To enable DI support, call 'services.AddQuartz(options =&gt; options.UseMicrosoftDependencyInjectionJobFactory())' or 'services.AddQuartz(options =&gt; options.UseMicrosoftDependencyInjectionScopedJobFactory())'.</value>
     <comment>{Locked}</comment>
   </data>
@@ -1369,7 +1369,7 @@ Consider creating non-generic classes derived from the default entities for the 
     <comment>{Locked}</comment>
   </data>
   <data name="ID0278" xml:space="preserve">
-    <value>The core services must be registered when enabling the OpenIddict server Quartz.NET integration.
+    <value>The core services must be registered when enabling the OpenIddict Quartz.NET integration.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
     <comment>{Locked}</comment>
   </data>

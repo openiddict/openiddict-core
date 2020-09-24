@@ -3,15 +3,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Xunit;
 
-namespace OpenIddict.Server.Quartz.Tests
+namespace OpenIddict.Quartz.Tests
 {
-    public class OpenIddictServerQuartzExtensionsTests
+    public class OpenIddictQuartzExtensionsTests
     {
         [Fact]
         public void UseQuartz_ThrowsAnExceptionForNullBuilder()
         {
             // Arrange
-            var builder = (OpenIddictServerBuilder) null!;
+            var builder = (OpenIddictCoreBuilder) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.UseQuartz());
@@ -24,7 +24,7 @@ namespace OpenIddict.Server.Quartz.Tests
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenIddictServerBuilder(services);
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.UseQuartz(configuration: null!));
@@ -37,14 +37,14 @@ namespace OpenIddict.Server.Quartz.Tests
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenIddictServerBuilder(services);
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseQuartz();
 
             // Assert
-            Assert.Contains(services, service => service.ServiceType == typeof(OpenIddictServerQuartzJob) &&
-                service.ImplementationType == typeof(OpenIddictServerQuartzJob) &&
+            Assert.Contains(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
+                service.ImplementationType == typeof(OpenIddictQuartzJob) &&
                 service.Lifetime == ServiceLifetime.Transient);
         }
 
@@ -53,7 +53,7 @@ namespace OpenIddict.Server.Quartz.Tests
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenIddictServerBuilder(services);
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseQuartz();
@@ -61,7 +61,7 @@ namespace OpenIddict.Server.Quartz.Tests
             // Assert
             Assert.Contains(services, service => service.ServiceType == typeof(IJobDetail) &&
                 service.ImplementationInstance is IJobDetail job &&
-                job.Key.Equals(OpenIddictServerQuartzJob.Identity));
+                job.Key.Equals(OpenIddictQuartzJob.Identity));
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace OpenIddict.Server.Quartz.Tests
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenIddictServerBuilder(services);
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseQuartz();
@@ -77,7 +77,7 @@ namespace OpenIddict.Server.Quartz.Tests
             // Assert
             Assert.Contains(services, service => service.ServiceType == typeof(ITrigger) &&
                 service.ImplementationInstance is ITrigger trigger &&
-                trigger.JobKey.Equals(OpenIddictServerQuartzJob.Identity));
+                trigger.JobKey.Equals(OpenIddictQuartzJob.Identity));
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace OpenIddict.Server.Quartz.Tests
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenIddictServerBuilder(services);
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseQuartz();
@@ -95,11 +95,11 @@ namespace OpenIddict.Server.Quartz.Tests
             // Assert
             Assert.Single(services, service => service.ServiceType == typeof(IJobDetail) &&
                 service.ImplementationInstance is IJobDetail job &&
-                job.Key.Equals(OpenIddictServerQuartzJob.Identity));
+                job.Key.Equals(OpenIddictQuartzJob.Identity));
 
             Assert.Single(services, service => service.ServiceType == typeof(ITrigger) &&
                 service.ImplementationInstance is ITrigger trigger &&
-                trigger.JobKey.Equals(OpenIddictServerQuartzJob.Identity));
+                trigger.JobKey.Equals(OpenIddictQuartzJob.Identity));
         }
     }
 }

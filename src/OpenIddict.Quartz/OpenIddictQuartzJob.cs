@@ -13,28 +13,28 @@ using OpenIddict.Abstractions;
 using Quartz;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Quartz
+namespace OpenIddict.Quartz
 {
     /// <summary>
-    /// Represents a Quartz.NET job performing scheduled tasks for the OpenIddict server feature.
+    /// Represents a Quartz.NET job performing scheduled tasks for OpenIddict.
     /// </summary>
     [DisallowConcurrentExecution]
-    public class OpenIddictServerQuartzJob : IJob
+    public class OpenIddictQuartzJob : IJob
     {
-        private readonly IOptionsMonitor<OpenIddictServerQuartzOptions> _options;
+        private readonly IOptionsMonitor<OpenIddictQuartzOptions> _options;
         private readonly IServiceProvider _provider;
 
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerQuartzJob"/> class.
+        /// Creates a new instance of the <see cref="OpenIddictQuartzJob"/> class.
         /// </summary>
-        public OpenIddictServerQuartzJob() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0082));
+        public OpenIddictQuartzJob() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0082));
 
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerQuartzJob"/> class.
+        /// Creates a new instance of the <see cref="OpenIddictQuartzJob"/> class.
         /// </summary>
-        /// <param name="options">The OpenIddict server Quartz.NET options.</param>
+        /// <param name="options">The OpenIddict Quartz.NET options.</param>
         /// <param name="provider">The service provider.</param>
-        public OpenIddictServerQuartzJob(IOptionsMonitor<OpenIddictServerQuartzOptions> options, IServiceProvider provider)
+        public OpenIddictQuartzJob(IOptionsMonitor<OpenIddictQuartzOptions> options, IServiceProvider provider)
         {
             _options = options;
             _provider = provider;
@@ -44,8 +44,8 @@ namespace OpenIddict.Server.Quartz
         /// Gets the default identity assigned to this job.
         /// </summary>
         public static JobKey Identity { get; } = new JobKey(
-            name: typeof(OpenIddictServerQuartzJob).Name,
-            group: typeof(OpenIddictServerQuartzJob).Assembly.GetName().Name!);
+            name: typeof(OpenIddictQuartzJob).Name,
+            group: typeof(OpenIddictQuartzJob).Assembly.GetName().Name!);
 
         /// <inheritdoc/>
         public async Task Execute(IJobExecutionContext context)
