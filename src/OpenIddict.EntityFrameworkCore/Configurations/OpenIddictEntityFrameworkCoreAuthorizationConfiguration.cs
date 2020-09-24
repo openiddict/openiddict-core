@@ -49,17 +49,17 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
-            builder.Property(authorization => authorization.Id!)
+            builder.Property(authorization => authorization.Id)
                    .ValueGeneratedOnAdd();
 
             builder.Property(authorization => authorization.Status)
-                   .HasMaxLength(25);
+                   .HasMaxLength(50);
 
             builder.Property(authorization => authorization.Subject)
-                   .HasMaxLength(450);
+                   .HasMaxLength(400);
 
             builder.Property(authorization => authorization.Type)
-                   .HasMaxLength(25);
+                   .HasMaxLength(50);
 
             builder.HasMany(authorization => authorization.Tokens)
                    .WithOne(token => token.Authorization!)

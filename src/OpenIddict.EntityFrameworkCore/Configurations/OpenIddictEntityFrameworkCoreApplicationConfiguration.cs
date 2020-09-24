@@ -52,11 +52,14 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
-            builder.Property(application => application.Id!)
+            builder.Property(application => application.ConsentType)
+                   .HasMaxLength(50);
+
+            builder.Property(application => application.Id)
                    .ValueGeneratedOnAdd();
 
             builder.Property(application => application.Type)
-                   .HasMaxLength(25);
+                   .HasMaxLength(50);
 
             builder.HasMany(application => application.Authorizations)
                    .WithOne(authorization => authorization.Application!)
