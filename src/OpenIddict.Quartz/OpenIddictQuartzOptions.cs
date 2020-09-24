@@ -6,12 +6,12 @@
 
 using System;
 
-namespace OpenIddict.Server.Quartz
+namespace OpenIddict.Quartz
 {
     /// <summary>
-    /// Provides various settings needed to configure the OpenIddict Quartz.NET server integration.
+    /// Provides various settings needed to configure the OpenIddict Quartz.NET integration.
     /// </summary>
-    public class OpenIddictServerQuartzOptions
+    public class OpenIddictQuartzOptions
     {
         /// <summary>
         /// Gets or sets a boolean indicating whether authorizations pruning should be disabled.

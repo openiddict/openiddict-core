@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OpenIddict.Server.Quartz\OpenIddict.Server.Quartz.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Quartz\OpenIddict.Quartz.csproj" />
   </ItemGroup>
 
 </Project>

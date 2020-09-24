@@ -9,15 +9,15 @@ using Quartz;
 using Xunit;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Quartz.Tests
+namespace OpenIddict.Quartz.Tests
 {
-    public class OpenIddictServerQuartzJobTests
+    public class OpenIddictQuartzJobTests
     {
         [Fact]
         public void Constructor_ThrowsAnException()
         {
             // Arrange, act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => new OpenIddictServerQuartzJob());
+            var exception = Assert.Throws<InvalidOperationException>(() => new OpenIddictQuartzJob());
 
             Assert.Equal(SR.GetResourceString(SR.ID0082), exception.Message);
         }
@@ -32,10 +32,10 @@ namespace OpenIddict.Server.Quartz.Tests
 
             var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
             var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
-            var monitor = Mock.Of<IOptionsMonitor<OpenIddictServerQuartzOptions>>(
-                monitor => monitor.CurrentValue == new OpenIddictServerQuartzOptions());
+            var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+                monitor => monitor.CurrentValue == new OpenIddictQuartzOptions());
 
-            var job = new OpenIddictServerQuartzJob(monitor,
+            var job = new OpenIddictQuartzJob(monitor,
                 Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
 
             // Act
@@ -56,7 +56,7 @@ namespace OpenIddict.Server.Quartz.Tests
                 provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
                 provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object);
 
-            var job = CreateJob(provider, new OpenIddictServerQuartzOptions
+            var job = CreateJob(provider, new OpenIddictQuartzOptions
             {
                 DisableTokenPruning = true
             });
@@ -79,7 +79,7 @@ namespace OpenIddict.Server.Quartz.Tests
                 provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
                 provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
 
-            var job = CreateJob(provider, new OpenIddictServerQuartzOptions
+            var job = CreateJob(provider, new OpenIddictQuartzOptions
             {
                 DisableAuthorizationPruning = true
             });
@@ -324,7 +324,7 @@ namespace OpenIddict.Server.Quartz.Tests
 
             var context = Mock.Of<IJobExecutionContext>(context => context.RefireCount == 5);
 
-            var job = CreateJob(provider, new OpenIddictServerQuartzOptions
+            var job = CreateJob(provider, new OpenIddictQuartzOptions
             {
                 MaximumRefireCount = 5
             });
@@ -335,14 +335,14 @@ namespace OpenIddict.Server.Quartz.Tests
             Assert.False(exception.RefireImmediately);
         }
 
-        private static OpenIddictServerQuartzJob CreateJob(IServiceProvider provider, OpenIddictServerQuartzOptions? options = null)
+        private static OpenIddictQuartzJob CreateJob(IServiceProvider provider, OpenIddictQuartzOptions? options = null)
         {
             var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
             var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
-            var monitor = Mock.Of<IOptionsMonitor<OpenIddictServerQuartzOptions>>(
-                monitor => monitor.CurrentValue == (options ?? new OpenIddictServerQuartzOptions()));
+            var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+                monitor => monitor.CurrentValue == (options ?? new OpenIddictQuartzOptions()));
 
-            return new OpenIddictServerQuartzJob(monitor,
+            return new OpenIddictQuartzJob(monitor,
                 Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
         }
     }

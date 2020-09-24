@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Quartz.NET integration package for the OpenIddict server services.</Description>
-    <PackageTags>$(PackageTags);quartz;server</PackageTags>
+    <Description>Quartz.NET integration package for OpenIddict.</Description>
+    <PackageTags>$(PackageTags);quartz</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
+    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

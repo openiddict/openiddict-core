@@ -4,9 +4,9 @@ using Microsoft.Extensions.Options;
 using Xunit;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Quartz.Tests
+namespace OpenIddict.Quartz.Tests
 {
-    public class OpenIddictServerQuartzBuilderTests
+    public class OpenIddictQuartzBuilderTests
     {
         [Fact]
         public void Constructor_ThrowsAnExceptionForNullServices()
@@ -15,7 +15,7 @@ namespace OpenIddict.Server.Quartz.Tests
             var services = (IServiceCollection) null!;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictServerQuartzBuilder(services));
+            var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictQuartzBuilder(services));
 
             Assert.Equal("services", exception.ParamName);
         }
@@ -26,14 +26,14 @@ namespace OpenIddict.Server.Quartz.Tests
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
-            var configuration = new Action<OpenIddictServerQuartzOptions>(options => { });
+            var configuration = new Action<OpenIddictQuartzOptions>(options => { });
 
             // Act
             builder.Configure(configuration);
 
             // Assert
-            Assert.Contains(services, service => service.ServiceType == typeof(IConfigureOptions<OpenIddictServerQuartzOptions>) &&
-                service.ImplementationInstance is ConfigureNamedOptions<OpenIddictServerQuartzOptions> options &&
+            Assert.Contains(services, service => service.ServiceType == typeof(IConfigureOptions<OpenIddictQuartzOptions>) &&
+                service.ImplementationInstance is ConfigureNamedOptions<OpenIddictQuartzOptions> options &&
                 options.Action == configuration && string.IsNullOrEmpty(options.Name));
         }
 
@@ -174,13 +174,13 @@ namespace OpenIddict.Server.Quartz.Tests
         private static IServiceCollection CreateServices()
             => new ServiceCollection().AddOptions();
 
-        private static OpenIddictServerQuartzBuilder CreateBuilder(IServiceCollection services)
-            => new OpenIddictServerQuartzBuilder(services);
+        private static OpenIddictQuartzBuilder CreateBuilder(IServiceCollection services)
+            => new OpenIddictQuartzBuilder(services);
 
-        private static OpenIddictServerQuartzOptions GetOptions(IServiceCollection services)
+        private static OpenIddictQuartzOptions GetOptions(IServiceCollection services)
         {
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerQuartzOptions>>();
+            var options = provider.GetRequiredService<IOptions<OpenIddictQuartzOptions>>();
             return options.Value;
         }
     }
