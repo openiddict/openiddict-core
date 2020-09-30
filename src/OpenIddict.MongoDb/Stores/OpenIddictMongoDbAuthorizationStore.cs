@@ -102,7 +102,7 @@ namespace OpenIddict.MongoDb
 
             if ((await collection.DeleteOneAsync(entity =>
                 entity.Id == authorization.Id &&
-                entity.ConcurrencyToken == authorization.ConcurrencyToken)).DeletedCount == 0)
+                entity.ConcurrencyToken == authorization.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0241));
             }
@@ -546,7 +546,7 @@ namespace OpenIddict.MongoDb
             // maximum number of elements that can be removed by a single call to PruneAsync() is limited to 50000.
             foreach (var buffer in Buffer(identifiers.Take(50_000), 1_000))
             {
-                await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id));
+                await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id), cancellationToken);
             }
 
             static IEnumerable<List<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)

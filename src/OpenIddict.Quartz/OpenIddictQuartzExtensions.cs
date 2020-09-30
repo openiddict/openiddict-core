@@ -58,15 +58,15 @@ namespace Microsoft.Extensions.DependencyInjection
                                                     descriptor.ImplementationInstance is ITrigger trigger &&
                                                     trigger.JobKey.Equals(OpenIddictQuartzJob.Identity)))
             {
-                // Note: this trigger uses a quite long interval (1 hour), which means it may be
-                // potentially never reached if the application is shut down or recycled. As such,
-                // this trigger is set up to fire immediately to ensure it's executed at least once.
+                // Note: this trigger uses a quite long interval (1 hour), which means it may be potentially
+                // never reached if the application is shut down or recycled. As such, this trigger is set up
+                // to fire 2 minutes after the application starts to ensure it's executed at least once.
                 builder.Services.AddSingleton(
                     TriggerBuilder.Create()
                         .ForJob(OpenIddictQuartzJob.Identity)
                         .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
                         .WithDescription(SR.GetResourceString(SR.ID8001))
-                        .StartNow()
+                        .StartAt(DateBuilder.FutureDate(2, IntervalUnit.Minute))
                         .Build());
             }
 

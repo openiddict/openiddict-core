@@ -102,7 +102,7 @@ namespace OpenIddict.MongoDb
 
             if ((await collection.DeleteOneAsync(entity =>
                 entity.Id == application.Id &&
-                entity.ConcurrencyToken == application.ConcurrencyToken)).DeletedCount == 0)
+                entity.ConcurrencyToken == application.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0239));
             }

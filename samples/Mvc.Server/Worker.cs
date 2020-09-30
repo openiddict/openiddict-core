@@ -21,7 +21,7 @@ namespace Mvc.Server
             using var scope = _serviceProvider.CreateScope();
 
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.EnsureCreatedAsync(cancellationToken);
 
             await RegisterApplicationsAsync(scope.ServiceProvider);
             await RegisterScopesAsync(scope.ServiceProvider);
