@@ -35,7 +35,7 @@ namespace MongoDB.Driver
 
             static async IAsyncEnumerable<T> ExecuteAsync(IAsyncCursorSource<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                using var cursor = await source.ToCursorAsync();
+                using var cursor = await source.ToCursorAsync(cancellationToken);
 
                 while (await cursor.MoveNextAsync(cancellationToken))
                 {
