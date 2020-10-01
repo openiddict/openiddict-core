@@ -5,11 +5,10 @@
  */
 
 using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using OpenIddict.Quartz;
 using Quartz;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -31,44 +30,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            // Warning: the AddQuartz() method is deliberately not used as it's not idempotent.
-            // Calling it at this point may override user-defined services (e.g Quartz DI support).
+            builder.Services.AddQuartz();
 
+            // The OpenIddict job is registered as a service to allow
+            // Quartz.NET's DI integration to resolve it from the DI.
             builder.Services.TryAddTransient<OpenIddictQuartzJob>();
 
-            // To ensure this method can be safely called multiple times, the job details
-            // of the OpenIddict job are only added if no existing IJobDetail instance
-            // pointing to OpenIddictQuartzJob was already registered in the DI container.
-            if (!builder.Services.Any(descriptor => descriptor.ServiceType == typeof(IJobDetail) &&
-                                                    descriptor.ImplementationInstance is IJobDetail job &&
-                                                    job.Key.Equals(OpenIddictQuartzJob.Identity)))
-            {
-                builder.Services.AddSingleton(
-                    JobBuilder.Create<OpenIddictQuartzJob>()
-                        .StoreDurably()
-                        .WithIdentity(OpenIddictQuartzJob.Identity)
-                        .WithDescription(SR.GetResourceString(SR.ID8000))
-                        .Build());
-            }
-
-            // To ensure this method can be safely called multiple times, the trigger details
-            // of the OpenIddict job are only added if no existing ITrigger instance
-            // pointing to OpenIddictQuartzJob was already registered in the DI container.
-            if (!builder.Services.Any(descriptor => descriptor.ServiceType == typeof(ITrigger) &&
-                                                    descriptor.ImplementationInstance is ITrigger trigger &&
-                                                    trigger.JobKey.Equals(OpenIddictQuartzJob.Identity)))
-            {
-                // Note: this trigger uses a quite long interval (1 hour), which means it may be potentially
-                // never reached if the application is shut down or recycled. As such, this trigger is set up
-                // to fire 2 minutes after the application starts to ensure it's executed at least once.
-                builder.Services.AddSingleton(
-                    TriggerBuilder.Create()
-                        .ForJob(OpenIddictQuartzJob.Identity)
-                        .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
-                        .WithDescription(SR.GetResourceString(SR.ID8001))
-                        .StartAt(DateBuilder.FutureDate(2, IntervalUnit.Minute))
-                        .Build());
-            }
+            // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+                IConfigureOptions<QuartzOptions>, OpenIddictQuartzConfiguration>());
 
             return new OpenIddictQuartzBuilder(builder.Services);
         }
