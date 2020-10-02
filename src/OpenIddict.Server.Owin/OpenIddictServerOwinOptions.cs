@@ -85,13 +85,13 @@ namespace OpenIddict.Server.Owin
         /// Enabling this option is recommended when using external authentication providers
         /// or when large GET or POST OpenID Connect authorization requests support is required.
         /// </summary>
-        public bool EnableAuthorizationEndpointCaching { get; set; }
+        public bool EnableAuthorizationRequestCaching { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether requests received by the logout endpoint should be cached.
         /// When enabled, authorization requests are automatically stored in the distributed cache.
         /// </summary>
-        public bool EnableLogoutEndpointCaching { get; set; }
+        public bool EnableLogoutRequestCaching { get; set; }
 
         /// <summary>
         /// Gets or sets the optional "realm" value returned to the caller as part of the WWW-Authenticate header.
@@ -101,7 +101,7 @@ namespace OpenIddict.Server.Owin
         /// <summary>
         /// Gets or sets the caching policy used by the authorization endpoint.
         /// </summary>
-        public DistributedCacheEntryOptions AuthorizationEndpointCachingPolicy { get; set; } = new DistributedCacheEntryOptions
+        public DistributedCacheEntryOptions AuthorizationRequestCachingPolicy { get; set; } = new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
             SlidingExpiration = TimeSpan.FromMinutes(30)
@@ -110,7 +110,7 @@ namespace OpenIddict.Server.Owin
         /// <summary>
         /// Gets or sets the caching policy used by the logout endpoint.
         /// </summary>
-        public DistributedCacheEntryOptions LogoutEndpointCachingPolicy { get; set; } = new DistributedCacheEntryOptions
+        public DistributedCacheEntryOptions LogoutRequestCachingPolicy { get; set; } = new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
             SlidingExpiration = TimeSpan.FromMinutes(30)

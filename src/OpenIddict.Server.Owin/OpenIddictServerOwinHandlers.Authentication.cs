@@ -80,7 +80,7 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractAuthorizationRequestContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
+                        .AddFilter<RequireAuthorizationRequestCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractAuthorizationRequestContext>.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -181,7 +181,7 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractAuthorizationRequestContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
+                        .AddFilter<RequireAuthorizationRequestCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -246,7 +246,7 @@ namespace OpenIddict.Server.Owin
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
                     await _cache.SetStringAsync(Cache.AuthorizationRequest + context.Request.RequestId,
-                        token, _options.CurrentValue.AuthorizationEndpointCachingPolicy);
+                        token, _options.CurrentValue.AuthorizationRequestCachingPolicy);
 
                     // Create a new GET authorization request containing only the request_id parameter.
                     var address = WebUtilities.AddQueryString(
@@ -280,7 +280,7 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
+                        .AddFilter<RequireAuthorizationRequestCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(int.MinValue + 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)

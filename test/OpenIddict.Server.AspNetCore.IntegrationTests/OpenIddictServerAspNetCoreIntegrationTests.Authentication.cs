@@ -43,7 +43,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                 options.Services.AddDistributedMemoryCache();
 
                 options.UseAspNetCore()
-                       .EnableAuthorizationEndpointCaching();
+                       .EnableAuthorizationRequestCaching();
             });
 
             await using var client = await server.CreateClientAsync();
