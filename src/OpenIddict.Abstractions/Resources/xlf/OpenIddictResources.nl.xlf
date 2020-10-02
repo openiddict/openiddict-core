@@ -54,22 +54,22 @@
       </trans-unit>
       <trans-unit id="ID2010">
         <source>The specified authorization code has already been redeemed.</source>
-        <target state="translated">De opgegeven autorisatiecode is al ingewisseld.</target>
+        <target state="translated">De opgegeven autorisatiecode werd al ingewisseld.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2011">
         <source>The specified device code has already been redeemed.</source>
-        <target state="translated">De opgegeven toestelcode is al ingewisseld.</target>
+        <target state="translated">De opgegeven toestelcode werd al ingewisseld.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2012">
         <source>The specified refresh token has already been redeemed.</source>
-        <target state="translated">Het opgegeven vernieuwingstoken is al ingewisseld.</target>
+        <target state="translated">Het opgegeven vernieuwingstoken werd al ingewisseld.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2013">
         <source>The specified token has already been redeemed.</source>
-        <target state="translated">Het opgegeven token is al ingewisseld.</target>
+        <target state="translated">Het opgegeven token werd al ingewisseld.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2014">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="ID2017">
         <source>The specified device code is no longer valid.</source>
-        <target state="translated">De opgegeven toestelcode is niet meer geldig.</target>
+        <target state="translated">De opgegeven toestelcode is niet langer geldig.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2018">
@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="ID2033">
         <source>The specified '{0}'/'{1}' combination is invalid.</source>
-        <target state="translated">De opgegeven combinatie '{0}' / '{1}' is ongeldig.</target>
+        <target state="translated">De opgegeven combinatie '{0}'/'{1}' is ongeldig.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2034">
@@ -194,7 +194,7 @@
       </trans-unit>
       <trans-unit id="ID2039">
         <source>Scopes cannot be null or empty.</source>
-        <target state="translated">Scope mag niet null of leeg zijn.</target>
+        <target state="translated">Scopes mogen niet null of leeg zijn.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2040">
@@ -209,7 +209,7 @@
       </trans-unit>
       <trans-unit id="ID2042">
         <source>Scopes cannot contain spaces.</source>
-        <target state="translated">Scope mag geen spaties bevatten.</target>
+        <target state="translated">Scopes mogen geen spaties bevatten.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2043">
@@ -389,12 +389,12 @@
       </trans-unit>
       <trans-unit id="ID2081">
         <source>The mandatory '{0}' header is missing.</source>
-        <target state="translated">De verplichte '{0}' koptekst ontbreekt.</target>
+        <target state="translated">De verplichte '{0}' header ontbreekt.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2082">
         <source>The specified '{0}' header is invalid.</source>
-        <target state="translated">De opgegeven '{0}' koptekst is ongeldig.</target>
+        <target state="translated">De opgegeven '{0}' header is ongeldig.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2083">
@@ -534,7 +534,7 @@
       </trans-unit>
       <trans-unit id="ID2110">
         <source>The type of the introspected token doesn't match the expected type.</source>
-        <target state="translated">Het type van het geintrospecteerde token komt niet overeen met het verwachte type.</target>
+        <target state="translated">Het type van het geïntrospecteerde token komt niet overeen met het verwachte type.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2111">
@@ -594,7 +594,7 @@
       </trans-unit>
       <trans-unit id="ID8001">
         <source>Starts the scheduled task at regular intervals.</source>
-        <target state="translated">Start de geplande taak op regelmatige momenten.</target>
+        <target state="translated">Start de geplande taak op regelmatige tijdstippen.</target>
         <note />
       </trans-unit>
     </body>
