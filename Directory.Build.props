@@ -12,7 +12,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)eng\CodeAnalysis.ruleset</CodeAnalysisRuleset>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <XlfLanguages>ar;de;es;fr;gu;hi;it;tr;zh-Hans;zh-Hant</XlfLanguages>
+    <XlfLanguages>ar;de;es;fr;gu;hi;it;nl;tr;zh-Hans;zh-Hant</XlfLanguages>
   </PropertyGroup>
 
   <PropertyGroup>
