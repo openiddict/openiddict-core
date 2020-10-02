@@ -78,7 +78,7 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .AddFilter<RequireLogoutEndpointCachingEnabled>()
+                        .AddFilter<RequireLogoutRequestCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -179,7 +179,7 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .AddFilter<RequireLogoutEndpointCachingEnabled>()
+                        .AddFilter<RequireLogoutRequestCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -244,7 +244,7 @@ namespace OpenIddict.Server.Owin
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
                     await _cache.SetStringAsync(Cache.LogoutRequest + context.Request.RequestId,
-                        token, _options.CurrentValue.LogoutEndpointCachingPolicy);
+                        token, _options.CurrentValue.LogoutRequestCachingPolicy);
 
                     // Create a new GET logout request containing only the request_id parameter.
                     var address = WebUtilities.AddQueryString(
@@ -278,7 +278,7 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .AddFilter<RequireLogoutEndpointCachingEnabled>()
+                        .AddFilter<RequireLogoutRequestCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(int.MinValue + 100_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)

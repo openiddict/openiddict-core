@@ -43,7 +43,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests
                 options.Services.AddDistributedMemoryCache();
 
                 options.UseOwin()
-                       .EnableLogoutEndpointCaching();
+                       .EnableLogoutRequestCaching();
             });
 
             await using var client = await server.CreateClientAsync();
