@@ -1,0 +1,602 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file datatype="xml" source-language="en" target-language="nl" original="../OpenIddictResources.resx">
+    <body>
+      <trans-unit id="ID2000">
+        <source>The security token is missing.</source>
+        <target state="translated">Het beveiligingstoken ontbreekt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2001">
+        <source>The specified authorization code is invalid.</source>
+        <target state="translated">De opgegeven autorisatiecode is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2002">
+        <source>The specified device code is invalid.</source>
+        <target state="translated">De opgegeven toestelcode is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2003">
+        <source>The specified refresh token is invalid.</source>
+        <target state="translated">Het opgegeven vernieuwingstoken is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2004">
+        <source>The specified token is invalid.</source>
+        <target state="translated">Het opgegeven token is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2005">
+        <source>The specified token is not an authorization code.</source>
+        <target state="translated">Het opgegeven token is geen autorisatiecode.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2006">
+        <source>The specified token is not an device code.</source>
+        <target state="translated">Het opgegeven token is geen toestelcode.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2007">
+        <source>The specified token is not a refresh token.</source>
+        <target state="translated">Het opgegeven token is geen vernieuwingstoken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2008">
+        <source>The specified token is not an access token.</source>
+        <target state="translated">Het opgegeven token is geen toegangstoken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2009">
+        <source>The specified identity token is invalid.</source>
+        <target state="translated">Het opgegeven identiteitstoken is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2010">
+        <source>The specified authorization code has already been redeemed.</source>
+        <target state="translated">De opgegeven autorisatiecode werd al ingewisseld.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2011">
+        <source>The specified device code has already been redeemed.</source>
+        <target state="translated">De opgegeven toestelcode werd al ingewisseld.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2012">
+        <source>The specified refresh token has already been redeemed.</source>
+        <target state="translated">Het opgegeven vernieuwingstoken werd al ingewisseld.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2013">
+        <source>The specified token has already been redeemed.</source>
+        <target state="translated">Het opgegeven token werd al ingewisseld.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2014">
+        <source>The authorization has not been granted yet by the end user.</source>
+        <target state="translated">De autorisatie is nog niet verleend door de eindgebruiker.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2015">
+        <source>The authorization was denied by the end user.</source>
+        <target state="translated">De autorisatie is geweigerd door de eindgebruiker.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2016">
+        <source>The specified authorization code is no longer valid.</source>
+        <target state="translated">De opgegeven autorisatiecode is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2017">
+        <source>The specified device code is no longer valid.</source>
+        <target state="translated">De opgegeven toestelcode is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2018">
+        <source>The specified refresh token is no longer valid.</source>
+        <target state="translated">Het opgegeven vernieuwingstoken is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2019">
+        <source>The specified token is no longer valid.</source>
+        <target state="translated">Het opgegeven token is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2020">
+        <source>The authorization associated with the authorization code is no longer valid.</source>
+        <target state="translated">De autorisatie die aan de autorisatiecode is gekoppeld, is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2021">
+        <source>The authorization associated with the device code is no longer valid.</source>
+        <target state="translated">De autorisatie die aan de toestelcode is gekoppeld, is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2022">
+        <source>The authorization associated with the refresh token is no longer valid.</source>
+        <target state="translated">De autorisatie die aan het vernieuwingstoken is gekoppeld, is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2023">
+        <source>The authorization associated with the token is no longer valid.</source>
+        <target state="translated">De autorisatie die aan het token is gekoppeld, is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2024">
+        <source>The token request was rejected by the authentication server.</source>
+        <target state="translated">Het tokenverzoek is afgewezen door de authenticatieserver.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2025">
+        <source>The user information access demand was rejected by the authentication server.</source>
+        <target state="translated">Het verzoek om toegang tot gebruikersinformatie is afgewezen door de authenticatieserver.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2026">
+        <source>The specified user code is no longer valid.</source>
+        <target state="translated">De opgegeven gebruikerscode is niet langer geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2028">
+        <source>The '{0}' parameter is not supported.</source>
+        <target state="translated">De parameter '{0}' wordt niet ondersteund.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2029">
+        <source>The mandatory '{0}' parameter is missing.</source>
+        <target state="translated">De verplichte parameter '{0}' ontbreekt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2030">
+        <source>The '{0}' parameter must be a valid absolute URL.</source>
+        <target state="translated">De parameter '{0}' moet een geldige absolute URL zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2031">
+        <source>The '{0}' parameter must not include a fragment.</source>
+        <target state="translated">De parameter '{0}' mag geen fragment bevatten.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2032">
+        <source>The specified '{0}' is not supported.</source>
+        <target state="translated">De opgegeven '{0}' wordt niet ondersteund.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2033">
+        <source>The specified '{0}'/'{1}' combination is invalid.</source>
+        <target state="translated">De opgegeven combinatie '{0}'/'{1}' is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2034">
+        <source>The mandatory '{0}' scope is missing.</source>
+        <target state="translated">De verplichte scope '{0}' ontbreekt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2035">
+        <source>The '{0}' scope is not allowed.</source>
+        <target state="translated">De scope '{0}' is niet toegestaan.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2036">
+        <source>The client identifier cannot be null or empty.</source>
+        <target state="translated">Het client-ID mag niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2037">
+        <source>The '{0}' parameter cannot be used without '{1}'.</source>
+        <target state="translated">De parameter '{0}' kan niet worden gebruikt zonder '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2038">
+        <source>The status cannot be null or empty.</source>
+        <target state="translated">De status mag niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2039">
+        <source>Scopes cannot be null or empty.</source>
+        <target state="translated">Scopes mogen niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2040">
+        <source>The '{0}' and '{1}' parameters can only be used with a response type containing '{2}'.</source>
+        <target state="translated">De parameters '{0}' en '{1}' kunnen alleen worden gebruikt met een reactietype dat '{2}' bevat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2041">
+        <source>The specified '{0}' is not allowed when using PKCE.</source>
+        <target state="translated">De opgegeven '{0}' is niet toegestaan bij gebruik van PKCE.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2042">
+        <source>Scopes cannot contain spaces.</source>
+        <target state="translated">Scopes mogen geen spaties bevatten.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2043">
+        <source>The specified '{0}' is not valid for this client application.</source>
+        <target state="translated">De opgegeven '{0}' is niet geldig voor deze clienttoepassing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2044">
+        <source>The scope name cannot be null or empty.</source>
+        <target state="translated">De naam van de scope mag niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2045">
+        <source>The scope name cannot contain spaces.</source>
+        <target state="translated">De naam van de scope mag geen spaties bevatten.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2046">
+        <source>This client application is not allowed to use the authorization endpoint.</source>
+        <target state="translated">Deze clienttoepassing mag het autorisatie-eindpunt niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2047">
+        <source>The client application is not allowed to use the authorization code flow.</source>
+        <target state="translated">De clienttoepassing mag de autorisatiecodestroom niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2048">
+        <source>The client application is not allowed to use the implicit flow.</source>
+        <target state="translated">De clienttoepassing mag de impliciete stroom niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2049">
+        <source>The client application is not allowed to use the hybrid flow.</source>
+        <target state="translated">De clienttoepassing mag de hybride stroom niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2051">
+        <source>This client application is not allowed to use the specified scope.</source>
+        <target state="translated">Deze clienttoepassing mag de opgegeven scope niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2052">
+        <source>The specified '{0}' is invalid.</source>
+        <target state="translated">De opgegeven '{0}' is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2053">
+        <source>The '{0}' parameter is not valid for this client application.</source>
+        <target state="translated">De parameter '{0}' is niet geldig voor deze clienttoepassing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2054">
+        <source>The '{0}' parameter required for this client application is missing.</source>
+        <target state="translated">De parameter '{0}' die vereist is voor deze clienttoepassing, ontbreekt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2055">
+        <source>The specified client credentials are invalid.</source>
+        <target state="translated">De opgegeven clientreferenties zijn ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2056">
+        <source>This client application is not allowed to use the device endpoint.</source>
+        <target state="translated">Deze clienttoepassing mag het toesteleindpunt niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2057">
+        <source>The '{0}' and '{1}' parameters are required when using the client credentials grant.</source>
+        <target state="translated">De parameters '{0}' en '{1}' zijn vereist bij het gebruik van de toekenning van clientreferenties.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2058">
+        <source>The '{0}' parameter is required when using the device code grant.</source>
+        <target state="translated">De parameter '{0}' is vereist bij gebruik van de toestelcodetoekenning.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2059">
+        <source>The mandatory '{0}' and/or '{1}' parameters are missing.</source>
+        <target state="translated">De verplichte '{0}' en / of '{1}' parameters ontbreken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2060">
+        <source>A scope with the same name already exists.</source>
+        <target state="translated">Er bestaat al een scope met dezelfde naam.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2063">
+        <source>This client application is not allowed to use the token endpoint.</source>
+        <target state="translated">Deze clienttoepassing mag het tokeneindpunt niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2064">
+        <source>This client application is not allowed to use the specified grant type.</source>
+        <target state="translated">Deze clienttoepassing mag het opgegeven toekenningstype niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2065">
+        <source>The client application is not allowed to use the '{0}' scope.</source>
+        <target state="translated">De clienttoepassing mag de scope '{0}' niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2066">
+        <source>The specified authorization code cannot be used without sending a client identifier.</source>
+        <target state="translated">De opgegeven autorisatiecode kan niet worden gebruikt zonder een client-ID te verzenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2067">
+        <source>The specified device code cannot be used without sending a client identifier.</source>
+        <target state="translated">De opgegeven toestelcode kan niet worden gebruikt zonder een client-ID te verzenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2068">
+        <source>The specified refresh token cannot be used without sending a client identifier.</source>
+        <target state="translated">Het opgegeven vernieuwingstoken kan niet worden gebruikt zonder een client-ID te verzenden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2069">
+        <source>The specified authorization code cannot be used by this client application.</source>
+        <target state="translated">De opgegeven autorisatiecode kan niet worden gebruikt door deze clienttoepassing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2070">
+        <source>The specified device code cannot be used by this client application.</source>
+        <target state="translated">De opgegeven toestelcode kan niet worden gebruikt door deze clienttoepassing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2071">
+        <source>The specified refresh token cannot be used by this client application.</source>
+        <target state="translated">Het opgegeven vernieuwingstoken kan niet worden gebruikt door deze clienttoepassing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2072">
+        <source>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</source>
+        <target state="translated">De opgegeven parameter '{0}' komt niet overeen met het omleidingsadres van de client waarnaar de autorisatiecode oorspronkelijk was verzonden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2073">
+        <source>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</source>
+        <target state="translated">De parameter '{0}' kan niet worden gebruikt als er geen '{1}' is opgegeven in het autorisatieverzoek.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2074">
+        <source>The '{0}' parameter is not valid in this context.</source>
+        <target state="translated">De parameter '{0}' is in deze context niet geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2075">
+        <source>This client application is not allowed to use the introspection endpoint.</source>
+        <target state="translated">Deze clienttoepassing mag het introspectie-eindpunt niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2076">
+        <source>The specified token cannot be introspected.</source>
+        <target state="translated">Er kan geen introspectie worden uitgevoerd met het opgegeven token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2077">
+        <source>The client application is not allowed to introspect the specified token.</source>
+        <target state="translated">De clienttoepassing mag geen introspectie uitvoeren met het opgegeven token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2078">
+        <source>This client application is not allowed to use the revocation endpoint.</source>
+        <target state="translated">Deze clienttoepassing mag het intrekkings-eindpunt niet gebruiken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2079">
+        <source>This token cannot be revoked.</source>
+        <target state="translated">Dit token kan niet worden ingetrokken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2080">
+        <source>The client application is not allowed to revoke the specified token.</source>
+        <target state="translated">De clienttoepassing mag het opgegeven token niet intrekken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2081">
+        <source>The mandatory '{0}' header is missing.</source>
+        <target state="translated">De verplichte '{0}' header ontbreekt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2082">
+        <source>The specified '{0}' header is invalid.</source>
+        <target state="translated">De opgegeven '{0}' header is ongeldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2083">
+        <source>This server only accepts HTTPS requests.</source>
+        <target state="translated">Deze server accepteert alleen HTTPS-verzoeken.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2084">
+        <source>The specified HTTP method is not valid.</source>
+        <target state="translated">De opgegeven HTTP-methode is niet geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2085">
+        <source>A token with the same reference identifier already exists.</source>
+        <target state="translated">Er bestaat al een token met dezelfde referentie-ID.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2086">
+        <source>The token type cannot be null or empty.</source>
+        <target state="translated">Het token type mag niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2087">
+        <source>Multiple client credentials cannot be specified.</source>
+        <target state="translated">Er kunnen niet meerdere clientreferenties worden opgegeven.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2088">
+        <source>The issuer associated to the specified token is not valid.</source>
+        <target state="translated">De uitgever die aan het opgegeven token is gekoppeld, is niet geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2089">
+        <source>The specified token is not of the expected type.</source>
+        <target state="translated">Het opgegeven token is niet van het verwachte type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2090">
+        <source>The signing key associated to the specified token was not found.</source>
+        <target state="translated">De ondertekeningssleutel die aan het opgegeven token is gekoppeld, is niet gevonden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2091">
+        <source>The signature associated to the specified token is not valid.</source>
+        <target state="translated">De handtekening die aan het opgegeven token is gekoppeld, is niet geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2092">
+        <source>This resource server is currently unavailable.</source>
+        <target state="translated">Deze bronserver is momenteel niet beschikbaar.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2093">
+        <source>The specified token doesn't contain any audience.</source>
+        <target state="translated">Het opgegeven token bevat geen doelgroep.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2094">
+        <source>The specified token cannot be used with this resource server.</source>
+        <target state="translated">Het opgegeven token kan niet worden gebruikt met deze bronserver.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2095">
+        <source>The user represented by the token is not allowed to perform the requested action.</source>
+        <target state="translated">De gebruiker die wordt vertegenwoordigd door het token, mag de gevraagde actie niet uitvoeren.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2096">
+        <source>No issuer could be found in the server configuration.</source>
+        <target state="translated">Er is geen uitgever gevonden in de serverconfiguratie.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2097">
+        <source>A server configuration containing an invalid issuer was returned.</source>
+        <target state="translated">Er is een serverconfiguratie met een ongeldige uitgever geretourneerd.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2098">
+        <source>The issuer returned in the server configuration is not valid.</source>
+        <target state="translated">De uitgever die in de serverconfiguratie is geretourneerd, is niet geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2099">
+        <source>No JWKS endpoint could be found in the server configuration.</source>
+        <target state="translated">Er is geen JWKS-eindpunt gevonden in de serverconfiguratie.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2100">
+        <source>A server configuration containing an invalid JWKS endpoint URL was returned.</source>
+        <target state="translated">Er is een serverconfiguratie met een ongeldige JWKS-eindpunt URL geretourneerd.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2101">
+        <source>A server configuration containing an invalid introspection endpoint URL was returned.</source>
+        <target state="translated">Er is een serverconfiguratie met een ongeldige introspectie-eindpunt URL geretourneerd.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2102">
+        <source>The JWKS document didn't contain a valid '{0}' node with at least one key.</source>
+        <target state="translated">Het JWKS-document bevat geen geldig '{0}' element met ten minste één sleutel.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2103">
+        <source>A JWKS response containing an unsupported key was returned.</source>
+        <target state="translated">Er is een JWKS-antwoord geretourneerd met een niet-ondersteunde sleutel.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2104">
+        <source>A JWKS response containing an invalid key was returned.</source>
+        <target state="translated">Er is een JWKS-antwoord met een ongeldige sleutel geretourneerd.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2105">
+        <source>The mandatory '{0}' parameter couldn't be found in the introspection response.</source>
+        <target state="translated">De verplichte parameter '{0}' is niet gevonden in het introspectie-antwoord.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2106">
+        <source>The token was rejected by the remote authentication server.</source>
+        <target state="translated">Het token werd geweigerd door de externe authenticatieserver.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2107">
+        <source>The '{0}' claim is malformed or isn't of the expected type.</source>
+        <target state="translated">De claim '{0}' heeft een onjuiste indeling of is niet van het verwachte type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2108">
+        <source>An introspection response containing a malformed issuer was returned.</source>
+        <target state="translated">Het introspectie-antwoord bevat een onjuiste uitgever.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2109">
+        <source>The issuer returned in the introspection response is not valid.</source>
+        <target state="translated">De uitgever die is geretourneerd in het introspectie-antwoord is niet geldig.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2110">
+        <source>The type of the introspected token doesn't match the expected type.</source>
+        <target state="translated">Het type van het geïntrospecteerde token komt niet overeen met het verwachte type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2111">
+        <source>An application with the same client identifier already exists.</source>
+        <target state="translated">Er bestaat al een applicatie met dezelfde client-ID.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2112">
+        <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
+        <target state="translated">Alleen vertrouwelijke, hybride of openbare applicaties worden ondersteund door de standaard applicatiebeheerder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2113">
+        <source>The client secret cannot be null or empty for a confidential application.</source>
+        <target state="translated">Het clientgeheim mag niet leeg of leeg zijn voor een vertrouwelijke toepassing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2114">
+        <source>A client secret cannot be associated with a public application.</source>
+        <target state="translated">Een clientgeheim kan niet worden gekoppeld aan een openbare toepassing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2115">
+        <source>Callback URLs cannot contain a fragment.</source>
+        <target state="translated">Callback URL's mogen geen fragment bevatten.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2116">
+        <source>The authorization type cannot be null or empty.</source>
+        <target state="translated">Het autorisatietype mag niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2117">
+        <source>The specified authorization type is not supported by the default token manager.</source>
+        <target state="translated">Het opgegeven autorisatietype wordt niet ondersteund door de standaard tokenmanager.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2118">
+        <source>The client type cannot be null or empty.</source>
+        <target state="translated">Het client type mag niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2119">
+        <source>Callback URLs cannot be null or empty.</source>
+        <target state="translated">Callback URL's mogen niet null of leeg zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID2120">
+        <source>Callback URLs must be valid absolute URLs.</source>
+        <target state="translated">Callback URL's moeten geldige absolute URL's zijn.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID8000">
+        <source>Removes orphaned tokens and authorizations from the database.</source>
+        <target state="translated">Verwijdert ongebruikte tokens en autorisaties uit de database.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ID8001">
+        <source>Starts the scheduled task at regular intervals.</source>
+        <target state="translated">Start de geplande taak op regelmatige tijdstippen.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
