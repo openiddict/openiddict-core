@@ -1,0 +1,483 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="nl" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="ID2000" datatype="html">
+        <source>The security token is missing.</source>
+        <target>Het beveiligingstoken ontbreekt.</target>
+      </trans-unit>
+      <trans-unit id="ID2001" datatype="html">
+        <source>The specified authorization code is invalid.</source>
+        <target>De opgegeven autorisatiecode is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2002" datatype="html">
+        <source>The specified device code is invalid.</source>
+        <target>De opgegeven toestelcode is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2003" datatype="html">
+        <source>The specified refresh token is invalid.</source>
+        <target>Het opgegeven vernieuwingstoken is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2004" datatype="html">
+        <source>The specified token is invalid.</source>
+        <target>Het opgegeven token is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2005" datatype="html">
+        <source>The specified token is not an authorization code.</source>
+        <target>Het opgegeven token is geen autorisatiecode.</target>
+      </trans-unit>
+      <trans-unit id="ID2006" datatype="html">
+        <source>The specified token is not an device code.</source>
+        <target>Het opgegeven token is geen toestelcode.</target>
+      </trans-unit>
+      <trans-unit id="ID2007" datatype="html">
+        <source>The specified token is not a refresh token.</source>
+        <target>Het opgegeven token is geen vernieuwingstoken.</target>
+      </trans-unit>
+      <trans-unit id="ID2008" datatype="html">
+        <source>The specified token is not an access token.</source>
+        <target>Het opgegeven token is geen toegangstoken.</target>
+      </trans-unit>
+      <trans-unit id="ID2009" datatype="html">
+        <source>The specified identity token is invalid.</source>
+        <target>Het opgegeven identiteitstoken is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2010" datatype="html">
+        <source>The specified authorization code has already been redeemed.</source>
+        <target>De opgegeven autorisatiecode is al ingewisseld.</target>
+      </trans-unit>
+      <trans-unit id="ID2011" datatype="html">
+        <source>The specified device code has already been redeemed.</source>
+        <target>De opgegeven toestelcode is al ingewisseld.</target>
+      </trans-unit>
+      <trans-unit id="ID2012" datatype="html">
+        <source>The specified refresh token has already been redeemed.</source>
+        <target>Het opgegeven vernieuwingstoken is al ingewisseld.</target>
+      </trans-unit>
+      <trans-unit id="ID2013" datatype="html">
+        <source>The specified token has already been redeemed.</source>
+        <target>Het opgegeven token is al ingewisseld.</target>
+      </trans-unit>
+      <trans-unit id="ID2014" datatype="html">
+        <source>The authorization has not been granted yet by the end user.</source>
+        <target>De autorisatie is nog niet verleend door de eindgebruiker.</target>
+      </trans-unit>
+      <trans-unit id="ID2015" datatype="html">
+        <source>The authorization was denied by the end user.</source>
+        <target>De autorisatie is geweigerd door de eindgebruiker.</target>
+      </trans-unit>
+      <trans-unit id="ID2016" datatype="html">
+        <source>The specified authorization code is no longer valid.</source>
+        <target>De opgegeven autorisatiecode is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2017" datatype="html">
+        <source>The specified device code is no longer valid.</source>
+        <target>De opgegeven toestelcode is niet meer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2018" datatype="html">
+        <source>The specified refresh token is no longer valid.</source>
+        <target>Het opgegeven vernieuwingstoken is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2019" datatype="html">
+        <source>The specified token is no longer valid.</source>
+        <target>Het opgegeven token is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2020" datatype="html">
+        <source>The authorization associated with the authorization code is no longer valid.</source>
+        <target>De autorisatie die aan de autorisatiecode is gekoppeld, is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2021" datatype="html">
+        <source>The authorization associated with the device code is no longer valid.</source>
+        <target>De autorisatie die aan de toestelcode is gekoppeld, is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2022" datatype="html">
+        <source>The authorization associated with the refresh token is no longer valid.</source>
+        <target>De autorisatie die aan het vernieuwingstoken is gekoppeld, is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2023" datatype="html">
+        <source>The authorization associated with the token is no longer valid.</source>
+        <target>De autorisatie die aan het token is gekoppeld, is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2024" datatype="html">
+        <source>The token request was rejected by the authentication server.</source>
+        <target>Het tokenverzoek is afgewezen door de authenticatieserver.</target>
+      </trans-unit>
+      <trans-unit id="ID2025" datatype="html">
+        <source>The user information access demand was rejected by the authentication server.</source>
+        <target>Het verzoek om toegang tot gebruikersinformatie is afgewezen door de authenticatieserver.</target>
+      </trans-unit>
+      <trans-unit id="ID2026" datatype="html">
+        <source>The specified user code is no longer valid.</source>
+        <target>De opgegeven gebruikerscode is niet langer geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2028" datatype="html">
+        <source>The &apos;{0}&apos; parameter is not supported.</source>
+        <target>De parameter &apos;{0}&apos; wordt niet ondersteund.</target>
+      </trans-unit>
+      <trans-unit id="ID2029" datatype="html">
+        <source>The mandatory &apos;{0}&apos; parameter is missing.</source>
+        <target>De verplichte parameter &apos;{0}&apos; ontbreekt.</target>
+      </trans-unit>
+      <trans-unit id="ID2030" datatype="html">
+        <source>The &apos;{0}&apos; parameter must be a valid absolute URL.</source>
+        <target>De parameter &apos;{0}&apos; moet een geldige absolute URL zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2031" datatype="html">
+        <source>The &apos;{0}&apos; parameter must not include a fragment.</source>
+        <target>De parameter &apos;{0}&apos; mag geen fragment bevatten.</target>
+      </trans-unit>
+      <trans-unit id="ID2032" datatype="html">
+        <source>The specified &apos;{0}&apos; is not supported.</source>
+        <target>De opgegeven &apos;{0}&apos; wordt niet ondersteund.</target>
+      </trans-unit>
+      <trans-unit id="ID2033" datatype="html">
+        <source>The specified &apos;{0}&apos;/&apos;{1}&apos; combination is invalid.</source>
+        <target>De opgegeven combinatie &apos;{0}&apos; / &apos;{1}&apos; is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2034" datatype="html">
+        <source>The mandatory &apos;{0}&apos; scope is missing.</source>
+        <target>De verplichte scope &apos;{0}&apos; ontbreekt.</target>
+      </trans-unit>
+      <trans-unit id="ID2035" datatype="html">
+        <source>The &apos;{0}&apos; scope is not allowed.</source>
+        <target>De scope &apos;{0}&apos; is niet toegestaan.</target>
+      </trans-unit>
+      <trans-unit id="ID2036" datatype="html">
+        <source>The client identifier cannot be null or empty.</source>
+        <target>Het client-ID mag niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2037" datatype="html">
+        <source>The &apos;{0}&apos; parameter cannot be used without &apos;{1}&apos;.</source>
+        <target>De parameter &apos;{0}&apos; kan niet worden gebruikt zonder &apos;{1}&apos;.</target>
+      </trans-unit>
+      <trans-unit id="ID2038" datatype="html">
+        <source>The status cannot be null or empty.</source>
+        <target>De status mag niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2039" datatype="html">
+        <source>Scopes cannot be null or empty.</source>
+        <target>Scope mag niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2040" datatype="html">
+        <source>The &apos;{0}&apos; and &apos;{1}&apos; parameters can only be used with a response type containing &apos;{2}&apos;.</source>
+        <target>De parameters &apos;{0}&apos; en &apos;{1}&apos; kunnen alleen worden gebruikt met een reactietype dat &apos;{2}&apos; bevat.</target>
+      </trans-unit>
+      <trans-unit id="ID2041" datatype="html">
+        <source>The specified &apos;{0}&apos; is not allowed when using PKCE.</source>
+        <target>De opgegeven &apos;{0}&apos; is niet toegestaan bij gebruik van PKCE.</target>
+      </trans-unit>
+      <trans-unit id="ID2042" datatype="html">
+        <source>Scopes cannot contain spaces.</source>
+        <target>Scope mag geen spaties bevatten.</target>
+      </trans-unit>
+      <trans-unit id="ID2043" datatype="html">
+        <source>The specified &apos;{0}&apos; is not valid for this client application.</source>
+        <target>De opgegeven &apos;{0}&apos; is niet geldig voor deze clienttoepassing.</target>
+      </trans-unit>
+      <trans-unit id="ID2044" datatype="html">
+        <source>The scope name cannot be null or empty.</source>
+        <target>De naam van de scope mag niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2045" datatype="html">
+        <source>The scope name cannot contain spaces.</source>
+        <target>De naam van de scope mag geen spaties bevatten.</target>
+      </trans-unit>
+      <trans-unit id="ID2046" datatype="html">
+        <source>This client application is not allowed to use the authorization endpoint.</source>
+        <target>Deze clienttoepassing mag het autorisatie-eindpunt niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2047" datatype="html">
+        <source>The client application is not allowed to use the authorization code flow.</source>
+        <target>De clienttoepassing mag de autorisatiecodestroom niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2048" datatype="html">
+        <source>The client application is not allowed to use the implicit flow.</source>
+        <target>De clienttoepassing mag de impliciete stroom niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2049" datatype="html">
+        <source>The client application is not allowed to use the hybrid flow.</source>
+        <target>De clienttoepassing mag de hybride stroom niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2051" datatype="html">
+        <source>This client application is not allowed to use the specified scope.</source>
+        <target>Deze clienttoepassing mag de opgegeven scope niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2052" datatype="html">
+        <source>The specified &apos;{0}&apos; is invalid.</source>
+        <target>De opgegeven &apos;{0}&apos; is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2053" datatype="html">
+        <source>The &apos;{0}&apos; parameter is not valid for this client application.</source>
+        <target>De parameter &apos;{0}&apos; is niet geldig voor deze clienttoepassing.</target>
+      </trans-unit>
+      <trans-unit id="ID2054" datatype="html">
+        <source>The &apos;{0}&apos; parameter required for this client application is missing.</source>
+        <target>De parameter &apos;{0}&apos; die vereist is voor deze clienttoepassing, ontbreekt.</target>
+      </trans-unit>
+      <trans-unit id="ID2055" datatype="html">
+        <source>The specified client credentials are invalid.</source>
+        <target>De opgegeven clientreferenties zijn ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2056" datatype="html">
+        <source>This client application is not allowed to use the device endpoint.</source>
+        <target>Deze clienttoepassing mag het toesteleindpunt niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2057" datatype="html">
+        <source>The &apos;{0}&apos; and &apos;{1}&apos; parameters are required when using the client credentials grant.</source>
+        <target>De parameters &apos;{0}&apos; en &apos;{1}&apos; zijn vereist bij het gebruik van de toekenning van clientreferenties.</target>
+      </trans-unit>
+      <trans-unit id="ID2058" datatype="html">
+        <source>The &apos;{0}&apos; parameter is required when using the device code grant.</source>
+        <target>De parameter &apos;{0}&apos; is vereist bij gebruik van de toestelcodetoekenning.</target>
+      </trans-unit>
+      <trans-unit id="ID2059" datatype="html">
+        <source>The mandatory &apos;{0}&apos; and/or &apos;{1}&apos; parameters are missing.</source>
+        <target>De verplichte &apos;{0}&apos; en / of &apos;{1}&apos; parameters ontbreken.</target>
+      </trans-unit>
+      <trans-unit id="ID2060" datatype="html">
+        <source>A scope with the same name already exists.</source>
+        <target>Er bestaat al een scope met dezelfde naam.</target>
+      </trans-unit>
+      <trans-unit id="ID2063" datatype="html">
+        <source>This client application is not allowed to use the token endpoint.</source>
+        <target>Deze clienttoepassing mag het tokeneindpunt niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2064" datatype="html">
+        <source>This client application is not allowed to use the specified grant type.</source>
+        <target>Deze clienttoepassing mag het opgegeven toekenningstype niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2065" datatype="html">
+        <source>The client application is not allowed to use the &apos;{0}&apos; scope.</source>
+        <target>De clienttoepassing mag de scope &apos;{0}&apos; niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2066" datatype="html">
+        <source>The specified authorization code cannot be used without sending a client identifier.</source>
+        <target>De opgegeven autorisatiecode kan niet worden gebruikt zonder een client-ID te verzenden.</target>
+      </trans-unit>
+      <trans-unit id="ID2067" datatype="html">
+        <source>The specified device code cannot be used without sending a client identifier.</source>
+        <target>De opgegeven toestelcode kan niet worden gebruikt zonder een client-ID te verzenden.</target>
+      </trans-unit>
+      <trans-unit id="ID2068" datatype="html">
+        <source>The specified refresh token cannot be used without sending a client identifier.</source>
+        <target>Het opgegeven vernieuwingstoken kan niet worden gebruikt zonder een client-ID te verzenden.</target>
+      </trans-unit>
+      <trans-unit id="ID2069" datatype="html">
+        <source>The specified authorization code cannot be used by this client application.</source>
+        <target>De opgegeven autorisatiecode kan niet worden gebruikt door deze clienttoepassing.</target>
+      </trans-unit>
+      <trans-unit id="ID2070" datatype="html">
+        <source>The specified device code cannot be used by this client application.</source>
+        <target>De opgegeven toestelcode kan niet worden gebruikt door deze clienttoepassing.</target>
+      </trans-unit>
+      <trans-unit id="ID2071" datatype="html">
+        <source>The specified refresh token cannot be used by this client application.</source>
+        <target>Het opgegeven vernieuwingstoken kan niet worden gebruikt door deze clienttoepassing.</target>
+      </trans-unit>
+      <trans-unit id="ID2072" datatype="html">
+        <source>The specified &apos;{0}&apos; parameter doesn&apos;t match the client redirection address the authorization code was initially sent to.</source>
+        <target>De opgegeven parameter &apos;{0}&apos; komt niet overeen met het omleidingsadres van de client waarnaar de autorisatiecode oorspronkelijk was verzonden.</target>
+      </trans-unit>
+      <trans-unit id="ID2073" datatype="html">
+        <source>The &apos;{0}&apos; parameter cannot be used when no &apos;{1}&apos; was specified in the authorization request.</source>
+        <target>De parameter &apos;{0}&apos; kan niet worden gebruikt als er geen &apos;{1}&apos; is opgegeven in het autorisatieverzoek.</target>
+      </trans-unit>
+      <trans-unit id="ID2074" datatype="html">
+        <source>The &apos;{0}&apos; parameter is not valid in this context.</source>
+        <target>De parameter &apos;{0}&apos; is in deze context niet geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2075" datatype="html">
+        <source>This client application is not allowed to use the introspection endpoint.</source>
+        <target>Deze clienttoepassing mag het introspectie-eindpunt niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2076" datatype="html">
+        <source>The specified token cannot be introspected.</source>
+        <target>Er kan geen introspectie worden uitgevoerd met het opgegeven token.</target>
+      </trans-unit>
+      <trans-unit id="ID2077" datatype="html">
+        <source>The client application is not allowed to introspect the specified token.</source>
+        <target>De clienttoepassing mag geen introspectie uitvoeren met het opgegeven token.</target>
+      </trans-unit>
+      <trans-unit id="ID2078" datatype="html">
+        <source>This client application is not allowed to use the revocation endpoint.</source>
+        <target>Deze clienttoepassing mag het intrekkings-eindpunt niet gebruiken.</target>
+      </trans-unit>
+      <trans-unit id="ID2079" datatype="html">
+        <source>This token cannot be revoked.</source>
+        <target>Dit token kan niet worden ingetrokken.</target>
+      </trans-unit>
+      <trans-unit id="ID2080" datatype="html">
+        <source>The client application is not allowed to revoke the specified token.</source>
+        <target>De clienttoepassing mag het opgegeven token niet intrekken.</target>
+      </trans-unit>
+      <trans-unit id="ID2081" datatype="html">
+        <source>The mandatory &apos;{0}&apos; header is missing.</source>
+        <target>De verplichte &apos;{0}&apos; koptekst ontbreekt.</target>
+      </trans-unit>
+      <trans-unit id="ID2082" datatype="html">
+        <source>The specified &apos;{0}&apos; header is invalid.</source>
+        <target>De opgegeven &apos;{0}&apos; koptekst is ongeldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2083" datatype="html">
+        <source>This server only accepts HTTPS requests.</source>
+        <target>Deze server accepteert alleen HTTPS-verzoeken.</target>
+      </trans-unit>
+      <trans-unit id="ID2084" datatype="html">
+        <source>The specified HTTP method is not valid.</source>
+        <target>De opgegeven HTTP-methode is niet geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2085" datatype="html">
+        <source>A token with the same reference identifier already exists.</source>
+        <target>Er bestaat al een token met dezelfde referentie-ID.</target>
+      </trans-unit>
+      <trans-unit id="ID2086" datatype="html">
+        <source>The token type cannot be null or empty.</source>
+        <target>Het token type mag niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2087" datatype="html">
+        <source>Multiple client credentials cannot be specified.</source>
+        <target>Er kunnen niet meerdere clientreferenties worden opgegeven.</target>
+      </trans-unit>
+      <trans-unit id="ID2088" datatype="html">
+        <source>The issuer associated to the specified token is not valid.</source>
+        <target>De uitgever die aan het opgegeven token is gekoppeld, is niet geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2089" datatype="html">
+        <source>The specified token is not of the expected type.</source>
+        <target>Het opgegeven token is niet van het verwachte type.</target>
+      </trans-unit>
+      <trans-unit id="ID2090" datatype="html">
+        <source>The signing key associated to the specified token was not found.</source>
+        <target>De ondertekeningssleutel die aan het opgegeven token is gekoppeld, is niet gevonden.</target>
+      </trans-unit>
+      <trans-unit id="ID2091" datatype="html">
+        <source>The signature associated to the specified token is not valid.</source>
+        <target>De handtekening die aan het opgegeven token is gekoppeld, is niet geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2092" datatype="html">
+        <source>This resource server is currently unavailable.</source>
+        <target>Deze bronserver is momenteel niet beschikbaar.</target>
+      </trans-unit>
+      <trans-unit id="ID2093" datatype="html">
+        <source>The specified token doesn&apos;t contain any audience.</source>
+        <target>Het opgegeven token bevat geen doelgroep.</target>
+      </trans-unit>
+      <trans-unit id="ID2094" datatype="html">
+        <source>The specified token cannot be used with this resource server.</source>
+        <target>Het opgegeven token kan niet worden gebruikt met deze bronserver.</target>
+      </trans-unit>
+      <trans-unit id="ID2095" datatype="html">
+        <source>The user represented by the token is not allowed to perform the requested action.</source>
+        <target>De gebruiker die wordt vertegenwoordigd door het token, mag de gevraagde actie niet uitvoeren.</target>
+      </trans-unit>
+      <trans-unit id="ID2096" datatype="html">
+        <source>No issuer could be found in the server configuration.</source>
+        <target>Er is geen uitgever gevonden in de serverconfiguratie.</target>
+      </trans-unit>
+      <trans-unit id="ID2097" datatype="html">
+        <source>A server configuration containing an invalid issuer was returned.</source>
+        <target>Er is een serverconfiguratie met een ongeldige uitgever geretourneerd.</target>
+      </trans-unit>
+      <trans-unit id="ID2098" datatype="html">
+        <source>The issuer returned in the server configuration is not valid.</source>
+        <target>De uitgever die in de serverconfiguratie is geretourneerd, is niet geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2099" datatype="html">
+        <source>No JWKS endpoint could be found in the server configuration.</source>
+        <target>Er is geen JWKS-eindpunt gevonden in de serverconfiguratie.</target>
+      </trans-unit>
+      <trans-unit id="ID2100" datatype="html">
+        <source>A server configuration containing an invalid JWKS endpoint URL was returned.</source>
+        <target>Er is een serverconfiguratie met een ongeldige JWKS-eindpunt URL geretourneerd.</target>
+      </trans-unit>
+      <trans-unit id="ID2101" datatype="html">
+        <source>A server configuration containing an invalid introspection endpoint URL was returned.</source>
+        <target>Er is een serverconfiguratie met een ongeldige introspectie-eindpunt URL geretourneerd.</target>
+      </trans-unit>
+      <trans-unit id="ID2102" datatype="html">
+        <source>The JWKS document didn&apos;t contain a valid &apos;{0}&apos; node with at least one key.</source>
+        <target>Het JWKS-document bevat geen geldig &apos;{0}&apos; element met ten minste één sleutel.</target>
+      </trans-unit>
+      <trans-unit id="ID2103" datatype="html">
+        <source>A JWKS response containing an unsupported key was returned.</source>
+        <target>Er is een JWKS-antwoord geretourneerd met een niet-ondersteunde sleutel.</target>
+      </trans-unit>
+      <trans-unit id="ID2104" datatype="html">
+        <source>A JWKS response containing an invalid key was returned.</source>
+        <target>Er is een JWKS-antwoord met een ongeldige sleutel geretourneerd.</target>
+      </trans-unit>
+      <trans-unit id="ID2105" datatype="html">
+        <source>The mandatory &apos;{0}&apos; parameter couldn&apos;t be found in the introspection response.</source>
+        <target>De verplichte parameter &apos;{0}&apos; is niet gevonden in het introspectie-antwoord.</target>
+      </trans-unit>
+      <trans-unit id="ID2106" datatype="html">
+        <source>The token was rejected by the remote authentication server.</source>
+        <target>Het token werd geweigerd door de externe authenticatieserver.</target>
+      </trans-unit>
+      <trans-unit id="ID2107" datatype="html">
+        <source>The &apos;{0}&apos; claim is malformed or isn&apos;t of the expected type.</source>
+        <target>De claim &apos;{0}&apos; heeft een onjuiste indeling of is niet van het verwachte type.</target>
+      </trans-unit>
+      <trans-unit id="ID2108" datatype="html">
+        <source>An introspection response containing a malformed issuer was returned.</source>
+        <target>Het introspectie-antwoord bevat een onjuiste uitgever.</target>
+      </trans-unit>
+      <trans-unit id="ID2109" datatype="html">
+        <source>The issuer returned in the introspection response is not valid.</source>
+        <target>De uitgever die is geretourneerd in het introspectie-antwoord is niet geldig.</target>
+      </trans-unit>
+      <trans-unit id="ID2110" datatype="html">
+        <source>The type of the introspected token doesn&apos;t match the expected type.</source>
+        <target>Het type van het geintrospecteerde token komt niet overeen met het verwachte type.</target>
+      </trans-unit>
+      <trans-unit id="ID2111" datatype="html">
+        <source>An application with the same client identifier already exists.</source>
+        <target>Er bestaat al een applicatie met dezelfde client-ID.</target>
+      </trans-unit>
+      <trans-unit id="ID2112" datatype="html">
+        <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
+        <target>Alleen vertrouwelijke, hybride of openbare applicaties worden ondersteund door de standaard applicatiebeheerder.</target>
+      </trans-unit>
+      <trans-unit id="ID2113" datatype="html">
+        <source>The client secret cannot be null or empty for a confidential application.</source>
+        <target>Het clientgeheim mag niet leeg of leeg zijn voor een vertrouwelijke toepassing.</target>
+      </trans-unit>
+      <trans-unit id="ID2114" datatype="html">
+        <source>A client secret cannot be associated with a public application.</source>
+        <target>Een clientgeheim kan niet worden gekoppeld aan een openbare toepassing.</target>
+      </trans-unit>
+      <trans-unit id="ID2115" datatype="html">
+        <source>Callback URLs cannot contain a fragment.</source>
+        <target>Callback URL&apos;s mogen geen fragment bevatten.</target>
+      </trans-unit>
+      <trans-unit id="ID2116" datatype="html">
+        <source>The authorization type cannot be null or empty.</source>
+        <target>Het autorisatietype mag niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2117" datatype="html">
+        <source>The specified authorization type is not supported by the default token manager.</source>
+        <target>Het opgegeven autorisatietype wordt niet ondersteund door de standaard tokenmanager.</target>
+      </trans-unit>
+      <trans-unit id="ID2118" datatype="html">
+        <source>The client type cannot be null or empty.</source>
+        <target>Het client type mag niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2119" datatype="html">
+        <source>Callback URLs cannot be null or empty.</source>
+        <target>Callback URL&apos;s mogen niet null of leeg zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID2120" datatype="html">
+        <source>Callback URLs must be valid absolute URLs.</source>
+        <target>Callback URL&apos;s moeten geldige absolute URL&apos;s zijn.</target>
+      </trans-unit>
+      <trans-unit id="ID8000" datatype="html">
+        <source>Removes orphaned tokens and authorizations from the database.</source>
+        <target>Verwijdert ongebruikte tokens en autorisaties uit de database.</target>
+      </trans-unit>
+      <trans-unit id="ID8001" datatype="html">
+        <source>Starts the scheduled task at regular intervals.</source>
+        <target>Start de geplande taak op regelmatige momenten.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
