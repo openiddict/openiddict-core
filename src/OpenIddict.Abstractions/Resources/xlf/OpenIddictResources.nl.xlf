@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en" target-language="nl" datatype="plaintext" original="ng2.template">
+  <file datatype="xml" source-language="en" target-language="nl" original="../OpenIddictResources.resx">
     <body>
       <trans-unit id="ID2000" datatype="html">
         <source>The security token is missing.</source>
