@@ -451,7 +451,7 @@ namespace OpenIddict.EntityFramework
 
                 foreach (var property in document.RootElement.EnumerateObject())
                 {
-                    builder[property.Name] = property.Value;
+                    builder[property.Name] = property.Value.Clone();
                 }
 
                 return builder.ToImmutable();
