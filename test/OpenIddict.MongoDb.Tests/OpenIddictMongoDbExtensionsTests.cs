@@ -20,7 +20,7 @@ namespace OpenIddict.MongoDb.Tests
         public void UseMongoDb_ThrowsAnExceptionForNullBuilder()
         {
             // Arrange
-            var builder = (OpenIddictCoreBuilder) null;
+            var builder = (OpenIddictCoreBuilder) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMongoDb());
@@ -36,7 +36,7 @@ namespace OpenIddict.MongoDb.Tests
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMongoDb(configuration: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMongoDb(configuration: null!));
 
             Assert.Equal("configuration", exception.ParamName);
         }
