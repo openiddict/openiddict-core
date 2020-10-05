@@ -103,7 +103,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/connect/logout");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/connect/logout");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -353,7 +353,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -379,7 +379,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -445,7 +445,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -471,7 +471,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -510,7 +510,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -552,8 +552,8 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
-            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]) response["parameter_with_multiple_values"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
 
         [Fact]
@@ -590,7 +590,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("http://www.fabrikam.com/path", (string) response["target_uri"]);
+            Assert.Equal("http://www.fabrikam.com/path", (string?) response["target_uri"]);
         }
 
         [Fact]

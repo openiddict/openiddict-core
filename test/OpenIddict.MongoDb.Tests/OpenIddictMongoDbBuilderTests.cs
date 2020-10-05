@@ -22,7 +22,7 @@ namespace OpenIddict.MongoDb.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictMongoDbBuilder(services));
@@ -240,7 +240,7 @@ namespace OpenIddict.MongoDb.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.UseDatabase(database: null);
+                return builder.UseDatabase(database: null!);
             });
 
             Assert.Equal("database", exception.ParamName);

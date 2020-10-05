@@ -30,7 +30,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests
                     builder.UseInlineHandler(context =>
                     {
                         var request = context.Transaction.GetOwinRequest();
-                        request.Headers["Authorization"] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
+                        request?.Headers!["Authorization"] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
                         return default;
                     });

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;net472;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

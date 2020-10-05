@@ -31,7 +31,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                     builder.UseInlineHandler(context =>
                     {
                         var request = context.Transaction.GetHttpRequest();
-                        request.Headers[HeaderNames.Authorization] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
+                        request?.Headers![HeaderNames.Authorization] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
                         return default;
                     });

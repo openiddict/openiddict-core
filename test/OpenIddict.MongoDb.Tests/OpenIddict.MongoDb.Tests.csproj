@@ -4,6 +4,7 @@
     <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <SignAssembly>false</SignAssembly>
     <PublicSign>false</PublicSign>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -85,7 +85,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string) null),
+                new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string?) null),
                 new KeyValuePair<string, OpenIddictParameter>("empty-parameter", string.Empty)
             });
 
@@ -99,13 +99,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, string>("parameter", "Fabrikam"),
-                new KeyValuePair<string, string>("parameter", "Contoso")
+                new KeyValuePair<string, string?>("parameter", "Fabrikam"),
+                new KeyValuePair<string, string?>("parameter", "Contoso")
             });
 
             // Assert
             Assert.Equal(1, message.Count);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) message.GetParameter("parameter"));
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
         }
 
         [Fact]
@@ -114,12 +114,12 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, string[]>("parameter", new[] { "Fabrikam", "Contoso" })
+                new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam", "Contoso" })
             });
 
             // Assert
             Assert.Equal(1, message.Count);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) message.GetParameter("parameter"));
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, string[]>("parameter", new[] { "Fabrikam" })
+                new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam" })
             });
 
             // Assert
@@ -194,7 +194,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 @"{""property"":""""}").GetProperty("property").GetString());
 
             // Assert
-            Assert.Empty((string) message.GetParameter("string"));
+            Assert.Empty((string?) message.GetParameter("string"));
             Assert.NotNull((JsonElement?) message.GetParameter("array"));
             Assert.NotNull((JsonElement?) message.GetParameter("object"));
             Assert.NotNull((JsonElement?) message.GetParameter("value"));
@@ -421,7 +421,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act and assert
             Assert.True(message.TryGetParameter("parameter", out var parameter));
-            Assert.Equal(42, (long) parameter.Value);
+            Assert.Equal(42, (long?) parameter.Value);
         }
 
         [Fact]
@@ -491,7 +491,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => message.WriteTo(writer: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => message.WriteTo(writer: null!));
             Assert.Equal("writer", exception.ParamName);
         }
 

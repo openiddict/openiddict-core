@@ -37,7 +37,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
         /// <summary>
         /// Gets the generic host used by this instance.
         /// </summary>
-        public IHost Host { get; }
+        public IHost? Host { get; }
 #endif
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
@@ -57,8 +57,10 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
 
 #if SUPPORTS_GENERIC_HOST
             // Stop and dispose of the underlying generic host.
-            await Host.StopAsync();
-            Host.Dispose();
+            if (Host is object) {
+                await Host.StopAsync();
+                Host.Dispose();
+            }
 #else
             return default;
 #endif

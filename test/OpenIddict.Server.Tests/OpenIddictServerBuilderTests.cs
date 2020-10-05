@@ -19,7 +19,7 @@ namespace OpenIddict.Server.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictServerBuilder(services));
@@ -35,7 +35,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEventHandler<BaseContext>(configuration: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEventHandler<BaseContext>(configuration: null!));
             Assert.Equal("configuration", exception.ParamName);
         }
 
@@ -47,7 +47,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEventHandler(descriptor: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEventHandler(descriptor: null!));
             Assert.Equal("descriptor", exception.ParamName);
         }
 
@@ -134,7 +134,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionCredentials(credentials: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionCredentials(credentials: null!));
             Assert.Equal("credentials", exception.ParamName);
         }
 
@@ -146,7 +146,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionKey(key: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddEncryptionKey(key: null!));
             Assert.Equal("key", exception.ParamName);
         }
 
@@ -189,7 +189,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.RemoveEventHandler(descriptor: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.RemoveEventHandler(descriptor: null!));
             Assert.Equal("descriptor", exception.ParamName);
         }
 
@@ -237,7 +237,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.Configure(configuration: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.Configure(configuration: null!));
             Assert.Equal("configuration", exception.ParamName);
         }
 
@@ -251,7 +251,7 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                builder.AddDevelopmentSigningCertificate(subject: null);
+                builder.AddDevelopmentSigningCertificate(subject: null!);
             });
 
             Assert.Equal("subject", exception.ParamName);
@@ -265,7 +265,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddDevelopmentEncryptionCertificate(subject: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddDevelopmentEncryptionCertificate(subject: null!));
             Assert.Equal("subject", exception.ParamName);
         }
 
@@ -355,7 +355,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningKey(key: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddSigningKey(key: null!));
             Assert.Equal("key", exception.ParamName);
         }
 
@@ -632,7 +632,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -644,7 +644,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -716,7 +716,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -728,7 +728,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -800,7 +800,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -812,7 +812,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -884,7 +884,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -896,7 +896,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -968,7 +968,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -980,7 +980,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1052,7 +1052,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1064,7 +1064,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1136,7 +1136,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1148,7 +1148,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1220,7 +1220,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1232,7 +1232,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1304,7 +1304,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1316,7 +1316,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1388,7 +1388,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses: null as Uri[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses: (null as Uri[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1400,7 +1400,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses: null as string[]));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses: (null as string[])!));
             Assert.Equal("addresses", exception.ParamName);
         }
 
@@ -1680,7 +1680,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIssuer(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIssuer(null!));
 
             Assert.Equal("address", exception.ParamName);
         }
@@ -1726,7 +1726,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterClaims(claims: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterClaims(claims: null!));
             Assert.Equal("claims", exception.ParamName);
         }
 
@@ -1772,7 +1772,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterScopes(scopes: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.RegisterScopes(scopes: null!));
             Assert.Equal("scopes", exception.ParamName);
         }
 

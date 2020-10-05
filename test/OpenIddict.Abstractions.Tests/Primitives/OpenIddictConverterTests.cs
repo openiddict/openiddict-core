@@ -22,7 +22,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => converter.CanConvert(typeToConvert: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => converter.CanConvert(typeToConvert: null!));
 
             Assert.Equal("typeToConvert", exception.ParamName);
         }
@@ -59,7 +59,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
                 var reader = new Utf8JsonReader();
-                return converter.Read(ref reader, typeToConvert: null, options: null);
+                return converter.Read(ref reader, typeToConvert: null!, options: null!);
             });
 
             Assert.Equal("typeToConvert", exception.ParamName);
@@ -84,7 +84,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(delegate
             {
                 var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""name"":""value""}"));
-                return converter.Read(ref reader, type, options: null);
+                return converter.Read(ref reader, type, options: null!);
             });
 
             Assert.StartsWith(SR.GetResourceString(SR.ID0176), exception.Message);
@@ -102,11 +102,11 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""name"":""value""}"));
 
             // Act
-            var message = converter.Read(ref reader, type, options: null);
+            var message = converter.Read(ref reader, type, options: null!);
 
             // Assert
             Assert.IsType(type, message);
-            Assert.Equal("value", (string) message.GetParameter("name"));
+            Assert.Equal("value", (string?) message.GetParameter("name"));
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 @"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}"));
 
             // Act
-            var message = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
+            var message = converter.Read(ref reader, typeof(OpenIddictMessage), options: null!);
 
             // Assert
             Assert.Equal(5, message.Count);
@@ -127,7 +127,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.NotNull(message.GetParameter("long"));
             Assert.NotNull(message.GetParameter("array"));
             Assert.NotNull(message.GetParameter("object"));
-            Assert.Null((string) message.GetParameter("string"));
+            Assert.Null((string?) message.GetParameter("string"));
             Assert.Null((bool?) message.GetParameter("bool"));
             Assert.Null((long?) message.GetParameter("long"));
             Assert.Equal(JsonValueKind.Null, ((JsonElement) message.GetParameter("array")).ValueKind);
@@ -142,14 +142,14 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""string"":"""",""array"":[],""object"":{}}"));
 
             // Act
-            var message = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
+            var message = converter.Read(ref reader, typeof(OpenIddictMessage), options: null!);
 
             // Assert
             Assert.Equal(3, message.Count);
             Assert.NotNull(message.GetParameter("string"));
             Assert.NotNull(message.GetParameter("array"));
             Assert.NotNull(message.GetParameter("object"));
-            Assert.Empty((string) message.GetParameter("string"));
+            Assert.Empty((string?) message.GetParameter("string"));
             Assert.NotNull((JsonElement?) message.GetParameter("array"));
             Assert.NotNull((JsonElement?) message.GetParameter("object"));
         }
@@ -163,7 +163,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                converter.Write(writer: null, value: null, options: null);
+                converter.Write(writer: null!, value: null!, options: null!);
             });
 
             Assert.Equal("writer", exception.ParamName);
@@ -178,7 +178,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                converter.Write(writer: new Utf8JsonWriter(Stream.Null), value: null, options: null);
+                converter.Write(writer: new Utf8JsonWriter(Stream.Null), value: null!, options: null!);
             });
 
             Assert.Equal("value", exception.ParamName);
@@ -195,7 +195,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             using var writer = new Utf8JsonWriter(stream);
 
             // Act
-            converter.Write(writer, value: message, options: null);
+            converter.Write(writer, value: message, options: null!);
 
             // Assert
             writer.Flush();
@@ -213,13 +213,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             using var writer = new Utf8JsonWriter(stream);
 
             var message = new OpenIddictMessage();
-            message.AddParameter("string", new OpenIddictParameter((string) null));
+            message.AddParameter("string", new OpenIddictParameter((string?) null));
             message.AddParameter("bool", new OpenIddictParameter((bool?) null));
             message.AddParameter("long", new OpenIddictParameter((long?) null));
             message.AddParameter("node", new OpenIddictParameter(default(JsonElement)));
 
             // Act
-            converter.Write(writer, value: message, options: null);
+            converter.Write(writer, value: message, options: null!);
 
             // Assert
             writer.Flush();
@@ -242,7 +242,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             message.AddParameter("object", new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("{}")));
 
             // Act
-            converter.Write(writer, value: message, options: null);
+            converter.Write(writer, value: message, options: null!);
 
             // Assert
             writer.Flush();
@@ -264,7 +264,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             message.AddParameter("array", new[] { "value" });
 
             // Act
-            converter.Write(writer, value: message, options: null);
+            converter.Write(writer, value: message, options: null!);
 
             // Assert
             writer.Flush();
