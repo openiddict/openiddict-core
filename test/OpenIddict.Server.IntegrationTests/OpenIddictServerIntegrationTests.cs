@@ -1,4 +1,6 @@
-﻿/*
+﻿
+
+/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -1523,7 +1525,7 @@ namespace OpenIddict.Server.IntegrationTests
                 options.AddEventHandler<ProcessSignInContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal(new[] { Scopes.OpenId }, context.Principal?.GetScopes());
+                        Assert.Equal(new[] { Scopes.OpenId }, context.Principal!.GetScopes());
 
                         return default;
                     }));
@@ -1566,7 +1568,7 @@ namespace OpenIddict.Server.IntegrationTests
                 options.AddEventHandler<ProcessSignInContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal(new[] { "http://www.fabrikam.com/" }, context.Principal?.GetResources());
+                        Assert.Equal(new[] { "http://www.fabrikam.com/" }, context.Principal!.GetResources());
 
                         return default;
                     }));
@@ -2857,8 +2859,8 @@ namespace OpenIddict.Server.IntegrationTests
                 options.AddEventHandler<ProcessSignInContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal(new[] { Scopes.OpenId, Scopes.OfflineAccess }, context.Principal?.GetScopes());
-                        Assert.Equal("value", context.Principal?.GetClaim(Claims.Prefixes.Private + "_private_claim"));
+                        Assert.Equal(new[] { Scopes.OpenId, Scopes.OfflineAccess }, context.Principal!.GetScopes());
+                        Assert.Equal("value", context.Principal!.GetClaim(Claims.Prefixes.Private + "_private_claim"));
 
                         return default;
                     }));
@@ -4223,10 +4225,10 @@ namespace OpenIddict.Server.IntegrationTests
                 });
         }
 
-        protected abstract ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder> configuration = null!);
+        protected abstract ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null);
 
         protected OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(
-            Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> configuration = null!)
+            Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationCache<OpenIddictApplication>>(),
@@ -4241,7 +4243,7 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         protected OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(
-            Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> configuration = null!)
+            Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
@@ -4256,7 +4258,7 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         protected OpenIddictScopeManager<OpenIddictScope> CreateScopeManager(
-            Action<Mock<OpenIddictScopeManager<OpenIddictScope>>> configuration = null!)
+            Action<Mock<OpenIddictScopeManager<OpenIddictScope>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeCache<OpenIddictScope>>(),
@@ -4271,7 +4273,7 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         protected OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(
-            Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> configuration = null!)
+            Action<Mock<OpenIddictTokenManager<OpenIddictToken>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),

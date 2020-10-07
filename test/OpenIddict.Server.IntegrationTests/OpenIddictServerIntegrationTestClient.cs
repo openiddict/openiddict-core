@@ -256,19 +256,19 @@ namespace OpenIddict.Server.IntegrationTests
             // Note: a dictionary is deliberately not used here to allow multiple parameters with the
             // same name to be specified. While initially not allowed by the core OAuth2 specification,
             // this is required for derived drafts like the OAuth2 token exchange specification.
-            var parameters = new List<KeyValuePair<string, string>>();
+            var parameters = new List<KeyValuePair<string, string?>>();
 
             foreach (var parameter in request.GetParameters())
             {
                 // If the parameter is null or empty, send an empty value.
                 if (OpenIddictParameter.IsNullOrEmpty(parameter.Value))
                 {
-                    parameters.Add(new KeyValuePair<string, string>(parameter.Key, string.Empty));
+                    parameters.Add(new KeyValuePair<string, string?>(parameter.Key, string.Empty));
 
                     continue;
                 }
 
-                var values = (string[]) parameter.Value!;
+                var values = (string?[]?) parameter.Value;
                 if (values is null || values.Length == 0)
                 {
                     continue;
@@ -276,7 +276,7 @@ namespace OpenIddict.Server.IntegrationTests
 
                 foreach (var value in values)
                 {
-                    parameters.Add(new KeyValuePair<string, string>(parameter.Key, value));
+                    parameters.Add(new KeyValuePair<string, string?>(parameter.Key, value));
                 }
             }
 
@@ -380,7 +380,7 @@ namespace OpenIddict.Server.IntegrationTests
                 // Note: a dictionary is deliberately not used here to allow multiple parameters with the
                 // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
                 // this is required for derived drafts like the OAuth2 token exchange specification.
-                var parameters = new List<KeyValuePair<string, string>>();
+                var parameters = new List<KeyValuePair<string, string?>>();
 
                 foreach (var element in new StringTokenizer(payload, Separators.Ampersand))
                 {
@@ -410,8 +410,7 @@ namespace OpenIddict.Server.IntegrationTests
 
                     var value = UnescapeDataString(segment.Substring(index + 1, segment.Length - (index + 1)));
 
-                    // TODO NRT
-                    parameters.Add(new KeyValuePair<string, string>(name, value!));
+                    parameters.Add(new KeyValuePair<string, string?>(name, value));
                 }
 
                 return new OpenIddictResponse(

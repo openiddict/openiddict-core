@@ -463,7 +463,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetNamedParameters_ReturnsExpectedParametersForJsonObjects()
         {
             // Arrange
-            var parameters = new Dictionary<string, string>
+            var parameters = new Dictionary<string, string?>
             {
                 ["parameter"] = "value"
             };
@@ -472,8 +472,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 JsonSerializer.Deserialize<JsonElement>(@"{""parameter"":""value""}"));
 
             // Act and assert
-            // TODO: NRT
-            Assert.Equal(parameters, parameter.GetNamedParameters().ToDictionary(pair => pair.Key, pair => (string) pair.Value!));
+            Assert.Equal(parameters, parameter.GetNamedParameters().ToDictionary(pair => pair.Key, pair => (string?) pair.Value));
         }
 
         [Fact]
@@ -1046,7 +1045,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void LongConverter_ReturnsDefaultValueForNullValues()
         {
             // Arrange, act and assert
-            Assert.Equal(0, (long)new OpenIddictParameter());
+            Assert.Equal(0, (long) new OpenIddictParameter());
             Assert.Null((long?) new OpenIddictParameter());
         }
 
@@ -1054,7 +1053,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void LongConverter_ReturnsDefaultValueForUnsupportedPrimitiveValues()
         {
             // Arrange, act and assert
-            Assert.Equal(0, (long)new OpenIddictParameter("Fabrikam"));
+            Assert.Equal(0, (long) new OpenIddictParameter("Fabrikam"));
             Assert.Null((long?) new OpenIddictParameter("Fabrikam"));
         }
 
@@ -1062,7 +1061,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void LongConverter_ReturnsDefaultValueForUnsupportedArrays()
         {
             // Arrange, act and assert
-            Assert.Equal(0, (long)new OpenIddictParameter(new[] { "Contoso", "Fabrikam" }));
+            Assert.Equal(0, (long) new OpenIddictParameter(new[] { "Contoso", "Fabrikam" }));
             Assert.Null((long?) new OpenIddictParameter(new[] { "Contoso", "Fabrikam" }));
         }
 
@@ -1070,7 +1069,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void LongConverter_ReturnsDefaultValueForUnsupportedJsonValues()
         {
             // Arrange, act and assert
-            Assert.Equal(0, (long)new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("[]")));
+            Assert.Equal(0, (long) new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("[]")));
             Assert.Null((long?) new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("[]")));
         }
 
