@@ -46,14 +46,14 @@ namespace OpenIddict.EntityFramework.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the creation date of the current token.
+        /// Gets or sets the UTC creation date of the current token.
         /// </summary>
-        public virtual DateTimeOffset? CreationDate { get; set; }
+        public virtual DateTime? CreationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration date of the current token.
+        /// Gets or sets the UTC expiration date of the current token.
         /// </summary>
-        public virtual DateTimeOffset? ExpirationDate { get; set; }
+        public virtual DateTime? ExpirationDate { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier associated with the current token.
