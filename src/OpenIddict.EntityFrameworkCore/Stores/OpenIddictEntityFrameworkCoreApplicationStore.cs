@@ -124,14 +124,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         private DbSet<TToken> Tokens => Context.Set<TToken>();
 
-        /// <summary>
-        /// Determines the number of applications that exist in the database.
-        /// </summary>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the number of applications in the database.
-        /// </returns>
+        /// <inheritdoc/>
         public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
             => await Applications.AsQueryable().LongCountAsync(cancellationToken);
 

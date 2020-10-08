@@ -32,7 +32,7 @@ namespace OpenIddict.MongoDb.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the creation date of the current authorization.
+        /// Gets or sets the UTC creation date of the current authorization.
         /// </summary>
         public virtual DateTime? CreationDate { get; set; }
 

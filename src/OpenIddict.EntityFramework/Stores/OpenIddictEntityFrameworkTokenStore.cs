@@ -389,7 +389,12 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return new ValueTask<DateTimeOffset?>(token.CreationDate);
+            if (token.CreationDate is null)
+            {
+                return new ValueTask<DateTimeOffset?>(result: null);
+            }
+
+            return new ValueTask<DateTimeOffset?>(DateTime.SpecifyKind(token.CreationDate.Value, DateTimeKind.Utc));
         }
 
         /// <inheritdoc/>
@@ -400,7 +405,12 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return new ValueTask<DateTimeOffset?>(token.ExpirationDate);
+            if (token.ExpirationDate is null)
+            {
+                return new ValueTask<DateTimeOffset?>(result: null);
+            }
+
+            return new ValueTask<DateTimeOffset?>(DateTime.SpecifyKind(token.ExpirationDate.Value, DateTimeKind.Utc));
         }
 
         /// <inheritdoc/>
@@ -709,7 +719,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(token));
             }
 
-            token.CreationDate = date;
+            token.CreationDate = date?.UtcDateTime;
 
             return default;
         }
@@ -722,7 +732,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(token));
             }
 
-            token.ExpirationDate = date;
+            token.ExpirationDate = date?.UtcDateTime;
 
             return default;
         }

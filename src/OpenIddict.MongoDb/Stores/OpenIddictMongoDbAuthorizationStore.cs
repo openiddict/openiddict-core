@@ -372,7 +372,12 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return new ValueTask<DateTimeOffset?>(authorization.CreationDate);
+            if (authorization.CreationDate is null)
+            {
+                return new ValueTask<DateTimeOffset?>(result: null);
+            }
+
+            return new ValueTask<DateTimeOffset?>(DateTime.SpecifyKind(authorization.CreationDate.Value, DateTimeKind.Utc));
         }
 
         /// <inheritdoc/>

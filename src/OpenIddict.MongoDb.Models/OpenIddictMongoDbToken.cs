@@ -36,13 +36,13 @@ namespace OpenIddict.MongoDb.Models
         public virtual string? ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
-        /// Gets or sets the creation date of the current token.
+        /// Gets or sets the UTC creation date of the current token.
         /// </summary>
         [BsonElement("creation_date"), BsonIgnoreIfNull]
         public virtual DateTime? CreationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration date of the current token.
+        /// Gets or sets the UTC expiration date of the current token.
         /// </summary>
         [BsonElement("expiration_date"), BsonIgnoreIfNull]
         public virtual DateTime? ExpirationDate { get; set; }

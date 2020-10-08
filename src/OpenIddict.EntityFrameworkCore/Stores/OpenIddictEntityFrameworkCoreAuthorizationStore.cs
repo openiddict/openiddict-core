@@ -488,7 +488,12 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return new ValueTask<DateTimeOffset?>(authorization.CreationDate);
+            if (authorization.CreationDate == null)
+            {
+                return new ValueTask<DateTimeOffset?>(result: null);
+            }
+
+            return new ValueTask<DateTimeOffset?>(DateTime.SpecifyKind(authorization.CreationDate.Value, DateTimeKind.Utc));
         }
 
         /// <inheritdoc/>
@@ -791,7 +796,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            authorization.CreationDate = date;
+            authorization.CreationDate = date?.UtcDateTime;
 
             return default;
         }
