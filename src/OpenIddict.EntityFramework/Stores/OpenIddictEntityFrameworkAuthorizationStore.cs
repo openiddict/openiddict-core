@@ -627,7 +627,7 @@ namespace OpenIddict.EntityFramework
 
                 var authorizations =
                     await (from authorization in Authorizations.Include(authorization => authorization.Tokens)
-                           where authorization.CreationDate < threshold
+                           where authorization.CreationDate < threshold.UtcDateTime
                            where authorization.Status != Statuses.Valid ||
                                 (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
                            orderby authorization.Id
