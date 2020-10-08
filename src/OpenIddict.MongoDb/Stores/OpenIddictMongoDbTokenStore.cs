@@ -562,7 +562,7 @@ namespace OpenIddict.MongoDb
                 await (from token in collection.AsQueryable()
                        join authorization in database.GetCollection<OpenIddictMongoDbAuthorization>(Options.CurrentValue.AuthorizationsCollectionName).AsQueryable()
                                           on token.AuthorizationId equals authorization.Id into authorizations
-                       where token.CreationDate < threshold
+                       where token.CreationDate < threshold.UtcDateTime
                        where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
                               token.ExpirationDate < DateTime.UtcNow ||
                               authorizations.Any(authorization => authorization.Status != Statuses.Valid)
