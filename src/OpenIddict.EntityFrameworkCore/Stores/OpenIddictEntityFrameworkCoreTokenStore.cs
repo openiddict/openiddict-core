@@ -667,10 +667,10 @@ namespace OpenIddict.EntityFrameworkCore
 
                 var tokens = await
                     (from token in Tokens.AsTracking()
-                     where token.CreationDate < threshold
+                     where token.CreationDate < threshold.UtcDateTime
                      where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
                            (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
-                            token.ExpirationDate < DateTimeOffset.UtcNow
+                            token.ExpirationDate < DateTime.UtcNow
                      orderby token.Id
                      select token).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
 
