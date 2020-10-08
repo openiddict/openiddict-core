@@ -70,11 +70,11 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
             Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_parameter"]).ValueKind);
             Assert.Equal(42, (long) response["integer_parameter"]);
             Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
-            Assert.Equal("Bob l'Eponge", (string) response["string_parameter"]);
+            Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
             Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]) response["array_parameter"]);
+            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
             Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
-            Assert.Equal("value", (string) response["object_parameter"]?["parameter"]);
+            Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
             Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
         }
 
@@ -328,7 +328,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Theory]
@@ -363,7 +363,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -399,11 +399,11 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
             Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_parameter"]).ValueKind);
             Assert.Equal(42, (long) response["integer_parameter"]);
             Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
-            Assert.Equal("Bob l'Eponge", (string) response["string_parameter"]);
+            Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
             Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]) response["array_parameter"]);
+            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
             Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
-            Assert.Equal("value", (string) response["object_parameter"]?["parameter"]);
+            Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
             Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
         }
 
@@ -437,7 +437,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
             // Assert
             Assert.True((bool) response["boolean_parameter"]);
             Assert.Equal(42, (long) response["integer_parameter"]);
-            Assert.Equal("Bob l'Eponge", (string) response["string_parameter"]);
+            Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
@@ -446,7 +446,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
 #if SUPPORTS_GENERIC_HOST
             async
 #endif
-            ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder> configuration = null)
+            ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
         {
 #if SUPPORTS_GENERIC_HOST
             var builder = new HostBuilder();
@@ -498,7 +498,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                     await next(context);
 
                     var feature = context.Features.Get<OpenIddictServerAspNetCoreFeature>();
-                    var response = feature?.Transaction.GetProperty<object>("custom_response");
+                    var response = feature?.Transaction?.GetProperty<object>("custom_response");
                     if (response is not null)
                     {
                         context.Response.ContentType = "application/json";
@@ -603,7 +603,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(
                             new OpenIddictResponse(result.Principal.Claims.GroupBy(claim => claim.Type)
-                                .Select(group => new KeyValuePair<string, string[]>(
+                                .Select(group => new KeyValuePair<string, string?[]?>(
                                     group.Key, group.Select(claim => claim.Value).ToArray())))));
                         return;
                     }

@@ -21,7 +21,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictEntityFrameworkCoreBuilder(services));
@@ -79,7 +79,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.UseDbContext(type: null);
+                return builder.UseDbContext(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);

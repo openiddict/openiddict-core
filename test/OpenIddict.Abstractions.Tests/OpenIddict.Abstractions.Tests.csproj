@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

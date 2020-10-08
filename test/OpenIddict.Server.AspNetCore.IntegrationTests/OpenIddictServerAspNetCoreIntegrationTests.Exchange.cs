@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -30,7 +31,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
-                        var request = context.Transaction.GetHttpRequest();
+                        var request = context.Transaction.GetHttpRequest()!;
                         request.Headers[HeaderNames.Authorization] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
                         return default;

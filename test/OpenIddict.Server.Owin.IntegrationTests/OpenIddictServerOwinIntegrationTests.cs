@@ -285,7 +285,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]!);
         }
 
         [Theory]
@@ -320,12 +320,12 @@ namespace OpenIddict.Server.Owin.IntegrationTests
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string) response["name"]!);
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The caller is responsible of disposing the test server.")]
-        protected override ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder> configuration = null)
+        protected override ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
         {
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -426,7 +426,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests
                         await context.Response.WriteAsync(JsonSerializer.Serialize(
                             new OpenIddictResponse(result.Identity.Claims.GroupBy(claim => claim.Type)
                                 .Select(group => new KeyValuePair<string, string[]>(
-                                    group.Key, group.Select(claim => claim.Value).ToArray())))));
+                                    group.Key, group.Select(claim => claim.Value).ToArray()))!)));
                         return;
                     }
 

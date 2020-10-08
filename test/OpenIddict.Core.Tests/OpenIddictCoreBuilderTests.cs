@@ -22,7 +22,7 @@ namespace OpenIddict.Core.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictCoreBuilder(services));
@@ -437,7 +437,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultApplicationEntity(type: null);
+                return builder.SetDefaultApplicationEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -487,7 +487,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultAuthorizationEntity(type: null);
+                return builder.SetDefaultAuthorizationEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -537,7 +537,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultScopeEntity(type: null);
+                return builder.SetDefaultScopeEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -587,7 +587,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultTokenEntity(type: null);
+                return builder.SetDefaultTokenEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);

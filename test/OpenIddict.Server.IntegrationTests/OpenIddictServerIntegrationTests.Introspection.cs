@@ -108,7 +108,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/connect/introspect");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/connect/introspect");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -663,7 +663,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -707,7 +707,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -754,16 +754,16 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(11, response.Count);
             Assert.True((bool) response[Claims.Active]);
-            Assert.Equal("66B65AED-4033-4E9C-B975-A8CA7FB6FA79", (string) response[Claims.JwtId]);
-            Assert.Equal(TokenTypes.Bearer, (string) response[Claims.TokenType]);
-            Assert.Equal(TokenTypeHints.AccessToken, (string) response[Claims.TokenUsage]);
-            Assert.Equal("http://localhost/", (string) response[Claims.Issuer]);
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("66B65AED-4033-4E9C-B975-A8CA7FB6FA79", (string?) response[Claims.JwtId]);
+            Assert.Equal(TokenTypes.Bearer, (string?) response[Claims.TokenType]);
+            Assert.Equal(TokenTypeHints.AccessToken, (string?) response[Claims.TokenUsage]);
+            Assert.Equal("http://localhost/", (string?) response[Claims.Issuer]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
             Assert.Equal(1451606400, (long) response[Claims.IssuedAt]);
             Assert.Equal(1451606400, (long) response[Claims.NotBefore]);
             Assert.Equal(1483228800, (long) response[Claims.ExpiresAt]);
-            Assert.Equal("Fabrikam", (string) response[Claims.Audience]);
-            Assert.Equal("Contoso", (string) response[Claims.ClientId]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.Audience]);
+            Assert.Equal("Contoso", (string?) response[Claims.ClientId]);
         }
 
         [Fact]
@@ -864,9 +864,9 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("secret_value", (string) response["custom_claim"]);
-            Assert.Equal("Bob", (string) response[Claims.Username]);
-            Assert.Equal("openid profile", (string) response[Claims.Scope]);
+            Assert.Equal("secret_value", (string?) response["custom_claim"]);
+            Assert.Equal("Bob", (string?) response[Claims.Username]);
+            Assert.Equal("openid profile", (string?) response[Claims.Scope]);
         }
 
         [Fact]
@@ -930,9 +930,9 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_claim"]).ValueKind);
             Assert.Equal(42, (long) response["integer_claim"]);
             Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_claim"]).ValueKind);
-            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]) response["array_claim"]);
+            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_claim"]);
             Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_claim"]).ValueKind);
-            Assert.Equal("value", (string) response["object_claim"]?["parameter"]);
+            Assert.Equal("value", (string?) response["object_claim"]?["parameter"]);
             Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_claim"]).ValueKind);
         }
 
@@ -1160,7 +1160,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Never());
         }
@@ -1541,7 +1541,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1585,7 +1585,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -1634,7 +1634,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1668,8 +1668,8 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
-            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]) response["parameter_with_multiple_values"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
     }
 }

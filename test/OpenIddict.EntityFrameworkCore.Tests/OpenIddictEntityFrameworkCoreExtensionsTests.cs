@@ -20,7 +20,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void UseEntityFrameworkCore_ThrowsAnExceptionForNullBuilder()
         {
             // Arrange
-            var builder = (OpenIddictCoreBuilder) null;
+            var builder = (OpenIddictCoreBuilder) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore());
@@ -36,7 +36,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore(configuration: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore(configuration: null!));
 
             Assert.Equal("configuration", exception.ParamName);
         }

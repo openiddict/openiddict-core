@@ -22,7 +22,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetAcrValues_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.GetAcrValues());
@@ -57,7 +57,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetPrompts_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act
             var exception = Assert.Throws<ArgumentNullException>(() => request.GetPrompts());
@@ -93,7 +93,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetResponseTypes_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act
             var exception = Assert.Throws<ArgumentNullException>(() => request.GetResponseTypes());
@@ -129,7 +129,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetScopes_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.GetScopes());
@@ -164,7 +164,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasAcrValue_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.HasAcrValue("mod-mf"));
@@ -225,7 +225,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasPrompt_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -289,7 +289,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasResponseType_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -353,7 +353,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasScope_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -415,7 +415,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsNoneFlow_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsNoneFlow());
@@ -456,7 +456,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsAuthorizationCodeFlow_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsAuthorizationCodeFlow());
@@ -497,7 +497,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsImplicitFlow_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsImplicitFlow());
@@ -550,7 +550,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsHybridFlow_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsHybridFlow());
@@ -605,7 +605,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsFragmentResponseMode_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsFragmentResponseMode());
@@ -656,7 +656,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsQueryResponseMode_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsQueryResponseMode());
@@ -707,7 +707,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsFormPostResponseMode_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsFormPostResponseMode());
@@ -743,7 +743,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsAuthorizationCodeGrantType_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsAuthorizationCodeGrantType());
@@ -782,7 +782,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsClientCredentialsGrantType_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsClientCredentialsGrantType());
@@ -821,7 +821,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsDeviceCodeGrantType_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsDeviceCodeGrantType());
@@ -860,7 +860,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsPasswordGrantType_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsPasswordGrantType());
@@ -899,7 +899,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsRefreshTokenGrantType_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest) null;
+            var request = (OpenIddictRequest) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsRefreshTokenGrantType());
@@ -938,7 +938,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void Claim_GetDestinations_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
-            var claim = (Claim) null;
+            var claim = (Claim) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => claim.GetDestinations());
@@ -968,7 +968,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void Claim_HasDestination_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
-            var claim = (Claim) null;
+            var claim = (Claim) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => claim.HasDestination("destination"));
@@ -983,7 +983,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null));
+            var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null!));
 
             Assert.Equal("destination", exception.ParamName);
             Assert.StartsWith(SR.GetResourceString(SR.ID0181), exception.Message);
@@ -1021,7 +1021,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void Claim_SetDestinations_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
-            var claim = (Claim) null;
+            var claim = (Claim) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => claim.SetDestinations());
@@ -1080,7 +1080,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void ClaimsPrincipal_GetDestinations_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetDestinations());
@@ -1126,10 +1126,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void ClaimsPrincipal_SetDestinations_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations: null!));
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -1139,7 +1139,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var principal = new ClaimsPrincipal(new ClaimsIdentity());
-            var destinations = (ImmutableDictionary<string, string[]>) null;
+            var destinations = (ImmutableDictionary<string, string[]>) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations));
@@ -1287,7 +1287,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void AddClaim_ThrowsAnExceptionForNullIdentity()
         {
             // Arrange
-            var identity = (ClaimsIdentity) null;
+            var identity = (ClaimsIdentity) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -1355,7 +1355,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetClaim_ThrowsAnExceptionForNullIdentity()
         {
             // Arrange
-            var identity = (ClaimsIdentity) null;
+            var identity = (ClaimsIdentity) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -1396,7 +1396,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void ClaimsIdentity_Clone_ThrowsAnExceptionForNullIdentity()
         {
             // Arrange
-            var identity = (ClaimsIdentity) null;
+            var identity = (ClaimsIdentity) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => identity.Clone(claim => true));
@@ -1423,7 +1423,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void ClaimsPrincipal_Clone_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.Clone(claim => true));
@@ -1486,7 +1486,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetClaim_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetClaim("type"));
@@ -1521,7 +1521,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetCreationDate_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetCreationDate());
@@ -1559,7 +1559,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetExpirationDate_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetExpirationDate());
@@ -1596,7 +1596,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetAudiences_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAudiences());
@@ -1626,7 +1626,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetPresenters_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetPresenters());
@@ -1656,7 +1656,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetResources_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetResources());
@@ -1686,7 +1686,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetScopes_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetScopes());
@@ -1716,7 +1716,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetAccessTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAccessTokenLifetime());
@@ -1743,7 +1743,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetAuthorizationCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAuthorizationCodeLifetime());
@@ -1770,7 +1770,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetDeviceCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetDeviceCodeLifetime());
@@ -1797,7 +1797,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetIdentityTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetIdentityTokenLifetime());
@@ -1824,7 +1824,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetRefreshTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetRefreshTokenLifetime());
@@ -1851,7 +1851,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetUserCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetUserCodeLifetime());
@@ -1878,7 +1878,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetAuthorizationId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAuthorizationId());
@@ -1905,7 +1905,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetTokenId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenId());
@@ -1932,7 +1932,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetTokenType_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenType());
@@ -1959,7 +1959,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasAudience_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.HasAudience("Fabrikam"));
@@ -2023,7 +2023,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasPresenter_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.HasPresenter("Fabrikam"));
@@ -2087,7 +2087,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasResource_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.HasResource("Fabrikam"));
@@ -2151,7 +2151,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasScope_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.HasScope(Scopes.OpenId));
@@ -2215,7 +2215,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasTokenType_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.HasTokenType(TokenTypeHints.AccessToken));
@@ -2285,7 +2285,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetClaims_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetClaims("type"));
@@ -2327,7 +2327,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasClaim_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.HasClaim("type"));
@@ -2371,7 +2371,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void RemoveClaims_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.RemoveClaims("type"));
@@ -2414,7 +2414,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetClaim_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", "value"));
@@ -2483,7 +2483,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetCreationDate_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetCreationDate(date: null));
@@ -2509,7 +2509,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetExpirationDate_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetExpirationDate(date: null));
@@ -2535,7 +2535,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetAudiences_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAudiences());
@@ -2567,7 +2567,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetPresenters_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetPresenters());
@@ -2599,7 +2599,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetResources_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetResources());
@@ -2631,7 +2631,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetScopes_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetScopes());
@@ -2703,7 +2703,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetAccessTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAccessTokenLifetime(null));
@@ -2731,7 +2731,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetAuthorizationCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAuthorizationCodeLifetime(null));
@@ -2759,7 +2759,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetDeviceCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDeviceCodeLifetime(null));
@@ -2787,7 +2787,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetIdentityTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetIdentityTokenLifetime(null));
@@ -2815,7 +2815,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetRefreshTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetRefreshTokenLifetime(null));
@@ -2843,7 +2843,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetUserCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetUserCodeLifetime(null));
@@ -2871,7 +2871,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetAuthorizationId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAuthorizationId(null));
@@ -2899,7 +2899,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetTokenId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenId(null));
@@ -2927,7 +2927,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetTokenType_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal) null;
+            var principal = (ClaimsPrincipal) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenType(null));

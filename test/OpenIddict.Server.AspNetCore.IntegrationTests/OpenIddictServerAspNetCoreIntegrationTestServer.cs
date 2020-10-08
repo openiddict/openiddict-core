@@ -17,28 +17,26 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
     /// </summary>
     public class OpenIddictServerAspNetCoreIntegrationTestServer : OpenIddictServerIntegrationTestServer
     {
-        public OpenIddictServerAspNetCoreIntegrationTestServer(TestServer server)
-            => Server = server;
-
 #if SUPPORTS_GENERIC_HOST
         public OpenIddictServerAspNetCoreIntegrationTestServer(IHost host)
         {
             Host = host;
             Server = host.GetTestServer();
         }
+
+        /// <summary>
+        /// Gets the generic host used by this instance.
+        /// </summary>
+        public IHost Host { get; }
+#else
+        public OpenIddictServerAspNetCoreIntegrationTestServer(TestServer server)
+            => Server = server;
 #endif
 
         /// <summary>
         /// Gets the ASP.NET Core test server used by this instance.
         /// </summary>
         public TestServer Server { get; }
-
-#if SUPPORTS_GENERIC_HOST
-        /// <summary>
-        /// Gets the generic host used by this instance.
-        /// </summary>
-        public IHost Host { get; }
-#endif
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The caller is responsible of disposing the test client.")]

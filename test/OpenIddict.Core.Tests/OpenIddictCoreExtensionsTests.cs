@@ -21,7 +21,7 @@ namespace OpenIddict.Core.Tests
         public void AddCore_ThrowsAnExceptionForNullBuilder()
         {
             // Arrange
-            var builder = (OpenIddictBuilder) null;
+            var builder = (OpenIddictBuilder) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddCore());
@@ -37,7 +37,7 @@ namespace OpenIddict.Core.Tests
             var builder = new OpenIddictBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddCore(configuration: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddCore(configuration: null!));
 
             Assert.Equal("configuration", exception.ParamName);
         }

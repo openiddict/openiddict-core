@@ -1,4 +1,6 @@
-﻿/*
+﻿
+
+/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -140,7 +142,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -170,7 +172,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -217,7 +219,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -267,9 +269,9 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
             Assert.Equal(1577836800, (long) response[Claims.IssuedAt]);
-            Assert.Equal("Wed, 01 Jan 2020 00:00:00 GMT", (string) response[Claims.Private.CreationDate]);
+            Assert.Equal("Wed, 01 Jan 2020 00:00:00 GMT", (string?) response[Claims.Private.CreationDate]);
         }
 
         [Fact]
@@ -319,9 +321,9 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
             Assert.Equal(2524608000, (long) response[Claims.ExpiresAt]);
-            Assert.Equal("Sat, 01 Jan 2050 00:00:00 GMT", (string) response[Claims.Private.ExpirationDate]);
+            Assert.Equal("Sat, 01 Jan 2050 00:00:00 GMT", (string?) response[Claims.Private.ExpirationDate]);
         }
 
         [Fact]
@@ -369,9 +371,9 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal("Fabrikam", (string) response[Claims.AuthorizedParty]);
-            Assert.Equal("Fabrikam", (string) response[Claims.Private.Presenter]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.AuthorizedParty]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.Private.Presenter]);
         }
 
         [Fact]
@@ -419,9 +421,9 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal("Fabrikam", (string) response[Claims.ClientId]);
-            Assert.Equal("Fabrikam", (string) response[Claims.Private.Presenter]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.ClientId]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.Private.Presenter]);
         }
 
         [Fact]
@@ -469,9 +471,9 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal("Fabrikam", (string) response[Claims.Audience]);
-            Assert.Equal("Fabrikam", (string) response[Claims.Private.Audience]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.Audience]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.Private.Audience]);
         }
 
         [Fact]
@@ -519,9 +521,9 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) response[Claims.Audience]);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) response[Claims.Private.Audience]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) response[Claims.Audience]);
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) response[Claims.Private.Audience]);
         }
 
         [Fact]
@@ -569,8 +571,8 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal("openid profile", (string) response[Claims.Scope]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal("openid profile", (string?) response[Claims.Scope]);
         }
 
         [Fact]
@@ -618,8 +620,8 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Private.Scope]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]?) response[Claims.Private.Scope]);
         }
 
         [Fact]
@@ -667,8 +669,8 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Private.Scope]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]?) response[Claims.Private.Scope]);
         }
 
         [Fact]
@@ -798,7 +800,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -828,7 +830,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -875,7 +877,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -907,7 +909,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -939,7 +941,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -989,7 +991,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -1020,7 +1022,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -1051,7 +1053,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Null((string) response[Claims.Subject]);
+            Assert.Null((string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -1099,7 +1101,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
         }
 
         [Fact]
@@ -1356,7 +1358,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1523,7 +1525,7 @@ namespace OpenIddict.Server.IntegrationTests
                 options.AddEventHandler<ProcessSignInContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal(new[] { Scopes.OpenId }, context.Principal.GetScopes());
+                        Assert.Equal(new[] { Scopes.OpenId }, context.Principal!.GetScopes());
 
                         return default;
                     }));
@@ -1566,7 +1568,7 @@ namespace OpenIddict.Server.IntegrationTests
                 options.AddEventHandler<ProcessSignInContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal(new[] { "http://www.fabrikam.com/" }, context.Principal.GetResources());
+                        Assert.Equal(new[] { "http://www.fabrikam.com/" }, context.Principal!.GetResources());
 
                         return default;
                     }));
@@ -1719,7 +1721,7 @@ namespace OpenIddict.Server.IntegrationTests
                 {
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal(new[] { Scopes.Profile }, context.AccessTokenPrincipal.GetScopes());
+                        Assert.Equal(new[] { Scopes.Profile }, context.AccessTokenPrincipal?.GetScopes());
 
                         return default;
                     });
@@ -2823,7 +2825,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -2857,8 +2859,8 @@ namespace OpenIddict.Server.IntegrationTests
                 options.AddEventHandler<ProcessSignInContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
-                        Assert.Equal(new[] { Scopes.OpenId, Scopes.OfflineAccess }, context.Principal.GetScopes());
-                        Assert.Equal("value", context.Principal.GetClaim(Claims.Prefixes.Private + "_private_claim"));
+                        Assert.Equal(new[] { Scopes.OpenId, Scopes.OfflineAccess }, context.Principal!.GetScopes());
+                        Assert.Equal("value", context.Principal!.GetClaim(Claims.Prefixes.Private + "_private_claim"));
 
                         return default;
                     }));
@@ -4151,7 +4153,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         protected virtual void ConfigureServices(IServiceCollection services)
@@ -4223,10 +4225,10 @@ namespace OpenIddict.Server.IntegrationTests
                 });
         }
 
-        protected abstract ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder> configuration = null);
+        protected abstract ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null);
 
         protected OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(
-            Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> configuration = null)
+            Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationCache<OpenIddictApplication>>(),
@@ -4241,7 +4243,7 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         protected OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(
-            Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> configuration = null)
+            Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
@@ -4256,7 +4258,7 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         protected OpenIddictScopeManager<OpenIddictScope> CreateScopeManager(
-            Action<Mock<OpenIddictScopeManager<OpenIddictScope>>> configuration = null)
+            Action<Mock<OpenIddictScopeManager<OpenIddictScope>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeCache<OpenIddictScope>>(),
@@ -4271,7 +4273,7 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         protected OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(
-            Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> configuration = null)
+            Action<Mock<OpenIddictTokenManager<OpenIddictToken>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),

@@ -16,7 +16,7 @@ namespace OpenIddict.Abstractions.Tests
         public void AddOpenIddict_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => services.AddOpenIddict());
@@ -31,7 +31,7 @@ namespace OpenIddict.Abstractions.Tests
             var services = new ServiceCollection();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => services.AddOpenIddict(configuration: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => services.AddOpenIddict(configuration: null!));
 
             Assert.Equal("configuration", exception.ParamName);
         }

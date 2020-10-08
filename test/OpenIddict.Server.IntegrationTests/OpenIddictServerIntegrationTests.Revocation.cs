@@ -106,7 +106,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -603,7 +603,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -647,7 +647,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -711,7 +711,7 @@ namespace OpenIddict.Server.IntegrationTests
                     .ReturnsAsync(token);
 
                 mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
+                    .Returns(new ValueTask<string?>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -771,7 +771,7 @@ namespace OpenIddict.Server.IntegrationTests
                     .ReturnsAsync(token);
 
                 mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
+                    .Returns(new ValueTask<string?>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
@@ -920,7 +920,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -964,7 +964,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -1013,7 +1013,7 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1047,8 +1047,8 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
-            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]) response["parameter_with_multiple_values"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
     }
 }

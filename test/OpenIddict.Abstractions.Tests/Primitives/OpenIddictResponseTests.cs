@@ -1,3 +1,4 @@
+
 /*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
@@ -118,7 +119,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             response.SetParameter(name, value);
 
             // Act and assert
-            Assert.Equal(value.Value, typeof(OpenIddictResponse).GetProperty(property).GetValue(response));
+            Assert.Equal(value.Value, typeof(OpenIddictResponse).GetProperty(property)!.GetValue(response));
         }
 
         [Theory]
@@ -129,7 +130,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var response = new OpenIddictResponse();
 
             // Act
-            typeof(OpenIddictResponse).GetProperty(property).SetValue(response, value.Value);
+            typeof(OpenIddictResponse).GetProperty(property)!.SetValue(response, value.Value);
 
             // Assert
             Assert.Equal(value, response.GetParameter(name));

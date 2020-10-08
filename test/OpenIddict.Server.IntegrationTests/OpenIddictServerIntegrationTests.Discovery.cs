@@ -106,7 +106,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -198,7 +198,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -224,7 +224,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -239,7 +239,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(client.HttpClient.BaseAddress.AbsoluteUri,
-                (string) response[Metadata.Issuer]);
+                (string?) response[Metadata.Issuer]);
         }
 
         [Fact]
@@ -258,7 +258,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal("https://www.fabrikam.com/",
-                (string) response[Metadata.Issuer]);
+                (string?) response[Metadata.Issuer]);
         }
 
         [Fact]
@@ -284,31 +284,31 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal("https://www.fabrikam.com/path/authorization_endpoint",
-                (string) response[Metadata.AuthorizationEndpoint]);
+                (string?) response[Metadata.AuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/cryptography_endpoint",
-                (string) response[Metadata.JwksUri]);
+                (string?) response[Metadata.JwksUri]);
 
             Assert.Equal("https://www.fabrikam.com/path/authorization_endpoint",
-                (string) response[Metadata.AuthorizationEndpoint]);
+                (string?) response[Metadata.AuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/device_endpoint",
-                (string) response[Metadata.DeviceAuthorizationEndpoint]);
+                (string?) response[Metadata.DeviceAuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/introspection_endpoint",
-                (string) response[Metadata.IntrospectionEndpoint]);
+                (string?) response[Metadata.IntrospectionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/logout_endpoint",
-                (string) response[Metadata.EndSessionEndpoint]);
+                (string?) response[Metadata.EndSessionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/revocation_endpoint",
-                (string) response[Metadata.RevocationEndpoint]);
+                (string?) response[Metadata.RevocationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/token_endpoint",
-                (string) response[Metadata.TokenEndpoint]);
+                (string?) response[Metadata.TokenEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/userinfo_endpoint",
-                (string) response[Metadata.UserinfoEndpoint]);
+                (string?) response[Metadata.UserinfoEndpoint]);
         }
 
         [Theory]
@@ -380,28 +380,28 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal("https://www.fabrikam.com/tenant1/path/authorization_endpoint",
-                (string) response[Metadata.AuthorizationEndpoint]);
+                (string?) response[Metadata.AuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/cryptography_endpoint",
-                (string) response[Metadata.JwksUri]);
+                (string?) response[Metadata.JwksUri]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/device_endpoint",
-                (string) response[Metadata.DeviceAuthorizationEndpoint]);
+                (string?) response[Metadata.DeviceAuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/introspection_endpoint",
-                (string) response[Metadata.IntrospectionEndpoint]);
+                (string?) response[Metadata.IntrospectionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/logout_endpoint",
-                (string) response[Metadata.EndSessionEndpoint]);
+                (string?) response[Metadata.EndSessionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/revocation_endpoint",
-                (string) response[Metadata.RevocationEndpoint]);
+                (string?) response[Metadata.RevocationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/token_endpoint",
-                (string) response[Metadata.TokenEndpoint]);
+                (string?) response[Metadata.TokenEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/userinfo_endpoint",
-                (string) response[Metadata.UserinfoEndpoint]);
+                (string?) response[Metadata.UserinfoEndpoint]);
         }
 
         [Fact]
@@ -433,7 +433,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.TokenEndpointAuthMethodsSupported];
+            var methods = (string[]?) response[Metadata.TokenEndpointAuthMethodsSupported];
 
             // Assert
             Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
@@ -467,7 +467,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
+            var methods = (string[]?) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
 
             // Assert
             Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
@@ -501,7 +501,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.RevocationEndpointAuthMethodsSupported];
+            var methods = (string[]?) response[Metadata.RevocationEndpointAuthMethodsSupported];
 
             // Assert
             Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
@@ -523,10 +523,10 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var types = (string[]) response[Metadata.GrantTypesSupported];
+            var types = (string[]?) response[Metadata.GrantTypesSupported];
 
             // Assert
-            Assert.Equal(2, types.Length);
+            Assert.Equal(2, types?.Length);
             Assert.Contains(GrantTypes.AuthorizationCode, types);
             Assert.Contains(GrantTypes.Password, types);
         }
@@ -564,10 +564,10 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.CodeChallengeMethodsSupported];
+            var methods = (string[]?) response[Metadata.CodeChallengeMethodsSupported];
 
             // Assert
-            Assert.Equal(2, methods.Length);
+            Assert.Equal(2, methods?.Length);
             Assert.Contains(CodeChallengeMethods.Sha256, methods);
             Assert.Contains(CodeChallengeMethods.Plain, methods);
         }
@@ -605,10 +605,10 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var modes = (string[]) response[Metadata.ResponseModesSupported];
+            var modes = (string[]?) response[Metadata.ResponseModesSupported];
 
             // Assert
-            Assert.Equal(2, modes.Length);
+            Assert.Equal(2, modes?.Length);
             Assert.Contains(ResponseModes.FormPost, modes);
             Assert.Contains(ResponseModes.Fragment, modes);
         }
@@ -646,10 +646,10 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var types = (string[]) response[Metadata.ResponseTypesSupported];
+            var types = (string[]?) response[Metadata.ResponseTypesSupported];
 
             // Assert
-            Assert.Equal(2, types.Length);
+            Assert.Equal(2, types?.Length);
             Assert.Contains(ResponseTypes.Code, types);
             Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, types);
         }
@@ -687,10 +687,10 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var scopes = (string[]) response[Metadata.ScopesSupported];
+            var scopes = (string[]?) response[Metadata.ScopesSupported];
 
             // Assert
-            Assert.Equal(2, scopes.Length);
+            Assert.Equal(2, scopes?.Length);
             Assert.Contains(Scopes.OpenId, scopes);
             Assert.Contains("custom_scope", scopes);
         }
@@ -728,10 +728,10 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var claims = (string[]) response[Metadata.ClaimsSupported];
+            var claims = (string[]?) response[Metadata.ClaimsSupported];
 
             // Assert
-            Assert.Equal(2, claims.Length);
+            Assert.Equal(2, claims?.Length);
             Assert.Contains(Claims.Profile, claims);
             Assert.Contains("custom_claim", claims);
         }
@@ -745,7 +745,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var types = (string[]) response[Metadata.SubjectTypesSupported];
+            var types = (string[]?) response[Metadata.SubjectTypesSupported];
 
             // Assert
             Assert.Contains(SubjectTypes.Public, types);
@@ -775,7 +775,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var algorithms = (string[]) response[Metadata.IdTokenSigningAlgValuesSupported];
+            var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
             // Assert
             Assert.Contains(algorithm, algorithms);
@@ -796,7 +796,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var algorithms = (string[]) response[Metadata.IdTokenSigningAlgValuesSupported];
+            var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
             // Assert
             Assert.Single(algorithms);
@@ -821,7 +821,7 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var algorithms = (string[]) response[Metadata.IdTokenSigningAlgValuesSupported];
+            var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
             // Assert
             Assert.Single(algorithms);
@@ -838,9 +838,9 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.False((bool) response[Metadata.ClaimsParameterSupported]);
-            Assert.False((bool) response[Metadata.RequestParameterSupported]);
-            Assert.False((bool) response[Metadata.RequestUriParameterSupported]);
+            Assert.False((bool?) response[Metadata.ClaimsParameterSupported]);
+            Assert.False((bool?) response[Metadata.RequestParameterSupported]);
+            Assert.False((bool?) response[Metadata.RequestUriParameterSupported]);
         }
 
         [Theory]
@@ -906,7 +906,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -932,7 +932,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -963,7 +963,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -994,7 +994,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
         }
 
         [Theory]
@@ -1081,7 +1081,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1107,7 +1107,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -1173,7 +1173,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1199,7 +1199,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -1267,8 +1267,8 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.Null(key?[JsonWebKeyParameterNames.P]);
             Assert.Null(key?[JsonWebKeyParameterNames.Q]);
 
-            Assert.Equal(parameters.Exponent, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.E]));
-            Assert.Equal(parameters.Modulus, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.N]));
+            Assert.Equal(parameters.Exponent, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.E]));
+            Assert.Equal(parameters.Modulus, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.N]));
         }
 
 #if SUPPORTS_ECDSA
@@ -1323,8 +1323,8 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Null(key?[JsonWebKeyParameterNames.D]);
 
-            Assert.Equal(parameters.Q.X, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.X]));
-            Assert.Equal(parameters.Q.Y, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.Y]));
+            Assert.Equal(parameters.Q.X, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.X]));
+            Assert.Equal(parameters.Q.Y, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.Y]));
         }
 #endif
 
@@ -1340,8 +1340,8 @@ namespace OpenIddict.Server.IntegrationTests
             var key = response[Parameters.Keys]?[0];
 
             // Assert
-            Assert.Equal("BSxeQhXNDB4VBeCOavOtvvv9eCI", (string) key?[JsonWebKeyParameterNames.X5t]);
-            Assert.Equal("MIIDPjCCAiqgAwIBAgIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAMC0xKzApBgNVBAMTIk93aW4uU2VjdXJpdHkuT3BlbklkQ29ubmVjdC5TZXJ2ZXIwHhcNOTkxMjMxMjIwMDAwWhcNNDkxMjMxMjIwMDAwWjAtMSswKQYDVQQDEyJPd2luLlNlY3VyaXR5Lk9wZW5JZENvbm5lY3QuU2VydmVyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwD/4uMNSIu+JlPRrtFR8Tm2LAwSOmglvJai6edFrdvDvk6xWzxYkMoIt4v13lFiIAUfI1vyZ1M0hWQfrifyweuzZu06DyWTUZkp9ervhTxK27HFN7XTuaRxHaXLR4KnhA+Nk8bBXN895OZh9g9Hf5+zsHpe17zgikwcyZtF+9OEG16oz7lKRgXGCIeeVZuSZ5Qf4yePwKMZqsx+lTOiZJ3JMs+gytvIpdZ1NWzcMX0XTcVTgvnBeU0O3NR6DQ41+SrGsojk11bd6kP6mVmDkA0K9kc2eh7q1wyJOeTNuCKRqLthwJ5m46/KRsxgY7ND6qHc1L60SqsFlYCJNEy7EdwIDAQABo2IwYDBeBgNVHQEEVzBVgBDQX+HKPiztLNvT3jQeBXqToS8wLTErMCkGA1UEAxMiT3dpbi5TZWN1cml0eS5PcGVuSWRDb25uZWN0LlNlcnZlcoIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAA4IBAQCxbCF5thB+ypGpudLAjv+l3M2VhNITJeR9j7jMlCSMVHvW7iMOL5W++zKvHMMAWuITLgPXTZ4ktsjeVQxWdnS2IcU7SwB9SeLbOMk4lLizoUevkiNaf6v+Hskm5LiH6+k8Zsl0INHyIjF9XlALTh91EqQ820cotDXaQIhHabQy892+dBmGWhSE1kP56IvOPzlLdSTkrcfcOu9gzwPVfuTDWH8Hrmo3FXz/fADmE7ea+yE1ZBeKhaN8kaFTs5zrprJ1BnmegnrjDY3RFgqcTTetahv0VBS0/jHSTIsAXflEPGW7LbHimzcgMytFU4fFtPVbek5eunakhu/JdENbbVmT", (string) key?[JsonWebKeyParameterNames.X5c]?[0]);
+            Assert.Equal("BSxeQhXNDB4VBeCOavOtvvv9eCI", (string?) key?[JsonWebKeyParameterNames.X5t]);
+            Assert.Equal("MIIDPjCCAiqgAwIBAgIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAMC0xKzApBgNVBAMTIk93aW4uU2VjdXJpdHkuT3BlbklkQ29ubmVjdC5TZXJ2ZXIwHhcNOTkxMjMxMjIwMDAwWhcNNDkxMjMxMjIwMDAwWjAtMSswKQYDVQQDEyJPd2luLlNlY3VyaXR5Lk9wZW5JZENvbm5lY3QuU2VydmVyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwD/4uMNSIu+JlPRrtFR8Tm2LAwSOmglvJai6edFrdvDvk6xWzxYkMoIt4v13lFiIAUfI1vyZ1M0hWQfrifyweuzZu06DyWTUZkp9ervhTxK27HFN7XTuaRxHaXLR4KnhA+Nk8bBXN895OZh9g9Hf5+zsHpe17zgikwcyZtF+9OEG16oz7lKRgXGCIeeVZuSZ5Qf4yePwKMZqsx+lTOiZJ3JMs+gytvIpdZ1NWzcMX0XTcVTgvnBeU0O3NR6DQ41+SrGsojk11bd6kP6mVmDkA0K9kc2eh7q1wyJOeTNuCKRqLthwJ5m46/KRsxgY7ND6qHc1L60SqsFlYCJNEy7EdwIDAQABo2IwYDBeBgNVHQEEVzBVgBDQX+HKPiztLNvT3jQeBXqToS8wLTErMCkGA1UEAxMiT3dpbi5TZWN1cml0eS5PcGVuSWRDb25uZWN0LlNlcnZlcoIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAA4IBAQCxbCF5thB+ypGpudLAjv+l3M2VhNITJeR9j7jMlCSMVHvW7iMOL5W++zKvHMMAWuITLgPXTZ4ktsjeVQxWdnS2IcU7SwB9SeLbOMk4lLizoUevkiNaf6v+Hskm5LiH6+k8Zsl0INHyIjF9XlALTh91EqQ820cotDXaQIhHabQy892+dBmGWhSE1kP56IvOPzlLdSTkrcfcOu9gzwPVfuTDWH8Hrmo3FXz/fADmE7ea+yE1ZBeKhaN8kaFTs5zrprJ1BnmegnrjDY3RFgqcTTetahv0VBS0/jHSTIsAXflEPGW7LbHimzcgMytFU4fFtPVbek5eunakhu/JdENbbVmT", (string?) key?[JsonWebKeyParameterNames.X5c]?[0]);
         }
 
         [Theory]
@@ -1407,7 +1407,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1433,7 +1433,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
@@ -1464,7 +1464,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
@@ -1495,8 +1495,8 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
-            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]) response["parameter_with_multiple_values"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
     }
 }
