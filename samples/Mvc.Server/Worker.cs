@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,10 @@ namespace Mvc.Server
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                         ConsentType = ConsentTypes.Explicit,
                         DisplayName = "MVC client application",
+                        DisplayNames =
+                        {
+                            [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente MVC"
+                        },
                         PostLogoutRedirectUris =
                         {
                             new Uri("http://localhost:53507/signout-callback-oidc")
@@ -111,6 +116,10 @@ namespace Mvc.Server
                     await manager.CreateAsync(new OpenIddictScopeDescriptor
                     {
                         DisplayName = "Demo API access",
+                        DisplayNames =
+                        {
+                            [CultureInfo.GetCultureInfo("fr-FR")] = "Accès à l'API de démo"
+                        },
                         Name = "demo_api",
                         Resources =
                         {

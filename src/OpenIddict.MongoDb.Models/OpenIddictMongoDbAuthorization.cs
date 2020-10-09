@@ -52,7 +52,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the scopes associated with the current authorization.
         /// </summary>
         [BsonElement("scopes"), BsonIgnoreIfDefault]
-        public virtual IReadOnlyList<string> Scopes { get; set; } = ImmutableArray.Create<string>();
+        public virtual IReadOnlyList<string> Scopes { get; set; } = ImmutableList.Create<string>();
 
         /// <summary>
         /// Gets or sets the status of the current authorization.

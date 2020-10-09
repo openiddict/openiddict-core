@@ -69,13 +69,13 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the permissions associated with the current application.
         /// </summary>
         [BsonElement("permissions"), BsonIgnoreIfDefault]
-        public virtual IReadOnlyList<string> Permissions { get; set; } = ImmutableArray.Create<string>();
+        public virtual IReadOnlyList<string> Permissions { get; set; } = ImmutableList.Create<string>();
 
         /// <summary>
         /// Gets or sets the logout callback URLs associated with the current application.
         /// </summary>
         [BsonElement("post_logout_redirect_uris"), BsonIgnoreIfDefault]
-        public virtual IReadOnlyList<string> PostLogoutRedirectUris { get; set; } = ImmutableArray.Create<string>();
+        public virtual IReadOnlyList<string> PostLogoutRedirectUris { get; set; } = ImmutableList.Create<string>();
 
         /// <summary>
         /// Gets or sets the additional properties associated with the current application.
@@ -87,13 +87,13 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the callback URLs associated with the current application.
         /// </summary>
         [BsonElement("redirect_uris"), BsonIgnoreIfDefault]
-        public virtual IReadOnlyList<string> RedirectUris { get; set; } = ImmutableArray.Create<string>();
+        public virtual IReadOnlyList<string> RedirectUris { get; set; } = ImmutableList.Create<string>();
 
         /// <summary>
         /// Gets or sets the requirements associated with the current application.
         /// </summary>
         [BsonElement("requirements"), BsonIgnoreIfDefault]
-        public virtual IReadOnlyList<string> Requirements { get; set; } = ImmutableArray.Create<string>();
+        public virtual IReadOnlyList<string> Requirements { get; set; } = ImmutableList.Create<string>();
 
         /// <summary>
         /// Gets or sets the application type

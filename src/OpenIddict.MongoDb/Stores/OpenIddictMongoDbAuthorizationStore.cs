@@ -664,12 +664,12 @@ namespace OpenIddict.MongoDb
 
             if (scopes.IsDefaultOrEmpty)
             {
-                authorization.Scopes = ImmutableArray.Create<string>();
+                authorization.Scopes = ImmutableList.Create<string>();
 
                 return default;
             }
 
-            authorization.Scopes = scopes;
+            authorization.Scopes = scopes.ToImmutableList();
 
             return default;
         }

@@ -540,12 +540,12 @@ namespace OpenIddict.MongoDb
 
             if (permissions.IsDefaultOrEmpty)
             {
-                application.Permissions = ImmutableArray.Create<string>();
+                application.Permissions = ImmutableList.Create<string>();
 
                 return default;
             }
 
-            application.Permissions = permissions;
+            application.Permissions = permissions.ToImmutableList();
 
             return default;
         }
@@ -561,12 +561,12 @@ namespace OpenIddict.MongoDb
 
             if (addresses.IsDefaultOrEmpty)
             {
-                application.PostLogoutRedirectUris = ImmutableArray.Create<string>();
+                application.PostLogoutRedirectUris = ImmutableList.Create<string>();
 
                 return default;
             }
 
-            application.PostLogoutRedirectUris = addresses;
+            application.PostLogoutRedirectUris = addresses.ToImmutableList();
 
             return default;
         }
@@ -621,12 +621,12 @@ namespace OpenIddict.MongoDb
 
             if (addresses.IsDefaultOrEmpty)
             {
-                application.RedirectUris = ImmutableArray.Create<string>();
+                application.RedirectUris = ImmutableList.Create<string>();
 
                 return default;
             }
 
-            application.RedirectUris = addresses;
+            application.RedirectUris = addresses.ToImmutableList();
 
             return default;
         }
@@ -642,12 +642,12 @@ namespace OpenIddict.MongoDb
 
             if (requirements.IsDefaultOrEmpty)
             {
-                application.Requirements = ImmutableArray.Create<string>();
+                application.Requirements = ImmutableList.Create<string>();
 
                 return default;
             }
 
-            application.Requirements = requirements;
+            application.Requirements = requirements.ToImmutableList();
 
             return default;
         }

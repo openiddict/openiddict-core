@@ -494,12 +494,12 @@ namespace OpenIddict.MongoDb
 
             if (resources.IsDefaultOrEmpty)
             {
-                scope.Resources = ImmutableArray.Create<string>();
+                scope.Resources = ImmutableList.Create<string>();
 
                 return default;
             }
 
-            scope.Resources = resources;
+            scope.Resources = resources.ToImmutableList();
 
             return default;
         }

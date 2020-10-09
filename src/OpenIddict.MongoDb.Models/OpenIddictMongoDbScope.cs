@@ -74,6 +74,6 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the resources associated with the current scope.
         /// </summary>
         [BsonElement("resources"), BsonIgnoreIfDefault]
-        public virtual IReadOnlyList<string> Resources { get; set; } = ImmutableArray.Create<string>();
+        public virtual IReadOnlyList<string> Resources { get; set; } = ImmutableList.Create<string>();
     }
 }
