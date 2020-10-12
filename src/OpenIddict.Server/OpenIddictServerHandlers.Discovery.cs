@@ -1198,15 +1198,24 @@ namespace OpenIddict.Server
                                 continue;
                             }
 
+                            var curve = IsCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
+                                        IsCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
+                                        IsCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
+
+                            if (string.IsNullOrEmpty(curve))
+                            {
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6180), credentials.Key.GetType().Name);
+
+                                continue;
+                            }
+
                             Debug.Assert(parameters.Value.Q.X is not null &&
                                          parameters.Value.Q.Y is not null, SR.GetResourceString(SR.ID4004));
 
                             Debug.Assert(parameters.Value.Curve.IsNamed, SR.GetResourceString(SR.ID4005));
 
                             key.Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
-                            key.Crv = IsCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
-                                      IsCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
-                                      IsCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
+                            key.Crv = curve;
 
                             // Note: both X and Y must be base64url-encoded.
                             // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2
@@ -1241,6 +1250,10 @@ namespace OpenIddict.Server
 
 #if SUPPORTS_ECDSA
                     static bool IsCurve(ECParameters parameters, ECCurve curve) =>
+                        // Warning: on .NET Framework 4.x and .NET Core 2.1, exported ECParameters generally have
+                        // a null OID value attached. To work around this limitation, both the friendly names and
+                        // the raw OID value are compared to determine whether the curve is of the specified type.
+                        string.Equals(parameters.Curve.Oid.Value, curve.Oid.Value, StringComparison.Ordinal) ||
                         string.Equals(parameters.Curve.Oid.FriendlyName, curve.Oid.FriendlyName, StringComparison.Ordinal);
 #endif
 

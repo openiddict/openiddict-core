@@ -2487,6 +2487,10 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>An exception occurred while trying to revoke the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="ID6180" xml:space="preserve">
+    <value>A signing key of type '{Type}' was ignored because its EC curve couldn't be inferred.</value>
+    <comment>{Locked}</comment>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>Removes orphaned tokens and authorizations from the database.</value>
   </data>
