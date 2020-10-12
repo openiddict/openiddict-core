@@ -1274,30 +1274,26 @@ namespace OpenIddict.Server.IntegrationTests
 #if SUPPORTS_ECDSA
         [Theory]
         [InlineData(
-            /* oid: */ "1.2.840.10045.3.1.7",
-            /* curve: */ nameof(ECCurve.NamedCurves.nistP256),
+            /* oid: */ "1.2.840.10045.3.1.7", // P-256
             /* d: */ "C0vacBwq1FnQ1N0FHXuuwTlw7Or0neOm2r3AdIKLDKI=",
             /* x: */ "7eu+fVtuma+LVD4eH6CxrBX8366cnhPpvgeoeYL7oqw=",
             /* y: */ "4qRkITJZ4p5alm0VpLPd+I11wq8vMUHUhbJm1Crx+Zs=")]
         [InlineData(
-            /* oid: */ "1.3.132.0.34",
-            /* curve: */ nameof(ECCurve.NamedCurves.nistP384),
+            /* oid: */ "1.3.132.0.34", // P-384
             /* d: */ "B2JSdvTbRD/T5Sv7QsGBHPX9yGo2zn3Et5OWrjNauQ2kl+jFkXg5Iy2Vfak7W0ZQ",
             /* x: */ "qqsUwddWjXhCWiaUCOUORJIzvp6QDXv1vroHPR4N0C3UqSKkJ5hNiBHaYdRYCnvC",
             /* y: */ "QpbQFKBOXgeAKQQub/9QWZPvzNEjXq7aJjHlw4hiY+9QhGPn4qHUaeeI0qlaJ/t2")]
         [InlineData(
-            /* oid: */ "1.3.132.0.35",
-            /* curve: */ nameof(ECCurve.NamedCurves.nistP521),
+            /* oid: */ "1.3.132.0.35", // P-521
             /* d: */ "ALong1stsWvTLufObn3SPfM8s9VsTG73nXv4mkzGFUmB1r7rda+cpYXU99rFV/kX6zBkFl7Y9TZ2ZyZLFnyUpE4j",
             /* x: */ "AS+aCMpMbSO4ga/hUsVIIidqmcQiiT+N9o/5hJ9UVA/vHAKDvWTjuKz+JZfOiR9J+GDUcDZS56UbGG83IosMJMM6",
             /* y: */ "AcYkfsb/kTKpcPhYsRPAYV7ibwTN/CdiAM8QuCElAV6wBGfuX1LUmK6ldDVJjytpSz1EmGvzR0T7UCcZcgITqWc2")]
-        public async Task HandleCryptographyRequest_EcdsaSecurityKeysAreCorrectlyExposed(
-            string oid, string curve, string d, string x, string y)
+        public async Task HandleCryptographyRequest_EcdsaSecurityKeysAreCorrectlyExposed(string oid, string d, string x, string y)
         {
             // Arrange
             var parameters = new ECParameters
             {
-                Curve = ECCurve.CreateFromOid(new Oid(oid, curve)),
+                Curve = ECCurve.CreateFromValue(oid),
                 D = Convert.FromBase64String(d),
                 Q = new ECPoint
                 {
