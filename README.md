@@ -79,6 +79,23 @@ with an ECDSA certificate/key will always result in a `PlatformNotSupportedExcep
 - **Gitter: [https://gitter.im/openiddict/openiddict-core](https://gitter.im/openiddict/openiddict-core)**
 - **StackOverflow: [https://stackoverflow.com/questions/tagged/openiddict](https://stackoverflow.com/questions/tagged/openiddict)**
 
+## Nightly builds
+
+If you want to try out the latest features and bug fixes, there is a MyGet feed with nightly builds
+of OpenIddict.
+
+To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the root of your solution):
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget" value="https://api.nuget.org/v3/index.json" />
+    <add key="openiddict" value="https://www.myget.org/F/openiddict/api/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
 ## Contributors
 
 **OpenIddict** is actively maintained by **[Kévin Chalet](https://github.com/kevinchalet)**. Contributions are welcome and can be submitted using pull requests.
