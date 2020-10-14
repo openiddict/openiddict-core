@@ -1,6 +1,7 @@
 <Project>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="Packages.props" />
 
   <!--
     Note: Arcade automatically replaces copyrights defined in .props or .csproj files
