@@ -307,7 +307,7 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var applications = (from application in Applications.AsTracking()
                                     where application.PostLogoutRedirectUris!.Contains(address)
-                                    select application).AsAsyncEnumerable();
+                                    select application).AsAsyncEnumerable(cancellationToken);
 
                 await foreach (var application in applications)
                 {
@@ -341,7 +341,7 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var applications = (from application in Applications.AsTracking()
                                     where application.RedirectUris!.Contains(address)
-                                    select application).AsAsyncEnumerable();
+                                    select application).AsAsyncEnumerable(cancellationToken);
 
                 await foreach (var application in applications)
                 {
@@ -673,7 +673,7 @@ namespace OpenIddict.EntityFrameworkCore
                 query = query.Take(count.Value);
             }
 
-            return query.AsAsyncEnumerable();
+            return query.AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -686,7 +686,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Applications.AsTracking(), state).AsAsyncEnumerable();
+            return query(Applications.AsTracking(), state).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>

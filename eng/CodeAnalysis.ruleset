@@ -99,6 +99,7 @@
       <Rule Id="CA2011" Action="Warning" />          <!-- Avoid infinite recursion -->
       <Rule Id="CA2012" Action="Warning" />          <!-- Use ValueTasks correctly -->
       <Rule Id="CA2013" Action="Warning" />          <!-- Do not use ReferenceEquals with value types -->
+      <Rule Id="CA2016" Action="Info" />             <!-- Forward the CancellationToken parameter to methods that take one -->
       <Rule Id="CA2100" Action="None" />             <!-- Review SQL queries for security vulnerabilities -->
       <Rule Id="CA2101" Action="None" />             <!-- Specify marshaling for P/Invoke string arguments -->
       <Rule Id="CA2119" Action="None" />             <!-- Seal methods that satisfy private interfaces -->
