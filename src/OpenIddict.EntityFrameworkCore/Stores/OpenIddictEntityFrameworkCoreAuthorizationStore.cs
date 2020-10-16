@@ -253,7 +253,7 @@ namespace OpenIddict.EntityFrameworkCore
                     where authorization.Subject == subject
                     join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
                     where application.Id!.Equals(key)
-                    select authorization).AsAsyncEnumerable();
+                    select authorization).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -287,7 +287,7 @@ namespace OpenIddict.EntityFrameworkCore
                     where authorization.Subject == subject && authorization.Status == status
                     join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
                     where application.Id!.Equals(key)
-                    select authorization).AsAsyncEnumerable();
+                    select authorization).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -328,7 +328,7 @@ namespace OpenIddict.EntityFrameworkCore
                           authorization.Type == type
                     join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
                     where application.Id!.Equals(key)
-                    select authorization).AsAsyncEnumerable();
+                    select authorization).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -374,7 +374,7 @@ namespace OpenIddict.EntityFrameworkCore
                                             authorization.Type == type
                                       join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
                                       where application.Id!.Equals(key)
-                                      select authorization).AsAsyncEnumerable();
+                                      select authorization).AsAsyncEnumerable(cancellationToken);
 
                 await foreach (var authorization in authorizations)
                 {
@@ -405,7 +405,7 @@ namespace OpenIddict.EntityFrameworkCore
             return (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
                     join application in Applications.AsTracking() on authorization.Application!.Id equals application.Id
                     where application.Id!.Equals(identifier)
-                    select authorization).AsAsyncEnumerable();
+                    select authorization).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -434,7 +434,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             return (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
                     where authorization.Subject == subject
-                    select authorization).AsAsyncEnumerable();
+                    select authorization).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -642,7 +642,7 @@ namespace OpenIddict.EntityFrameworkCore
                 query = query.Take(count.Value);
             }
 
-            return query.AsAsyncEnumerable();
+            return query.AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -657,7 +657,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             return query(
                 Authorizations.Include(authorization => authorization.Application)
-                              .AsTracking(), state).AsAsyncEnumerable();
+                              .AsTracking(), state).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <inheritdoc/>
