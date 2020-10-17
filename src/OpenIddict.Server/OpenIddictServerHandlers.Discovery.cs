@@ -1146,13 +1146,10 @@ namespace OpenIddict.Server
 
                             var parameters = credentials.Key switch
                             {
-                                X509SecurityKey x509SecurityKey when x509SecurityKey.PublicKey is RSA algorithm =>
-                                    algorithm.ExportParameters(includePrivateParameters: false),
+                                X509SecurityKey { PublicKey: RSA algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
 
-                                RsaSecurityKey rsaSecurityKey when rsaSecurityKey.Rsa is not null =>
-                                    rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false),
-
-                                RsaSecurityKey rsaSecurityKey => rsaSecurityKey.Parameters,
+                                RsaSecurityKey { Rsa:        RSA algorithm       } => algorithm.ExportParameters(includePrivateParameters: false),
+                                RsaSecurityKey { Parameters: RSAParameters value } => value,
 
                                 _ => (RSAParameters?) null
                             };
@@ -1182,11 +1179,9 @@ namespace OpenIddict.Server
                         {
                             var parameters = credentials.Key switch
                             {
-                                X509SecurityKey x509SecurityKey when x509SecurityKey.PublicKey is ECDsa algorithm =>
-                                    algorithm.ExportParameters(includePrivateParameters: false),
+                                X509SecurityKey { PublicKey: ECDsa algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
 
-                                ECDsaSecurityKey ecdsaSecurityKey when ecdsaSecurityKey.ECDsa is not null =>
-                                    ecdsaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false),
+                                ECDsaSecurityKey { ECDsa: ECDsa algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
 
                                 _ => (ECParameters?) null
                             };
