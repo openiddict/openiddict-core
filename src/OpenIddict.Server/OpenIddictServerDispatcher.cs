@@ -61,21 +61,21 @@ namespace OpenIddict.Server
 
                 switch (context)
                 {
-                    case BaseRequestContext notification when notification.IsRequestHandled:
+                    case BaseRequestContext { IsRequestHandled: true }:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
                             _logger.LogDebug(SR.GetResourceString(SR.ID6134), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
-                    case BaseRequestContext notification when notification.IsRequestSkipped:
+                    case BaseRequestContext { IsRequestSkipped: true }:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
                             _logger.LogDebug(SR.GetResourceString(SR.ID6135), typeof(TContext).FullName, handler.GetType().FullName);
                         }
                         return;
 
-                    case BaseValidatingContext notification when notification.IsRejected:
+                    case BaseValidatingContext { IsRejected: true }:
                         if (_logger.IsEnabled(LogLevel.Debug))
                         {
                             _logger.LogDebug(SR.GetResourceString(SR.ID6136), typeof(TContext).FullName, handler.GetType().FullName);
