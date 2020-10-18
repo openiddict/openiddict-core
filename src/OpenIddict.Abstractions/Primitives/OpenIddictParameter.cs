@@ -517,6 +517,7 @@ namespace OpenIddict.Abstractions
                 // Note: undefined JsonElement values are assimilated to null values.
                 case null:
                 case JsonElement { ValueKind: JsonValueKind.Undefined }:
+                case JsonElement { ValueKind: JsonValueKind.Null      }:
                     writer.WriteNullValue();
                     break;
 
@@ -897,8 +898,8 @@ namespace OpenIddict.Abstractions
                 string value    => string.IsNullOrEmpty(value),
                 string?[] value => value.Length == 0,
 
-                JsonElement { ValueKind: JsonValueKind.Undefined } value => true,
-                JsonElement { ValueKind: JsonValueKind.Null      } value => true,
+                JsonElement { ValueKind: JsonValueKind.Undefined }       => true,
+                JsonElement { ValueKind: JsonValueKind.Null      }       => true,
                 JsonElement { ValueKind: JsonValueKind.String    } value => string.IsNullOrEmpty(value.GetString()),
                 JsonElement { ValueKind: JsonValueKind.Array     } value => value.GetArrayLength() == 0,
                 JsonElement { ValueKind: JsonValueKind.Object    } value => IsEmptyNode(value),
