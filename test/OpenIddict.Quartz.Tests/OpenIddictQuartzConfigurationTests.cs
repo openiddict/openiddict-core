@@ -16,8 +16,7 @@ namespace OpenIddict.Quartz.Tests
             configuration.Configure(options);
 
             // Assert
-            // TODO: uncomment when JobDetails and Triggers are publicly exposed.
-            // Assert.Contains(options.JobDetails, job => job.Key.Equals(OpenIddictQuartzJob.Identity));
+            Assert.Contains(options.JobDetails, job => job.Key.Equals(OpenIddictQuartzJob.Identity));
         }
 
         [Fact]
@@ -31,8 +30,7 @@ namespace OpenIddict.Quartz.Tests
             configuration.Configure(options);
 
             // Assert
-            // TODO: uncomment when JobDetails and Triggers are publicly exposed.
-            // Assert.Contains(options.Triggers, trigger => trigger.JobKey.Equals(OpenIddictQuartzJob.Identity));
+            Assert.Contains(options.Triggers, trigger => trigger.JobKey.Equals(OpenIddictQuartzJob.Identity));
         }
     }
 }

@@ -15,8 +15,8 @@
     <PackageReference Update="MongoDB.Driver" Version="2.11.2" />
     <PackageReference Update="Moq" Version="4.14.7" />
     <PackageReference Update="Portable.BouncyCastle" Version="1.8.6.7" />
-    <PackageReference Update="Quartz.Extensions.DependencyInjection" Version="3.2.0" />
-    <PackageReference Update="Quartz.Extensions.Hosting" Version="3.2.0" />
+    <PackageReference Update="Quartz.Extensions.DependencyInjection" Version="3.2.1" />
+    <PackageReference Update="Quartz.Extensions.Hosting" Version="3.2.1" />
     <PackageReference Update="System.Collections.Immutable" Version="1.7.1" />
     <PackageReference Update="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Update="System.Linq.Async" Version="4.1.1" />
