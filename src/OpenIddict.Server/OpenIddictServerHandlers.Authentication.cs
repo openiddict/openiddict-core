@@ -54,6 +54,7 @@ namespace OpenIddict.Server
                 ValidateScopes.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
+                ValidateResponseTypePermissions.Descriptor,
                 ValidateScopePermissions.Descriptor,
                 ValidateProofKeyForCodeExchangeRequirement.Descriptor,
 
@@ -563,6 +564,43 @@ namespace OpenIddict.Server
                         return default;
                     }
 
+                    // Reject code flow requests if the server is not configured to allow the authorization code grant type.
+                    if (context.Request.IsAuthorizationCodeFlow() && !context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnsupportedResponseType,
+                            description: context.Localizer[SR.ID2032, Parameters.ResponseType]);
+
+                        return default;
+                    }
+
+                    // Reject implicit flow requests if the server is not configured to allow the implicit grant type.
+                    if (context.Request.IsImplicitFlow() && !context.Options.GrantTypes.Contains(GrantTypes.Implicit))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnsupportedResponseType,
+                            description: context.Localizer[SR.ID2032, Parameters.ResponseType]);
+
+                        return default;
+                    }
+
+                    // Reject hybrid flow requests if the server is not configured to allow the authorization code or implicit grant types.
+                    if (context.Request.IsHybridFlow() && (!context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
+                                                           !context.Options.GrantTypes.Contains(GrantTypes.Implicit)))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnsupportedResponseType,
+                            description: context.Localizer[SR.ID2032, Parameters.ResponseType]);
+
+                        return default;
+                    }
+
                     // Reject requests that specify an unsupported response_type.
                     var types = new HashSet<string>(context.Request.GetResponseTypes(), StringComparer.Ordinal);
                     if (!context.Options.ResponseTypes.Any(type =>
@@ -945,9 +983,10 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting authorization requests
-            /// that use a response_type incompatible with the client application.
-            /// Note: this handler is not used when the degraded mode is enabled.
+            /// Contains the logic responsible of rejecting authorization requests that use a
+            /// response_type containing token if the application is a confidential client.
+            /// Note: this handler is not used when the degraded mode is enabled
+            /// or when response type permissions enforcement is not disabled.
             /// </summary>
             public class ValidateClientType : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
             {
@@ -986,11 +1025,17 @@ namespace OpenIddict.Server
                     }
 
                     // To prevent downgrade attacks, ensure that authorization requests returning an access token directly
-                    // from the authorization endpoint are rejected if the client_id corresponds to a confidential application.
-                    // Note: when using the authorization code grant, the ValidateClientSecret handler is responsible of rejecting
-                    // the token request if the client_id corresponds to an unauthenticated confidential client.
-                    if (context.Request.HasResponseType(ResponseTypes.Token) &&
-                        await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
+                    // from the authorization endpoint are rejected if the client_id corresponds to a confidential application
+                    // and if response type permissions enforcement was explicitly disabled in the server options.
+                    // Users who want to enable this advanced scenario are encouraged to re-enable permissions validation.
+                    //
+                    // Alternatively, this handler can be removed from the handlers list using the events model APIs.
+                    if (!context.Options.IgnoreResponseTypePermissions || !context.Request.HasResponseType(ResponseTypes.Token))
+                    {
+                        return;
+                    }
+
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID6045), context.ClientId);
 
@@ -1246,7 +1291,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
-                    // Reject the request if the application is not allowed to use the authorization code flow.
+                    // Reject the request if the application is not allowed to use the authorization code grant.
                     if (context.Request.IsAuthorizationCodeFlow() &&
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode))
                     {
@@ -1259,7 +1304,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    // Reject the request if the application is not allowed to use the implicit flow.
+                    // Reject the request if the application is not allowed to use the implicit grant.
                     if (context.Request.IsImplicitFlow() &&
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit))
                     {
@@ -1272,7 +1317,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    // Reject the request if the application is not allowed to use the authorization code/implicit flows.
+                    // Reject the request if the application is not allowed to use the authorization code/implicit grants.
                     if (context.Request.IsHybridFlow() &&
                        (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode) ||
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit)))
@@ -1286,8 +1331,8 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    // Reject the request if the offline_access scope was request and if
-                    // the application is not allowed to use the refresh token grant type.
+                    // Reject the request if the offline_access scope was request and
+                    // if the application is not allowed to use the refresh token grant.
                     if (context.Request.HasScope(Scopes.OfflineAccess) &&
                        !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                     {
@@ -1298,6 +1343,88 @@ namespace OpenIddict.Server
                             description: context.Localizer[SR.ID2065, Scopes.OfflineAccess]);
 
                         return;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of rejecting authorization requests made by unauthorized applications.
+            /// Note: this handler is not used when the degraded mode is enabled or when grant type permissions are disabled.
+            /// </summary>
+            public class ValidateResponseTypePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateResponseTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                public ValidateResponseTypePermissions(IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                        .AddFilter<RequireResponseTypePermissionsEnabled>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .UseScopedHandler<ValidateResponseTypePermissions>()
+                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                    }
+
+                    // Reject requests that specify a response_type for which no permission was granted.
+                    if (!await HasPermissionAsync(context.Request.GetResponseTypes()))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6081), context.ClientId, context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnauthorizedClient,
+                            description: context.Localizer[SR.ID2043, Parameters.ResponseType]);
+
+                        return;
+                    }
+
+                    async ValueTask<bool> HasPermissionAsync(IEnumerable<string> types)
+                    {
+                        // Note: response type permissions are always prefixed with "rst:".
+                        const string prefix = Permissions.Prefixes.ResponseType;
+
+                        foreach (var permission in await _applicationManager.GetPermissionsAsync(application))
+                        {
+                            // Ignore permissions that are not response type permissions.
+                            if (!permission.StartsWith(prefix, StringComparison.Ordinal))
+                            {
+                                continue;
+                            }
+
+                            // Note: response types can be specified in any order. To ensure permissions are correctly
+                            // checked even if the order differs from the one specified in the request, a HashSet is used.
+                            var values = permission.Substring(prefix.Length, permission.Length - prefix.Length)
+                                                   .Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (values.Length != 0 && new HashSet<string>(values, StringComparer.Ordinal).SetEquals(types))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
                     }
                 }
             }
@@ -1323,7 +1450,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireScopePermissionsEnabled>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateScopePermissions>()
-                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateResponseTypePermissions.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 

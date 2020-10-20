@@ -543,8 +543,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ID2112">
-        <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
-        <target state="translated">Alleen vertrouwelijke, hybride of openbare applicaties worden ondersteund door de standaard applicatiebeheerder.</target>
+        <source>Only confidential or public applications are supported by the default application manager.</source>
+        <target state="needs-review-translation">Alleen vertrouwelijke, hybride of openbare applicaties worden ondersteund door de standaard applicatiebeheerder.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2113">

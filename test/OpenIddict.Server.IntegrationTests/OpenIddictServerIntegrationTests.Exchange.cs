@@ -1068,6 +1068,7 @@ namespace OpenIddict.Server.IntegrationTests
                 options.EnableDegradedMode();
 
                 options.Configure(options => options.GrantTypes.Remove(flow));
+                options.Configure(options => options.ResponseTypes.Clear());
             });
 
             await using var client = await server.CreateClientAsync();

@@ -543,8 +543,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ID2112">
-        <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
-        <target state="translated">મૂળભૂત એપ્લિકેશન મેનેજર દ્વારા ફક્ત ગોપનીય, વર્ણસંકર અથવા સાર્વજનિક એપ્લિકેશનોને ટેકો આપવામાં આવે છે.</target>
+        <source>Only confidential or public applications are supported by the default application manager.</source>
+        <target state="needs-review-translation">મૂળભૂત એપ્લિકેશન મેનેજર દ્વારા ફક્ત ગોપનીય, વર્ણસંકર અથવા સાર્વજનિક એપ્લિકેશનોને ટેકો આપવામાં આવે છે.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2113">

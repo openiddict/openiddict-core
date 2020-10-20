@@ -276,9 +276,9 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets a boolean indicating whether sliding expiration is disabled
-        /// for refresh tokens. When this option is set to <c>true</c>, refresh tokens
-        /// are issued with a fixed expiration date: when they expire, a complete
-        /// authorization flow must be started to retrieve a new refresh token.
+        /// for refresh tokens. When this option is set to <see langword="true"/>,
+        /// refresh tokens are issued with a fixed expiration date: when they expire,
+        /// a complete authorization flow must be started to retrieve a new refresh token.
         /// </summary>
         public bool DisableSlidingRefreshTokenExpiration { get; set; }
 
@@ -308,38 +308,37 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
-        /// Response types are automatically inferred from the supported standard grant types,
-        /// but additional values can be added for advanced scenarios (e.g custom type support).
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public HashSet<string> ResponseTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect response modes enabled for this application.
-        /// Response modes are automatically inferred from the supported standard grant types,
-        /// but additional values can be added for advanced scenarios (e.g custom mode support).
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public HashSet<string> ResponseModes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
-        /// Setting this property to <c>true</c> is NOT recommended, unless all
-        /// the clients are first-party applications you own, control and fully trust.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
         /// </summary>
         public bool IgnoreEndpointPermissions { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether grant type permissions should be ignored.
-        /// Setting this property to <c>true</c> is NOT recommended, unless all
-        /// the clients are first-party applications you own, control and fully trust.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
         /// </summary>
         public bool IgnoreGrantTypePermissions { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether response type permissions should be ignored.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
+        /// </summary>
+        public bool IgnoreResponseTypePermissions { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether scope permissions should be ignored.
-        /// Setting this property to <c>true</c> is NOT recommended, unless all
-        /// the clients are first-party applications you own, control and fully trust.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
         /// </summary>
         public bool IgnoreScopePermissions { get; set; }
 
@@ -353,8 +352,8 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets a boolean indicating whether reference access tokens should be used.
-        /// When set to <c>true</c>, the token payload is stored in the database and a
-        /// crypto-secure random identifier is returned to the client application.
+        /// When set to <see langword="true"/>, the token payload is stored in the database
+        /// and a crypto-secure random identifier is returned to the client application.
         /// Enabling this option is useful when storing a very large number of claims
         /// in the tokens, but it is RECOMMENDED to enable column encryption
         /// in the database or use the ASP.NET Core Data Protection integration,
@@ -364,8 +363,8 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets a boolean indicating whether reference refresh tokens should be used.
-        /// When set to <c>true</c>, the token payload is stored in the database and a
-        /// crypto-secure random identifier is returned to the client application.
+        /// When set to <see langword="true"/>, the token payload is stored in the database
+        /// and a crypto-secure random identifier is returned to the client application.
         /// Enabling this option is useful when storing a very large number of claims
         /// in the tokens, but it is RECOMMENDED to enable column encryption
         /// in the database or use the ASP.NET Core Data Protection integration,

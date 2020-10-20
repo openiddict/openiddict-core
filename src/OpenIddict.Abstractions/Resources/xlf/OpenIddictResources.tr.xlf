@@ -543,8 +543,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ID2112">
-        <source>Only confidential, hybrid or public applications are supported by the default application manager.</source>
-        <target state="translated">Varsayılan uygulama yöneticisi tarafından sadece gizli, hibrit ve umumi uygulamalar desteklenmektedir.</target>
+        <source>Only confidential or public applications are supported by the default application manager.</source>
+        <target state="needs-review-translation">Varsayılan uygulama yöneticisi tarafından sadece gizli, hibrit ve umumi uygulamalar desteklenmektedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2113">

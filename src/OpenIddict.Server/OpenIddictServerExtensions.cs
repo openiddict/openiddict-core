@@ -67,6 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireReferenceAccessTokensEnabled>();
             builder.Services.TryAddSingleton<RequireReferenceRefreshTokensEnabled>();
             builder.Services.TryAddSingleton<RequireRefreshTokenGenerated>();
+            builder.Services.TryAddSingleton<RequireResponseTypePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireRevocationRequest>();
             builder.Services.TryAddSingleton<RequireRollingTokensDisabled>();
             builder.Services.TryAddSingleton<RequireRollingRefreshTokensEnabled>();

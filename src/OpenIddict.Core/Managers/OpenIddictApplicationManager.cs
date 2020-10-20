@@ -1166,7 +1166,6 @@ namespace OpenIddict.Core
             {
                 // Ensure the application type is supported by the manager.
                 if (!string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(type, ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return new ValidationResult(Localizer[SR.ID2112]);

@@ -1381,6 +1381,14 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>The duration cannot be less than 10 minutes.</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="ID0281" xml:space="preserve">
+    <value>The authorization code flow must be enabled when adding a response type containing '{0}'.</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="ID0282" xml:space="preserve">
+    <value>The implicit flow must be enabled when adding a response type containing '{0}'.</value>
+    <comment>{Locked}</comment>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1706,7 +1714,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>An application with the same client identifier already exists.</value>
   </data>
   <data name="ID2112" xml:space="preserve">
-    <value>Only confidential, hybrid or public applications are supported by the default application manager.</value>
+    <value>Only confidential or public applications are supported by the default application manager.</value>
   </data>
   <data name="ID2113" xml:space="preserve">
     <value>The client secret cannot be null or empty for a confidential application.</value>
@@ -2023,11 +2031,11 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6060" xml:space="preserve">
-    <value>The device request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+    <value>The device request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6061" xml:space="preserve">
-    <value>The device request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+    <value>The device request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6062" xml:space="preserve">
@@ -2119,11 +2127,11 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6084" xml:space="preserve">
-    <value>The token request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+    <value>The token request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6085" xml:space="preserve">
-    <value>The token request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+    <value>The token request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6086" xml:space="preserve">
@@ -2187,11 +2195,11 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6101" xml:space="preserve">
-    <value>The introspection request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+    <value>The introspection request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6102" xml:space="preserve">
-    <value>The introspection request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+    <value>The introspection request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6103" xml:space="preserve">
@@ -2231,11 +2239,11 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6114" xml:space="preserve">
-    <value>The revocation request was rejected because the confidential or hybrid application '{ClientId}' didn't specify a client secret.</value>
+    <value>The revocation request was rejected because the confidential application '{ClientId}' didn't specify a client secret.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6115" xml:space="preserve">
-    <value>The revocation request was rejected because the confidential or hybrid application '{ClientId}' didn't specify valid client credentials.</value>
+    <value>The revocation request was rejected because the confidential application '{ClientId}' didn't specify valid client credentials.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6116" xml:space="preserve">
@@ -2489,6 +2497,10 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6180" xml:space="preserve">
     <value>A signing key of type '{Type}' was ignored because its EC curve couldn't be inferred.</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="ID6181" xml:space="preserve">
+    <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the '{ResponseType}' response type.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID8000" xml:space="preserve">
