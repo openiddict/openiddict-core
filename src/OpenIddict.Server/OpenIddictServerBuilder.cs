@@ -302,19 +302,19 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(SR.GetResourceString(SR.ID0057), nameof(algorithm));
             }
 
-            switch (algorithm)
+            return algorithm switch
             {
-                case SecurityAlgorithms.Aes256KW:
-                    return AddEncryptionCredentials(new EncryptingCredentials(CreateSymmetricSecurityKey(256),
-                        algorithm, SecurityAlgorithms.Aes256CbcHmacSha512));
+                SecurityAlgorithms.Aes256KW
+                    => AddEncryptionCredentials(new EncryptingCredentials(CreateSymmetricSecurityKey(256),
+                        algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
-                case SecurityAlgorithms.RsaOAEP:
-                case SecurityAlgorithms.RsaOaepKeyWrap:
-                    return AddEncryptionCredentials(new EncryptingCredentials(CreateRsaSecurityKey(2048),
-                        algorithm, SecurityAlgorithms.Aes256CbcHmacSha512));
+                SecurityAlgorithms.RsaOAEP or
+                SecurityAlgorithms.RsaOaepKeyWrap
+                    => AddEncryptionCredentials(new EncryptingCredentials(CreateRsaSecurityKey(2048),
+                        algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
-                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0058));
-            }
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058)),
+            };
 
             static SymmetricSecurityKey CreateSymmetricSecurityKey(int size)
             {
@@ -741,50 +741,49 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(SR.GetResourceString(SR.ID0057), nameof(algorithm));
             }
 
-            switch (algorithm)
+            return algorithm switch
             {
-                case SecurityAlgorithms.RsaSha256:
-                case SecurityAlgorithms.RsaSha384:
-                case SecurityAlgorithms.RsaSha512:
-                case SecurityAlgorithms.RsaSha256Signature:
-                case SecurityAlgorithms.RsaSha384Signature:
-                case SecurityAlgorithms.RsaSha512Signature:
-
-                case SecurityAlgorithms.RsaSsaPssSha256:
-                case SecurityAlgorithms.RsaSsaPssSha384:
-                case SecurityAlgorithms.RsaSsaPssSha512:
-                case SecurityAlgorithms.RsaSsaPssSha256Signature:
-                case SecurityAlgorithms.RsaSsaPssSha384Signature:
-                case SecurityAlgorithms.RsaSsaPssSha512Signature:
-                    return AddSigningCredentials(new SigningCredentials(CreateRsaSecurityKey(2048), algorithm));
+                SecurityAlgorithms.RsaSha256 or
+                SecurityAlgorithms.RsaSha384 or
+                SecurityAlgorithms.RsaSha512 or
+                SecurityAlgorithms.RsaSha256Signature or
+                SecurityAlgorithms.RsaSha384Signature or
+                SecurityAlgorithms.RsaSha512Signature or
+                SecurityAlgorithms.RsaSsaPssSha256 or
+                SecurityAlgorithms.RsaSsaPssSha384 or
+                SecurityAlgorithms.RsaSsaPssSha512 or
+                SecurityAlgorithms.RsaSsaPssSha256Signature or
+                SecurityAlgorithms.RsaSsaPssSha384Signature or
+                SecurityAlgorithms.RsaSsaPssSha512Signature
+                    => AddSigningCredentials(new SigningCredentials(CreateRsaSecurityKey(2048), algorithm)),
 
 #if SUPPORTS_ECDSA
-                case SecurityAlgorithms.EcdsaSha256:
-                case SecurityAlgorithms.EcdsaSha256Signature:
-                    return AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                        ECDsa.Create(ECCurve.NamedCurves.nistP256)), algorithm));
+                SecurityAlgorithms.EcdsaSha256 or
+                SecurityAlgorithms.EcdsaSha256Signature
+                    => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
+                        ECDsa.Create(ECCurve.NamedCurves.nistP256)), algorithm)),
 
-                case SecurityAlgorithms.EcdsaSha384:
-                case SecurityAlgorithms.EcdsaSha384Signature:
-                    return AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                        ECDsa.Create(ECCurve.NamedCurves.nistP384)), algorithm));
+                SecurityAlgorithms.EcdsaSha384 or
+                SecurityAlgorithms.EcdsaSha384Signature
+                    => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
+                        ECDsa.Create(ECCurve.NamedCurves.nistP384)), algorithm)),
 
-                case SecurityAlgorithms.EcdsaSha512:
-                case SecurityAlgorithms.EcdsaSha512Signature:
-                    return AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                        ECDsa.Create(ECCurve.NamedCurves.nistP521)), algorithm));
+                SecurityAlgorithms.EcdsaSha512 or
+                SecurityAlgorithms.EcdsaSha512Signature
+                    => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
+                        ECDsa.Create(ECCurve.NamedCurves.nistP521)), algorithm)),
 #else
-                case SecurityAlgorithms.EcdsaSha256:
-                case SecurityAlgorithms.EcdsaSha384:
-                case SecurityAlgorithms.EcdsaSha512:
-                case SecurityAlgorithms.EcdsaSha256Signature:
-                case SecurityAlgorithms.EcdsaSha384Signature:
-                case SecurityAlgorithms.EcdsaSha512Signature:
-                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069));
+                SecurityAlgorithms.EcdsaSha256 or
+                SecurityAlgorithms.EcdsaSha384 or
+                SecurityAlgorithms.EcdsaSha512 or
+                SecurityAlgorithms.EcdsaSha256Signature or
+                SecurityAlgorithms.EcdsaSha384Signature or
+                SecurityAlgorithms.EcdsaSha512Signature
+                    => throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069)),
 #endif
 
-                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0058));
-            }
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058)),
+            };
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
                 Justification = "The generated RSA key is attached to the server options.")]
@@ -1017,7 +1016,18 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowAuthorizationCodeFlow()
-            => Configure(options => options.GrantTypes.Add(GrantTypes.AuthorizationCode));
+            => Configure(options =>
+            {
+                options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
+
+                options.GrantTypes.Add(GrantTypes.AuthorizationCode);
+
+                options.ResponseModes.Add(ResponseModes.FormPost);
+                options.ResponseModes.Add(ResponseModes.Fragment);
+                options.ResponseModes.Add(ResponseModes.Query);
+
+                options.ResponseTypes.Add(ResponseTypes.Code);
+            });
 
         /// <summary>
         /// Enables client credentials flow support. For more information about this
@@ -1051,6 +1061,28 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
 
         /// <summary>
+        /// Enables hybrid flow support. For more information
+        /// about this specific OpenID Connect flow, visit
+        /// http://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder AllowHybridFlow()
+            => Configure(options =>
+            {
+                options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
+
+                options.GrantTypes.Add(GrantTypes.AuthorizationCode);
+                options.GrantTypes.Add(GrantTypes.Implicit);
+
+                options.ResponseModes.Add(ResponseModes.FormPost);
+                options.ResponseModes.Add(ResponseModes.Fragment);
+
+                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
+                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
+                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.Token);
+            });
+
+        /// <summary>
         /// Enables implicit flow support. For more information
         /// about this specific OAuth 2.0/OpenID Connect flow, visit
         /// https://tools.ietf.org/html/rfc6749#section-4.2 and
@@ -1058,7 +1090,25 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowImplicitFlow()
-            => Configure(options => options.GrantTypes.Add(GrantTypes.Implicit));
+            => Configure(options =>
+            {
+                options.GrantTypes.Add(GrantTypes.Implicit);
+
+                options.ResponseModes.Add(ResponseModes.FormPost);
+                options.ResponseModes.Add(ResponseModes.Fragment);
+
+                options.ResponseTypes.Add(ResponseTypes.IdToken);
+                options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
+                options.ResponseTypes.Add(ResponseTypes.Token);
+            });
+
+        /// <summary>
+        /// Enables none flow support. For more information about this specific OAuth 2.0 flow,
+        /// visit https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder AllowNoneFlow()
+            => Configure(options => options.ResponseTypes.Add(ResponseTypes.None));
 
         /// <summary>
         /// Enables password flow support. For more information about this specific
@@ -1074,7 +1124,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowRefreshTokenFlow()
-            => Configure(options => options.GrantTypes.Add(GrantTypes.RefreshToken));
+            => Configure(options =>
+            {
+                options.GrantTypes.Add(GrantTypes.RefreshToken);
+
+                options.Scopes.Add(Scopes.OfflineAccess);
+            });
 
         /// <summary>
         /// Sets the relative or absolute URLs associated to the authorization endpoint.
@@ -1615,24 +1670,28 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.EnableDegradedMode = true);
 
         /// <summary>
-        /// Disables endpoint permissions enforcement. Calling this method is NOT recommended,
-        /// unless all the clients are first-party applications you own, control and fully trust.
+        /// Disables endpoint permissions enforcement. Calling this method is NOT recommended.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder IgnoreEndpointPermissions()
             => Configure(options => options.IgnoreEndpointPermissions = true);
 
         /// <summary>
-        /// Disables grant type permissions enforcement. Calling this method is NOT recommended,
-        /// unless all the clients are first-party applications you own, control and fully trust.
+        /// Disables grant type permissions enforcement. Calling this method is NOT recommended.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder IgnoreGrantTypePermissions()
             => Configure(options => options.IgnoreGrantTypePermissions = true);
 
         /// <summary>
-        /// Disables scope permissions enforcement. Calling this method is NOT recommended,
-        /// unless all the clients are first-party applications you own, control and fully trust.
+        /// Disables response type permissions enforcement. Calling this method is NOT recommended.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder IgnoreResponseTypePermissions()
+            => Configure(options => options.IgnoreResponseTypePermissions = true);
+
+        /// <summary>
+        /// Disables scope permissions enforcement. Calling this method is NOT recommended.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder IgnoreScopePermissions()

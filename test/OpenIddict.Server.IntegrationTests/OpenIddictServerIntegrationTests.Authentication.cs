@@ -489,26 +489,6 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_NoneFlowIsRejected()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.None
-            });
-
-            // Assert
-            Assert.Equal(Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
-        }
-
-        [Fact]
         public async Task ValidateAuthorizationRequest_UnknownResponseTypeParameterIsRejected()
         {
             // Arrange
@@ -539,12 +519,47 @@ namespace OpenIddict.Server.IntegrationTests
         [InlineData(GrantTypes.Implicit, "id_token")]
         [InlineData(GrantTypes.Implicit, "id_token token")]
         [InlineData(GrantTypes.Implicit, "token")]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCorrespondingFlowIsDisabled(string flow, string type)
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenGrantTypeIsDisabled(string flow, string type)
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.GrantTypes.Remove(flow));
+                options.Configure(options => options.ResponseTypes.Clear());
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(Errors.UnsupportedResponseType, response.Error);
+            Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+        }
+
+        [Theory]
+        [InlineData("code")]
+        [InlineData("code id_token")]
+        [InlineData("code id_token token")]
+        [InlineData("code token")]
+        [InlineData("id_token")]
+        [InlineData("id_token token")]
+        [InlineData("none")]
+        [InlineData("token")]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenResponseTypeIsDisabled(string type)
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.Configure(options => options.ResponseTypes.Remove(type));
             });
 
             await using var client = await server.CreateClientAsync();
@@ -1014,7 +1029,7 @@ namespace OpenIddict.Server.IntegrationTests
         [InlineData("code token")]
         [InlineData("id_token token")]
         [InlineData("token")]
-        public async Task ValidateAuthorizationRequest_AnAccessTokenCannotBeReturnedWhenClientIsConfidential(string type)
+        public async Task ValidateAuthorizationRequest_AnAccessTokenIsNotReturnedWhenClientIsConfidential(string type)
         {
             // Arrange
             var application = new OpenIddictApplication();
@@ -1026,6 +1041,9 @@ namespace OpenIddict.Server.IntegrationTests
 
                 mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create<string>());
             });
 
             await using var server = await CreateServerAsync(options =>
@@ -1173,6 +1191,123 @@ namespace OpenIddict.Server.IntegrationTests
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, permissions[0], It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData("code")]
+        [InlineData("code id_token")]
+        [InlineData("code id_token token")]
+        [InlineData("code token")]
+        [InlineData("id_token")]
+        [InlineData("id_token token")]
+        [InlineData("none")]
+        [InlineData("token")]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenResponseTypePermissionIsNotGranted(string type)
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create<string>());
+            });
+
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.Configure(options => options.IgnoreResponseTypePermissions = false);
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(SR.FormatID2043(Parameters.ResponseType), response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData("code id_token token")]
+        [InlineData("code token")]
+        [InlineData("id_token token")]
+        [InlineData("token")]
+        public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenExplicitPermissionIsGranted(string type)
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create("rst:" + type));
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingRefreshTokenExpiration();
+
+                options.Configure(options => options.IgnoreResponseTypePermissions = false);
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.AccessToken);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]

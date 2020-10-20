@@ -144,7 +144,6 @@ namespace OpenIddict.Abstractions
         public static class ClientTypes
         {
             public const string Confidential = "confidential";
-            public const string Hybrid = "hybrid";
             public const string Public = "public";
         }
 
@@ -357,7 +356,20 @@ namespace OpenIddict.Abstractions
             {
                 public const string Endpoint = "ept:";
                 public const string GrantType = "gt:";
+                public const string ResponseType = "rst:";
                 public const string Scope = "scp:";
+            }
+
+            public static class ResponseTypes
+            {
+                public const string Code = "rst:code";
+                public const string CodeIdToken = "rst:code id_token";
+                public const string CodeIdTokenToken = "rst:code id_token token";
+                public const string CodeToken = "rst:code token";
+                public const string IdToken = "rst:id_token";
+                public const string IdTokenToken = "rst:id_token token";
+                public const string None = "rst:none";
+                public const string Token = "rst:token";
             }
 
             public static class Scopes

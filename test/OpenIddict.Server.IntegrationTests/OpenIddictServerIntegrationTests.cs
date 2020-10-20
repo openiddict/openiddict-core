@@ -1639,6 +1639,63 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.NotNull(response.RefreshToken);
         }
 
+        [Fact]
+        public async Task ProcessSignIn_NoTokenIsReturnedForNoneFlowRequests()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.False(context.GenerateAccessToken);
+                        Assert.False(context.GenerateAuthorizationCode);
+                        Assert.False(context.GenerateDeviceCode);
+                        Assert.False(context.GenerateIdentityToken);
+                        Assert.False(context.GenerateRefreshToken);
+                        Assert.False(context.GenerateUserCode);
+                        Assert.False(context.IncludeAccessToken);
+                        Assert.False(context.IncludeAuthorizationCode);
+                        Assert.False(context.IncludeDeviceCode);
+                        Assert.False(context.IncludeIdentityToken);
+                        Assert.False(context.IncludeRefreshToken);
+                        Assert.False(context.IncludeUserCode);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.None,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(0, response.Count);
+        }
+
         [Theory]
         [InlineData("code")]
         [InlineData("code id_token")]
@@ -4186,7 +4243,9 @@ namespace OpenIddict.Server.IntegrationTests
 
                     options.AllowAuthorizationCodeFlow()
                            .AllowClientCredentialsFlow()
+                           .AllowHybridFlow()
                            .AllowImplicitFlow()
+                           .AllowNoneFlow()
                            .AllowPasswordFlow()
                            .AllowRefreshTokenFlow();
 
@@ -4196,6 +4255,7 @@ namespace OpenIddict.Server.IntegrationTests
                     // Disable permission enforcement by default.
                     options.IgnoreEndpointPermissions()
                            .IgnoreGrantTypePermissions()
+                           .IgnoreResponseTypePermissions()
                            .IgnoreScopePermissions();
 
                     options.AddSigningCertificate(

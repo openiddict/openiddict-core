@@ -58,6 +58,7 @@ namespace Mvc.Server
                             Permissions.Endpoints.Token,
                             Permissions.GrantTypes.AuthorizationCode,
                             Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
                             Permissions.Scopes.Email,
                             Permissions.Scopes.Profile,
                             Permissions.Scopes.Roles,
@@ -99,6 +100,7 @@ namespace Mvc.Server
                             Permissions.GrantTypes.DeviceCode,
                             Permissions.GrantTypes.Password,
                             Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
                             Permissions.Scopes.Email,
                             Permissions.Scopes.Profile,
                             Permissions.Scopes.Roles

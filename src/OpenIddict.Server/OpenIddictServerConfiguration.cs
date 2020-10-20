@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Options;
@@ -38,7 +39,8 @@ namespace OpenIddict.Server
             {
                 // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
                 options.DisableAuthorizationStorage = options.DisableTokenStorage = true;
-                options.IgnoreEndpointPermissions = options.IgnoreGrantTypePermissions = options.IgnoreScopePermissions = true;
+                options.IgnoreEndpointPermissions = options.IgnoreGrantTypePermissions = true;
+                options.IgnoreResponseTypePermissions = options.IgnoreScopePermissions = true;
                 options.UseReferenceAccessTokens = options.UseReferenceRefreshTokens = false;
 
                 // When the degraded mode is enabled (and the token storage disabled), OpenIddict is not able to dynamically
@@ -88,6 +90,26 @@ namespace OpenIddict.Server
             if (options.VerificationEndpointUris.Count == 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0080));
+            }
+
+            // Ensure the grant types/response types configuration is consistent.
+            foreach (var type in options.ResponseTypes)
+            {
+                var types = new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal);
+                if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+                {
+                    throw new InvalidOperationException(SR.FormatID0281(ResponseTypes.Code));
+                }
+
+                if (types.Contains(ResponseTypes.IdToken) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+                {
+                    throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.IdToken));
+                }
+
+                if (types.Contains(ResponseTypes.Token) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+                {
+                    throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.Token));
+                }
             }
 
             if (options.DisableTokenStorage)
@@ -217,44 +239,6 @@ namespace OpenIddict.Server
             // Sort the encryption and signing credentials.
             options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
             options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
-
-            // Automatically add the offline_access scope if the refresh token grant has been enabled.
-            if (options.GrantTypes.Contains(GrantTypes.RefreshToken))
-            {
-                options.Scopes.Add(Scopes.OfflineAccess);
-            }
-
-            if (options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
-            {
-                options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
-
-                options.ResponseTypes.Add(ResponseTypes.Code);
-            }
-
-            if (options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                options.ResponseTypes.Add(ResponseTypes.IdToken);
-                options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
-                options.ResponseTypes.Add(ResponseTypes.Token);
-            }
-
-            if (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) && options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
-                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
-                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.Token);
-            }
-
-            if (options.ResponseTypes.Count != 0)
-            {
-                options.ResponseModes.Add(ResponseModes.FormPost);
-                options.ResponseModes.Add(ResponseModes.Fragment);
-
-                if (options.ResponseTypes.Contains(ResponseTypes.Code))
-                {
-                    options.ResponseModes.Add(ResponseModes.Query);
-                }
-            }
 
             foreach (var key in options.EncryptionCredentials
                 .Select(credentials => credentials.Key)
