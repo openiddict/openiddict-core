@@ -307,6 +307,14 @@ namespace OpenIddict.Server
         public HashSet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether PKCE must be used by client applications
+        /// when requesting an authorization code (e.g when using the code or hybrid flows).
+        /// If this property is set to <see langword="true"/>, authorization requests that
+        /// lack the code_challenge will be automatically rejected by OpenIddict.
+        /// </summary>
+        public bool RequireProofKeyForCodeExchange { get; set; }
+
+        /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]

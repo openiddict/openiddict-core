@@ -103,6 +103,9 @@ namespace Mvc.Server
                     options.AddDevelopmentEncryptionCertificate()
                            .AddDevelopmentSigningCertificate();
 
+                    // Force client applications to use Proof Key for Code Exchange (PKCE).
+                    options.RequireProofKeyForCodeExchange();
+
                     // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                     options.UseAspNetCore()
                            .EnableStatusCodePagesIntegration()

@@ -47,7 +47,7 @@ namespace OpenIddict.Server
                 ValidateScopeParameter.Descriptor,
                 ValidateNonceParameter.Descriptor,
                 ValidatePromptParameter.Descriptor,
-                ValidateCodeChallengeParameters.Descriptor,
+                ValidateProofKeyForCodeExchangeParameters.Descriptor,
                 ValidateClientId.Descriptor,
                 ValidateClientType.Descriptor,
                 ValidateClientRedirectUri.Descriptor,
@@ -838,16 +838,16 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting authorization requests that don't specify valid code challenge parameters.
+            /// Contains the logic responsible of rejecting authorization requests that don't specify valid PKCE parameters.
             /// </summary>
-            public class ValidateCodeChallengeParameters : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            public class ValidateProofKeyForCodeExchangeParameters : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
-                        .UseSingletonHandler<ValidateCodeChallengeParameters>()
+                        .UseSingletonHandler<ValidateProofKeyForCodeExchangeParameters>()
                         .SetOrder(ValidatePromptParameter.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
@@ -860,6 +860,23 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    // If OpenIddict was configured to require PKCE, reject the request if the code challenge
+                    // is missing and if an authorization code was requested by the client application.
+                    if (context.Options.RequireProofKeyForCodeExchange &&
+                        context.Request.HasResponseType(ResponseTypes.Code) &&
+                        string.IsNullOrEmpty(context.Request.CodeChallenge))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: context.Localizer[SR.ID2029, Parameters.CodeChallenge]);
+
+                        return default;
+                    }
+
+                    // At this point, stop validating the PKCE parameters if both the
+                    // code_challenge and code_challenge_method parameter are missing.
                     if (string.IsNullOrEmpty(context.Request.CodeChallenge) &&
                         string.IsNullOrEmpty(context.Request.CodeChallengeMethod))
                     {
@@ -954,7 +971,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientId>()
-                        .SetOrder(ValidateCodeChallengeParameters.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateProofKeyForCodeExchangeParameters.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
