@@ -416,6 +416,67 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.NotNull(response.IdToken);
         }
 
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenPkceIsRequiredAndCodeChallengeIsMissing()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+                options.RequireProofKeyForCodeExchange();
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = null,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(SR.FormatID2029(Parameters.CodeChallenge), response.ErrorDescription);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsValidateWhenPkceIsNotRequiredAndCodeChallengeIsMissing()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = null,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.NotNull(response.Code);
+        }
+
         [Theory]
         [InlineData("id_token")]
         [InlineData("id_token token")]
@@ -577,6 +638,28 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_UnsupportedResponseModeCausesAnError()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseMode = "unsupported_response_mode",
+                ResponseType = ResponseTypes.Code,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(SR.FormatID2032(Parameters.ResponseMode), response.ErrorDescription);
         }
 
         [Fact]
@@ -2119,46 +2202,6 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal("custom_state", response.State);
-        }
-
-        [Fact]
-        public async Task ApplyAuthorizationResponse_UnsupportedResponseModeCausesAnError()
-        {
-            // Note: response_mode validation is deliberately delayed until an authorization response
-            // is returned to allow implementers to override the ApplyAuthorizationResponse event
-            // to support custom response modes. To test this scenario, the request is marked
-            // as validated and a signin grant is applied to return an authorization response.
-
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetClaim(Claims.Subject, "Bob le Magnifique");
-
-                        return default;
-                    }));
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseMode = "unsupported_response_mode",
-                ResponseType = ResponseTypes.Code,
-                Scope = Scopes.OpenId
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(SR.FormatID2032(Parameters.ResponseMode), response.ErrorDescription);
         }
     }
 }

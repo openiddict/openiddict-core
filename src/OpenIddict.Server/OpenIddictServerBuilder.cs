@@ -1740,6 +1740,15 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Configures OpenIddict to force client applications to use Proof Key for Code Exchange
+        /// (PKCE) when requesting an authorization code (e.g when using the code or hybrid flows).
+        /// When enforced, authorization requests that lack the code_challenge will be rejected.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder RequireProofKeyForCodeExchange()
+            => Configure(options => options.RequireProofKeyForCodeExchange = true);
+
+        /// <summary>
         /// Sets the access token lifetime, after which client applications must retrieve
         /// a new access token by making a grant_type=refresh_token token request
         /// or a prompt=none authorization request, depending on the selected flow.

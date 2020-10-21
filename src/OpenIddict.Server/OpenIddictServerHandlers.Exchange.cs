@@ -50,7 +50,8 @@ namespace OpenIddict.Server
                 ValidateClientCredentialsParameters.Descriptor,
                 ValidateDeviceCodeParameter.Descriptor,
                 ValidateRefreshTokenParameter.Descriptor,
-                ValidatePasswordParameters.Descriptor,
+                ValidateResourceOwnerCredentialsParameters.Descriptor,
+                ValidateProofKeyForCodeExchangeParameters.Descriptor,
                 ValidateScopes.Descriptor,
                 ValidateClientId.Descriptor,
                 ValidateClientType.Descriptor,
@@ -605,14 +606,14 @@ namespace OpenIddict.Server
             /// Contains the logic responsible of rejecting token requests
             /// that specify invalid parameters for the password grant type.
             /// </summary>
-            public class ValidatePasswordParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
+            public class ValidateResourceOwnerCredentialsParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                        .UseSingletonHandler<ValidatePasswordParameters>()
+                        .UseSingletonHandler<ValidateResourceOwnerCredentialsParameters>()
                         .SetOrder(ValidateRefreshTokenParameter.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
@@ -644,6 +645,53 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting token requests that don't specify valid PKCE parameters.
+            /// </summary>
+            public class ValidateProofKeyForCodeExchangeParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                        .UseSingletonHandler<ValidateProofKeyForCodeExchangeParameters>()
+                        .SetOrder(ValidateResourceOwnerCredentialsParameters.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateTokenRequestContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (!context.Request.IsAuthorizationCodeGrantType())
+                    {
+                        return default;
+                    }
+
+                    // Optimization: the ValidateCodeVerifier event handler automatically rejects grant_type=authorization_code
+                    // requests missing the code_verifier parameter when a challenge was specified in the authorization request.
+                    // That check requires decrypting the authorization code and determining whether a code challenge was set.
+                    // If OpenIddict was configured to require PKCE, this can be potentially avoided by making an early check here.
+                    if (context.Options.RequireProofKeyForCodeExchange && string.IsNullOrEmpty(context.Request.CodeVerifier))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeVerifier);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: context.Localizer[SR.ID2029, Parameters.CodeVerifier]);
+
+                        return default;
+                    }
+
+                    return default;
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting authorization requests that use unregistered scopes.
             /// Note: this handler partially works with the degraded mode but is not used when scope validation is disabled.
             /// </summary>
@@ -665,7 +713,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                         .AddFilter<RequireScopeValidationEnabled>()
                         .UseScopedHandler<ValidateScopes>()
-                        .SetOrder(ValidatePasswordParameters.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateProofKeyForCodeExchangeParameters.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 

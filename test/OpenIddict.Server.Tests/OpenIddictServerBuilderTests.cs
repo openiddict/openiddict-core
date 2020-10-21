@@ -609,6 +609,22 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void RequireProofKeyForCodeExchange_PkceIsEnforced()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.RequireProofKeyForCodeExchange();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.RequireProofKeyForCodeExchange);
+        }
+
+        [Fact]
         public void AddDeviceCodeFlow_AddsDeviceCodeGrantType()
         {
             // Arrange
