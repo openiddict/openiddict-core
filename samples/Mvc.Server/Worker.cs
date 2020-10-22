@@ -45,11 +45,11 @@ namespace Mvc.Server
                         },
                         PostLogoutRedirectUris =
                         {
-                            new Uri("http://localhost:53507/signout-callback-oidc")
+                            new Uri("https://localhost:44381/signout-callback-oidc")
                         },
                         RedirectUris =
                         {
-                            new Uri("http://localhost:53507/signin-oidc")
+                            new Uri("https://localhost:44381/signin-oidc")
                         },
                         Permissions =
                         {
@@ -73,8 +73,8 @@ namespace Mvc.Server
 
                 // To test this sample with Postman, use the following settings:
                 //
-                // * Authorization URL: http://localhost:54540/connect/authorize
-                // * Access token URL: http://localhost:54540/connect/token
+                // * Authorization URL: https://localhost:44395/connect/authorize
+                // * Access token URL: https://localhost:44395/connect/token
                 // * Client ID: postman
                 // * Client secret: [blank] (not used with public clients)
                 // * Scope: openid email profile roles
