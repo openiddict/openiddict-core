@@ -1631,6 +1631,16 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.DisableAuthorizationStorage = true);
 
         /// <summary>
+        /// Configures OpenIddict to disable rolling refresh tokens so
+        /// that refresh tokens used in a token request are not marked
+        /// as redeemed and can still be used until they expire. Disabling
+        /// rolling refresh tokens is NOT recommended, for security reasons.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder DisableRollingRefreshTokens()
+            => Configure(options => options.DisableRollingRefreshTokens = true);
+
+        /// <summary>
         /// Allows processing authorization and token requests that specify scopes that have not
         /// been registered using <see cref="RegisterScopes(string[])"/> or the scope manager.
         /// </summary>
@@ -1805,6 +1815,15 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.RefreshTokenLifetime = lifetime);
 
         /// <summary>
+        /// Sets the refresh token reuse leeway, during which rolling refresh tokens marked
+        /// as redeemed can still be used to make concurrent refresh token requests.
+        /// </summary>
+        /// <param name="leeway">The refresh token reuse interval.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetRefreshTokenReuseLeeway(TimeSpan? leeway)
+            => Configure(options => options.RefreshTokenReuseLeeway = leeway);
+
+        /// <summary>
         /// Sets the user code lifetime, after which they'll no longer be considered valid.
         /// Using short-lived device codes is strongly recommended.
         /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
@@ -1851,15 +1870,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder UseReferenceRefreshTokens()
             => Configure(options => options.UseReferenceRefreshTokens = true);
-
-        /// <summary>
-        /// Configures OpenIddict to use rolling refresh tokens. When this option is enabled,
-        /// a new refresh token is always issued for each refresh token request (and the previous
-        /// one is automatically revoked unless token storage was explicitly disabled).
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder UseRollingRefreshTokens()
-            => Configure(options => options.UseRollingRefreshTokens = true);
 
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]

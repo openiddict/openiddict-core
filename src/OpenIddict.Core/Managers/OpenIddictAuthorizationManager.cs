@@ -996,27 +996,6 @@ namespace OpenIddict.Core
             => Store.PruneAsync(threshold, cancellationToken);
 
         /// <summary>
-        /// Sets the application identifier associated with an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="identifier">The unique identifier associated with the client application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async ValueTask SetApplicationIdAsync(
-            TAuthorization authorization, string? identifier, CancellationToken cancellationToken = default)
-        {
-            if (authorization is null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            await Store.SetApplicationIdAsync(authorization, identifier, cancellationToken);
-            await UpdateAsync(authorization, cancellationToken);
-        }
-
-        /// <summary>
         /// Tries to revoke an authorization.
         /// </summary>
         /// <param name="authorization">The authorization to revoke.</param>
@@ -1311,10 +1290,6 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         ValueTask IOpenIddictAuthorizationManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
             => PruneAsync(threshold, cancellationToken);
-
-        /// <inheritdoc/>
-        ValueTask IOpenIddictAuthorizationManager.SetApplicationIdAsync(object authorization, string? identifier, CancellationToken cancellationToken)
-            => SetApplicationIdAsync((TAuthorization) authorization, identifier, cancellationToken);
 
         /// <inheritdoc/>
         ValueTask<bool> IOpenIddictAuthorizationManager.TryRevokeAsync(object authorization, CancellationToken cancellationToken)

@@ -351,38 +351,6 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if rolling tokens were enabled.
-        /// </summary>
-        public class RequireRollingTokensDisabled : IOpenIddictServerHandlerFilter<BaseContext>
-        {
-            public ValueTask<bool> IsActiveAsync(BaseContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(!context.Options.UseRollingRefreshTokens);
-            }
-        }
-
-        /// <summary>
-        /// Represents a filter that excludes the associated handlers if rolling refresh tokens were not enabled.
-        /// </summary>
-        public class RequireRollingRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-        {
-            public ValueTask<bool> IsActiveAsync(BaseContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(context.Options.UseRollingRefreshTokens);
-            }
-        }
-
-        /// <summary>
         /// Represents a filter that excludes the associated handlers if scope permissions were disabled.
         /// </summary>
         public class RequireScopePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>

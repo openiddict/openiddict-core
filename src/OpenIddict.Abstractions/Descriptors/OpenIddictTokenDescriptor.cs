@@ -40,6 +40,11 @@ namespace OpenIddict.Abstractions
         public ClaimsPrincipal? Principal { get; set; }
 
         /// <summary>
+        /// Gets or sets the redemption date associated with the token.
+        /// </summary>
+        public DateTimeOffset? RedemptionDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the reference identifier associated with the token.
         /// Note: depending on the application manager used when creating it,
         /// this property may be hashed or encrypted for security reasons.

@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Disables the transport security requirement (HTTPS) during development.
+        /// Disables the transport security requirement (HTTPS).
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
         public OpenIddictServerAspNetCoreBuilder DisableTransportSecurityRequirement()

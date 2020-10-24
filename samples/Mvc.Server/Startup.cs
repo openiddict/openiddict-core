@@ -89,7 +89,7 @@ namespace Mvc.Server
                            .SetUserinfoEndpointUris("/connect/userinfo")
                            .SetVerificationEndpointUris("/connect/verify");
 
-                    // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
+                    // Note: this sample uses the code, device code, password and refresh token flows, but you
                     // can enable the other flows if you need to support implicit or client credentials.
                     options.AllowAuthorizationCodeFlow()
                            .AllowDeviceCodeFlow()
@@ -131,6 +131,7 @@ namespace Mvc.Server
                     //
                     // options.IgnoreEndpointPermissions()
                     //        .IgnoreGrantTypePermissions()
+                    //        .IgnoreResponseTypePermissions()
                     //        .IgnoreScopePermissions();
 
                     // Note: when issuing access tokens used by third-party APIs

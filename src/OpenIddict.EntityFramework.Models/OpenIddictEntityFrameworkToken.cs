@@ -74,6 +74,11 @@ namespace OpenIddict.EntityFramework.Models
         public virtual string? Properties { get; set; }
 
         /// <summary>
+        /// Gets or sets the UTC redemption date of the current token.
+        /// </summary>
+        public virtual DateTime? RedemptionDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the reference identifier associated
         /// with the current token, if applicable.
         /// Note: this property is only used for reference tokens

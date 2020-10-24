@@ -38,16 +38,16 @@ namespace OpenIddict.Server
             if (options.EnableDegradedMode)
             {
                 // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
-                options.DisableAuthorizationStorage = options.DisableTokenStorage = true;
+                options.DisableAuthorizationStorage = options.DisableTokenStorage = options.DisableRollingRefreshTokens = true;
                 options.IgnoreEndpointPermissions = options.IgnoreGrantTypePermissions = true;
                 options.IgnoreResponseTypePermissions = options.IgnoreScopePermissions = true;
                 options.UseReferenceAccessTokens = options.UseReferenceRefreshTokens = false;
+            }
 
-                // When the degraded mode is enabled (and the token storage disabled), OpenIddict is not able to dynamically
-                // update the expiration date of a token. As such, either rolling tokens MUST be enabled or sliding token
-                // expiration MUST be disabled to always issue new refresh tokens with the same fixed expiration date.
-                // By default, OpenIddict will automatically force the rolling tokens option when using the degraded mode.
-                options.UseRollingRefreshTokens |= !options.UseRollingRefreshTokens && !options.DisableSlidingRefreshTokenExpiration;
+            if (options.DisableTokenStorage)
+            {
+                // Explicitly disable rolling refresh tokens token stroage is disabled.
+                options.DisableRollingRefreshTokens = true;
             }
 
             if (options.JsonWebTokenHandler is null)
@@ -112,17 +112,10 @@ namespace OpenIddict.Server
                 }
             }
 
-            if (options.DisableTokenStorage)
+            // Ensure reference tokens support was not enabled when token storage is disabled.
+            if (options.DisableTokenStorage && (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens))
             {
-                if (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0083));
-                }
-
-                if (!options.DisableSlidingRefreshTokenExpiration && !options.UseRollingRefreshTokens)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0084));
-                }
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0083));
             }
 
             if (options.EncryptionCredentials.Count == 0)
@@ -240,15 +233,12 @@ namespace OpenIddict.Server
             options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
             options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
 
+            // Generate a key identifier for the encryption/signing keys that don't already have one.
             foreach (var key in options.EncryptionCredentials
                 .Select(credentials => credentials.Key)
-                .Concat(options.SigningCredentials.Select(credentials => credentials.Key)))
+                .Concat(options.SigningCredentials.Select(credentials => credentials.Key))
+                .Where(key => string.IsNullOrEmpty(key.KeyId)))
             {
-                if (!string.IsNullOrEmpty(key.KeyId))
-                {
-                    continue;
-                }
-
                 key.KeyId = GetKeyIdentifier(key);
             }
 
