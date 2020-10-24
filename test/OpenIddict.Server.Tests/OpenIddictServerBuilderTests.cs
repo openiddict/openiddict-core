@@ -417,7 +417,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void AllowAuthorizationCodeFlow_CodeFlowIsAddedToGrantTypes()
+        public void AllowAuthorizationCodeFlow_CodeFlowIsAdded()
         {
             // Arrange
             var services = CreateServices();
@@ -429,11 +429,19 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
+            Assert.Contains(CodeChallengeMethods.Sha256, options.CodeChallengeMethods);
+
             Assert.Contains(GrantTypes.AuthorizationCode, options.GrantTypes);
+
+            Assert.Contains(ResponseModes.FormPost, options.ResponseModes);
+            Assert.Contains(ResponseModes.Fragment, options.ResponseModes);
+            Assert.Contains(ResponseModes.Query, options.ResponseModes);
+
+            Assert.Contains(ResponseTypes.Code, options.ResponseTypes);
         }
 
         [Fact]
-        public void AllowClientCredentialsFlow_ClientCredentialsFlowIsAddedToGrantTypes()
+        public void AllowClientCredentialsFlow_ClientCredentialsFlowIsAdded()
         {
             // Arrange
             var services = CreateServices();
@@ -446,22 +454,6 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Contains(GrantTypes.ClientCredentials, options.GrantTypes);
-        }
-
-        [Fact]
-        public void AllowCustomFlow_CustomFlowIsAddedToGrantTypes()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.AllowCustomFlow("urn:ietf:params:oauth:grant-type:custom_grant");
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Contains("urn:ietf:params:oauth:grant-type:custom_grant", options.GrantTypes);
         }
 
         [Theory]
@@ -481,7 +473,65 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void AllowImplicitFlow_ImplicitFlowIsAddedToGrantTypes()
+        public void AllowCustomFlow_CustomFlowIsAdded()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AllowCustomFlow("urn:ietf:params:oauth:grant-type:custom_grant");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains("urn:ietf:params:oauth:grant-type:custom_grant", options.GrantTypes);
+        }
+
+        [Fact]
+        public void AddDeviceCodeFlow_DeviceFlowIsAdded()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AllowDeviceCodeFlow();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(GrantTypes.DeviceCode, options.GrantTypes);
+        }
+
+        [Fact]
+        public void AllowHybridFlow_HybridFlowIsAdded()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AllowHybridFlow();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(CodeChallengeMethods.Sha256, options.CodeChallengeMethods);
+
+            Assert.Contains(GrantTypes.AuthorizationCode, options.GrantTypes);
+            Assert.Contains(GrantTypes.Implicit, options.GrantTypes);
+
+            Assert.Contains(ResponseModes.FormPost, options.ResponseModes);
+            Assert.Contains(ResponseModes.Fragment, options.ResponseModes);
+
+            Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, options.ResponseTypes);
+            Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token, options.ResponseTypes);
+            Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.Token, options.ResponseTypes);
+        }
+
+        [Fact]
+        public void AllowImplicitFlow_ImplicitFlowIsAdded()
         {
             // Arrange
             var services = CreateServices();
@@ -494,10 +544,17 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Contains(GrantTypes.Implicit, options.GrantTypes);
+
+            Assert.Contains(ResponseModes.FormPost, options.ResponseModes);
+            Assert.Contains(ResponseModes.Fragment, options.ResponseModes);
+
+            Assert.Contains(ResponseTypes.IdToken, options.ResponseTypes);
+            Assert.Contains(ResponseTypes.IdToken + ' ' + ResponseTypes.Token, options.ResponseTypes);
+            Assert.Contains(ResponseTypes.Token, options.ResponseTypes);
         }
 
         [Fact]
-        public void AllowPasswordFlow_PasswordFlowIsAddedToGrantTypes()
+        public void AllowPasswordFlow_PasswordFlowIsAdded()
         {
             // Arrange
             var services = CreateServices();
@@ -513,7 +570,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void AllowRefreshTokenFlow_RefreshTokenFlowIsAddedToGrantTypes()
+        public void AllowRefreshTokenFlow_RefreshTokenFlowIsAdded()
         {
             // Arrange
             var services = CreateServices();
@@ -526,6 +583,22 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Contains(GrantTypes.RefreshToken, options.GrantTypes);
+        }
+
+        [Fact]
+        public void DisableAccessTokenEncryption_AccessTokenEncryptionIsDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableAccessTokenEncryption();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.DisableAccessTokenEncryption);
         }
 
         [Fact]
@@ -542,6 +615,22 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.True(options.DisableAuthorizationStorage);
+        }
+
+        [Fact]
+        public void DisableRollingRefreshTokens_RollingRefreshTokensAreDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableRollingRefreshTokens();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.DisableRollingRefreshTokens);
         }
 
         [Fact]
@@ -593,22 +682,6 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void DisableAccessTokenEncryption_AccessTokenEncryptionIsDisabled()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.DisableAccessTokenEncryption();
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.True(options.DisableAccessTokenEncryption);
-        }
-
-        [Fact]
         public void RequireProofKeyForCodeExchange_PkceIsEnforced()
         {
             // Arrange
@@ -622,22 +695,6 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.True(options.RequireProofKeyForCodeExchange);
-        }
-
-        [Fact]
-        public void AddDeviceCodeFlow_AddsDeviceCodeGrantType()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.AllowDeviceCodeFlow();
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Contains(GrantTypes.DeviceCode, options.GrantTypes);
         }
 
         [Fact]
@@ -1839,22 +1896,6 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.True(options.UseReferenceRefreshTokens);
-        }
-
-        [Fact]
-        public void UseRollingRefreshTokens_RollingRefreshTokensAreEnabled()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.UseRollingRefreshTokens();
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.True(options.UseRollingRefreshTokens);
         }
 
         private static IServiceCollection CreateServices()

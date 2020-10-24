@@ -256,6 +256,17 @@ namespace OpenIddict.Abstractions
         ValueTask<string> GetPayloadAsync(object token, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieves the redemption date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the redemption date associated with the specified token.
+        /// </returns>
+        ValueTask<DateTimeOffset?> GetRedemptionDateAsync(object token, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Retrieves the reference identifier associated with a token.
         /// Note: depending on the manager used to create the token,
         /// the reference identifier may be hashed for security reasons.
@@ -384,37 +395,6 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sets the application identifier associated with a token.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="identifier">The unique identifier associated with the client application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        ValueTask SetApplicationIdAsync(object token, string identifier, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sets the authorization identifier associated with a token.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="identifier">The unique identifier associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        ValueTask SetAuthorizationIdAsync(object token, string identifier, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Tries to extend the specified token by replacing its expiration date.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="date">The date on which the token will no longer be considered valid.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the token was successfully extended, <c>false</c> otherwise.</returns>
-        ValueTask<bool> TryExtendAsync(object token, DateTimeOffset? date, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Tries to redeem a token.

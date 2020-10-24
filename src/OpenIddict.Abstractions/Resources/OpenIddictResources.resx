@@ -489,10 +489,6 @@ To enable DI support, call 'services.AddQuartz(options =&gt; options.UseMicrosof
     <value>Reference tokens cannot be used when disabling token storage.</value>
     <comment>{Locked}</comment>
   </data>
-  <data name="ID0084" xml:space="preserve">
-    <value>Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.</value>
-    <comment>{Locked}</comment>
-  </data>
   <data name="ID0085" xml:space="preserve">
     <value>At least one encryption key must be registered in the OpenIddict server options.
 Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddEncryptionCertificate()' or 'services.AddOpenIddict().AddServer().AddDevelopmentEncryptionCertificate()' or call 'services.AddOpenIddict().AddServer().AddEphemeralEncryptionKey()' to use an ephemeral key.</value>
@@ -2441,22 +2437,6 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6166" xml:space="preserve">
     <value>An exception occurred while trying to revoke the authorization '{Identifier}'.</value>
-    <comment>{Locked}</comment>
-  </data>
-  <data name="ID6167" xml:space="preserve">
-    <value>The expiration date of the refresh token '{Identifier}' was successfully updated: {Date}.</value>
-    <comment>{Locked}</comment>
-  </data>
-  <data name="ID6168" xml:space="preserve">
-    <value>The expiration date of the refresh token '{Identifier}' was successfully removed.</value>
-    <comment>{Locked}</comment>
-  </data>
-  <data name="ID6169" xml:space="preserve">
-    <value>A concurrency exception occurred while trying to update the expiration date of the token '{Identifier}'.</value>
-    <comment>{Locked}</comment>
-  </data>
-  <data name="ID6170" xml:space="preserve">
-    <value>An exception occurred while trying to update the expiration date of the token '{Identifier}'.</value>
     <comment>{Locked}</comment>
   </data>
   <data name="ID6171" xml:space="preserve">

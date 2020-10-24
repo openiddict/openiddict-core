@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -2892,7 +2891,6 @@ namespace OpenIddict.Server.IntegrationTests
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
-                options.UseRollingRefreshTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2938,13 +2936,12 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
-        public async Task ProcessSignIn_RefreshTokenIsIssuedForAuthorizationCodeRequestsWhenRollingTokensAreEnabled()
+        public async Task ProcessSignIn_RefreshTokenIsIssuedForAuthorizationCodeRequests()
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
-                options.UseRollingRefreshTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2982,13 +2979,12 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
-        public async Task ProcessSignIn_RefreshTokenIsAlwaysIssuedWhenRollingTokensAreEnabled()
+        public async Task ProcessSignIn_RefreshTokenIsAlwaysIssued()
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
-                options.UseRollingRefreshTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -3020,47 +3016,6 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.NotNull(response.RefreshToken);
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_RefreshTokenIsNotIssuedWhenRollingTokensAreDisabled()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-                options.DisableSlidingRefreshTokenExpiration();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
         }
 
         [Fact]
@@ -3139,84 +3094,6 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
-        public async Task ProcessSignIn_ReturnsErrorResponseWhenRedeemingAuthorizationCodeFails()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AuthorizationCode)
-                            .SetPresenters("Fabrikam")
-                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(CreateApplicationManager(mock =>
-                {
-                    var application = new OpenIddictApplication();
-
-                    mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(application);
-
-                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-                }));
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = GrantTypes.AuthorizationCode,
-                RedirectUri = "http://www.fabrikam.com/path"
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID2016), response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
         public async Task ProcessSignIn_RefreshTokenIsAutomaticallyRedeemedWhenRollingTokensAreEnabled()
         {
             // Arrange
@@ -3245,7 +3122,6 @@ namespace OpenIddict.Server.IntegrationTests
 
             await using var server = await CreateServerAsync(options =>
             {
-                options.UseRollingRefreshTokens();
                 options.DisableAuthorizationStorage();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
@@ -3281,74 +3157,6 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.NotNull(response.RefreshToken);
-
-            Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_ReturnsErrorResponseWhenRedeemingRefreshTokenFails()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.UseRollingRefreshTokens();
-                options.DisableAuthorizationStorage();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID2018), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
@@ -3377,6 +3185,9 @@ namespace OpenIddict.Server.IntegrationTests
 
             await using var server = await CreateServerAsync(options =>
             {
+                options.DisableAuthorizationStorage();
+                options.DisableRollingRefreshTokens();
+
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
@@ -3395,104 +3206,6 @@ namespace OpenIddict.Server.IntegrationTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Never());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_PreviousTokensAreAutomaticallyRevokedWhenRollingTokensAreEnabled()
-        {
-            // Arrange
-            var tokens = new[]
-            {
-                new OpenIddictToken(),
-                new OpenIddictToken(),
-                new OpenIddictToken()
-            };
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(tokens[0]);
-
-                mock.Setup(manager => manager.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
-
-                mock.Setup(manager => manager.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("481FCAC6-06BC-43EE-92DB-37A78AA09B595073CC313103");
-
-                mock.Setup(manager => manager.GetIdAsync(tokens[2], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3BEA7A94-5ADA-49AF-9F41-8AB6156E31A8");
-
-                mock.Setup(manager => manager.GetAuthorizationIdAsync(tokens[0], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
-
-                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.TryRedeemAsync(tokens[0], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
-                    .Returns(tokens.ToAsyncEnumerable());
-
-                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictToken());
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.UseRollingRefreshTokens();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(CreateAuthorizationManager(mock =>
-                {
-                    var authorization = new OpenIddictAuthorization();
-
-                    mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(authorization);
-
-                    mock.Setup(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-                }));
 
                 options.Services.AddSingleton(manager);
             });
@@ -3510,427 +3223,7 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.NotNull(response.RefreshToken);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Never());
-            Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(tokens[2], It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_PreviousTokensAreNotRevokedWhenRollingTokensAreDisabled()
-        {
-            // Arrange
-            var tokens = new[]
-            {
-                new OpenIddictToken(),
-                new OpenIddictToken(),
-                new OpenIddictToken()
-            };
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(tokens[0]);
-
-                mock.Setup(manager => manager.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
-
-                mock.Setup(manager => manager.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("481FCAC6-06BC-43EE-92DB-37A78AA09B595073CC313103");
-
-                mock.Setup(manager => manager.GetIdAsync(tokens[2], It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3BEA7A94-5ADA-49AF-9F41-8AB6156E31A8");
-
-                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(tokens[0], Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
-                    .Returns(tokens.ToAsyncEnumerable());
-
-                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictToken());
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(CreateAuthorizationManager(mock =>
-                {
-                    var authorization = new OpenIddictAuthorization();
-
-                    mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(authorization);
-
-                    mock.Setup(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-                }));
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.NotNull(response.AccessToken);
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Never());
-            Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Never());
-            Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(tokens[2], It.IsAny<CancellationToken>()), Times.Never());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_ExtendsLifetimeWhenRollingTokensAreDisabledAndSlidingExpirationEnabled()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictToken());
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(manager => manager.TryExtendAsync(token,
-                It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_DoesNotExtendLifetimeWhenSlidingExpirationIsDisabled()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictToken());
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.DisableSlidingRefreshTokenExpiration();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(manager => manager.TryExtendAsync(token,
-                It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Never());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_DoesNotUpdateExpirationDateWhenAlreadyNull()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(value: null);
-
-                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictToken());
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(manager => manager.TryExtendAsync(token, null, It.IsAny<CancellationToken>()), Times.Never());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_SetsExpirationDateToNullWhenLifetimeIsNull()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(DateTimeOffset.Now + TimeSpan.FromDays(1));
-
-                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictToken());
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.SetRefreshTokenLifetime(lifetime: null);
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(manager => manager.TryExtendAsync(token, null, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_IgnoresErrorWhenExtendingLifetimeOfExistingTokenFailed()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.TryExtendAsync(token, It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictToken());
-            });
-
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.Services.AddSingleton(manager);
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.NotNull(response.AccessToken);
-
-            Mock.Get(manager).Verify(manager => manager.TryExtendAsync(token,
-                It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]

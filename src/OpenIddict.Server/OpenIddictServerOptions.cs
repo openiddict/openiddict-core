@@ -215,6 +215,12 @@ namespace OpenIddict.Server
         public TimeSpan? RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(14);
 
         /// <summary>
+        /// Gets or sets the period of time rolling refresh tokens marked as redeemed can still be
+        /// used to make concurrent refresh token requests. The default value is 15 seconds.
+        /// </summary>
+        public TimeSpan? RefreshTokenReuseLeeway { get; set; } = TimeSpan.FromSeconds(15);
+
+        /// <summary>
         /// Gets or sets the period of time user codes remain valid after being issued. The default value is 10 minutes.
         /// The client application is expected to start a whole new authentication flow after the user code has expired.
         /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
@@ -273,6 +279,14 @@ namespace OpenIddict.Server
         /// refresh token is issued and can't be revoked to prevent associated tokens from being used.
         /// </summary>
         public bool DisableAuthorizationStorage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether rolling tokens are disabled.
+        /// When disabled, refresh tokens used in a token request are not marked
+        /// as redeemed and can still be used until they expire. Disabling
+        /// rolling refresh tokens is NOT recommended, for security reasons.
+        /// </summary>
+        public bool DisableRollingRefreshTokens { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether sliding expiration is disabled
@@ -379,15 +393,5 @@ namespace OpenIddict.Server
         /// that provides additional protection against token leakage.
         /// </summary>
         public bool UseReferenceRefreshTokens { get; set; }
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether rolling tokens should be used.
-        /// When disabled, no new token is issued and the refresh token lifetime is
-        /// dynamically managed by updating the token entry in the database.
-        /// When this option is enabled, a new refresh token is issued for each
-        /// refresh token request (and the previous one is automatically revoked
-        /// unless token storage was explicitly disabled in the options).
-        /// </summary>
-        public bool UseRollingRefreshTokens { get; set; }
     }
 }

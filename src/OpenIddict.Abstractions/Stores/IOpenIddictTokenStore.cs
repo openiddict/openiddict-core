@@ -234,6 +234,17 @@ namespace OpenIddict.Abstractions
         ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the redemption date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the redemption date associated with the specified token.
+        /// </returns>
+        ValueTask<DateTimeOffset?> GetRedemptionDateAsync(TToken token, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the reference identifier associated with a token.
         /// Note: depending on the manager used to create the token,
         /// the reference identifier may be hashed for security reasons.
@@ -374,6 +385,15 @@ namespace OpenIddict.Abstractions
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         ValueTask SetPropertiesAsync(TToken token,
             ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the redemption date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="date">The redemption date.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetRedemptionDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the reference identifier associated with a token.

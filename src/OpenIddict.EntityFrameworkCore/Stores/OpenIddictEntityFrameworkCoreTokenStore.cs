@@ -523,6 +523,22 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <inheritdoc/>
+        public virtual ValueTask<DateTimeOffset?> GetRedemptionDateAsync(TToken token, CancellationToken cancellationToken)
+        {
+            if (token is null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (token.RedemptionDate is null)
+            {
+                return new ValueTask<DateTimeOffset?>(result: null);
+            }
+
+            return new ValueTask<DateTimeOffset?>(DateTime.SpecifyKind(token.RedemptionDate.Value, DateTimeKind.Utc));
+        }
+
+        /// <inheritdoc/>
         public virtual ValueTask<string?> GetReferenceIdAsync(TToken token, CancellationToken cancellationToken)
         {
             if (token is null)
@@ -860,6 +876,19 @@ namespace OpenIddict.EntityFrameworkCore
             writer.Flush();
 
             token.Properties = Encoding.UTF8.GetString(stream.ToArray());
+
+            return default;
+        }
+
+        /// <inheritdoc/>
+        public virtual ValueTask SetRedemptionDateAsync(TToken token, DateTimeOffset? date, CancellationToken cancellationToken)
+        {
+            if (token is null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            token.RedemptionDate = date?.UtcDateTime;
 
             return default;
         }

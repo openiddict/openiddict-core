@@ -74,8 +74,6 @@ namespace OpenIddict.Server
             PrepareUserCodePrincipal.Descriptor,
 
             RedeemTokenEntry.Descriptor,
-            RevokeExistingTokenEntries.Descriptor,
-            ExtendRefreshTokenEntry.Descriptor,
 
             CreateAccessTokenEntry.Descriptor,
             GenerateIdentityModelAccessToken.Descriptor,
@@ -859,42 +857,45 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                if (context.EndpointType == OpenIddictServerEndpointType.Token &&
-                   (context.Request.IsAuthorizationCodeGrantType() ||
-                    context.Request.IsDeviceCodeGrantType() ||
-                    context.Request.IsRefreshTokenGrantType()))
+                if (context.EndpointType == OpenIddictServerEndpointType.Token && (context.Request.IsAuthorizationCodeGrantType() ||
+                                                                                   context.Request.IsDeviceCodeGrantType() ||
+                                                                                   context.Request.IsRefreshTokenGrantType()))
                 {
                     // If the authorization code/device code/refresh token is already marked as redeemed, this may indicate
                     // that it was compromised. In this case, revoke the entire chain of tokens associated with the authorization.
+                    // Special logic is used to avoid revoking refresh tokens already marked as redeemed to allow for a small leeway.
                     // Note: the authorization itself is not revoked to allow the legitimate client to start a new flow.
                     // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
                     if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
                     {
-                        // First, mark the redeemed token submitted by the client as revoked.
-                        await _tokenManager.TryRevokeAsync(token);
+                        if (!context.Request.IsRefreshTokenGrantType() || !await IsReusableAsync(token))
+                        {
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6002), identifier);
 
-                        // Then, try to revoke the token entries associated with the authorization.
-                        await TryRevokeChainAsync(context.Principal.GetAuthorizationId());
+                            context.Reject(
+                                error: context.EndpointType switch
+                                {
+                                    OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
 
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6002), identifier);
+                                    _ => Errors.InvalidToken
+                                },
+                                description: context.EndpointType switch
+                                {
+                                    OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                        => context.Localizer[SR.ID2010],
+                                    OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                        => context.Localizer[SR.ID2011],
+                                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                        => context.Localizer[SR.ID2012],
 
-                        context.Reject(
-                            error: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                                _                                  => Errors.InvalidToken
-                            },
-                            description: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => context.Localizer[SR.ID2010],
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => context.Localizer[SR.ID2011],
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => context.Localizer[SR.ID2012],
+                                    _ => context.Localizer[SR.ID2013]
+                                });
 
-                                _ => context.Localizer[SR.ID2013]
-                            });
+                            // Revoke all the token entries associated with the authorization.
+                            await TryRevokeChainAsync(await _tokenManager.GetAuthorizationIdAsync(token));
+
+                            return;
+                        }
 
                         return;
                     }
@@ -954,10 +955,28 @@ namespace OpenIddict.Server
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
                 context.Principal.SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
-                                  .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
-                                  .SetAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
-                                  .SetTokenId(await _tokenManager.GetIdAsync(token))
-                                  .SetTokenType(await _tokenManager.GetTypeAsync(token));
+                                 .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
+                                 .SetAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
+                                 .SetTokenId(await _tokenManager.GetIdAsync(token))
+                                 .SetTokenType(await _tokenManager.GetTypeAsync(token));
+
+                async ValueTask<bool> IsReusableAsync(object token)
+                {
+                    // If the reuse leeway was set to null, return false to indicate
+                    // that the refresh token is already redeemed and cannot be reused.
+                    if (context.Options.RefreshTokenReuseLeeway is null)
+                    {
+                        return false;
+                    }
+
+                    var date = await _tokenManager.GetRedemptionDateAsync(token);
+                    if (date is null || DateTimeOffset.UtcNow < date + context.Options.RefreshTokenReuseLeeway)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
 
                 async ValueTask TryRevokeChainAsync(string? identifier)
                 {
@@ -966,15 +985,10 @@ namespace OpenIddict.Server
                         return;
                     }
 
+                    // Revoke all the token entries associated with the authorization,
+                    // including the redeemed token that was used in the token request.
                     await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier))
                     {
-                        // Don't change the status of the token used in the token request.
-                        if (string.Equals(context.Principal.GetTokenId(),
-                            await _tokenManager.GetIdAsync(token), StringComparison.Ordinal))
-                        {
-                            continue;
-                        }
-
                         await _tokenManager.TryRevokeAsync(token);
                     }
                 }
@@ -1138,16 +1152,16 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                switch (context.EndpointType)
+                return context.EndpointType switch
                 {
-                    case OpenIddictServerEndpointType.Authorization:
-                    case OpenIddictServerEndpointType.Token:
-                    case OpenIddictServerEndpointType.Userinfo:
-                    case OpenIddictServerEndpointType.Verification:
-                        return default;
+                    OpenIddictServerEndpointType.Authorization or
+                    OpenIddictServerEndpointType.Token or
+                    OpenIddictServerEndpointType.Userinfo or
+                    OpenIddictServerEndpointType.Verification
+                        => default,
 
-                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
-                }
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006)),
+                };
             }
         }
 
@@ -1652,17 +1666,10 @@ namespace OpenIddict.Server
 
                 (context.GenerateRefreshToken, context.IncludeRefreshToken) = context.EndpointType switch
                 {
-                    // For token requests, never generate a refresh token if the offline_access scope was not granted.
-                    OpenIddictServerEndpointType.Token when !context.Principal.HasScope(Scopes.OfflineAccess)
-                        => (false, false),
-
-                    // For grant_type=refresh_token token requests, only generate
-                    // and return a refresh token if rolling tokens are enabled.
-                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() &&
-                                                            context.Options.UseRollingRefreshTokens => (true, true),
-
-                    // For token requests that don't meet the previous criteria, allow a refresh token to be returned.
-                    OpenIddictServerEndpointType.Token when !context.Request.IsRefreshTokenGrantType() => (true, true),
+                    // For token requests, allow a refresh token to be returned
+                    // if the special offline_access protocol scope was granted.
+                    OpenIddictServerEndpointType.Token when context.Principal.HasScope(Scopes.OfflineAccess)
+                        => (true, true),
 
                     _ => (false, false)
                 };
@@ -2123,7 +2130,8 @@ namespace OpenIddict.Server
                 // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
                 // and must exactly match the expiration date of the refresh token used in the token request.
                 if (context.EndpointType == OpenIddictServerEndpointType.Token &&
-                    context.Request.IsRefreshTokenGrantType() && !context.Options.DisableSlidingRefreshTokenExpiration)
+                    context.Request.IsRefreshTokenGrantType() &&
+                    context.Options.DisableSlidingRefreshTokenExpiration)
                 {
                     var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                         typeof(ProcessAuthenticationContext).FullName!) ??
@@ -2367,25 +2375,16 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.EndpointType != OpenIddictServerEndpointType.Token &&
-                    context.EndpointType != OpenIddictServerEndpointType.Verification)
+                switch (context.EndpointType)
                 {
-                    return;
-                }
+                    case OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType():
+                    case OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType():
+                    case OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() &&
+                                                                !context.Options.DisableRollingRefreshTokens:
+                    case OpenIddictServerEndpointType.Verification:
+                        break;
 
-                if (context.EndpointType == OpenIddictServerEndpointType.Token)
-                {
-                    if (!context.Request.IsAuthorizationCodeGrantType() &&
-                        !context.Request.IsDeviceCodeGrantType() &&
-                        !context.Request.IsRefreshTokenGrantType())
-                    {
-                        return;
-                    }
-
-                    if (context.Request.IsRefreshTokenGrantType() && !context.Options.UseRollingRefreshTokens)
-                    {
-                        return;
-                    }
+                    default: return;
                 }
 
                 Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
@@ -2400,165 +2399,10 @@ namespace OpenIddict.Server
 
                 // If rolling tokens are enabled or if the request is a a code or device code token request
                 // or a user code verification request, mark the token as redeemed to prevent future reuses.
-                // If the operation fails, return an error indicating the code/token is no longer valid.
-                // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token is null || !await _tokenManager.TryRedeemAsync(token))
+                if (token is not null)
                 {
-                    context.Reject(
-                        error: Errors.InvalidGrant,
-                        description: context.EndpointType switch
-                        {
-                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID2016],
-                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID2017],
-                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID2018],
-
-                            OpenIddictServerEndpointType.Verification
-                                => context.Localizer[SR.ID2026],
-
-                            _ => context.Localizer[SR.ID2019]
-                        });
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of revoking all the tokens that were previously issued.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public class RevokeExistingTokenEntries : IOpenIddictServerHandler<ProcessSignInContext>
-        {
-            private readonly IOpenIddictTokenManager _tokenManager;
-
-            public RevokeExistingTokenEntries() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public RevokeExistingTokenEntries(IOpenIddictTokenManager tokenManager)
-                => _tokenManager = tokenManager;
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireRollingRefreshTokensEnabled>()
-                    .UseScopedHandler<RevokeExistingTokenEntries>()
-                    .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessSignInContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.EndpointType != OpenIddictServerEndpointType.Token || !context.Request.IsRefreshTokenGrantType())
-                {
-                    return;
-                }
-
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
-
-                // When rolling tokens are enabled, try to revoke all the previously issued tokens
-                // associated with the authorization if the request is a refresh_token request.
-                // If the operation fails, silently ignore the error and keep processing the request:
-                // this may indicate that one of the revoked tokens was modified by a concurrent request.
-
-                var identifier = context.Principal.GetAuthorizationId();
-                if (string.IsNullOrEmpty(identifier))
-                {
-                    return;
-                }
-
-                await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier))
-                {
-                    // Don't change the status of the token used in the token request.
-                    if (string.Equals(context.Principal.GetTokenId(),
-                        await _tokenManager.GetIdAsync(token), StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    await _tokenManager.TryRevokeAsync(token);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of extending the lifetime of the refresh token entry.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public class ExtendRefreshTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
-        {
-            private readonly IOpenIddictTokenManager _tokenManager;
-
-            public ExtendRefreshTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ExtendRefreshTokenEntry(IOpenIddictTokenManager tokenManager)
-                => _tokenManager = tokenManager;
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireSlidingRefreshTokenExpirationEnabled>()
-                    .AddFilter<RequireRollingTokensDisabled>()
-                    .UseScopedHandler<ExtendRefreshTokenEntry>()
-                    .SetOrder(RevokeExistingTokenEntries.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessSignInContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.EndpointType != OpenIddictServerEndpointType.Token || !context.Request.IsRefreshTokenGrantType())
-                {
-                    return;
-                }
-
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
-
-                // Extract the token identifier from the authentication principal.
-                // If no token identifier can be found, this indicates that the token has no backing database entry.
-                var identifier = context.Principal.GetTokenId();
-                if (string.IsNullOrEmpty(identifier))
-                {
-                    return;
-                }
-
-                var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0265));
-                }
-
-                // Compute the new expiration date of the refresh token and update the token entry.
-                var lifetime = context.Principal.GetRefreshTokenLifetime() ?? context.Options.RefreshTokenLifetime;
-                if (lifetime.HasValue)
-                {
-                    await _tokenManager.TryExtendAsync(token, DateTimeOffset.UtcNow + lifetime.Value);
-                }
-
-                else
-                {
-                    await _tokenManager.TryExtendAsync(token, date: null);
+                    await _tokenManager.TryRedeemAsync(token);
                 }
             }
         }
@@ -2591,7 +2435,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .AddFilter<RequireAccessTokenGenerated>()
                     .UseScopedHandler<CreateAccessTokenEntry>()
-                    .SetOrder(ExtendRefreshTokenEntry.Descriptor.Order + 1_000)
+                    .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
