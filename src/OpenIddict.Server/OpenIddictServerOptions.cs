@@ -261,7 +261,6 @@ namespace OpenIddict.Server
             OpenIddictConstants.Claims.ExpiresAt,
             OpenIddictConstants.Claims.IssuedAt,
             OpenIddictConstants.Claims.Issuer,
-            OpenIddictConstants.Claims.JwtId,
             OpenIddictConstants.Claims.Subject
         };
 

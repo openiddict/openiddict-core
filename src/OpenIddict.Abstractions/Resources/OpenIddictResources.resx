@@ -1833,7 +1833,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <comment>{Locked}</comment>
   </data>
   <data name="ID6013" xml:space="preserve">
-    <value>The access token '{Identifier}' was successfully created: {Payload}.
+    <value>A new access token was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
@@ -1846,7 +1846,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6016" xml:space="preserve">
-    <value>The authorization code '{Identifier}' was successfully created: {Payload}.
+    <value>A new authorization code was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
@@ -1859,7 +1859,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6019" xml:space="preserve">
-    <value>The device code '{Identifier}' was successfully created: {Payload}.
+    <value>A new device code was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
@@ -1876,7 +1876,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6023" xml:space="preserve">
-    <value>The refresh token '{Identifier}' was successfully created: {Payload}.
+    <value>A new refresh token was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
@@ -1889,7 +1889,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6026" xml:space="preserve">
-    <value>The user code '{Identifier}' was successfully created: {Payload}.
+    <value>A new user code was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>
@@ -1902,7 +1902,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <comment>{Locked}</comment>
   </data>
   <data name="ID6029" xml:space="preserve">
-    <value>The identity token '{Identifier}' was successfully created: {Payload}.
+    <value>A new identity token was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
     <comment>{Locked}</comment>
   </data>

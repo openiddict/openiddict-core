@@ -1872,7 +1872,6 @@ namespace OpenIddict.Server
                     claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
                 principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetAccessTokenLifetime() ?? context.Options.AccessTokenLifetime;
@@ -1957,7 +1956,6 @@ namespace OpenIddict.Server
                     return true;
                 });
 
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
                 principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetAuthorizationCodeLifetime() ?? context.Options.AuthorizationCodeLifetime;
@@ -2050,7 +2048,6 @@ namespace OpenIddict.Server
                     return true;
                 });
 
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
                 principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetDeviceCodeLifetime() ?? context.Options.DeviceCodeLifetime;
@@ -2124,7 +2121,6 @@ namespace OpenIddict.Server
                     return true;
                 });
 
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
                 principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
@@ -2236,7 +2232,6 @@ namespace OpenIddict.Server
                     claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
                 principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetIdentityTokenLifetime() ?? context.Options.IdentityTokenLifetime;
@@ -2323,7 +2318,6 @@ namespace OpenIddict.Server
                     return true;
                 });
 
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
                 principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetUserCodeLifetime() ?? context.Options.UserCodeLifetime;
@@ -2583,8 +2577,7 @@ namespace OpenIddict.Server
 
                 context.AccessToken = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), principal.GetClaim(Claims.JwtId),
-                                        context.AccessToken, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.AccessToken, principal.Claims);
 
                 return default;
             }
@@ -2830,8 +2823,7 @@ namespace OpenIddict.Server
 
                 context.AuthorizationCode = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), principal.GetClaim(Claims.JwtId),
-                                        context.AuthorizationCode, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), context.AuthorizationCode, principal.Claims);
 
                 return default;
             }
@@ -3081,8 +3073,7 @@ namespace OpenIddict.Server
 
                 context.DeviceCode = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6019), principal.GetClaim(Claims.JwtId),
-                                        context.DeviceCode, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6019), context.DeviceCode, principal.Claims);
 
                 return default;
             }
@@ -3416,8 +3407,7 @@ namespace OpenIddict.Server
 
                 context.RefreshToken = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6023), principal.GetClaim(Claims.JwtId),
-                                        context.RefreshToken, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6023), context.RefreshToken, principal.Claims);
 
                 return default;
             }
@@ -3694,8 +3684,7 @@ namespace OpenIddict.Server
 
                 context.UserCode = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6026), principal.GetClaim(Claims.JwtId),
-                                        context.UserCode, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6026), context.UserCode, principal.Claims);
 
                 return default;
             }
@@ -4109,8 +4098,7 @@ namespace OpenIddict.Server
 
                 context.IdentityToken = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6029), principal.GetClaim(Claims.JwtId),
-                                        context.IdentityToken, principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6029), context.IdentityToken, principal.Claims);
 
                 return default;
             }
