@@ -730,6 +730,7 @@ namespace OpenIddict.Server.IntegrationTests
                             .SetPresenters("Contoso", "AdventureWorks Cycles")
                             .SetCreationDate(new DateTimeOffset(2016, 1, 1, 0, 0, 0, TimeSpan.Zero))
                             .SetExpirationDate(new DateTimeOffset(2017, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                            .SetClaim(Claims.ClientId, "AdventureWorks Cycles")
                             .SetClaim(Claims.Subject, "Bob le Magnifique")
                             .SetClaim(Claims.JwtId, "66B65AED-4033-4E9C-B975-A8CA7FB6FA79");
 
@@ -763,7 +764,7 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.Equal(1451606400, (long) response[Claims.NotBefore]);
             Assert.Equal(1483228800, (long) response[Claims.ExpiresAt]);
             Assert.Equal("Fabrikam", (string?) response[Claims.Audience]);
-            Assert.Equal("Contoso", (string?) response[Claims.ClientId]);
+            Assert.Equal("AdventureWorks Cycles", (string?) response[Claims.ClientId]);
         }
 
         [Fact]

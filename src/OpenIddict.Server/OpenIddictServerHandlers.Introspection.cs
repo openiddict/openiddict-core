@@ -894,11 +894,10 @@ namespace OpenIddict.Server
                     context.IssuedAt = context.NotBefore = context.Principal.GetCreationDate();
                     context.ExpiresAt = context.Principal.GetExpirationDate();
 
-                    // Infer the audiences/client_id claims from the properties stored in the security principal.
-                    // Note: the client_id claim must be a unique string so multiple presenters cannot be returned.
-                    // To work around this limitation, only the first one is returned if multiple values are listed.
+                    // Infer the audiences/client_id from the claims stored in the security principal.
                     context.Audiences.UnionWith(context.Principal.GetAudiences());
-                    context.ClientId = context.Principal.GetPresenters().FirstOrDefault();
+                    context.ClientId = context.Principal.GetClaim(Claims.ClientId) ??
+                                       context.Principal.GetPresenters().FirstOrDefault();
 
                     // Note: only set "token_type" when the received token is an access token.
                     // See https://tools.ietf.org/html/rfc7662#section-2.2
