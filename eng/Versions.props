@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>3.0.0</VersionPrefix>
-    <PreReleaseVersionLabel>beta6</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rc1</PreReleaseVersionLabel>
   </PropertyGroup>
 
 </Project>
