@@ -157,7 +157,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers an encryption key.
         /// </summary>
-        /// <param name="key">The security key.</param>
+        /// <param name="key">The security key. If a SymmetricSecurityKey, create using a 32-character
+        /// string, e.g. new SymmetricSecurityKey(Encoding.UTF8.GetBytes(YOUR_SECRET))
+        /// </param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionKey(SecurityKey key)
         {
@@ -175,6 +177,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (key.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW))
             {
+                if (key.KeySize != 256)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(key), SR.GetResourceString(SR.ID0283));
+                }
+
                 return AddEncryptionCredentials(new EncryptingCredentials(key,
                     SecurityAlgorithms.Aes256KW, SecurityAlgorithms.Aes256CbcHmacSha512));
             }
