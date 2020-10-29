@@ -190,8 +190,8 @@ namespace OpenIddict.Server.Tests
 
             // Act and assert
             var key = Mock.Of<SecurityKey>(mock => mock.KeySize == 128 && mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.AddEncryptionKey(key));
-            Assert.Equal("key", exception.ParamName);
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionKey(key));
+            Assert.Equal("Provided symmetric key was incorrect size. Expected 256 bits, received 128.", exception.Message);
         }
 
         [Fact]
@@ -203,8 +203,8 @@ namespace OpenIddict.Server.Tests
 
             // Act and assert
             var key = Mock.Of<SecurityKey>(mock => mock.KeySize == 384 && mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.AddEncryptionKey(key));
-            Assert.Equal("key", exception.ParamName);
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionKey(key));
+            Assert.Equal("Provided symmetric key was incorrect size. Expected 256 bits, received 384.", exception.Message);
         }
 
         [Fact]

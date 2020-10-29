@@ -179,7 +179,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (key.KeySize != 256)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(key), SR.GetResourceString(SR.ID0283));
+                    throw new InvalidOperationException(SR.FormatID0283(256, key.KeySize));
                 }
 
                 return AddEncryptionCredentials(new EncryptingCredentials(key,

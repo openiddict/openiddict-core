@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="gu" original="../OpenIddictResources.resx">
     <body>
-      <trans-unit id="ID0283">
-        <source>Provided symmetric key was incorrect size. Must be 256 bits derived from exactly 32 bytes or string of length 32.</source>
-        <target state="new">Provided symmetric key was incorrect size. Must be 256 bits derived from exactly 32 bytes or string of length 32.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ID2000">
         <source>The security token is missing.</source>
         <target state="translated">સુરક્ષા ટોકન ખૂટે છે.</target>
