@@ -7,17 +7,19 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
-using System.Diagnostics;
 
 #if !SUPPORTS_TIME_CONSTANT_COMPARISONS
 using Org.BouncyCastle.Utilities;
@@ -712,7 +714,17 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                         .AddFilter<RequireScopeValidationEnabled>()
-                        .UseScopedHandler<ValidateScopes>()
+                        .UseScopedHandler<ValidateScopes>(provider =>
+                        {
+                            // Note: the scope manager is only resolved if the degraded mode was not enabled to ensure
+                            // invalid core configuration exceptions are not thrown even if the managers were registered.
+                            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                            return options.EnableDegradedMode ?
+                                new ValidateScopes() :
+                                new ValidateScopes(provider.GetService<IOpenIddictScopeManager>() ??
+                                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        })
                         .SetOrder(ValidateProofKeyForCodeExchangeParameters.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();

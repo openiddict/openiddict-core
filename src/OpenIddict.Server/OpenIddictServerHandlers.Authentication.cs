@@ -10,7 +10,9 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -1161,7 +1163,17 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .AddFilter<RequireScopeValidationEnabled>()
-                        .UseScopedHandler<ValidateScopes>()
+                        .UseScopedHandler<ValidateScopes>(provider =>
+                        {
+                            // Note: the scope manager is only resolved if the degraded mode was not enabled to ensure
+                            // invalid core configuration exceptions are not thrown even if the managers were registered.
+                            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                            return options.EnableDegradedMode ?
+                                new ValidateScopes() :
+                                new ValidateScopes(provider.GetService<IOpenIddictScopeManager>() ??
+                                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        })
                         .SetOrder(ValidateClientRedirectUri.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();

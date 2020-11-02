@@ -181,6 +181,24 @@ namespace OpenIddict.Validation
                     typeof(THandler), typeof(THandler), ServiceLifetime.Scoped));
 
             /// <summary>
+            /// Configures the descriptor to use the specified scoped handler.
+            /// </summary>
+            /// <typeparam name="THandler">The handler type.</typeparam>
+            /// <param name="factory">The factory used to create the handler.</param>
+            /// <returns>The builder instance, so that calls can be easily chained.</returns>
+            public Builder<TContext> UseScopedHandler<THandler>(Func<IServiceProvider, object> factory)
+                where THandler : IOpenIddictValidationHandler<TContext>
+            {
+                if (factory is null)
+                {
+                    throw new ArgumentNullException(nameof(factory));
+                }
+
+                return SetServiceDescriptor(new ServiceDescriptor(
+                    typeof(THandler), factory, ServiceLifetime.Scoped));
+            }
+
+            /// <summary>
             /// Configures the descriptor to use the specified singleton handler.
             /// </summary>
             /// <typeparam name="THandler">The handler type.</typeparam>
@@ -189,6 +207,24 @@ namespace OpenIddict.Validation
                 where THandler : IOpenIddictValidationHandler<TContext>
                 => SetServiceDescriptor(new ServiceDescriptor(
                     typeof(THandler), typeof(THandler), ServiceLifetime.Singleton));
+
+            /// <summary>
+            /// Configures the descriptor to use the specified singleton handler.
+            /// </summary>
+            /// <typeparam name="THandler">The handler type.</typeparam>
+            /// <param name="factory">The factory used to create the handler.</param>
+            /// <returns>The builder instance, so that calls can be easily chained.</returns>
+            public Builder<TContext> UseSingletonHandler<THandler>(Func<IServiceProvider, object> factory)
+                where THandler : IOpenIddictValidationHandler<TContext>
+            {
+                if (factory is null)
+                {
+                    throw new ArgumentNullException(nameof(factory));
+                }
+
+                return SetServiceDescriptor(new ServiceDescriptor(
+                    typeof(THandler), factory, ServiceLifetime.Singleton));
+            }
 
             /// <summary>
             /// Configures the descriptor to use the specified singleton handler.
