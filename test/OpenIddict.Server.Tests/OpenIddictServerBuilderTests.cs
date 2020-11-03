@@ -170,7 +170,7 @@ namespace OpenIddict.Server.Tests
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
-            var key = Mock.Of<SecurityKey>(mock => mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
+            var key = Mock.Of<SecurityKey>(mock => mock.KeySize == 256 && mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
 
             // Act
             builder.AddEncryptionKey(key);
@@ -179,6 +179,32 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Same(key, options.EncryptionCredentials[0].Key);
+        }
+
+        [Fact]
+        public void AddEncryptionKey_ThrowsExceptionWhenSymmetricKeyIsTooShort()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var key = Mock.Of<SecurityKey>(mock => mock.KeySize == 128 && mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionKey(key));
+            Assert.Equal(SR.FormatID0283(256, 128), exception.Message);
+        }
+
+        [Fact]
+        public void AddEncryptionKey_ThrowsExceptionWhenSymmetricKeyIsTooLong()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var key = Mock.Of<SecurityKey>(mock => mock.KeySize == 384 && mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW));
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.AddEncryptionKey(key));
+            Assert.Equal(SR.FormatID0283(256, 384), exception.Message);
         }
 
         [Fact]
