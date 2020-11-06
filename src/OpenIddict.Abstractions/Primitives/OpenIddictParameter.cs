@@ -118,8 +118,7 @@ namespace OpenIddict.Abstractions
                 var (left, right) when ReferenceEquals(left, right) => true,
 
                 // If one of the two parameters is null, return false.
-                (null, _) => false,
-                (_, null) => false,
+                (null, _) or (_, null) => false,
 
                 // If the two parameters are string arrays, use SequenceEqual().
                 (string?[] left, string?[] right) => left.SequenceEqual(right),
@@ -516,8 +515,7 @@ namespace OpenIddict.Abstractions
             {
                 // Note: undefined JsonElement values are assimilated to null values.
                 case null:
-                case JsonElement { ValueKind: JsonValueKind.Undefined }:
-                case JsonElement { ValueKind: JsonValueKind.Null      }:
+                case JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined }:
                     writer.WriteNullValue();
                     break;
 
@@ -583,18 +581,14 @@ namespace OpenIddict.Abstractions
         /// <returns>The converted value.</returns>
         public static explicit operator bool?(OpenIddictParameter? parameter) => parameter?.Value switch
         {
-            // When the parameter is a null value, return null.
-            null => null,
+            // When the parameter is a null value or a JsonElement representing null, return null.
+            null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
             // When the parameter is a boolean value, return it as-is.
             bool value => value,
 
             // When the parameter is a string value, try to parse it.
             string value => bool.TryParse(value, out var result) ? (bool?) result : null,
-
-            // When the parameter is a JsonElement representing null, return null.
-            JsonElement { ValueKind: JsonValueKind.Undefined } => null,
-            JsonElement { ValueKind: JsonValueKind.Null      } => null,
 
             // When the parameter is a JsonElement representing a boolean, return it as-is.
             JsonElement { ValueKind: JsonValueKind.False } => false,
@@ -625,7 +619,7 @@ namespace OpenIddict.Abstractions
 
                 // When the parameter is a string starting with '{' or '[' (which would correspond
                 // to a JSON object or array), try to deserialize it to get a JsonElement instance.
-                string { Length: > 0 } value when value[0] == '{' || value[0] == '[' =>
+                string { Length: > 0 } value when value[0] is '{' or '[' =>
                     DeserializeElement(value) ??
                     DeserializeElement(SerializeObject(value)) ?? default,
 
@@ -705,8 +699,8 @@ namespace OpenIddict.Abstractions
         /// <returns>The converted value.</returns>
         public static explicit operator long?(OpenIddictParameter? parameter) => parameter?.Value switch
         {
-            // When the parameter is a null value, return null.
-            null => null,
+            // When the parameter is a null value or a JsonElement representing null, return null.
+            null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
             // When the parameter is an integer, return it as-is.
             long value => value,
@@ -714,10 +708,6 @@ namespace OpenIddict.Abstractions
             // When the parameter is a string value, try to parse it.
             string value
                 => long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? (long?) result : null,
-
-            // When the parameter is a JsonElement representing null, return null.
-            JsonElement { ValueKind: JsonValueKind.Undefined } => null,
-            JsonElement { ValueKind: JsonValueKind.Null      } => null,
 
             // When the parameter is a JsonElement representing a number, return it as-is.
             JsonElement { ValueKind: JsonValueKind.Number } value
@@ -738,8 +728,8 @@ namespace OpenIddict.Abstractions
         /// <returns>The converted value.</returns>
         public static explicit operator string?(OpenIddictParameter? parameter) => parameter?.Value switch
         {
-            // When the parameter is a null value, return null.
-            null => null,
+            // When the parameter is a null value or a JsonElement representing null, return null.
+            null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
             // When the parameter is a string value, return it as-is.
             string value => value,
@@ -749,10 +739,6 @@ namespace OpenIddict.Abstractions
 
             // When the parameter is an integer, use its string representation.
             long value => value.ToString(CultureInfo.InvariantCulture),
-
-            // When the parameter is a JsonElement representing null, return null.
-            JsonElement { ValueKind: JsonValueKind.Undefined } => null,
-            JsonElement { ValueKind: JsonValueKind.Null      } => null,
 
             // When the parameter is a JsonElement representing a string, return it as-is.
             JsonElement { ValueKind: JsonValueKind.String } value => value.GetString(),
@@ -778,8 +764,8 @@ namespace OpenIddict.Abstractions
         {
             return parameter?.Value switch
             {
-                // When the parameter is a null value, return a null array.
-                null => null,
+                // When the parameter is a null value or a JsonElement representing null, return null.
+                null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
                 // When the parameter is already an array of strings, return it as-is.
                 string?[] value => value,
@@ -792,10 +778,6 @@ namespace OpenIddict.Abstractions
 
                 // When the parameter is an integer, return an array with its string representation.
                 long value => new string?[] { value.ToString(CultureInfo.InvariantCulture) },
-
-                // When the parameter is a JsonElement representing null, return null.
-                JsonElement { ValueKind: JsonValueKind.Undefined } => null,
-                JsonElement { ValueKind: JsonValueKind.Null      } => null,
 
                 // When the parameter is a JsonElement representing a string, return an array with a single entry.
                 JsonElement { ValueKind: JsonValueKind.String } value => new string?[] { value.GetString() },
@@ -893,16 +875,14 @@ namespace OpenIddict.Abstractions
         {
             return parameter.Value switch
             {
-                null => true,
+                null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => true,
 
                 string value    => string.IsNullOrEmpty(value),
                 string?[] value => value.Length == 0,
 
-                JsonElement { ValueKind: JsonValueKind.Undefined }       => true,
-                JsonElement { ValueKind: JsonValueKind.Null      }       => true,
-                JsonElement { ValueKind: JsonValueKind.String    } value => string.IsNullOrEmpty(value.GetString()),
-                JsonElement { ValueKind: JsonValueKind.Array     } value => value.GetArrayLength() == 0,
-                JsonElement { ValueKind: JsonValueKind.Object    } value => IsEmptyNode(value),
+                JsonElement { ValueKind: JsonValueKind.String } value => string.IsNullOrEmpty(value.GetString()),
+                JsonElement { ValueKind: JsonValueKind.Array  } value => value.GetArrayLength() == 0,
+                JsonElement { ValueKind: JsonValueKind.Object } value => IsEmptyNode(value),
 
                 _ => false
             };

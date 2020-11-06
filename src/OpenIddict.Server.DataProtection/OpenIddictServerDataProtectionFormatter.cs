@@ -243,30 +243,26 @@ namespace OpenIddict.Server.DataProtection
             SetArrayProperty(properties, Properties.Scopes, principal.GetScopes());
 
             // Copy the principal and exclude the claim that were mapped to authentication properties.
-            principal = principal.Clone(claim => claim.Type switch
-            {
-                Claims.Private.AccessTokenLifetime       => false,
-                Claims.Private.Audience                  => false,
-                Claims.Private.AuthorizationCodeLifetime => false,
-                Claims.Private.AuthorizationId           => false,
-                Claims.Private.CodeChallenge             => false,
-                Claims.Private.CodeChallengeMethod       => false,
-                Claims.Private.CreationDate              => false,
-                Claims.Private.DeviceCodeId              => false,
-                Claims.Private.DeviceCodeLifetime        => false,
-                Claims.Private.ExpirationDate            => false,
-                Claims.Private.IdentityTokenLifetime     => false,
-                Claims.Private.Nonce                     => false,
-                Claims.Private.Presenter                 => false,
-                Claims.Private.RedirectUri               => false,
-                Claims.Private.RefreshTokenLifetime      => false,
-                Claims.Private.Resource                  => false,
-                Claims.Private.Scope                     => false,
-                Claims.Private.TokenId                   => false,
-                Claims.Private.UserCodeLifetime          => false,
-
-                _ => true
-            });
+            principal = principal.Clone(claim => claim.Type is not (
+                Claims.Private.AccessTokenLifetime or
+                Claims.Private.Audience or
+                Claims.Private.AuthorizationCodeLifetime or
+                Claims.Private.AuthorizationId or
+                Claims.Private.CodeChallenge or
+                Claims.Private.CodeChallengeMethod or
+                Claims.Private.CreationDate or
+                Claims.Private.DeviceCodeId or
+                Claims.Private.DeviceCodeLifetime or
+                Claims.Private.ExpirationDate or
+                Claims.Private.IdentityTokenLifetime or
+                Claims.Private.Nonce or
+                Claims.Private.Presenter or
+                Claims.Private.RedirectUri or
+                Claims.Private.RefreshTokenLifetime or
+                Claims.Private.Resource or
+                Claims.Private.Scope or
+                Claims.Private.TokenId or
+                Claims.Private.UserCodeLifetime));
 
             Write(writer, principal.Identity.AuthenticationType, principal, properties);
             writer.Flush();

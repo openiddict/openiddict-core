@@ -220,7 +220,7 @@ namespace OpenIddict.Validation
                 {
                     // If no specific token type is expected, accept all token types at this stage.
                     // Additional filtering can be made based on the resolved/actual token type.
-                    var type when string.IsNullOrEmpty(type) => null,
+                    null or { Length: 0 } => null,
 
                     // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
                     TokenTypeHints.AccessToken => new[]
@@ -265,10 +265,11 @@ namespace OpenIddict.Validation
                 // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal.SetTokenType(result.TokenType switch
                 {
-                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
+                    null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                    JsonWebTokenTypes.AccessToken                                          => TokenTypeHints.AccessToken,
-                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken => TokenTypeHints.AccessToken,
+                    // Both at+jwt and application/at+jwt are supported for access tokens.
+                    JsonWebTokenTypes.AccessToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
+                        => TokenTypeHints.AccessToken,
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                 });

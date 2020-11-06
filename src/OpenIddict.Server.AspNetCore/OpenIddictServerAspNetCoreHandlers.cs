@@ -365,12 +365,12 @@ namespace OpenIddict.Server.AspNetCore
                     context.Transaction.Response.AddParameter(parameter.Key, parameter.Value switch
                     {
                         OpenIddictParameter value => value,
-                        JsonElement         value => value,
-                        bool                value => value,
-                        int                 value => value,
-                        long                value => value,
-                        string              value => value,
-                        string[]            value => value,
+                        JsonElement         value => new OpenIddictParameter(value),
+                        bool                value => new OpenIddictParameter(value),
+                        int                 value => new OpenIddictParameter(value),
+                        long                value => new OpenIddictParameter(value),
+                        string              value => new OpenIddictParameter(value),
+                        string[]            value => new OpenIddictParameter(value),
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
                     });
@@ -816,12 +816,9 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
 
-                    Errors.InvalidClient => 401,
-                    Errors.InvalidToken  => 401,
-                    Errors.MissingToken  => 401,
+                    Errors.InvalidClient or Errors.InvalidToken or Errors.MissingToken => 401,
 
-                    Errors.InsufficientAccess => 403,
-                    Errors.InsufficientScope  => 403,
+                    Errors.InsufficientAccess or Errors.InsufficientScope => 403,
 
                     _  => 400
                 };
@@ -921,12 +918,12 @@ namespace OpenIddict.Server.AspNetCore
                 // were specified in the request form instead of the HTTP headers, as allowed by the specification.
                 var scheme = context.Transaction.Response.Error switch
                 {
-                    Errors.InvalidClient      => Schemes.Basic,
+                    Errors.InvalidClient => Schemes.Basic,
 
-                    Errors.InvalidToken       => Schemes.Bearer,
-                    Errors.MissingToken       => Schemes.Bearer,
-                    Errors.InsufficientAccess => Schemes.Bearer,
-                    Errors.InsufficientScope  => Schemes.Bearer,
+                    Errors.InvalidToken or
+                    Errors.MissingToken or
+                    Errors.InsufficientAccess or
+                    Errors.InsufficientScope => Schemes.Bearer,
 
                     _ => null
                 };

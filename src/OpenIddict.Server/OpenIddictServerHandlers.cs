@@ -187,13 +187,13 @@ namespace OpenIddict.Server
 
                 var (token, type) = context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Authorization => (context.Request.IdTokenHint, TokenTypeHints.IdToken),
-                    OpenIddictServerEndpointType.Logout        => (context.Request.IdTokenHint, TokenTypeHints.IdToken),
+                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                        => (context.Request.IdTokenHint, TokenTypeHints.IdToken),
 
                     // Tokens received by the introspection and revocation endpoints can be of any type.
                     // Additional token type filtering is made by the endpoint themselves, if needed.
-                    OpenIddictServerEndpointType.Introspection => (context.Request.Token, null),
-                    OpenIddictServerEndpointType.Revocation    => (context.Request.Token, null),
+                    OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
+                        => (context.Request.Token, null),
 
                     OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
                         => (context.Request.Code, TokenTypeHints.AuthorizationCode),
@@ -407,7 +407,7 @@ namespace OpenIddict.Server
                 {
                     // If no specific token type is expected, accept all token types at this stage.
                     // Additional filtering can be made based on the resolved/actual token type.
-                    var type when string.IsNullOrEmpty(type) => null,
+                    null or { Length: 0 } => null,
 
                     // For access tokens, both "at+jwt" and "application/at+jwt" are valid.
                     TokenTypeHints.AccessToken => new[]
@@ -481,13 +481,15 @@ namespace OpenIddict.Server
                 // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal.SetTokenType(result.TokenType switch
                 {
-                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
+                    null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                    JsonWebTokenTypes.AccessToken                                            => TokenTypeHints.AccessToken,
-                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
+                    // Both at+jwt and application/at+jwt are supported for access tokens.
+                    JsonWebTokenTypes.AccessToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
+                        => TokenTypeHints.AccessToken,
 
-                    JsonWebTokenTypes.IdentityToken                                          => TokenTypeHints.IdToken,
-                    JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IdentityToken => TokenTypeHints.IdToken,
+                    // Both JWT and application/JWT are supported for identity tokens.
+                    JsonWebTokenTypes.IdentityToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IdentityToken
+                        => TokenTypeHints.IdToken,
 
                     JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeHints.AuthorizationCode,
                     JsonWebTokenTypes.Private.DeviceCode        => TokenTypeHints.DeviceCode,
@@ -749,8 +751,8 @@ namespace OpenIddict.Server
                         },
                         description: context.EndpointType switch
                         {
-                            OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID2009],
-                            OpenIddictServerEndpointType.Logout        => context.Localizer[SR.ID2009],
+                            OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                                => context.Localizer[SR.ID2009],
 
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
                                 => context.Localizer[SR.ID2001],
@@ -1090,11 +1092,9 @@ namespace OpenIddict.Server
                 Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
                 // Don't validate the lifetime of id_tokens used as id_token_hints.
-                switch (context.EndpointType)
+                if (context.EndpointType is OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout)
                 {
-                    case OpenIddictServerEndpointType.Authorization:
-                    case OpenIddictServerEndpointType.Logout:
-                        return default;
+                    return default;
                 }
 
                 var date = context.Principal.GetExpirationDate();
@@ -1152,16 +1152,15 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return context.EndpointType switch
+                if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
+                                                 OpenIddictServerEndpointType.Token or
+                                                 OpenIddictServerEndpointType.Userinfo or
+                                                 OpenIddictServerEndpointType.Verification))
                 {
-                    OpenIddictServerEndpointType.Authorization or
-                    OpenIddictServerEndpointType.Token or
-                    OpenIddictServerEndpointType.Userinfo or
-                    OpenIddictServerEndpointType.Verification
-                        => default,
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
+                }
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006)),
-                };
+                return default;
             }
         }
 
@@ -1190,20 +1189,22 @@ namespace OpenIddict.Server
 
                 context.Response.Error ??= context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Authorization => Errors.AccessDenied,
-                    OpenIddictServerEndpointType.Token         => Errors.InvalidGrant,
-                    OpenIddictServerEndpointType.Userinfo      => Errors.InsufficientAccess,
-                    OpenIddictServerEndpointType.Verification  => Errors.AccessDenied,
+                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                        => Errors.AccessDenied,
+
+                    OpenIddictServerEndpointType.Token    => Errors.InvalidGrant,
+                    OpenIddictServerEndpointType.Userinfo => Errors.InsufficientAccess,
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
                 };
 
                 context.Response.ErrorDescription ??= context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID2015],
-                    OpenIddictServerEndpointType.Verification  => context.Localizer[SR.ID2015],
-                    OpenIddictServerEndpointType.Token         => context.Localizer[SR.ID2024],
-                    OpenIddictServerEndpointType.Userinfo      => context.Localizer[SR.ID2025],
+                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                        => context.Localizer[SR.ID2015],
+
+                    OpenIddictServerEndpointType.Token    => context.Localizer[SR.ID2024],
+                    OpenIddictServerEndpointType.Userinfo => context.Localizer[SR.ID2025],
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
                 };
@@ -1356,15 +1357,12 @@ namespace OpenIddict.Server
 
                 Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
 
-                switch (context.EndpointType)
+                if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
+                                                 OpenIddictServerEndpointType.Device or
+                                                 OpenIddictServerEndpointType.Token or
+                                                 OpenIddictServerEndpointType.Verification))
                 {
-                    case OpenIddictServerEndpointType.Authorization:
-                    case OpenIddictServerEndpointType.Device:
-                    case OpenIddictServerEndpointType.Token:
-                    case OpenIddictServerEndpointType.Verification:
-                        break;
-
-                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0010));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0010));
                 }
 
                 if (context.Principal.Identity is null)
@@ -2521,16 +2519,12 @@ namespace OpenIddict.Server
                 }
 
                 // Clone the principal and exclude the private claims mapped to standard JWT claims.
-                var principal = context.AccessTokenPrincipal.Clone(claim => claim.Type switch
-                {
-                    Claims.Private.Audience       => false,
-                    Claims.Private.CreationDate   => false,
-                    Claims.Private.ExpirationDate => false,
-                    Claims.Private.Scope          => false,
-                    Claims.Private.TokenType      => false,
-
-                    _ => true
-                });
+                var principal = context.AccessTokenPrincipal.Clone(claim => claim.Type is not (
+                    Claims.Private.Audience or
+                    Claims.Private.CreationDate or
+                    Claims.Private.ExpirationDate or
+                    Claims.Private.Scope or
+                    Claims.Private.TokenType));
 
                 if (principal is null)
                 {
@@ -2786,14 +2780,10 @@ namespace OpenIddict.Server
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
-                var principal = context.AuthorizationCodePrincipal.Clone(claim => claim.Type switch
-                {
-                    Claims.Private.CreationDate   => false,
-                    Claims.Private.ExpirationDate => false,
-                    Claims.Private.TokenType      => false,
-
-                    _ => true
-                });
+                var principal = context.AuthorizationCodePrincipal.Clone(claim => claim.Type is not (
+                    Claims.Private.CreationDate or
+                    Claims.Private.ExpirationDate or
+                    Claims.Private.TokenType));
 
                 if (principal is null)
                 {
@@ -3036,14 +3026,10 @@ namespace OpenIddict.Server
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
-                var principal = context.DeviceCodePrincipal.Clone(claim => claim.Type switch
-                {
-                    Claims.Private.CreationDate   => false,
-                    Claims.Private.ExpirationDate => false,
-                    Claims.Private.TokenType      => false,
-
-                    _ => true
-                });
+                var principal = context.DeviceCodePrincipal.Clone(claim => claim.Type is not (
+                    Claims.Private.CreationDate or
+                    Claims.Private.ExpirationDate or
+                    Claims.Private.TokenType));
 
                 if (principal is null)
                 {
@@ -3370,14 +3356,10 @@ namespace OpenIddict.Server
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
-                var principal = context.RefreshTokenPrincipal.Clone(claim => claim.Type switch
-                {
-                    Claims.Private.CreationDate   => false,
-                    Claims.Private.ExpirationDate => false,
-                    Claims.Private.TokenType      => false,
-
-                    _ => true
-                });
+                var principal = context.RefreshTokenPrincipal.Clone(claim => claim.Type is not (
+                    Claims.Private.CreationDate or
+                    Claims.Private.ExpirationDate or
+                    Claims.Private.TokenType));
 
                 if (principal is null)
                 {
@@ -3657,14 +3639,10 @@ namespace OpenIddict.Server
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
-                var principal = context.UserCodePrincipal.Clone(claim => claim.Type switch
-                {
-                    Claims.Private.CreationDate   => false,
-                    Claims.Private.ExpirationDate => false,
-                    Claims.Private.TokenType      => false,
-
-                    _ => true
-                });
+                var principal = context.UserCodePrincipal.Clone(claim => claim.Type is not (
+                    Claims.Private.CreationDate or
+                    Claims.Private.ExpirationDate or
+                    Claims.Private.TokenType));
 
                 if (principal is null)
                 {
@@ -3883,43 +3861,40 @@ namespace OpenIddict.Server
                     {
                         var algorithm = credentials.Digest switch
                         {
-                            SecurityAlgorithms.Sha256 => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.Sha384 => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.Sha512 => HashAlgorithmName.SHA512,
-                            SecurityAlgorithms.Sha256Digest => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.Sha384Digest => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.Sha512Digest => HashAlgorithmName.SHA512,
+                            SecurityAlgorithms.Sha256 or SecurityAlgorithms.Sha256Digest => HashAlgorithmName.SHA256,
+                            SecurityAlgorithms.Sha384 or SecurityAlgorithms.Sha384Digest => HashAlgorithmName.SHA384,
+                            SecurityAlgorithms.Sha512 or SecurityAlgorithms.Sha512Digest => HashAlgorithmName.SHA512,
 
                             _ => credentials.Algorithm switch
                             {
 #if SUPPORTS_ECDSA
-                                SecurityAlgorithms.EcdsaSha256 => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.EcdsaSha384 => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.EcdsaSha512 => HashAlgorithmName.SHA512,
-                                SecurityAlgorithms.EcdsaSha256Signature => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.EcdsaSha384Signature => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.EcdsaSha512Signature => HashAlgorithmName.SHA512,
+                                SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
+                                    => HashAlgorithmName.SHA256,
+                                SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
+                                    => HashAlgorithmName.SHA384,
+                                SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
+                                    => HashAlgorithmName.SHA512,
 #endif
-                                SecurityAlgorithms.HmacSha256 => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.HmacSha384 => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.HmacSha512 => HashAlgorithmName.SHA512,
-                                SecurityAlgorithms.HmacSha256Signature => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.HmacSha384Signature => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.HmacSha512Signature => HashAlgorithmName.SHA512,
+                                SecurityAlgorithms.HmacSha256 or SecurityAlgorithms.HmacSha256Signature
+                                    => HashAlgorithmName.SHA256,
+                                SecurityAlgorithms.HmacSha384 or SecurityAlgorithms.HmacSha384Signature
+                                    => HashAlgorithmName.SHA384,
+                                SecurityAlgorithms.HmacSha512 or SecurityAlgorithms.HmacSha512Signature
+                                    => HashAlgorithmName.SHA512,
 
-                                SecurityAlgorithms.RsaSha256 => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.RsaSha384 => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.RsaSha512 => HashAlgorithmName.SHA512,
-                                SecurityAlgorithms.RsaSha256Signature => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.RsaSha384Signature => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.RsaSha512Signature => HashAlgorithmName.SHA512,
+                                SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
+                                    => HashAlgorithmName.SHA256,
+                                SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
+                                    => HashAlgorithmName.SHA384,
+                                SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature
+                                    => HashAlgorithmName.SHA512,
 
-                                SecurityAlgorithms.RsaSsaPssSha256 => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.RsaSsaPssSha384 => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.RsaSsaPssSha512 => HashAlgorithmName.SHA512,
-                                SecurityAlgorithms.RsaSsaPssSha256Signature => HashAlgorithmName.SHA256,
-                                SecurityAlgorithms.RsaSsaPssSha384Signature => HashAlgorithmName.SHA384,
-                                SecurityAlgorithms.RsaSsaPssSha512Signature => HashAlgorithmName.SHA512,
+                                SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature
+                                    => HashAlgorithmName.SHA256,
+                                SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature
+                                    => HashAlgorithmName.SHA384,
+                                SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
+                                    => HashAlgorithmName.SHA512,
 
                                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
                             }
@@ -4053,15 +4028,11 @@ namespace OpenIddict.Server
                 }
 
                 // Clone the principal and exclude the claim mapped to standard JWT claims.
-                var principal = context.IdentityTokenPrincipal.Clone(claim => claim.Type switch
-                {
-                    Claims.Private.Audience       => false,
-                    Claims.Private.CreationDate   => false,
-                    Claims.Private.ExpirationDate => false,
-                    Claims.Private.TokenType      => false,
-
-                    _ => true
-                });
+                var principal = context.IdentityTokenPrincipal.Clone(claim => claim.Type is not (
+                    Claims.Private.Audience or
+                    Claims.Private.CreationDate or
+                    Claims.Private.ExpirationDate or
+                    Claims.Private.TokenType));
 
                 if (principal is null)
                 {

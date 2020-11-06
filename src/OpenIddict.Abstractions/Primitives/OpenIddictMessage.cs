@@ -42,6 +42,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictMessage(JsonElement parameters)
         {
             if (parameters.ValueKind != JsonValueKind.Object)
@@ -51,6 +52,12 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters.EnumerateObject())
             {
+                // Ignore parameters whose name is null or empty.
+                if (string.IsNullOrEmpty(parameter.Name))
+                {
+                    continue;
+                }
+
                 // While generally discouraged, JSON objects can contain multiple properties with
                 // the same name. In this case, the last occurrence replaces the previous ones.
                 if (HasParameter(parameter.Name))
@@ -66,6 +73,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
         {
             if (parameters is null)
@@ -75,6 +83,12 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters)
             {
+                // Ignore parameters whose name is null or empty.
+                if (string.IsNullOrEmpty(parameter.Key))
+                {
+                    continue;
+                }
+
                 AddParameter(parameter.Key, parameter.Value);
             }
         }
@@ -83,6 +97,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?>> parameters)
         {
             if (parameters is null)
@@ -92,6 +107,12 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters.GroupBy(parameter => parameter.Key))
             {
+                // Ignore parameters whose name is null or empty.
+                if (string.IsNullOrEmpty(parameter.Key))
+                {
+                    continue;
+                }
+
                 var values = parameter.Select(parameter => parameter.Value).ToArray();
 
                 // Note: the core OAuth 2.0 specification requires that request parameters
@@ -111,6 +132,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
         {
             if (parameters is null)
@@ -120,16 +142,21 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters)
             {
+                // Ignore parameters whose name is null or empty.
+                if (string.IsNullOrEmpty(parameter.Key))
+                {
+                    continue;
+                }
+
                 // Note: the core OAuth 2.0 specification requires that request parameters
                 // not be present more than once but derived specifications like the
                 // token exchange specification deliberately allow specifying multiple
                 // parameters with the same name to represent a multi-valued parameter.
                 AddParameter(parameter.Key, parameter.Value?.Length switch
                 {
-                    null => default,
-                    0    => default,
-                    1    => parameter.Value[0],
-                    _    => parameter.Value
+                    null or 0 => default,
+                    1         => parameter.Value[0],
+                    _         => parameter.Value
                 });
             }
         }
@@ -138,6 +165,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictMessage(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
             if (parameters is null)
@@ -147,6 +175,12 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters)
             {
+                // Ignore parameters whose name is null or empty.
+                if (string.IsNullOrEmpty(parameter.Key))
+                {
+                    continue;
+                }
+
                 // Note: the core OAuth 2.0 specification requires that request parameters
                 // not be present more than once but derived specifications like the
                 // token exchange specification deliberately allow specifying multiple

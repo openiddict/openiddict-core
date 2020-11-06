@@ -176,7 +176,7 @@ namespace OpenIddict.Validation
 
                     foreach (var parameter in context.Response.GetParameters())
                     {
-                        if (ValidateClaimType(parameter.Key, parameter.Value))
+                        if (ValidateClaimType(parameter.Key, parameter.Value.Value))
                         {
                             continue;
                         }
@@ -190,66 +190,26 @@ namespace OpenIddict.Validation
 
                     return default;
 
-                    static bool ValidateClaimType(string name, OpenIddictParameter value)
+                    static bool ValidateClaimType(string name, object? value) => name switch
                     {
-                        switch ((name, value.Value))
-                        {
-                            // The 'aud' claim CAN be represented either as a unique string or as an array of multiple strings.
-                            case (Claims.Audience, string _):
-                            case (Claims.Audience, string[] _):
-                            case (Claims.Audience, JsonElement element) when element.ValueKind == JsonValueKind.String ||
-                                (element.ValueKind == JsonValueKind.Array && ValidateArrayChildren(element, JsonValueKind.String)):
-                                return true;
+                        // The 'aud' claim MUST be represented either as a unique string or as an array of multiple strings.
+                        Claims.Audience when value is string or string[] => true,
+                        Claims.Audience when value is JsonElement { ValueKind: JsonValueKind.String } => true,
+                        Claims.Audience when value is JsonElement { ValueKind: JsonValueKind.Array } element &&
+                            ValidateArrayChildren(element, JsonValueKind.String) => true,
+                        Claims.Audience => false,
 
-                            // The 'exp', 'iat' and 'nbf' claims MUST be formatted as numeric date values.
-                            case (Claims.ExpiresAt, long _):
-                            case (Claims.ExpiresAt, JsonElement element) when element.ValueKind == JsonValueKind.Number:
-                                return true;
+                        // The 'exp', 'iat' and 'nbf' claims MUST be formatted as numeric date values.
+                        Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
+                            => value is long or JsonElement { ValueKind: JsonValueKind.Number },
 
-                            case (Claims.IssuedAt, long _):
-                            case (Claims.IssuedAt, JsonElement element) when element.ValueKind == JsonValueKind.Number:
-                                return true;
+                        // The 'jti', 'iss', 'scope' and 'token_usage' claims MUST be formatted as a unique string.
+                        Claims.JwtId or Claims.Issuer or Claims.Scope or Claims.TokenUsage
+                            => value is string or JsonElement { ValueKind: JsonValueKind.String },
 
-                            case (Claims.NotBefore, long _):
-                            case (Claims.NotBefore, JsonElement element) when element.ValueKind == JsonValueKind.Number:
-                                return true;
-
-                            // The 'jti' claim MUST be formatted as a unique string.
-                            case (Claims.JwtId, string _):
-                            case (Claims.JwtId, JsonElement element) when element.ValueKind == JsonValueKind.String:
-                                return true;
-
-                            // The 'iss' claim MUST be formatted as a unique string.
-                            case (Claims.Issuer, string _):
-                            case (Claims.Issuer, JsonElement element) when element.ValueKind == JsonValueKind.String:
-                                return true;
-
-                            // The 'scope' claim MUST be formatted as a unique string.
-                            case (Claims.Scope, string _):
-                            case (Claims.Scope, JsonElement element) when element.ValueKind == JsonValueKind.String:
-                                return true;
-
-                            // The 'token_usage' claim MUST be formatted as a unique string.
-                            case (Claims.TokenUsage, string _):
-                            case (Claims.TokenUsage, JsonElement element) when element.ValueKind == JsonValueKind.String:
-                                return true;
-
-                            // If the previously listed claims are represented differently,
-                            // return false to indicate the claims validation logic failed.
-                            case (Claims.Audience, _):
-                            case (Claims.ExpiresAt, _):
-                            case (Claims.IssuedAt, _):
-                            case (Claims.Issuer, _):
-                            case (Claims.NotBefore, _):
-                            case (Claims.JwtId, _):
-                            case (Claims.Scope, _):
-                            case (Claims.TokenUsage, _):
-                                return false;
-
-                            // Claims that are not in the well-known list can be of any type.
-                            default: return true;
-                        }
-                    }
+                        // Claims that are not in the well-known list can be of any type.
+                        _ => true
+                    };
 
                     static bool ValidateArrayChildren(JsonElement element, JsonValueKind kind)
                     {
@@ -411,27 +371,26 @@ namespace OpenIddict.Validation
                             continue;
                         }
 
-                        switch ((name: parameter.Key, value: parameter.Value.Value))
+                        // Ignore all protocol claims that shouldn't be mapped to CLR claims.
+                        if (parameter.Key is Claims.Active or Claims.Issuer or Claims.NotBefore or
+                                             Claims.TokenType or Claims.TokenUsage)
                         {
-                            // Ignore all protocol claims that are not mapped to CLR claims.
-                            case (Claims.Active, _):
-                            case (Claims.Issuer, _):
-                            case (Claims.NotBefore, _):
-                            case (Claims.TokenType, _):
-                            case (Claims.TokenUsage, _):
-                                continue;
+                            continue;
+                        }
 
+                        switch (parameter.Value.Value)
+                        {
                             // Claims represented as arrays are split and mapped to multiple CLR claims.
-                            case (var name, JsonElement value) when value.ValueKind == JsonValueKind.Array:
+                            case JsonElement { ValueKind: JsonValueKind.Array } value:
                                 foreach (var element in value.EnumerateArray())
                                 {
-                                    identity.AddClaim(new Claim(name, element.ToString(),
+                                    identity.AddClaim(new Claim(parameter.Key, element.ToString(),
                                         GetClaimValueType(value.ValueKind), issuer, issuer, identity));
                                 }
                                 break;
 
-                            case (var name, JsonElement value):
-                                identity.AddClaim(new Claim(name, value.ToString(),
+                            case JsonElement value:
+                                identity.AddClaim(new Claim(parameter.Key, value.ToString(),
                                     GetClaimValueType(value.ValueKind), issuer, issuer, identity));
                                 break;
 
@@ -440,24 +399,25 @@ namespace OpenIddict.Validation
                             // However, to support responses resolved from custom locations and parameters manually added
                             // by the application using the events model, the CLR primitive types are also supported.
 
-                            case (var name, bool value):
-                                identity.AddClaim(new Claim(name, value.ToString(), ClaimValueTypes.Boolean, issuer, issuer, identity));
+                            case bool value:
+                                identity.AddClaim(new Claim(parameter.Key, value.ToString(),
+                                    ClaimValueTypes.Boolean, issuer, issuer, identity));
                                 break;
 
-                            case (var name, long value):
-                                identity.AddClaim(new Claim(name, value.ToString(CultureInfo.InvariantCulture),
+                            case long value:
+                                identity.AddClaim(new Claim(parameter.Key, value.ToString(CultureInfo.InvariantCulture),
                                     ClaimValueTypes.Integer64, issuer, issuer, identity));
                                 break;
 
-                            case (var name, string value):
-                                identity.AddClaim(new Claim(name, value, ClaimValueTypes.String, issuer, issuer, identity));
+                            case string value:
+                                identity.AddClaim(new Claim(parameter.Key, value, ClaimValueTypes.String, issuer, issuer, identity));
                                 break;
 
                             // Claims represented as arrays are split and mapped to multiple CLR claims.
-                            case (var name, string[] value):
+                            case string[] value:
                                 for (var index = 0; index < value.Length; index++)
                                 {
-                                    identity.AddClaim(new Claim(name, value[index], ClaimValueTypes.String, issuer, issuer, identity));
+                                    identity.AddClaim(new Claim(parameter.Key, value[index], ClaimValueTypes.String, issuer, issuer, identity));
                                 }
                                 break;
                         }
@@ -469,15 +429,13 @@ namespace OpenIddict.Validation
 
                     static string GetClaimValueType(JsonValueKind kind) => kind switch
                     {
-                        JsonValueKind.True   => ClaimValueTypes.Boolean,
-                        JsonValueKind.False  => ClaimValueTypes.Boolean,
+                        JsonValueKind.True or JsonValueKind.False => ClaimValueTypes.Boolean,
+
                         JsonValueKind.String => ClaimValueTypes.String,
                         JsonValueKind.Number => ClaimValueTypes.Integer64,
 
-                        JsonValueKind.Array  => JsonClaimValueTypes.JsonArray,
-                        JsonValueKind.Object => JsonClaimValueTypes.Json,
-
-                        _ => JsonClaimValueTypes.Json
+                        JsonValueKind.Array       => JsonClaimValueTypes.JsonArray,
+                        JsonValueKind.Object or _ => JsonClaimValueTypes.Json
                     };
                 }
             }

@@ -976,23 +976,16 @@ namespace OpenIddict.Server
                     context.Username = context.Principal.Identity.Name;
                     context.Scopes.UnionWith(context.Principal.GetScopes());
 
-                    foreach (var grouping in context.Principal.Claims.GroupBy(claim => claim.Type))
+                    foreach (var group in context.Principal.Claims.GroupBy(claim => claim.Type))
                     {
                         // Exclude standard claims, that are already handled via strongly-typed properties.
                         // Make sure to always update this list when adding new built-in claim properties.
-                        var type = grouping.Key;
-                        switch (type)
+                        var type = group.Key;
+                        if (type is Claims.Audience or Claims.ExpiresAt or Claims.IssuedAt or
+                                    Claims.Issuer or Claims.NotBefore or Claims.Scope or
+                                    Claims.Subject or Claims.TokenType or Claims.TokenUsage)
                         {
-                            case Claims.Audience:
-                            case Claims.ExpiresAt:
-                            case Claims.IssuedAt:
-                            case Claims.Issuer:
-                            case Claims.NotBefore:
-                            case Claims.Scope:
-                            case Claims.Subject:
-                            case Claims.TokenType:
-                            case Claims.TokenUsage:
-                                continue;
+                            continue;
                         }
 
                         // Exclude OpenIddict-specific metadata claims, that are always considered private.
@@ -1001,7 +994,7 @@ namespace OpenIddict.Server
                             continue;
                         }
 
-                        var claims = grouping.ToList();
+                        var claims = group.ToList();
                         context.Claims[type] = claims.Count switch
                         {
                             // When there's only one claim with the same type, directly
@@ -1018,12 +1011,12 @@ namespace OpenIddict.Server
                     {
                         ClaimValueTypes.Boolean => bool.Parse(claim.Value),
 
-                        ClaimValueTypes.Integer   => int.Parse(claim.Value, CultureInfo.InvariantCulture),
-                        ClaimValueTypes.Integer32 => int.Parse(claim.Value, CultureInfo.InvariantCulture),
+                        ClaimValueTypes.Integer or ClaimValueTypes.Integer32
+                            => int.Parse(claim.Value, CultureInfo.InvariantCulture),
+
                         ClaimValueTypes.Integer64 => long.Parse(claim.Value, CultureInfo.InvariantCulture),
 
-                        JsonClaimValueTypes.Json      => DeserializeElement(claim.Value),
-                        JsonClaimValueTypes.JsonArray => DeserializeElement(claim.Value),
+                        JsonClaimValueTypes.Json or JsonClaimValueTypes.JsonArray => DeserializeElement(claim.Value),
 
                         _ => new OpenIddictParameter(claim.Value)
                     };
