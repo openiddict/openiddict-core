@@ -689,26 +689,26 @@ namespace OpenIddict.Server
                         var algorithm = credentials.Algorithm switch
                         {
 #if SUPPORTS_ECDSA
-                            SecurityAlgorithms.EcdsaSha256 => SecurityAlgorithms.EcdsaSha256,
-                            SecurityAlgorithms.EcdsaSha384 => SecurityAlgorithms.EcdsaSha384,
-                            SecurityAlgorithms.EcdsaSha512 => SecurityAlgorithms.EcdsaSha512,
-                            SecurityAlgorithms.EcdsaSha256Signature => SecurityAlgorithms.EcdsaSha256,
-                            SecurityAlgorithms.EcdsaSha384Signature => SecurityAlgorithms.EcdsaSha384,
-                            SecurityAlgorithms.EcdsaSha512Signature => SecurityAlgorithms.EcdsaSha512,
+                            SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
+                                => SecurityAlgorithms.EcdsaSha256,
+                            SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
+                                => SecurityAlgorithms.EcdsaSha384,
+                            SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
+                                => SecurityAlgorithms.EcdsaSha512,
 #endif
-                            SecurityAlgorithms.RsaSha256 => SecurityAlgorithms.RsaSha256,
-                            SecurityAlgorithms.RsaSha384 => SecurityAlgorithms.RsaSha384,
-                            SecurityAlgorithms.RsaSha512 => SecurityAlgorithms.RsaSha512,
-                            SecurityAlgorithms.RsaSha256Signature => SecurityAlgorithms.RsaSha256,
-                            SecurityAlgorithms.RsaSha384Signature => SecurityAlgorithms.RsaSha384,
-                            SecurityAlgorithms.RsaSha512Signature => SecurityAlgorithms.RsaSha512,
+                            SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
+                                => SecurityAlgorithms.RsaSha256,
+                            SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
+                                => SecurityAlgorithms.RsaSha384,
+                            SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature
+                                => SecurityAlgorithms.RsaSha512,
 
-                            SecurityAlgorithms.RsaSsaPssSha256 => SecurityAlgorithms.RsaSsaPssSha256,
-                            SecurityAlgorithms.RsaSsaPssSha384 => SecurityAlgorithms.RsaSsaPssSha384,
-                            SecurityAlgorithms.RsaSsaPssSha512 => SecurityAlgorithms.RsaSsaPssSha512,
-                            SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
-                            SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
-                            SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+                            SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature
+                                => SecurityAlgorithms.RsaSsaPssSha256,
+                            SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature
+                                => SecurityAlgorithms.RsaSsaPssSha384,
+                            SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
+                                => SecurityAlgorithms.RsaSsaPssSha512,
 
                             _ => null
                         };
@@ -1108,26 +1108,26 @@ namespace OpenIddict.Server
                             Alg = credentials.Algorithm switch
                             {
 #if SUPPORTS_ECDSA
-                                SecurityAlgorithms.EcdsaSha256 => SecurityAlgorithms.EcdsaSha256,
-                                SecurityAlgorithms.EcdsaSha384 => SecurityAlgorithms.EcdsaSha384,
-                                SecurityAlgorithms.EcdsaSha512 => SecurityAlgorithms.EcdsaSha512,
-                                SecurityAlgorithms.EcdsaSha256Signature => SecurityAlgorithms.EcdsaSha256,
-                                SecurityAlgorithms.EcdsaSha384Signature => SecurityAlgorithms.EcdsaSha384,
-                                SecurityAlgorithms.EcdsaSha512Signature => SecurityAlgorithms.EcdsaSha512,
+                                SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
+                                    => SecurityAlgorithms.EcdsaSha256,
+                                SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
+                                    => SecurityAlgorithms.EcdsaSha384,
+                                SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
+                                    => SecurityAlgorithms.EcdsaSha512,
 #endif
-                                SecurityAlgorithms.RsaSha256 => SecurityAlgorithms.RsaSha256,
-                                SecurityAlgorithms.RsaSha384 => SecurityAlgorithms.RsaSha384,
-                                SecurityAlgorithms.RsaSha512 => SecurityAlgorithms.RsaSha512,
-                                SecurityAlgorithms.RsaSha256Signature => SecurityAlgorithms.RsaSha256,
-                                SecurityAlgorithms.RsaSha384Signature => SecurityAlgorithms.RsaSha384,
-                                SecurityAlgorithms.RsaSha512Signature => SecurityAlgorithms.RsaSha512,
+                                SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
+                                    => SecurityAlgorithms.RsaSha256,
+                                SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
+                                    => SecurityAlgorithms.RsaSha384,
+                                SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature
+                                    => SecurityAlgorithms.RsaSha512,
 
-                                SecurityAlgorithms.RsaSsaPssSha256 => SecurityAlgorithms.RsaSsaPssSha256,
-                                SecurityAlgorithms.RsaSsaPssSha384 => SecurityAlgorithms.RsaSsaPssSha384,
-                                SecurityAlgorithms.RsaSsaPssSha512 => SecurityAlgorithms.RsaSsaPssSha512,
-                                SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
-                                SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
-                                SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+                                SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature
+                                    => SecurityAlgorithms.RsaSsaPssSha256,
+                                SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature
+                                    => SecurityAlgorithms.RsaSsaPssSha384,
+                                SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
+                                    => SecurityAlgorithms.RsaSsaPssSha512,
 
                                 _ => null
                             },

@@ -372,11 +372,9 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     null => 200,
 
-                    Errors.InvalidToken => 401,
-                    Errors.MissingToken => 401,
+                    Errors.InvalidToken or Errors.MissingToken => 401,
 
-                    Errors.InsufficientAccess => 403,
-                    Errors.InsufficientScope  => 403,
+                    Errors.InsufficientAccess or Errors.InsufficientScope => 403,
 
                     _ => 400
                 };
@@ -469,10 +467,10 @@ namespace OpenIddict.Validation.AspNetCore
 
                 var scheme = context.Transaction.Response.Error switch
                 {
-                    Errors.InvalidToken       => Schemes.Bearer,
-                    Errors.MissingToken       => Schemes.Bearer,
-                    Errors.InsufficientAccess => Schemes.Bearer,
-                    Errors.InsufficientScope  => Schemes.Bearer,
+                    Errors.InvalidToken or
+                    Errors.MissingToken or
+                    Errors.InsufficientAccess or
+                    Errors.InsufficientScope => Schemes.Bearer,
 
                     _ => null
                 };

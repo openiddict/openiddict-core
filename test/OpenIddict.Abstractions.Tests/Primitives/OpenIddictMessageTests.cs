@@ -18,24 +18,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 {
     public class OpenIddictMessageTests
     {
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void Constructor_ThrowsAnExceptionForNullOrEmptyParameterNames(string name)
-        {
-            // Arrange, act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                return new OpenIddictMessage(new[]
-                {
-                    new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
-                });
-            });
-
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
-        }
-
         [Fact]
         public void Constructor_ThrowsAnExceptionForInvalidJsonElement()
         {
@@ -79,6 +61,21 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Equal(42, (long) message.GetParameter("parameter"));
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Constructor_IgnoresNullOrEmptyParameterNames(string name)
+        {
+            // Arrange and act
+            var message = new OpenIddictMessage(new[]
+            {
+                new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
+            });
+
+            // Assert
+            Assert.Equal(0, message.Count);
+        }
+
         [Fact]
         public void Constructor_PreservesEmptyParameters()
         {
@@ -94,7 +91,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Constructor_AllowsDuplicateParameters()
+        public void Constructor_CombinesDuplicateParameters()
         {
             // Arrange and act
             var message = new OpenIddictMessage(new[]

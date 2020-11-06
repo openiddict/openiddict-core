@@ -1628,7 +1628,7 @@ namespace OpenIddict.Server
 
                     // When an explicit scope parameter has been included in the token request,
                     // the authorization server MUST ensure that it doesn't contain scopes
-                    // that were not allowed during the initial authorization/token request.
+                    // that were not granted during the initial authorization/token request.
                     // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                     else if (!scopes.IsSupersetOf(context.Request.GetScopes()))
                     {

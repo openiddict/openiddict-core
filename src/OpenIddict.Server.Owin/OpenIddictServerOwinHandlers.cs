@@ -753,12 +753,9 @@ namespace OpenIddict.Server.Owin
                 {
                     null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
 
-                    Errors.InvalidClient => 401,
-                    Errors.InvalidToken  => 401,
-                    Errors.MissingToken  => 401,
+                    Errors.InvalidClient or Errors.InvalidToken or Errors.MissingToken => 401,
 
-                    Errors.InsufficientAccess => 403,
-                    Errors.InsufficientScope  => 403,
+                    Errors.InsufficientAccess or Errors.InsufficientScope => 403,
 
                     _ => 400
                 };
@@ -858,12 +855,12 @@ namespace OpenIddict.Server.Owin
                 // were specified in the request form instead of the HTTP headers, as allowed by the specification.
                 var scheme = context.Transaction.Response.Error switch
                 {
-                    Errors.InvalidClient      => Schemes.Basic,
+                    Errors.InvalidClient => Schemes.Basic,
 
-                    Errors.InvalidToken       => Schemes.Bearer,
-                    Errors.MissingToken       => Schemes.Bearer,
-                    Errors.InsufficientAccess => Schemes.Bearer,
-                    Errors.InsufficientScope  => Schemes.Bearer,
+                    Errors.InvalidToken or
+                    Errors.MissingToken or
+                    Errors.InsufficientAccess or
+                    Errors.InsufficientScope => Schemes.Bearer,
 
                     _ => null
                 };

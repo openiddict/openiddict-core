@@ -36,6 +36,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict request.
         /// </summary>
         /// <param name="parameters">The request parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictRequest(JsonElement parameters)
             : base(parameters)
         {
@@ -45,6 +46,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict request.
         /// </summary>
         /// <param name="parameters">The request parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictRequest(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
             : base(parameters)
         {
@@ -54,6 +56,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict request.
         /// </summary>
         /// <param name="parameters">The request parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictRequest(IEnumerable<KeyValuePair<string, string?>> parameters)
             : base(parameters)
         {
@@ -63,6 +66,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict request.
         /// </summary>
         /// <param name="parameters">The request parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictRequest(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
             : base(parameters)
         {
@@ -72,6 +76,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict request.
         /// </summary>
         /// <param name="parameters">The request parameters.</param>
+        /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
         public OpenIddictRequest(IEnumerable<KeyValuePair<string, StringValues>> parameters)
             : base(parameters)
         {
