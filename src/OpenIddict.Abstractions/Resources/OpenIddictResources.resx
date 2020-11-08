@@ -1389,6 +1389,10 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>Provided symmetric key was incorrect size. Expected {0} bits, received {1}.</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="ID0284" xml:space="preserve">
+    <value>The context type associated with the specified descriptor doesn't match the context type of this builder.</value>
+    <comment>{Locked}</comment>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

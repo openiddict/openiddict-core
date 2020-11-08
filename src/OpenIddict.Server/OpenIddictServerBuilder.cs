@@ -157,8 +157,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers an encryption key.
         /// </summary>
-        /// <param name="key">The security key.
-        /// </param>
+        /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionKey(SecurityKey key)
         {

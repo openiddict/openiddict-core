@@ -1150,11 +1150,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictScopeManager? _scopeManager;
 
-                public ValidateScopes()
-                {
-                }
-
-                public ValidateScopes(IOpenIddictScopeManager scopeManager)
+                public ValidateScopes(IOpenIddictScopeManager? scopeManager = null)
                     => _scopeManager = scopeManager;
 
                 /// <summary>
@@ -1163,7 +1159,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .AddFilter<RequireScopeValidationEnabled>()
-                        .UseScopedHandler<ValidateScopes>(provider =>
+                        .UseScopedHandler<ValidateScopes>(static provider =>
                         {
                             // Note: the scope manager is only resolved if the degraded mode was not enabled to ensure
                             // invalid core configuration exceptions are not thrown even if the managers were registered.
