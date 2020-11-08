@@ -68,7 +68,7 @@ namespace OpenIddict.Server
         public class Builder<TContext> where TContext : BaseContext
         {
             private ServiceDescriptor? _descriptor;
-            private readonly List<Type> _filterTypes = new List<Type>();
+            private readonly List<Type> _filters = new();
             private int _order;
             private OpenIddictServerHandlerType _type;
 
@@ -89,7 +89,7 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0104));
                 }
 
-                _filterTypes.Add(type);
+                _filters.Add(type);
 
                 return this;
             }
@@ -102,6 +102,33 @@ namespace OpenIddict.Server
             public Builder<TContext> AddFilter<TFilter>()
                 where TFilter : IOpenIddictServerHandlerFilter<TContext>
                 => AddFilter(typeof(TFilter));
+
+            /// <summary>
+            /// Imports the properties set on the specified descriptor.
+            /// </summary>
+            /// <param name="descriptor">The existing descriptor properties are copied from.</param>
+            /// <remarks>All the properties previously set on this instance are automatically replaced.</remarks>
+            /// <returns>The builder instance, so that calls can be easily chained.</returns>
+            public Builder<TContext> Import(OpenIddictServerHandlerDescriptor descriptor)
+            {
+                if (descriptor is null)
+                {
+                    throw new ArgumentNullException(nameof(descriptor));
+                }
+
+                if (descriptor.ContextType != typeof(TContext))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0284));
+                }
+
+                _descriptor = descriptor.ServiceDescriptor;
+                _filters.Clear();
+                _filters.AddRange(descriptor.FilterTypes);
+                _order = descriptor.Order;
+                _type = descriptor.Type;
+
+                return this;
+            }
 
             /// <summary>
             /// Sets the service descriptor.
@@ -250,7 +277,7 @@ namespace OpenIddict.Server
             public OpenIddictServerHandlerDescriptor Build() => new OpenIddictServerHandlerDescriptor
             {
                 ContextType = typeof(TContext),
-                FilterTypes = _filterTypes.ToImmutableArray(),
+                FilterTypes = _filters.ToImmutableArray(),
                 Order = _order,
                 ServiceDescriptor = _descriptor ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0105)),
                 Type = _type
