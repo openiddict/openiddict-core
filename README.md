@@ -73,18 +73,22 @@ with an ECDSA certificate/key will always result in a `PlatformNotSupportedExcep
 - **[Creating your own OpenID Connect server with ASOS](https://kevinchalet.com/2016/07/13/creating-your-own-openid-connect-server-with-asos-introduction/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Using OpenIddict to easily add token authentication to your .NET web apps](http://overengineer.net/Using-OpenIddict-to-easily-add-token-authentication-to-your-.NET-web-apps)** by [Josh Comley](https://github.com/joshcomley)
 
+## Security policy
+
+Security issues and bugs should be reported privately by emailing contact@kevinchalet.com.
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+
 ## Support
 
-**Need help or wanna share your thoughts?** Don't hesitate to join us on Gitter or ask your question on StackOverflow:
+If you need support, please make sure you [sponsor the project](https://github.com/sponsors/kevinchalet) before creating a GitHub ticket.
+If you're not a sponsor, you can post your questions on Gitter or StackOverflow:
 
 - **Gitter: [https://gitter.im/openiddict/openiddict-core](https://gitter.im/openiddict/openiddict-core)**
 - **StackOverflow: [https://stackoverflow.com/questions/tagged/openiddict](https://stackoverflow.com/questions/tagged/openiddict)**
 
 ## Nightly builds
 
-If you want to try out the latest features and bug fixes, there is a MyGet feed with nightly builds
-of OpenIddict.
-
+If you want to try out the latest features and bug fixes, there is a MyGet feed with nightly builds of OpenIddict.
 To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the root of your solution):
 
 ```xml
