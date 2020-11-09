@@ -473,8 +473,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ID2098">
-        <source>The issuer returned in the server configuration is not valid.</source>
-        <target state="translated">伺服器配置中返回的頒發者無效.</target>
+        <source>The issuer returned in the server configuration doesn't match the value set in the validation options.</source>
+        <target state="needs-review-translation">伺服器配置中返回的頒發者無效.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2099">
