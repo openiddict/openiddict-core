@@ -1676,7 +1676,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>A server configuration containing an invalid issuer was returned.</value>
   </data>
   <data name="ID2098" xml:space="preserve">
-    <value>The issuer returned in the server configuration is not valid.</value>
+    <value>The issuer returned in the server configuration doesn't match the value set in the validation options.</value>
   </data>
   <data name="ID2099" xml:space="preserve">
     <value>No JWKS endpoint could be found in the server configuration.</value>

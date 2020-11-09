@@ -473,8 +473,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ID2098">
-        <source>The issuer returned in the server configuration is not valid.</source>
-        <target state="translated">सर्वर कॉन्फ़िगरेशन में जारीकर्ता मान्य नहीं है.</target>
+        <source>The issuer returned in the server configuration doesn't match the value set in the validation options.</source>
+        <target state="needs-review-translation">सर्वर कॉन्फ़िगरेशन में जारीकर्ता मान्य नहीं है.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2099">

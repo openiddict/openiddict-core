@@ -112,19 +112,20 @@ namespace OpenIddict.Validation
 
                     if (!options.MetadataAddress.IsAbsoluteUri)
                     {
-                        if (options.Issuer is null || !options.Issuer.IsAbsoluteUri)
+                        var issuer = options.Issuer;
+                        if (issuer is null || !issuer.IsAbsoluteUri)
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
                         }
 
-                        if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
+                        if (!string.IsNullOrEmpty(issuer.Fragment) || !string.IsNullOrEmpty(issuer.Query))
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
                         }
 
-                        if (!options.Issuer.OriginalString.EndsWith("/"))
+                        if (!issuer.OriginalString.EndsWith("/"))
                         {
-                            options.Issuer = new Uri(options.Issuer.OriginalString + "/", UriKind.Absolute);
+                            issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
                         }
 
                         if (options.MetadataAddress.OriginalString.StartsWith("/"))
@@ -133,7 +134,7 @@ namespace OpenIddict.Validation
                                 1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
                         }
 
-                        options.MetadataAddress = new Uri(options.Issuer, options.MetadataAddress);
+                        options.MetadataAddress = new Uri(issuer, options.MetadataAddress);
                     }
 
                     options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(

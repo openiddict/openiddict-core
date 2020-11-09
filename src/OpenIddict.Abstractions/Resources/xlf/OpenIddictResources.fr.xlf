@@ -473,8 +473,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ID2098">
-        <source>The issuer returned in the server configuration is not valid.</source>
-        <target state="translated">L'émetteur retourné dans la configuration du serveur n'est pas valide.</target>
+        <source>The issuer returned in the server configuration doesn't match the value set in the validation options.</source>
+        <target state="translated">L'émetteur retourné dans la configuration du serveur ne correspond pas à la valeur définie dans les options de validation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ID2099">
