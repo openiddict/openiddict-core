@@ -61,6 +61,24 @@ namespace OpenIddict.Server
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
             }
 
+            var addresses = options.AuthorizationEndpointUris.Distinct()
+                .Concat(options.ConfigurationEndpointUris.Distinct())
+                .Concat(options.CryptographyEndpointUris.Distinct())
+                .Concat(options.DeviceEndpointUris.Distinct())
+                .Concat(options.IntrospectionEndpointUris.Distinct())
+                .Concat(options.LogoutEndpointUris.Distinct())
+                .Concat(options.RevocationEndpointUris.Distinct())
+                .Concat(options.TokenEndpointUris.Distinct())
+                .Concat(options.UserinfoEndpointUris.Distinct())
+                .Concat(options.VerificationEndpointUris.Distinct())
+                .ToList();
+
+            // Ensure endpoint addresses are unique across endpoints.
+            if (addresses.Count != addresses.Distinct().Count())
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0285));
+            }
+
             // Ensure the authorization endpoint has been enabled when
             // the authorization code or implicit grants are supported.
             if (options.AuthorizationEndpointUris.Count == 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
