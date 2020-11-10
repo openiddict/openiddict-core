@@ -46,7 +46,7 @@ jobs:
         $QuarterHours = [Math]::Floor($Now.Minute / 15.0)
         $Revision = $Hours + $QuarterHours + 1
         $BuildId = $Now.ToString("yyyyMMdd") + "." + $Revision
-        Write-Host "::set-env name=_ComputedOfficialBuildId::${BuildId}"
+        Write-Output "_ComputedOfficialBuildId=${BuildId}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Build, test and pack
       if: ${{ runner.os == 'Windows' }}
