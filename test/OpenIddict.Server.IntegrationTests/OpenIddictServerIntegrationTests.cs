@@ -12,7 +12,6 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
@@ -3578,14 +3577,14 @@ namespace OpenIddict.Server.IntegrationTests
                 });
         }
 
-        protected abstract ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null);
+        protected abstract ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(
+            Action<OpenIddictServerBuilder>? configuration = null);
 
         protected OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(
             Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>>? configuration = null)
         {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationCache<OpenIddictApplication>>(),
-                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictApplicationManager<OpenIddictApplication>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
                 Mock.Of<IOpenIddictApplicationStoreResolver>());
@@ -3600,7 +3599,6 @@ namespace OpenIddict.Server.IntegrationTests
         {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
-                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
                 Mock.Of<IOpenIddictAuthorizationStoreResolver>());
@@ -3615,7 +3613,6 @@ namespace OpenIddict.Server.IntegrationTests
         {
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeCache<OpenIddictScope>>(),
-                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictScopeManager<OpenIddictScope>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
                 Mock.Of<IOpenIddictScopeStoreResolver>());
@@ -3630,7 +3627,6 @@ namespace OpenIddict.Server.IntegrationTests
         {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),
-                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictTokenManager<OpenIddictToken>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
                 Mock.Of<IOpenIddictTokenStoreResolver>());

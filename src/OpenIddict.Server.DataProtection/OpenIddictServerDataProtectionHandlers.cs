@@ -102,7 +102,7 @@ namespace OpenIddict.Server.DataProtection
                             OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
                             _                                  => Errors.InvalidToken
                         },
-                        description: context.Localizer[SR.ID2004]);
+                        description: SR.GetResourceString(SR.ID2004));
 
                     return default;
                 }

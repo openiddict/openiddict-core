@@ -338,7 +338,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.MissingToken,
-                            description: context.Localizer[SR.ID2029, Parameters.AccessToken]);
+                            description: SR.FormatID2029(Parameters.AccessToken));
 
                         return default;
                     }

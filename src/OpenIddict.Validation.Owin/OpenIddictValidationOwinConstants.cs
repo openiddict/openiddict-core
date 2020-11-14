@@ -17,6 +17,17 @@ namespace OpenIddict.Validation.Owin
             public const string LogoutRequest = "openiddict-logout-request:";
         }
 
+        public static class Headers
+        {
+            public const string Authorization = "Authorization";
+            public const string CacheControl = "Cache-Control";
+            public const string ContentType = "Content-Type";
+            public const string Expires = "Expires";
+            public const string Host = "Host";
+            public const string Pragma = "Pragma";
+            public const string WwwAuthenticate = "WWW-Authenticate";
+        }
+
         public static class Properties
         {
             public const string Error = ".error";

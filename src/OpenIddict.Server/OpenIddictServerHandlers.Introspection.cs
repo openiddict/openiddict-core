@@ -371,7 +371,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: context.Localizer[SR.ID2029, Parameters.Token]);
+                            description: SR.FormatID2029(Parameters.Token));
 
                         return default;
                     }
@@ -410,7 +410,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID2029, Parameters.ClientId]);
+                            description: SR.FormatID2029(Parameters.ClientId));
 
                         return default;
                     }
@@ -463,7 +463,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID2052, Parameters.ClientId]);
+                            description: SR.FormatID2052(Parameters.ClientId));
 
                         return;
                     }
@@ -521,7 +521,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidClient,
-                                description: context.Localizer[SR.ID2053, Parameters.ClientSecret]);
+                                description: SR.FormatID2053(Parameters.ClientSecret));
 
                             return;
                         }
@@ -536,7 +536,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID2054, Parameters.ClientSecret]);
+                            description: SR.FormatID2054(Parameters.ClientSecret));
 
                         return;
                     }
@@ -598,7 +598,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: context.Localizer[SR.ID2055]);
+                            description: SR.GetResourceString(SR.ID2055));
 
                         return;
                     }
@@ -655,7 +655,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: context.Localizer[SR.ID2075]);
+                            description: SR.GetResourceString(SR.ID2075));
 
                         return;
                     }
@@ -751,7 +751,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: context.Localizer[SR.ID2076]);
+                            description: SR.GetResourceString(SR.ID2076));
 
                         return default;
                     }
@@ -803,7 +803,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID2077]);
+                            description: SR.GetResourceString(SR.ID2077));
 
                         return default;
                     }
@@ -819,7 +819,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID2077]);
+                            description: SR.GetResourceString(SR.ID2077));
 
                         return default;
                     }

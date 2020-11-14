@@ -6,8 +6,6 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging.Abstractions;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -34,7 +32,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddLocalization();
             builder.Services.AddLogging();
             builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
@@ -100,18 +97,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 return (IOpenIddictTokenManager) provider.GetRequiredService(
                     typeof(OpenIddictTokenManager<>).MakeGenericType(options.DefaultTokenType));
-            });
-
-            builder.Services.TryAddSingleton<IStringLocalizer<OpenIddictResources>>(provider =>
-            {
-                // Note: the string localizer factory is deliberately not resolved from
-                // the DI container to ensure the built-in .resx files are always used
-                // even if the factory was replaced by a different implementation in DI.
-                var factory = new ResourceManagerStringLocalizerFactory(
-                    localizationOptions: Options.Create(new LocalizationOptions()),
-                    loggerFactory: NullLoggerFactory.Instance);
-
-                return new StringLocalizer<OpenIddictResources>(factory);
             });
 
             return new OpenIddictCoreBuilder(builder.Services);
