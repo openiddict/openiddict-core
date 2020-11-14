@@ -5,16 +5,13 @@
  */
 
 using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
     public class OpenIddictServerFactory : IOpenIddictServerFactory
     {
-        private readonly IStringLocalizer _localizer;
         private readonly ILogger _logger;
         private readonly IOptionsMonitor<OpenIddictServerOptions> _options;
 
@@ -22,11 +19,9 @@ namespace OpenIddict.Server
         /// Creates a new instance of the <see cref="OpenIddictServerDispatcher"/> class.
         /// </summary>
         public OpenIddictServerFactory(
-            IStringLocalizer<OpenIddictResources> localizer,
             ILogger<OpenIddictServerDispatcher> logger,
             IOptionsMonitor<OpenIddictServerOptions> options)
         {
-            _localizer = localizer;
             _logger = logger;
             _options = options;
         }
@@ -35,7 +30,6 @@ namespace OpenIddict.Server
             => new ValueTask<OpenIddictServerTransaction>(new OpenIddictServerTransaction
             {
                 Issuer = _options.CurrentValue.Issuer,
-                Localizer = _localizer,
                 Logger = _logger,
                 Options = _options.CurrentValue
             });

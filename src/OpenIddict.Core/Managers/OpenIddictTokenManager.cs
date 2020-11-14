@@ -14,7 +14,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
@@ -37,13 +36,11 @@ namespace OpenIddict.Core
     {
         public OpenIddictTokenManager(
             IOpenIddictTokenCache<TToken> cache,
-            IStringLocalizer<OpenIddictResources> localizer,
             ILogger<OpenIddictTokenManager<TToken>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictTokenStoreResolver resolver)
         {
             Cache = cache;
-            Localizer = localizer;
             Logger = logger;
             Options = options;
             Store = resolver.Get<TToken>();
@@ -53,11 +50,6 @@ namespace OpenIddict.Core
         /// Gets the cache associated with the current manager.
         /// </summary>
         protected IOpenIddictTokenCache<TToken> Cache { get; }
-
-        /// <summary>
-        /// Gets the string localizer associated with the current manager.
-        /// </summary>
-        protected IStringLocalizer Localizer { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -1256,19 +1248,19 @@ namespace OpenIddict.Core
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID2085]);
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2085));
                 }
             }
 
             var type = await Store.GetTypeAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult(Localizer[SR.ID2086]);
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2086));
             }
 
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
             {
-                yield return new ValidationResult(Localizer[SR.ID2038]);
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2038));
             }
         }
 

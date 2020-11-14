@@ -14,7 +14,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
@@ -37,13 +36,11 @@ namespace OpenIddict.Core
     {
         public OpenIddictAuthorizationManager(
             IOpenIddictAuthorizationCache<TAuthorization> cache,
-            IStringLocalizer<OpenIddictResources> localizer,
             ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictAuthorizationStoreResolver resolver)
         {
             Cache = cache;
-            Localizer = localizer;
             Logger = logger;
             Options = options;
             Store = resolver.Get<TAuthorization>();
@@ -53,11 +50,6 @@ namespace OpenIddict.Core
         /// Gets the cache associated with the current manager.
         /// </summary>
         protected IOpenIddictAuthorizationCache<TAuthorization> Cache { get; }
-
-        /// <summary>
-        /// Gets the string localizer associated with the current manager.
-        /// </summary>
-        protected IStringLocalizer Localizer { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -1135,18 +1127,18 @@ namespace OpenIddict.Core
             var type = await Store.GetTypeAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult(Localizer[SR.ID2116]);
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2116));
             }
 
             else if (!string.Equals(type, AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(type, AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
             {
-                yield return new ValidationResult(Localizer[SR.ID2117]);
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2117));
             }
 
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
             {
-                yield return new ValidationResult(Localizer[SR.ID2038]);
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2038));
             }
 
             // Ensure that the scopes are not null or empty and do not contain spaces.
@@ -1154,14 +1146,14 @@ namespace OpenIddict.Core
             {
                 if (string.IsNullOrEmpty(scope))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID2039]);
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2039));
 
                     break;
                 }
 
                 if (scope.Contains(Separators.Space[0]))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID2042]);
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2042));
 
                     break;
                 }

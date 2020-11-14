@@ -332,8 +332,8 @@ namespace Mvc.Server
             // Redisplay the form when the user code is not valid.
             return View(new VerifyViewModel
             {
-                Error = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.Error),
-                ErrorDescription = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription)
+                Error = Errors.InvalidToken,
+                ErrorDescription = "The specified user code is not valid. Please make sure you typed it correctly."
             });
         }
 
@@ -375,8 +375,8 @@ namespace Mvc.Server
             // Redisplay the form when the user code is not valid.
             return View(new VerifyViewModel
             {
-                Error = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.Error),
-                ErrorDescription = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription)
+                Error = Errors.InvalidToken,
+                ErrorDescription = "The specified user code is not valid. Please make sure you typed it correctly."
             });
         }
 

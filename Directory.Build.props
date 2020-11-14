@@ -12,7 +12,7 @@
     <DebugType>portable</DebugType>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)eng\CodeAnalysis.ruleset</CodeAnalysisRuleset>
-    <XlfLanguages>ar;de;es;fr;gu;hi;it;nl;tr;zh-Hans;zh-Hant</XlfLanguages>
+    <EnableXlfLocalization>false</EnableXlfLocalization>
   </PropertyGroup>
 
   <PropertyGroup>

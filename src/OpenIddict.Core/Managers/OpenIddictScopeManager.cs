@@ -14,7 +14,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
@@ -36,13 +35,11 @@ namespace OpenIddict.Core
     {
         public OpenIddictScopeManager(
             IOpenIddictScopeCache<TScope> cache,
-            IStringLocalizer<OpenIddictResources> localizer,
             ILogger<OpenIddictScopeManager<TScope>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictScopeStoreResolver resolver)
         {
             Cache = cache;
-            Localizer = localizer;
             Logger = logger;
             Options = options;
             Store = resolver.Get<TScope>();
@@ -52,11 +49,6 @@ namespace OpenIddict.Core
         /// Gets the cache associated with the current manager.
         /// </summary>
         protected IOpenIddictScopeCache<TScope> Cache { get; }
-
-        /// <summary>
-        /// Gets the string localizer associated with the current manager.
-        /// </summary>
-        protected IStringLocalizer Localizer { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -919,12 +911,12 @@ namespace OpenIddict.Core
             var name = await Store.GetNameAsync(scope, cancellationToken);
             if (string.IsNullOrEmpty(name))
             {
-                yield return new ValidationResult(Localizer[SR.ID2044]);
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2044));
             }
 
             else if (name!.Contains(Separators.Space[0]))
             {
-                yield return new ValidationResult(Localizer[SR.ID2045]);
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2045));
             }
 
             else
@@ -938,7 +930,7 @@ namespace OpenIddict.Core
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult(Localizer[SR.ID2060]);
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2060));
                 }
             }
         }

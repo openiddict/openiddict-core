@@ -213,7 +213,7 @@ namespace OpenIddict.Server
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.Localizer[SR.ID2000]);
+                        description: SR.GetResourceString(SR.ID2000));
 
                     return default;
                 }
@@ -338,13 +338,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID2001],
+                                => SR.GetResourceString(SR.ID2001),
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID2002],
+                                => SR.GetResourceString(SR.ID2002),
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID2003],
+                                => SR.GetResourceString(SR.ID2003),
 
-                            _ => context.Localizer[SR.ID2004]
+                            _ => SR.GetResourceString(SR.ID2004)
                         });
 
                     return;
@@ -452,17 +452,17 @@ namespace OpenIddict.Server
                         description: (result.Exception, context.EndpointType) switch
                         {
                             (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsAuthorizationCodeGrantType() => context.Localizer[SR.ID2005],
+                                when context.Request.IsAuthorizationCodeGrantType() => SR.GetResourceString(SR.ID2005),
 
                             (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsDeviceCodeGrantType() => context.Localizer[SR.ID2006],
+                                when context.Request.IsDeviceCodeGrantType() => SR.GetResourceString(SR.ID2006),
 
                             (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsRefreshTokenGrantType() => context.Localizer[SR.ID2007],
+                                when context.Request.IsRefreshTokenGrantType() => SR.GetResourceString(SR.ID2007),
 
-                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Userinfo) => context.Localizer[SR.ID2008],
+                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Userinfo) => SR.GetResourceString(SR.ID2008),
 
-                            _ => context.Localizer[SR.ID2004]
+                            _ => SR.GetResourceString(SR.ID2004)
                         });
 
                     return default;
@@ -752,16 +752,16 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
-                                => context.Localizer[SR.ID2009],
+                                => SR.GetResourceString(SR.ID2009),
 
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID2001],
+                                => SR.GetResourceString(SR.ID2001),
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID2002],
+                                => SR.GetResourceString(SR.ID2002),
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID2003],
+                                => SR.GetResourceString(SR.ID2003),
 
-                            _ => context.Localizer[SR.ID2004]
+                            _ => SR.GetResourceString(SR.ID2004)
                         });
 
 
@@ -847,13 +847,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID2001],
+                                => SR.GetResourceString(SR.ID2001),
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID2002],
+                                => SR.GetResourceString(SR.ID2002),
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID2003],
+                                => SR.GetResourceString(SR.ID2003),
 
-                            _ => context.Localizer[SR.ID2004]
+                            _ => SR.GetResourceString(SR.ID2004)
                         });
 
                     return;
@@ -884,13 +884,13 @@ namespace OpenIddict.Server
                                 description: context.EndpointType switch
                                 {
                                     OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                        => context.Localizer[SR.ID2010],
+                                        => SR.GetResourceString(SR.ID2010),
                                     OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                        => context.Localizer[SR.ID2011],
+                                        => SR.GetResourceString(SR.ID2011),
                                     OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                        => context.Localizer[SR.ID2012],
+                                        => SR.GetResourceString(SR.ID2012),
 
-                                    _ => context.Localizer[SR.ID2013]
+                                    _ => SR.GetResourceString(SR.ID2013)
                                 });
 
                             // Revoke all the token entries associated with the authorization.
@@ -911,7 +911,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.AuthorizationPending,
-                                description: context.Localizer[SR.ID2014]);
+                                description: SR.GetResourceString(SR.ID2014));
 
                             return;
                         }
@@ -923,7 +923,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.AccessDenied,
-                                description: context.Localizer[SR.ID2015]);
+                                description: SR.GetResourceString(SR.ID2015));
 
                             return;
                         }
@@ -943,13 +943,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID2016],
+                                => SR.GetResourceString(SR.ID2016),
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID2017],
+                                => SR.GetResourceString(SR.ID2017),
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID2018],
+                                => SR.GetResourceString(SR.ID2018),
 
-                            _ => context.Localizer[SR.ID2019]
+                            _ => SR.GetResourceString(SR.ID2019)
                         });
 
                     return;
@@ -1052,13 +1052,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID2020],
+                                => SR.GetResourceString(SR.ID2020),
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID2021],
+                                => SR.GetResourceString(SR.ID2021),
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID2022],
+                                => SR.GetResourceString(SR.ID2022),
 
-                            _ => context.Localizer[SR.ID2023]
+                            _ => SR.GetResourceString(SR.ID2023)
                         });
 
                     return;
@@ -1113,13 +1113,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => context.Localizer[SR.ID2016],
+                                => SR.GetResourceString(SR.ID2016),
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => context.Localizer[SR.ID2017],
+                                => SR.GetResourceString(SR.ID2017),
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => context.Localizer[SR.ID2018],
+                                => SR.GetResourceString(SR.ID2018),
 
-                            _ => context.Localizer[SR.ID2019]
+                            _ => SR.GetResourceString(SR.ID2019)
                         });
 
                     return default;
@@ -1201,10 +1201,10 @@ namespace OpenIddict.Server
                 context.Response.ErrorDescription ??= context.EndpointType switch
                 {
                     OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
-                        => context.Localizer[SR.ID2015],
+                        => SR.GetResourceString(SR.ID2015),
 
-                    OpenIddictServerEndpointType.Token    => context.Localizer[SR.ID2024],
-                    OpenIddictServerEndpointType.Userinfo => context.Localizer[SR.ID2025],
+                    OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
+                    OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2025),
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
                 };

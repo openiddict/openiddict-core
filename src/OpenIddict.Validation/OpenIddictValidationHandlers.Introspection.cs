@@ -131,7 +131,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID2105, Parameters.Active]);
+                            description: SR.FormatID2105(Parameters.Active));
 
                         return default;
                     }
@@ -142,7 +142,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: context.Localizer[SR.ID2106]);
+                            description: SR.GetResourceString(SR.ID2106));
 
                         return default;
                     }
@@ -183,7 +183,7 @@ namespace OpenIddict.Validation
 
                         context.Reject(
                             error: Errors.ServerError,
-                            description: context.Localizer[SR.ID2107, parameter.Key]);
+                            description: SR.FormatID2107(parameter.Key));
 
                         return default;
                     }
@@ -258,7 +258,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: context.Localizer[SR.ID2108]);
+                                description: SR.GetResourceString(SR.ID2108));
 
                             return default;
                         }
@@ -267,7 +267,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: context.Localizer[SR.ID2109]);
+                                description: SR.GetResourceString(SR.ID2109));
 
                             return default;
                         }
@@ -311,7 +311,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.InvalidToken,
-                                description: context.Localizer[SR.ID2110]);
+                                description: SR.GetResourceString(SR.ID2110));
 
                             return default;
                         }
