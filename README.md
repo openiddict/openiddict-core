@@ -75,7 +75,7 @@ with an ECDSA certificate/key will always result in a `PlatformNotSupportedExcep
 
 ## Security policy
 
-Security issues and bugs should be reported privately by emailing contact@kevinchalet.com.
+Security issues and bugs should be reported privately by emailing security@openiddict.com.
 You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 
 ## Support
