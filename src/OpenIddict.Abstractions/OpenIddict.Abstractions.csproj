@@ -31,8 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="**\*.resx" Namespace="OpenIddict.Abstractions"
-                      GenerateSource="true" GenerateResourcesCodeAsConstants="true" />
+    <EmbeddedResource Update="**\*.resx" GenerateSource="true" GenerateResourcesCodeAsConstants="true" />
   </ItemGroup>
 
 </Project>

@@ -35,12 +35,12 @@ namespace OpenIddict.Validation
         ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
         /// </list>
         /// </remarks>
-        public List<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
+        public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
 
         /// <summary>
         /// Gets or sets the JWT handler used to protect and unprotect tokens.
         /// </summary>
-        public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new JsonWebTokenHandler
+        public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new()
         {
             SetDefaultTimesOnTokenCreation = false
         };
@@ -50,8 +50,7 @@ namespace OpenIddict.Validation
         /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
         /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
         /// </summary>
-        public List<OpenIddictValidationHandlerDescriptor> Handlers { get; } =
-            new List<OpenIddictValidationHandlerDescriptor>(OpenIddictValidationHandlers.DefaultHandlers);
+        public List<OpenIddictValidationHandlerDescriptor> Handlers { get; } = new(OpenIddictValidationHandlers.DefaultHandlers);
 
         /// <summary>
         /// Gets or sets the type of validation used by the OpenIddict validation services.
@@ -112,12 +111,12 @@ namespace OpenIddict.Validation
         /// Setting this property is recommended when the authorization
         /// server issues access tokens for multiple distinct resource servers.
         /// </summary>
-        public HashSet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Audiences { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the token validation parameters used by the OpenIddict validation services.
         /// </summary>
-        public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
+        public TokenValidationParameters TokenValidationParameters { get; } = new()
         {
             AuthenticationType = TokenValidationParameters.DefaultAuthenticationType,
             ClockSkew = TimeSpan.Zero,

@@ -43,7 +43,7 @@ namespace OpenIddict.Server
         ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
         /// </list>
         /// </remarks>
-        public List<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
+        public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
 
         /// <summary>
         /// Gets the list of signing credentials used by the OpenIddict server services.
@@ -61,17 +61,17 @@ namespace OpenIddict.Server
         ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
         /// </list>
         /// </remarks>
-        public List<SigningCredentials> SigningCredentials { get; } = new List<SigningCredentials>();
+        public List<SigningCredentials> SigningCredentials { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the authorization endpoint.
         /// </summary>
-        public List<Uri> AuthorizationEndpointUris { get; } = new List<Uri>();
+        public List<Uri> AuthorizationEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the configuration endpoint.
         /// </summary>
-        public List<Uri> ConfigurationEndpointUris { get; } = new List<Uri>
+        public List<Uri> ConfigurationEndpointUris { get; } = new()
         {
             new Uri("/.well-known/openid-configuration", UriKind.Relative),
             new Uri("/.well-known/oauth-authorization-server", UriKind.Relative)
@@ -88,42 +88,42 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the absolute and relative URIs associated to the device endpoint.
         /// </summary>
-        public List<Uri> DeviceEndpointUris { get; } = new List<Uri>();
+        public List<Uri> DeviceEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the introspection endpoint.
         /// </summary>
-        public List<Uri> IntrospectionEndpointUris { get; } = new List<Uri>();
+        public List<Uri> IntrospectionEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the logout endpoint.
         /// </summary>
-        public List<Uri> LogoutEndpointUris { get; } = new List<Uri>();
+        public List<Uri> LogoutEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the revocation endpoint.
         /// </summary>
-        public List<Uri> RevocationEndpointUris { get; } = new List<Uri>();
+        public List<Uri> RevocationEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the token endpoint.
         /// </summary>
-        public List<Uri> TokenEndpointUris { get; } = new List<Uri>();
+        public List<Uri> TokenEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the userinfo endpoint.
         /// </summary>
-        public List<Uri> UserinfoEndpointUris { get; } = new List<Uri>();
+        public List<Uri> UserinfoEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the verification endpoint.
         /// </summary>
-        public List<Uri> VerificationEndpointUris { get; } = new List<Uri>();
+        public List<Uri> VerificationEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets or sets the JWT handler used to protect and unprotect tokens.
         /// </summary>
-        public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new JsonWebTokenHandler
+        public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new()
         {
             SetDefaultTimesOnTokenCreation = false
         };
@@ -131,7 +131,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the token validation parameters used by the OpenIddict server services.
         /// </summary>
-        public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
+        public TokenValidationParameters TokenValidationParameters { get; } = new()
         {
             AuthenticationType = TokenValidationParameters.DefaultAuthenticationType,
             ClockSkew = TimeSpan.Zero,
@@ -242,8 +242,7 @@ namespace OpenIddict.Server
         /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
         /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
         /// </summary>
-        public List<OpenIddictServerHandlerDescriptor> Handlers { get; } =
-            new List<OpenIddictServerHandlerDescriptor>(OpenIddictServerHandlers.DefaultHandlers);
+        public List<OpenIddictServerHandlerDescriptor> Handlers { get; } = new(OpenIddictServerHandlers.DefaultHandlers);
 
         /// <summary>
         /// Gets or sets a boolean determining whether client identification is optional.
@@ -255,7 +254,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect claims supported by this application.
         /// </summary>
-        public HashSet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal)
+        public HashSet<string> Claims { get; } = new(StringComparer.Ordinal)
         {
             OpenIddictConstants.Claims.Audience,
             OpenIddictConstants.Claims.ExpiresAt,
@@ -312,12 +311,12 @@ namespace OpenIddict.Server
         /// Gets the OAuth 2.0 code challenge methods enabled for this application.
         /// By default, only the S256 method is allowed (if the code flow is enabled).
         /// </summary>
-        public HashSet<string> CodeChallengeMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect flows enabled for this application.
         /// </summary>
-        public HashSet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> GrantTypes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether PKCE must be used by client applications
@@ -331,13 +330,13 @@ namespace OpenIddict.Server
         /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public HashSet<string> ResponseTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect response modes enabled for this application.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public HashSet<string> ResponseModes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
@@ -366,7 +365,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect scopes enabled for this application.
         /// </summary>
-        public HashSet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)
+        public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal)
         {
             OpenIddictConstants.Scopes.OpenId
         };

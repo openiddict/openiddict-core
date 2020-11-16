@@ -101,7 +101,7 @@ namespace OpenIddict.Server.Owin
         /// <summary>
         /// Gets or sets the caching policy used by the authorization endpoint.
         /// </summary>
-        public DistributedCacheEntryOptions AuthorizationRequestCachingPolicy { get; set; } = new DistributedCacheEntryOptions
+        public DistributedCacheEntryOptions AuthorizationRequestCachingPolicy { get; set; } = new()
         {
             AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
             SlidingExpiration = TimeSpan.FromMinutes(30)
@@ -110,7 +110,7 @@ namespace OpenIddict.Server.Owin
         /// <summary>
         /// Gets or sets the caching policy used by the logout endpoint.
         /// </summary>
-        public DistributedCacheEntryOptions LogoutRequestCachingPolicy { get; set; } = new DistributedCacheEntryOptions
+        public DistributedCacheEntryOptions LogoutRequestCachingPolicy { get; set; } = new()
         {
             AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
             SlidingExpiration = TimeSpan.FromMinutes(30)
