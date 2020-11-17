@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -274,6 +275,17 @@ namespace OpenIddict.Abstractions
         /// whose result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
         ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync(object application, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the application.
+        /// </returns>
+        ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the callback addresses associated with an application.

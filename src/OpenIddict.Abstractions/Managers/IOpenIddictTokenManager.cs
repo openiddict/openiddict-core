@@ -6,8 +6,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -252,6 +254,17 @@ namespace OpenIddict.Abstractions
         /// whose result returns the payload associated with the specified token.
         /// </returns>
         ValueTask<string?> GetPayloadAsync(object token, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the additional properties associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the token.
+        /// </returns>
+        ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(object token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the redemption date associated with a token.

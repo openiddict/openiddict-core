@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -263,6 +264,17 @@ namespace OpenIddict.Abstractions
         /// whose result returns the name associated with the specified scope.
         /// </returns>
         ValueTask<string?> GetNameAsync(object scope, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the additional properties associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the scope.
+        /// </returns>
+        ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the resources associated with a scope.
