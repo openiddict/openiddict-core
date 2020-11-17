@@ -1169,9 +1169,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetDestinations(destinations.ToImmutable());
 
             // Assert
-            Assert.Equal(@"[""access_token"",""id_token""]", principal.FindFirst(Claims.Name).Properties[Properties.Destinations]);
-            Assert.Equal(@"[""id_token""]", principal.FindFirst(Claims.Email).Properties[Properties.Destinations]);
-            Assert.DoesNotContain(Properties.Destinations, principal.FindFirst(Claims.Nonce).Properties);
+            Assert.Equal(@"[""access_token"",""id_token""]", principal.FindFirst(Claims.Name)!.Properties[Properties.Destinations]);
+            Assert.Equal(@"[""id_token""]", principal.FindFirst(Claims.Email)!.Properties[Properties.Destinations]);
+            Assert.DoesNotContain(Properties.Destinations, principal.FindFirst(Claims.Nonce)!.Properties);
         }
 
         [Theory]
@@ -1241,7 +1241,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Assert
             Assert.Single(clone.Claims);
             Assert.Null(clone.FindFirst(Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name).Value);
+            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name)!.Value);
         }
 
         [Fact]
@@ -1259,9 +1259,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var clone = identity.Clone(claim => claim.Type == Claims.Name);
 
             // Assert
-            Assert.Single(clone.Actor.Claims);
+            Assert.Single(clone.Actor!.Claims);
             Assert.Null(clone.Actor.FindFirst(Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.Actor.FindFirst(Claims.Name).Value);
+            Assert.Equal("Bob le Bricoleur", clone.Actor.FindFirst(Claims.Name)!.Value);
         }
 
         [Fact]
@@ -1280,7 +1280,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Assert
             Assert.Single(clone.Claims);
             Assert.Null(clone.FindFirst(Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name).Value);
+            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name)!.Value);
         }
 
         [Fact]
@@ -1308,7 +1308,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             identity.AddClaim(Claims.Name, "Bob le Bricoleur");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", identity.FindFirst(Claims.Name).Value);
+            Assert.Equal("Bob le Bricoleur", identity.FindFirst(Claims.Name)!.Value);
         }
 
         [Theory]
@@ -1324,7 +1324,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act
             identity.AddClaim(Claims.Name, "Bob le Bricoleur", ImmutableArray.Create(destinations));
 
-            var claim = identity.FindFirst(Claims.Name);
+            var claim = identity.FindFirst(Claims.Name)!;
 
             // Assert
             Assert.Equal("Bob le Bricoleur", claim.Value);
@@ -1344,7 +1344,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act
             identity.AddClaim(Claims.Name, "Bob le Bricoleur", destinations);
 
-            var claim = identity.FindFirst(Claims.Name);
+            var claim = identity.FindFirst(Claims.Name)!;
 
             // Assert
             Assert.Equal("Bob le Bricoleur", claim.Value);
@@ -2422,13 +2422,27 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Equal("principal", exception.ParamName);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void SetClaim_ThrowsAnExceptionForNullOrEmptyProperty(string type)
+        [Fact]
+        public void SetClaim_ThrowsAnExceptionForNullIdentity()
         {
             // Arrange
             var principal = new ClaimsPrincipal();
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", "value"));
+
+            Assert.Equal("principal", exception.ParamName);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void SetClaim_ThrowsAnExceptionForNullOrEmptyType(string type)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));

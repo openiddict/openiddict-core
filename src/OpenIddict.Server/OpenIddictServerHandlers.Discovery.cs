@@ -371,7 +371,7 @@ namespace OpenIddict.Server
 
                     return default;
 
-                    static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri endpoint)
+                    static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri? endpoint)
                     {
                         // If the endpoint is disabled (i.e a null address is specified), return null.
                         if (endpoint is null)
@@ -1248,8 +1248,8 @@ namespace OpenIddict.Server
                         // Warning: on .NET Framework 4.x and .NET Core 2.1, exported ECParameters generally have
                         // a null OID value attached. To work around this limitation, both the friendly names and
                         // the raw OID value are compared to determine whether the curve is of the specified type.
-                        string.Equals(parameters.Curve.Oid.Value, curve.Oid.Value, StringComparison.Ordinal) ||
-                        string.Equals(parameters.Curve.Oid.FriendlyName, curve.Oid.FriendlyName, StringComparison.Ordinal);
+                        string.Equals(parameters.Curve.Oid?.Value, curve.Oid?.Value, StringComparison.Ordinal) ||
+                        string.Equals(parameters.Curve.Oid?.FriendlyName, curve.Oid?.FriendlyName, StringComparison.Ordinal);
 #endif
 
                     static byte[] GetCertificateHash(X509Certificate2 certificate, HashAlgorithmName algorithm)
@@ -1257,7 +1257,7 @@ namespace OpenIddict.Server
 #if SUPPORTS_CERTIFICATE_HASHING_WITH_SPECIFIED_ALGORITHM
                         return certificate.GetCertHash(algorithm);
 #else
-                        using var hash = CryptoConfig.CreateFromName(algorithm.Name) as HashAlgorithm;
+                        using var hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
                         if (hash is null || hash is KeyedHashAlgorithm)
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0217));

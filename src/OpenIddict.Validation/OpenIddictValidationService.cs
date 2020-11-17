@@ -458,7 +458,7 @@ namespace OpenIddict.Validation
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     return context.Principal;
                 }
@@ -521,7 +521,7 @@ namespace OpenIddict.Validation
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 return context.Principal;
             }

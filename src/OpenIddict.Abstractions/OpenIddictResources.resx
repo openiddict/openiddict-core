@@ -152,7 +152,7 @@ When implementing custom token deserialization, a 'oi_tkn_typ' claim containing 
     <value>A sign-in response cannot be returned from this endpoint.</value>
   </data>
   <data name="ID0011" xml:space="preserve">
-    <value>The specified principal doesn't contain any claims-based identity.
+    <value>The specified principal is null or doesn't contain a claims-based identity.
 Make sure that 'ClaimsPrincipal.Identity' is not null.</value>
   </data>
   <data name="ID0012" xml:space="preserve">
@@ -184,7 +184,7 @@ Alternatively, you can disable the built-in database-based server features by en
     <value>An unknown error occurred while creating a token entry.</value>
   </data>
   <data name="ID0020" xml:space="preserve">
-    <value>A token entry cannot be created from a null principal.</value>
+    <value>A token entry cannot be created from a null principal or from a principal containing a null or invalid identity.</value>
   </data>
   <data name="ID0021" xml:space="preserve">
     <value>The token entry cannot be found in the database.</value>
@@ -1113,6 +1113,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID0285" xml:space="preserve">
     <value>Endpoint addresses must be unique across endpoints.</value>
   </data>
+  <data name="ID0286" xml:space="preserve">
+    <value>The specified principal doesn't contain a valid claims-based identity.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1483,7 +1486,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>ECDsa.ExportParameters() shouldn't return an unnamed curve.</value>
   </data>
   <data name="ID4006" xml:space="preserve">
-    <value>The principal shouldn't be null at this point.</value>
+    <value>The principal and its attached identity shouldn't be null at this point.</value>
   </data>
   <data name="ID4007" xml:space="preserve">
     <value>The response shouldn't be null at this point.</value>

@@ -256,14 +256,14 @@ namespace OpenIddict.Server.IntegrationTests
             // Note: a dictionary is deliberately not used here to allow multiple parameters with the
             // same name to be specified. While initially not allowed by the core OAuth2 specification,
             // this is required for derived drafts like the OAuth2 token exchange specification.
-            var parameters = new List<KeyValuePair<string, string?>>();
+            var parameters = new List<KeyValuePair<string?, string?>>();
 
             foreach (var parameter in request.GetParameters())
             {
                 // If the parameter is null or empty, send an empty value.
                 if (OpenIddictParameter.IsNullOrEmpty(parameter.Value))
                 {
-                    parameters.Add(new KeyValuePair<string, string?>(parameter.Key, string.Empty));
+                    parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, string.Empty));
 
                     continue;
                 }
@@ -276,7 +276,7 @@ namespace OpenIddict.Server.IntegrationTests
 
                 foreach (var value in values)
                 {
-                    parameters.Add(new KeyValuePair<string, string?>(parameter.Key, value));
+                    parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, value));
                 }
             }
 
@@ -286,19 +286,28 @@ namespace OpenIddict.Server.IntegrationTests
 
                 foreach (var parameter in parameters)
                 {
+                    if (string.IsNullOrEmpty(parameter.Key))
+                    {
+                        continue;
+                    }
+
                     if (builder.Length != 0)
                     {
                         builder.Append('&');
                     }
 
                     builder.Append(UrlEncoder.Default.Encode(parameter.Key));
-                    builder.Append('=');
-                    builder.Append(UrlEncoder.Default.Encode(parameter.Value));
+
+                    if (!string.IsNullOrEmpty(parameter.Value))
+                    {
+                        builder.Append('=');
+                        builder.Append(UrlEncoder.Default.Encode(parameter.Value));
+                    }
                 }
 
                 if (!uri.IsAbsoluteUri)
                 {
-                    uri = new Uri(HttpClient.BaseAddress, uri);
+                    uri = new Uri(HttpClient.BaseAddress!, uri);
                 }
 
                 uri = new UriBuilder(uri) { Query = builder.ToString() }.Uri;

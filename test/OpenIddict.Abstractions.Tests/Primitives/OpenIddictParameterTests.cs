@@ -38,7 +38,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Count_ReturnsZeroForInteger()
+        public void Count_ReturnsZeroForLongValue()
         {
             // Arrange
             var parameter = new OpenIddictParameter(42);
@@ -612,6 +612,24 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act and assert
             Assert.Empty(parameter.ToString());
+        }
+
+        [Fact]
+        public void ToString_ReturnsBooleanValue()
+        {
+            // Arrange, act and assert
+            Assert.Equal(bool.TrueString, new OpenIddictParameter(true).ToString());
+            Assert.Equal(bool.FalseString, new OpenIddictParameter(false).ToString());
+        }
+
+        [Fact]
+        public void ToString_ReturnsLongValue()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(42);
+
+            // Act and assert
+            Assert.Equal("42", parameter.ToString());
         }
 
         [Fact]

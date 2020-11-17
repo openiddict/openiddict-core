@@ -446,7 +446,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
   ""logo_uri"": ""https://client.example.org/logo.png"",
   ""jwks_uri"": ""https://client.example.org/my_public_keys.jwks"",
   ""example_extension_parameter"": ""example_value""
-}");
+}")!;
 
             var options = new JsonSerializerOptions
             {

@@ -384,13 +384,19 @@ namespace OpenIddict.Validation
                             case JsonElement { ValueKind: JsonValueKind.Array } value:
                                 foreach (var element in value.EnumerateArray())
                                 {
-                                    identity.AddClaim(new Claim(parameter.Key, element.ToString(),
+                                    var item = element.GetString();
+                                    if (string.IsNullOrEmpty(item))
+                                    {
+                                        continue;
+                                    }
+
+                                    identity.AddClaim(new Claim(parameter.Key, item,
                                         GetClaimValueType(value.ValueKind), issuer, issuer, identity));
                                 }
                                 break;
 
                             case JsonElement value:
-                                identity.AddClaim(new Claim(parameter.Key, value.ToString(),
+                                identity.AddClaim(new Claim(parameter.Key, value.ToString()!,
                                     GetClaimValueType(value.ValueKind), issuer, issuer, identity));
                                 break;
 

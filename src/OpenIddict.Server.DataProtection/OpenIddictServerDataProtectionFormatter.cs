@@ -189,7 +189,13 @@ namespace OpenIddict.Server.DataProtection
 
                     foreach (var element in document.RootElement.EnumerateArray())
                     {
-                        builder.Add(element.GetString());
+                        var item = element.GetString();
+                        if (string.IsNullOrEmpty(item))
+                        {
+                            continue;
+                        }
+
+                        builder.Add(item);
                     }
 
                     return builder.ToImmutable();
@@ -264,7 +270,7 @@ namespace OpenIddict.Server.DataProtection
                 Claims.Private.TokenId or
                 Claims.Private.UserCodeLifetime));
 
-            Write(writer, principal.Identity.AuthenticationType, principal, properties);
+            Write(writer, principal.Identity?.AuthenticationType, principal, properties);
             writer.Flush();
 
             // Note: the following local methods closely matches the logic used by ASP.NET Core's

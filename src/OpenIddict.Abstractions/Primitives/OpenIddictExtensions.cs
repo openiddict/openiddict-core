@@ -525,7 +525,7 @@ namespace OpenIddict.Abstractions
             foreach (var element in document.RootElement.EnumerateArray())
             {
                 var value = element.GetString();
-                if (builder.Contains(value, StringComparer.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(value) || builder.Contains(value, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -1061,6 +1061,11 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
+            if (principal.Identity is not ClaimsIdentity identity)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
+            }
+
             if (string.IsNullOrEmpty(type))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -1070,7 +1075,7 @@ namespace OpenIddict.Abstractions
 
             if (!string.IsNullOrEmpty(value))
             {
-                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
+                identity.AddClaim(type, value);
             }
 
             return principal;
@@ -1119,6 +1124,11 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
+            if (principal.Identity is not ClaimsIdentity identity)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
+            }
+
             if (string.IsNullOrEmpty(type))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -1128,7 +1138,7 @@ namespace OpenIddict.Abstractions
 
             foreach (var value in values.Distinct(StringComparer.Ordinal))
             {
-                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
+                identity.AddClaim(type, value);
             }
 
             return principal;
