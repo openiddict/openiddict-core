@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
 
 namespace OpenIddict.Abstractions
 {
@@ -17,7 +18,7 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets the localized descriptions associated with the scope.
         /// </summary>
-        public Dictionary<CultureInfo, string> Descriptions { get; } = new Dictionary<CultureInfo, string>();
+        public Dictionary<CultureInfo, string> Descriptions { get; } = new();
 
         /// <summary>
         /// Gets or sets the display name associated with the scope.
@@ -27,7 +28,7 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets the localized display names associated with the scope.
         /// </summary>
-        public Dictionary<CultureInfo, string> DisplayNames { get; } = new Dictionary<CultureInfo, string>();
+        public Dictionary<CultureInfo, string> DisplayNames { get; } = new();
 
         /// <summary>
         /// Gets or sets the unique name associated with the scope.
@@ -35,8 +36,13 @@ namespace OpenIddict.Abstractions
         public string? Name { get; set; }
 
         /// <summary>
+        /// Gets the additional properties associated with the scope.
+        /// </summary>
+        public Dictionary<string, JsonElement> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the resources associated with the scope.
         /// </summary>
-        public HashSet<string> Resources { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Resources { get; } = new(StringComparer.Ordinal);
     }
 }

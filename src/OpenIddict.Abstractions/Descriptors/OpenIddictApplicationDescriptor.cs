@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
 
 namespace OpenIddict.Abstractions
 {
@@ -34,28 +35,32 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets the localized display names associated with the application.
         /// </summary>
-        public Dictionary<CultureInfo, string> DisplayNames { get; }
-            = new Dictionary<CultureInfo, string>();
+        public Dictionary<CultureInfo, string> DisplayNames { get; } = new();
 
         /// <summary>
         /// Gets the permissions associated with the application.
         /// </summary>
-        public HashSet<string> Permissions { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Permissions { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the logout callback URLs associated with the application.
         /// </summary>
-        public HashSet<Uri> PostLogoutRedirectUris { get; } = new HashSet<Uri>();
+        public HashSet<Uri> PostLogoutRedirectUris { get; } = new();
+
+        /// <summary>
+        /// Gets the additional properties associated with the application.
+        /// </summary>
+        public Dictionary<string, JsonElement> Properties { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the callback URLs associated with the application.
         /// </summary>
-        public HashSet<Uri> RedirectUris { get; } = new HashSet<Uri>();
+        public HashSet<Uri> RedirectUris { get; } = new();
 
         /// <summary>
         /// Gets the requirements associated with the application.
         /// </summary>
-        public HashSet<string> Requirements { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Requirements { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the application type associated with the application.

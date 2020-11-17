@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace OpenIddict.Abstractions
 {
@@ -38,6 +40,11 @@ namespace OpenIddict.Abstractions
         /// Note: this property is not stored by the default token stores.
         /// </summary>
         public ClaimsPrincipal? Principal { get; set; }
+
+        /// <summary>
+        /// Gets the additional properties associated with the token.
+        /// </summary>
+        public Dictionary<string, JsonElement> Properties { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the redemption date associated with the token.

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -715,6 +716,26 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the additional properties associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the authorization.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(
+            TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization is null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.GetPropertiesAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the scopes associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -933,6 +954,7 @@ namespace OpenIddict.Core
 
             await Store.SetApplicationIdAsync(authorization, descriptor.ApplicationId, cancellationToken);
             await Store.SetCreationDateAsync(authorization, descriptor.CreationDate, cancellationToken);
+            await Store.SetPropertiesAsync(authorization, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
             await Store.SetScopesAsync(authorization, descriptor.Scopes.ToImmutableArray(), cancellationToken);
             await Store.SetStatusAsync(authorization, descriptor.Status, cancellationToken);
             await Store.SetSubjectAsync(authorization, descriptor.Subject, cancellationToken);
@@ -969,6 +991,12 @@ namespace OpenIddict.Core
             descriptor.Status = await Store.GetStatusAsync(authorization, cancellationToken);
             descriptor.Subject = await Store.GetSubjectAsync(authorization, cancellationToken);
             descriptor.Type = await Store.GetTypeAsync(authorization, cancellationToken);
+
+            descriptor.Properties.Clear();
+            foreach (var pair in await Store.GetPropertiesAsync(authorization, cancellationToken))
+            {
+                descriptor.Properties.Add(pair.Key, pair.Value);
+            }
         }
 
         /// <summary>
@@ -1230,6 +1258,10 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         ValueTask<string?> IOpenIddictAuthorizationManager.GetIdAsync(object authorization, CancellationToken cancellationToken)
             => GetIdAsync((TAuthorization) authorization, cancellationToken);
+
+        /// <inheritdoc/>
+        ValueTask<ImmutableDictionary<string, JsonElement>> IOpenIddictAuthorizationManager.GetPropertiesAsync(object authorization, CancellationToken cancellationToken)
+            => GetPropertiesAsync((TAuthorization) authorization, cancellationToken);
 
         /// <inheritdoc/>
         ValueTask<ImmutableArray<string>> IOpenIddictAuthorizationManager.GetScopesAsync(object authorization, CancellationToken cancellationToken)

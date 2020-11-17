@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -231,6 +232,17 @@ namespace OpenIddict.Abstractions
         /// whose result returns the unique identifier associated with the authorization.
         /// </returns>
         ValueTask<string?> GetIdAsync(object authorization, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves the additional properties associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the authorization.
+        /// </returns>
+        ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the scopes associated with an authorization.

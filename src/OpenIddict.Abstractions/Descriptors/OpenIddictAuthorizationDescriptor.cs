@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace OpenIddict.Abstractions
 {
@@ -26,9 +27,14 @@ namespace OpenIddict.Abstractions
         public ClaimsPrincipal? Principal { get; set; }
 
         /// <summary>
+        /// Gets the additional properties associated with the authorization.
+        /// </summary>
+        public Dictionary<string, JsonElement> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the scopes associated with the authorization.
         /// </summary>
-        public HashSet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the status associated with the authorization.

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -697,6 +698,26 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the application.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(
+            TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetPropertiesAsync(application, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -909,6 +930,7 @@ namespace OpenIddict.Core
             await Store.SetPermissionsAsync(application, descriptor.Permissions.ToImmutableArray(), cancellationToken);
             await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
+            await Store.SetPropertiesAsync(application, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
             await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
             await Store.SetRequirementsAsync(application, descriptor.Requirements.ToImmutableArray(), cancellationToken);
@@ -969,6 +991,12 @@ namespace OpenIddict.Core
                 }
 
                 descriptor.PostLogoutRedirectUris.Add(uri);
+            }
+
+            descriptor.Properties.Clear();
+            foreach (var pair in await Store.GetPropertiesAsync(application, cancellationToken))
+            {
+                descriptor.Properties.Add(pair.Key, pair.Value);
             }
 
             descriptor.RedirectUris.Clear();
@@ -1580,6 +1608,10 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetPostLogoutRedirectUrisAsync(object application, CancellationToken cancellationToken)
             => GetPostLogoutRedirectUrisAsync((TApplication) application, cancellationToken);
+
+        /// <inheritdoc/>
+        ValueTask<ImmutableDictionary<string, JsonElement>> IOpenIddictApplicationManager.GetPropertiesAsync(object application, CancellationToken cancellationToken)
+            => GetPropertiesAsync((TApplication) application, cancellationToken);
 
         /// <inheritdoc/>
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRedirectUrisAsync(object application, CancellationToken cancellationToken)

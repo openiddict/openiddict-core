@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -737,6 +738,26 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the additional properties associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the token.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(
+            TToken token, CancellationToken cancellationToken = default)
+        {
+            if (token is null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return Store.GetPropertiesAsync(token, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the redemption date associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -954,6 +975,7 @@ namespace OpenIddict.Core
             await Store.SetCreationDateAsync(token, descriptor.CreationDate, cancellationToken);
             await Store.SetExpirationDateAsync(token, descriptor.ExpirationDate, cancellationToken);
             await Store.SetPayloadAsync(token, descriptor.Payload, cancellationToken);
+            await Store.SetPropertiesAsync(token, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
             await Store.SetRedemptionDateAsync(token, descriptor.RedemptionDate, cancellationToken);
             await Store.SetReferenceIdAsync(token, descriptor.ReferenceId, cancellationToken);
             await Store.SetStatusAsync(token, descriptor.Status, cancellationToken);
@@ -994,6 +1016,12 @@ namespace OpenIddict.Core
             descriptor.Status = await Store.GetStatusAsync(token, cancellationToken);
             descriptor.Subject = await Store.GetSubjectAsync(token, cancellationToken);
             descriptor.Type = await Store.GetTypeAsync(token, cancellationToken);
+
+            descriptor.Properties.Clear();
+            foreach (var pair in await Store.GetPropertiesAsync(token, cancellationToken))
+            {
+                descriptor.Properties.Add(pair.Key, pair.Value);
+            }
         }
 
         /// <summary>
@@ -1369,6 +1397,10 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         ValueTask<string?> IOpenIddictTokenManager.GetPayloadAsync(object token, CancellationToken cancellationToken)
             => GetPayloadAsync((TToken) token, cancellationToken);
+
+        /// <inheritdoc/>
+        ValueTask<ImmutableDictionary<string, JsonElement>> IOpenIddictTokenManager.GetPropertiesAsync(object token, CancellationToken cancellationToken)
+            => GetPropertiesAsync((TToken) token, cancellationToken);
 
         /// <inheritdoc/>
         ValueTask<DateTimeOffset?> IOpenIddictTokenManager.GetRedemptionDateAsync(object token, CancellationToken cancellationToken)
