@@ -216,9 +216,9 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets the period of time rolling refresh tokens marked as redeemed can still be
-        /// used to make concurrent refresh token requests. The default value is 15 seconds.
+        /// used to make concurrent refresh token requests. The default value is 30 seconds.
         /// </summary>
-        public TimeSpan? RefreshTokenReuseLeeway { get; set; } = TimeSpan.FromSeconds(15);
+        public TimeSpan? RefreshTokenReuseLeeway { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Gets or sets the period of time user codes remain valid after being issued. The default value is 10 minutes.
