@@ -823,7 +823,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token
@@ -1030,7 +1030,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var identifier = context.Principal.GetAuthorizationId();
                 if (string.IsNullOrEmpty(identifier))
@@ -1089,7 +1089,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Don't validate the lifetime of id_tokens used as id_token_hints.
                 if (context.EndpointType is OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout)
@@ -1355,8 +1355,6 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
-
                 if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
                                                  OpenIddictServerEndpointType.Device or
                                                  OpenIddictServerEndpointType.Token or
@@ -1365,7 +1363,7 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0010));
                 }
 
-                if (context.Principal.Identity is null)
+                if (context.Principal is not { Identity: ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0011));
                 }
@@ -1384,18 +1382,19 @@ namespace OpenIddict.Server
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0013));
                     }
-
-                    return default;
                 }
 
-                if (!context.Principal.Identity.IsAuthenticated)
+                else
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0014));
-                }
+                    if (!context.Principal.Identity.IsAuthenticated)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0014));
+                    }
 
-                if (string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0015));
+                    if (string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0015));
+                    }
                 }
 
                 return default;
@@ -1425,7 +1424,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 switch (context.EndpointType)
                 {
@@ -1497,7 +1496,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Always include the "openid" scope when the developer doesn't explicitly call SetScopes.
                 // Note: the application is allowed to specify a different "scopes": in this case,
@@ -1534,7 +1533,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Add the validated client_id to the list of authorized presenters,
                 // unless the presenters were explicitly set by the developer.
@@ -1570,7 +1569,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // When a "resources" property cannot be found in the ticket, infer it from the "audiences" property.
                 if (context.Principal.HasAudience() && !context.Principal.HasResource())
@@ -1609,7 +1608,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 (context.GenerateAccessToken, context.IncludeAccessToken) = context.EndpointType switch
                 {
@@ -1723,7 +1722,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // If no authorization code, device code or refresh token is returned, don't create an authorization.
                 if (!context.GenerateAuthorizationCode && !context.GenerateDeviceCode && !context.GenerateRefreshToken)
@@ -1809,7 +1808,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -1927,7 +1926,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2012,7 +2011,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Note: a device code principal is produced when a device code is included in the response or when a
                 // device code entry is replaced when processing a sign-in response sent to the verification endpoint.
@@ -2092,7 +2091,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2176,7 +2175,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Replace the principal by a new one containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2289,7 +2288,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2379,7 +2378,7 @@ namespace OpenIddict.Server
                     default: return;
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Extract the token identifier from the authentication principal.
                 // If no token identifier can be found, this indicates that the token has no backing database entry.
@@ -2526,7 +2525,7 @@ namespace OpenIddict.Server
                     Claims.Private.Scope or
                     Claims.Private.TokenType));
 
-                if (principal is null)
+                if (principal is null or { Identity: not ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
                 }
@@ -2785,7 +2784,7 @@ namespace OpenIddict.Server
                     Claims.Private.ExpirationDate or
                     Claims.Private.TokenType));
 
-                if (principal is null)
+                if (principal is null or { Identity: not ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
@@ -3031,7 +3030,7 @@ namespace OpenIddict.Server
                     Claims.Private.ExpirationDate or
                     Claims.Private.TokenType));
 
-                if (principal is null)
+                if (principal is null or { Identity: not ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
@@ -3197,7 +3196,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var principal = context.DeviceCodePrincipal;
                 if (principal is null)
@@ -3361,7 +3360,7 @@ namespace OpenIddict.Server
                     Claims.Private.ExpirationDate or
                     Claims.Private.TokenType));
 
-                if (principal is null)
+                if (principal is null or { Identity: not ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
@@ -3644,7 +3643,7 @@ namespace OpenIddict.Server
                     Claims.Private.ExpirationDate or
                     Claims.Private.TokenType));
 
-                if (principal is null)
+                if (principal is null or { Identity: not ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
@@ -3900,7 +3899,7 @@ namespace OpenIddict.Server
                             }
                         };
 
-                        hash = CryptoConfig.CreateFromName(algorithm.Name) as HashAlgorithm;
+                        hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
                     }
 
                     return hash;
@@ -4034,7 +4033,7 @@ namespace OpenIddict.Server
                     Claims.Private.ExpirationDate or
                     Claims.Private.TokenType));
 
-                if (principal is null)
+                if (principal is null or { Identity: not ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
@@ -4227,7 +4226,7 @@ namespace OpenIddict.Server
 
                 return default;
 
-                static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri endpoint)
+                static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri? endpoint)
                 {
                     // If the endpoint is disabled (i.e a null address is specified), return null.
                     if (endpoint is null)

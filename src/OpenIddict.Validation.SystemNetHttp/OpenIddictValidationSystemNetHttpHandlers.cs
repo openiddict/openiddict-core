@@ -124,6 +124,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 }
 
                 Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
@@ -133,22 +134,25 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
                 }
 
-                // Note: System.Net.Http doesn't expose convenient methods allowing to create
-                // query strings from existing key/value pairs. To work around this limitation,
-                // a FormUrlEncodedContent is instantiated and used to manually create the URL.
-                using var content = new FormUrlEncodedContent(
-                    from parameter in context.Transaction.Request.GetParameters()
-                    let values = (string[]?) parameter.Value
-                    where values is not null
-                    from value in values
-                    select new KeyValuePair<string, string>(parameter.Key, value));
-
-                var builder = new UriBuilder(request.RequestUri)
+                if (request.RequestUri is not null)
                 {
-                    Query = await content.ReadAsStringAsync()
-                };
+                    // Note: System.Net.Http doesn't expose convenient methods allowing to create
+                    // query strings from existing key/value pairs. To work around this limitation,
+                    // a FormUrlEncodedContent is instantiated and used to manually create the URL.
+                    using var content = new FormUrlEncodedContent(
+                        from parameter in context.Transaction.Request.GetParameters()
+                        let values = (string[]?) parameter.Value
+                        where values is not null
+                        from value in values
+                        select new KeyValuePair<string, string>(parameter.Key, value));
 
-                request.RequestUri = builder.Uri;
+                    var builder = new UriBuilder(request.RequestUri)
+                    {
+                        Query = await content.ReadAsStringAsync()
+                    };
+
+                    request.RequestUri = builder.Uri;
+                }
             }
         }
 

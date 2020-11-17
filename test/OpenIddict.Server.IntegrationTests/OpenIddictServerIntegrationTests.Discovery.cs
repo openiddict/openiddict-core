@@ -238,8 +238,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal(client.HttpClient.BaseAddress.AbsoluteUri,
-                (string?) response[Metadata.Issuer]);
+            Assert.Equal(client.HttpClient.BaseAddress!.AbsoluteUri, (string?) response[Metadata.Issuer]);
         }
 
         [Fact]
@@ -257,8 +256,7 @@ namespace OpenIddict.Server.IntegrationTests
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("https://www.fabrikam.com/",
-                (string?) response[Metadata.Issuer]);
+            Assert.Equal("https://www.fabrikam.com/", (string?) response[Metadata.Issuer]);
         }
 
         [Fact]

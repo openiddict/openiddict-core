@@ -186,7 +186,13 @@ namespace OpenIddict.Validation.DataProtection
 
                     foreach (var element in document.RootElement.EnumerateArray())
                     {
-                        builder.Add(element.GetString());
+                        var item = element.GetString();
+                        if (string.IsNullOrEmpty(item))
+                        {
+                            continue;
+                        }
+
+                        builder.Add(item);
                     }
 
                     return builder.ToImmutable();

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -1331,7 +1332,7 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     var presenters = context.Principal.GetPresenters();
                     if (presenters.IsDefaultOrEmpty)
@@ -1415,7 +1416,7 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     // Validate the redirect_uri sent by the client application as part of this token request.
                     // Note: for pure OAuth 2.0 requests, redirect_uri is only mandatory if the authorization request
@@ -1484,7 +1485,7 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     // Note: the ValidateProofKeyForCodeExchangeRequirement handler (invoked earlier) ensures
                     // a code_verifier is specified if the proof key for code exchange requirement was enforced
@@ -1605,7 +1606,7 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     // When an explicit scope parameter has been included in the token request
                     // but was missing from the initial request, the request MUST be rejected.

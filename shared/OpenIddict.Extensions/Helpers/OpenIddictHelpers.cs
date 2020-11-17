@@ -16,7 +16,7 @@ namespace OpenIddict.Extensions
         /// <param name="type">The type to introspect.</param>
         /// <param name="definition">The generic type definition.</param>
         /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
-        public static Type FindGenericBaseType(Type type, Type definition)
+        public static Type? FindGenericBaseType(Type type, Type definition)
             => FindGenericBaseTypes(type, definition).FirstOrDefault();
 
         /// <summary>

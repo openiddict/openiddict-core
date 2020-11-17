@@ -258,7 +258,7 @@ namespace OpenIddict.Abstractions
                         return value.GetInt64().GetHashCode();
 
                     case JsonValueKind.String:
-                        return value.GetString().GetHashCode();
+                        return value.GetString()!.GetHashCode();
 
                     case JsonValueKind.Array:
                     {
@@ -420,12 +420,15 @@ namespace OpenIddict.Abstractions
         {
             null => string.Empty,
 
-            string value    => value,
+            bool value => value ? bool.TrueString : bool.FalseString,
+            long value => value.ToString(CultureInfo.InvariantCulture),
+
+            string    value => value,
             string?[] value => string.Join(", ", value),
 
             JsonElement value => value.ToString(),
 
-            var value => value.ToString()
+            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0194))
         };
 
         /// <summary>
@@ -799,7 +802,7 @@ namespace OpenIddict.Abstractions
 
             static string?[]? CreateArray(JsonElement value)
             {
-                var array = new string[value.GetArrayLength()];
+                var array = new string?[value.GetArrayLength()];
                 using var enumerator = value.EnumerateArray();
 
                 for (var index = 0; enumerator.MoveNext(); index++)

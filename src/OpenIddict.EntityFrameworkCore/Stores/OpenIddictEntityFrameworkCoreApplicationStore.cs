@@ -448,7 +448,13 @@ namespace OpenIddict.EntityFrameworkCore
 
                 foreach (var property in document.RootElement.EnumerateObject())
                 {
-                    builder[CultureInfo.GetCultureInfo(property.Name)] = property.Value.GetString();
+                    var value = property.Value.GetString();
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    builder[CultureInfo.GetCultureInfo(property.Name)] = value;
                 }
 
                 return builder.ToImmutable();
@@ -494,7 +500,13 @@ namespace OpenIddict.EntityFrameworkCore
 
                 foreach (var element in document.RootElement.EnumerateArray())
                 {
-                    builder.Add(element.GetString());
+                    var value = element.GetString();
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    builder.Add(value);
                 }
 
                 return builder.ToImmutable();
@@ -529,7 +541,13 @@ namespace OpenIddict.EntityFrameworkCore
 
                 foreach (var element in document.RootElement.EnumerateArray())
                 {
-                    builder.Add(element.GetString());
+                    var value = element.GetString();
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    builder.Add(value);
                 }
 
                 return builder.ToImmutable();
@@ -599,7 +617,13 @@ namespace OpenIddict.EntityFrameworkCore
 
                 foreach (var element in document.RootElement.EnumerateArray())
                 {
-                    builder.Add(element.GetString());
+                    var value = element.GetString();
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    builder.Add(value);
                 }
 
                 return builder.ToImmutable();
@@ -634,7 +658,13 @@ namespace OpenIddict.EntityFrameworkCore
 
                 foreach (var element in document.RootElement.EnumerateArray())
                 {
-                    builder.Add(element.GetString());
+                    var value = element.GetString();
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    builder.Add(value);
                 }
 
                 return builder.ToImmutable();

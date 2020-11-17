@@ -80,7 +80,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the absolute and relative URIs associated to the cryptography endpoint.
         /// </summary>
-        public List<Uri> CryptographyEndpointUris { get; } = new List<Uri>
+        public List<Uri> CryptographyEndpointUris { get; } = new()
         {
             new Uri("/.well-known/jwks", UriKind.Relative)
         };

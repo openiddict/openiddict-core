@@ -330,7 +330,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddEncryptionCertificate(certificate);
 
-            static X509Certificate2 GetCertificate(StoreLocation location, string thumbprint)
+            static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
             {
                 using var store = new X509Store(StoreName.My, location);
                 store.Open(OpenFlags.ReadOnly);

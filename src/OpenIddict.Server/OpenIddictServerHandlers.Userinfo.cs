@@ -8,6 +8,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
@@ -461,7 +462,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     // Note: when receiving an access token, its audiences list cannot be used for the "aud" claim
                     // as the client application is not the intented audience but only an authorized presenter.
@@ -495,7 +496,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    Debug.Assert(context.Principal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     context.Subject = context.Principal.GetClaim(Claims.Subject);
 
