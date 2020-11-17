@@ -1099,10 +1099,10 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>The duration cannot be less than 10 minutes.</value>
   </data>
   <data name="ID0281" xml:space="preserve">
-    <value>The authorization code flow must be enabled when adding a response type containing '{0}'.</value>
+    <value>The authorization code grant must be enabled when adding a response type containing '{0}'.</value>
   </data>
   <data name="ID0282" xml:space="preserve">
-    <value>The implicit flow must be enabled when adding a response type containing '{0}'.</value>
+    <value>The implicit grant must be enabled when adding a response type containing '{0}'.</value>
   </data>
   <data name="ID0283" xml:space="preserve">
     <value>Provided symmetric key was incorrect size. Expected {0} bits, received {1}.</value>

@@ -35,18 +35,18 @@ namespace OpenIddict.Server
                 throw new ArgumentNullException(nameof(options));
             }
 
+            // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
             if (options.EnableDegradedMode)
             {
-                // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
                 options.DisableAuthorizationStorage = options.DisableTokenStorage = options.DisableRollingRefreshTokens = true;
                 options.IgnoreEndpointPermissions = options.IgnoreGrantTypePermissions = true;
                 options.IgnoreResponseTypePermissions = options.IgnoreScopePermissions = true;
                 options.UseReferenceAccessTokens = options.UseReferenceRefreshTokens = false;
             }
 
+            // Explicitly disable rolling refresh tokens when token storage is disabled.
             if (options.DisableTokenStorage)
             {
-                // Explicitly disable rolling refresh tokens token stroage is disabled.
                 options.DisableRollingRefreshTokens = true;
             }
 
