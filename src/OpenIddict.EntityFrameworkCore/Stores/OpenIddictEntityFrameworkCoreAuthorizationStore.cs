@@ -764,8 +764,10 @@ namespace OpenIddict.EntityFrameworkCore
 
                 // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
                 // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
-                var application = await Applications.AsQueryable()
-                    .FirstOrDefaultAsync(application => application.Id!.Equals(key), cancellationToken);
+                var application =
+                    await Applications.AsQueryable()
+                                      .AsTracking()
+                                      .FirstOrDefaultAsync(application => application.Id!.Equals(key), cancellationToken);
 
                 if (application is null)
                 {
