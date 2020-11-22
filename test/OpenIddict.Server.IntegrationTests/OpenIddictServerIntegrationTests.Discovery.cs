@@ -411,6 +411,8 @@ namespace OpenIddict.Server.IntegrationTests
                 options.Configure(options => options.GrantTypes.Clear());
                 options.Configure(options => options.GrantTypes.Add(GrantTypes.Implicit));
                 options.Configure(options => options.ResponseTypes.Clear());
+                options.Configure(options => options.DeviceEndpointUris.Clear());
+                options.Configure(options => options.VerificationEndpointUris.Clear());
                 options.SetTokenEndpointUris(Array.Empty<Uri>());
             });
 

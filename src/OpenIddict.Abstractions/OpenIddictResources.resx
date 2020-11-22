@@ -1116,6 +1116,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID0286" xml:space="preserve">
     <value>The specified principal doesn't contain a valid claims-based identity.</value>
   </data>
+  <data name="ID0287" xml:space="preserve">
+    <value>The device grant must be allowed when enabling the device endpoint.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1466,6 +1469,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   </data>
   <data name="ID2120" xml:space="preserve">
     <value>Callback URLs must be valid absolute URLs.</value>
+  </data>
+  <data name="ID2121" xml:space="preserve">
+    <value>The client application is not allowed to use the device code flow.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2028,6 +2034,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6181" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the '{ResponseType}' response type.</value>
+  </data>
+  <data name="ID6182" xml:space="preserve">
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device code flow.</value>
+  </data>
+  <data name="ID6183" xml:space="preserve">
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>Removes orphaned tokens and authorizations from the database.</value>
