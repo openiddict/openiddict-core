@@ -41,11 +41,13 @@ namespace OpenIddict.Server
                  * Device request validation:
                  */
                 ValidateClientIdParameter.Descriptor,
+                ValidateScopeParameter.Descriptor,
                 ValidateScopes.Descriptor,
                 ValidateClientId.Descriptor,
                 ValidateClientType.Descriptor,
                 ValidateClientSecret.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
+                ValidateGrantTypePermissions.Descriptor,
                 ValidateScopePermissions.Descriptor,
 
                 /*
@@ -365,6 +367,43 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting device requests that don't specify a valid scope parameter.
+            /// </summary>
+            public class ValidateScopeParameter : IOpenIddictServerHandler<ValidateDeviceRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceRequestContext>()
+                        .UseSingletonHandler<ValidateScopeParameter>()
+                        .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateDeviceRequestContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // Reject device requests that specify scope=offline_access if the refresh token flow is not enabled.
+                    if (context.Request.HasScope(Scopes.OfflineAccess) && !context.Options.GrantTypes.Contains(GrantTypes.RefreshToken))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2035(Scopes.OfflineAccess));
+
+                        return default;
+                    }
+
+                    return default;
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting authorization requests that use unregistered scopes.
             /// Note: this handler partially works with the degraded mode but is not used when scope validation is disabled.
             /// </summary>
@@ -392,7 +431,7 @@ namespace OpenIddict.Server
                                 new ValidateScopes(provider.GetService<IOpenIddictScopeManager>() ??
                                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                         })
-                        .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateScopeParameter.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -486,7 +525,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.GetResourceString(SR.ID2052));
+                            description: SR.FormatID2052(Parameters.ClientId));
 
                         return;
                     }
@@ -686,6 +725,75 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting device requests made by unauthorized applications.
+            /// Note: this handler is not used when the degraded mode is enabled or when grant type permissions are disabled.
+            /// </summary>
+            public class ValidateGrantTypePermissions : IOpenIddictServerHandler<ValidateDeviceRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceRequestContext>()
+                        .AddFilter<RequireGrantTypePermissionsEnabled>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .UseScopedHandler<ValidateGrantTypePermissions>()
+                        .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateDeviceRequestContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                    }
+
+                    // Reject the request if the application is not allowed to use the device code grant.
+                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.DeviceCode))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6182), context.ClientId);
+
+                        context.Reject(
+                            error: Errors.UnauthorizedClient,
+                            description: SR.GetResourceString(SR.ID2121));
+
+                        return;
+                    }
+
+                    // Reject the request if the offline_access scope was request and
+                    // if the application is not allowed to use the refresh token grant.
+                    if (context.Request.HasScope(Scopes.OfflineAccess) &&
+                       !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6183), context.ClientId, Scopes.OfflineAccess);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2065(Scopes.OfflineAccess));
+
+                        return;
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting device requests made by applications
             /// that haven't been granted the appropriate grant type permission.
             /// Note: this handler is not used when the degraded mode is enabled.
@@ -708,7 +816,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .AddFilter<RequireScopePermissionsEnabled>()
                         .UseScopedHandler<ValidateScopePermissions>()
-                        .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 

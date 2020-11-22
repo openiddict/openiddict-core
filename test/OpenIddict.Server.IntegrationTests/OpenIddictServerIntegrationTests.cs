@@ -3527,14 +3527,17 @@ namespace OpenIddict.Server.IntegrationTests
                     options.SetAuthorizationEndpointUris("/connect/authorize")
                            .SetConfigurationEndpointUris("/.well-known/openid-configuration")
                            .SetCryptographyEndpointUris("/.well-known/jwks")
+                           .SetDeviceEndpointUris("/connect/device")
                            .SetIntrospectionEndpointUris("/connect/introspect")
                            .SetLogoutEndpointUris("/connect/logout")
                            .SetRevocationEndpointUris("/connect/revoke")
                            .SetTokenEndpointUris("/connect/token")
-                           .SetUserinfoEndpointUris("/connect/userinfo");
+                           .SetUserinfoEndpointUris("/connect/userinfo")
+                           .SetVerificationEndpointUris("/connect/verification");
 
                     options.AllowAuthorizationCodeFlow()
                            .AllowClientCredentialsFlow()
+                           .AllowDeviceCodeFlow()
                            .AllowHybridFlow()
                            .AllowImplicitFlow()
                            .AllowNoneFlow()
@@ -3563,6 +3566,9 @@ namespace OpenIddict.Server.IntegrationTests
                     options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
                         builder.UseInlineHandler(context => default));
 
+                    options.AddEventHandler<ValidateDeviceRequestContext>(builder =>
+                        builder.UseInlineHandler(context => default));
+
                     options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
                         builder.UseInlineHandler(context => default));
 
@@ -3573,6 +3579,15 @@ namespace OpenIddict.Server.IntegrationTests
                         builder.UseInlineHandler(context => default));
 
                     options.AddEventHandler<ValidateTokenRequestContext>(builder =>
+                        builder.UseInlineHandler(context => default));
+
+                    options.AddEventHandler<ValidateVerificationRequestContext>(builder =>
+                        builder.UseInlineHandler(context => default));
+
+                    options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                        builder.UseInlineHandler(context => default));
+
+                    options.AddEventHandler<ProcessSignInContext>(builder =>
                         builder.UseInlineHandler(context => default));
                 });
         }

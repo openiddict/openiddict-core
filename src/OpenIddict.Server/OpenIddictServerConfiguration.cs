@@ -110,6 +110,12 @@ namespace OpenIddict.Server
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0080));
             }
 
+            // Ensure the device grant is allowed when the device endpoint is enabled.
+            if (options.DeviceEndpointUris.Count > 0 && !options.GrantTypes.Contains(GrantTypes.DeviceCode))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
+            }
+
             // Ensure the grant types/response types configuration is consistent.
             foreach (var type in options.ResponseTypes)
             {
