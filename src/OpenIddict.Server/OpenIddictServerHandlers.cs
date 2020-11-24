@@ -449,18 +449,27 @@ namespace OpenIddict.Server
                             OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
                             _                                  => Errors.InvalidToken
                         },
-                        description: (result.Exception, context.EndpointType) switch
+                        description: result.Exception switch
                         {
-                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsAuthorizationCodeGrantType() => SR.GetResourceString(SR.ID2005),
+                            SecurityTokenInvalidTypeException => context.EndpointType switch
+                            {
+                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                    => SR.GetResourceString(SR.ID2005),
 
-                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsDeviceCodeGrantType() => SR.GetResourceString(SR.ID2006),
+                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                    => SR.GetResourceString(SR.ID2006),
 
-                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsRefreshTokenGrantType() => SR.GetResourceString(SR.ID2007),
+                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                    => SR.GetResourceString(SR.ID2007),
 
-                            (SecurityTokenInvalidTypeException, OpenIddictServerEndpointType.Userinfo) => SR.GetResourceString(SR.ID2008),
+                                OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2008),
+
+                                _ => SR.GetResourceString(SR.ID2089)
+                            },
+
+                            SecurityTokenInvalidIssuerException        => SR.GetResourceString(SR.ID2088),
+                            SecurityTokenSignatureKeyNotFoundException => SR.GetResourceString(SR.ID2090),
+                            SecurityTokenInvalidSignatureException     => SR.GetResourceString(SR.ID2091),
 
                             _ => SR.GetResourceString(SR.ID2004)
                         });
