@@ -1471,6 +1471,37 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
+        public async Task ProcessSignIn_AuthenticatedIdentityFromDeviceEndpointCausesAnException()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleDeviceRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Test"));
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.PostAsync("/connect/device", new OpenIddictRequest
+                {
+                    ClientId = "Fabrikam"
+                });
+            });
+
+            Assert.Equal(SR.GetResourceString(SR.ID0012), exception.Message);
+        }
+
+        [Fact]
         public async Task ProcessSignIn_MissingSubjectCausesAnException()
         {
             // Arrange
@@ -1501,6 +1532,38 @@ namespace OpenIddict.Server.IntegrationTests
             });
 
             Assert.Equal(SR.GetResourceString(SR.ID0015), exception.Message);
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_NonNullSubjectFromDeviceEndpointCausesAnException()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleDeviceRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.PostAsync("/connect/device", new OpenIddictRequest
+                {
+                    ClientId = "Fabrikam"
+                });
+            });
+
+            Assert.Equal(SR.GetResourceString(SR.ID0013), exception.Message);
         }
 
         [Fact]
@@ -1610,8 +1673,10 @@ namespace OpenIddict.Server.IntegrationTests
                     {
                         context.GenerateAccessToken = context.IncludeAccessToken = false;
                         context.GenerateAuthorizationCode = context.IncludeAuthorizationCode = true;
+                        context.GenerateDeviceCode = context.IncludeDeviceCode = true;
                         context.GenerateIdentityToken = context.IncludeIdentityToken = true;
                         context.GenerateRefreshToken = context.IncludeRefreshToken = true;
+                        context.GenerateUserCode = context.IncludeUserCode = true;
 
                         return default;
                     });
@@ -1633,8 +1698,10 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Null(response.AccessToken);
             Assert.NotNull(response.Code);
+            Assert.NotNull(response.DeviceCode);
             Assert.NotNull(response.IdToken);
             Assert.NotNull(response.RefreshToken);
+            Assert.NotNull(response.UserCode);
         }
 
         [Fact]
@@ -1692,146 +1759,6 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(0, response.Count);
-        }
-
-        [Theory]
-        [InlineData("code")]
-        [InlineData("code id_token")]
-        [InlineData("code id_token token")]
-        [InlineData("code token")]
-        public async Task ProcessSignIn_AnAuthorizationCodeIsReturnedForCodeAndHybridFlowRequests(string type)
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetClaim(Claims.Subject, "Bob le Magnifique");
-
-                        return default;
-                    }));
-
-                options.AddEventHandler<ProcessSignInContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.True(context.GenerateAuthorizationCode);
-                        Assert.True(context.IncludeAuthorizationCode);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Nonce = "n-0S6_WzA2Mj",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = type,
-                Scope = Scopes.OpenId
-            });
-
-            // Assert
-            Assert.NotNull(response.Code);
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_ScopesCanBeOverridenForRefreshTokenRequests()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-                options.RegisterScopes(Scopes.Profile);
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.Profile, Scopes.OfflineAccess)
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<ProcessSignInContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal(new[] { Scopes.Profile }, context.AccessTokenPrincipal?.GetScopes());
-
-                        return default;
-                    });
-
-                    builder.SetOrder(PrepareAccessTokenPrincipal.Descriptor.Order + 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8",
-                Scope = Scopes.Profile
-            });
-
-            // Assert
-            Assert.NotNull(response.AccessToken);
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_ScopesAreReturnedWhenTheyDifferFromRequestedScopes()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-                options.RegisterScopes(Scopes.Phone, Scopes.Profile);
-
-                options.AddEventHandler<HandleTokenRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetScopes(Scopes.Profile)
-                            .SetClaim(Claims.Subject, "Bob le Magnifique");
-
-                        return default;
-                    }));
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w",
-                Scope = "openid phone profile"
-            });
-
-            // Assert
-            Assert.Equal(Scopes.Profile, response.Scope);
         }
 
         [Theory]
@@ -1933,6 +1860,72 @@ namespace OpenIddict.Server.IntegrationTests
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
                 GrantType = GrantTypes.AuthorizationCode
+            });
+
+            // Assert
+            Assert.NotNull(response.AccessToken);
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_AnAccessTokenIsReturnedForDeviceGrantRequests()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
+                        Assert.Equal(TokenTypeHints.DeviceCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
+                            .SetTokenType(TokenTypeHints.DeviceCode)
+                            .SetPresenters("Fabrikam");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.True(context.GenerateAccessToken);
+                        Assert.True(context.IncludeAccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                DeviceCode = "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+                GrantType = GrantTypes.DeviceCode
             });
 
             // Assert
@@ -2125,15 +2118,19 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.NotNull(response.AccessToken);
         }
 
-        [Fact]
-        public async Task ProcessSignIn_ExpiresInIsReturnedWhenExpirationDateIsKnown()
+        [Theory]
+        [InlineData("code")]
+        [InlineData("code id_token")]
+        [InlineData("code id_token token")]
+        [InlineData("code token")]
+        public async Task ProcessSignIn_AnAuthorizationCodeIsReturnedForCodeAndHybridFlowRequests(string type)
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
@@ -2141,6 +2138,117 @@ namespace OpenIddict.Server.IntegrationTests
 
                         return default;
                     }));
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.True(context.GenerateAuthorizationCode);
+                        Assert.True(context.IncludeAuthorizationCode);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.NotNull(response.Code);
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_ADeviceCodeIsReturnedForDeviceRequests()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.True(context.GenerateDeviceCode);
+                        Assert.True(context.IncludeDeviceCode);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/device", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam"
+            });
+
+            // Assert
+            Assert.NotNull(response.DeviceCode);
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_ScopesCanBeOverridenForRefreshTokenRequests()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+                options.RegisterScopes(Scopes.Profile);
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("8xLOxBtZp8", context.Token);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
+                            .SetScopes(Scopes.Profile, Scopes.OfflineAccess)
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal(new[] { Scopes.Profile }, context.AccessTokenPrincipal?.GetScopes());
+
+                        return default;
+                    });
+
+                    builder.SetOrder(PrepareAccessTokenPrincipal.Descriptor.Order + 500);
+                });
             });
 
             await using var client = await server.CreateClientAsync();
@@ -2148,13 +2256,13 @@ namespace OpenIddict.Server.IntegrationTests
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
+                GrantType = GrantTypes.RefreshToken,
+                RefreshToken = "8xLOxBtZp8",
+                Scope = Scopes.Profile
             });
 
             // Assert
-            Assert.NotNull(response.ExpiresIn);
+            Assert.NotNull(response.AccessToken);
         }
 
         [Fact]
@@ -2251,6 +2359,73 @@ namespace OpenIddict.Server.IntegrationTests
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
                 GrantType = GrantTypes.AuthorizationCode
+            });
+
+            // Assert
+            Assert.NotNull(response.RefreshToken);
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_ARefreshTokenIsReturnedForDeviceGrantRequests()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
+                        Assert.Equal(TokenTypeHints.DeviceCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
+                            .SetTokenType(TokenTypeHints.DeviceCode)
+                            .SetPresenters("Fabrikam");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetScopes(Scopes.OfflineAccess)
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.True(context.GenerateRefreshToken);
+                        Assert.True(context.IncludeRefreshToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                DeviceCode = "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+                GrantType = GrantTypes.DeviceCode
             });
 
             // Assert
@@ -2599,6 +2774,73 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
+        public async Task ProcessSignIn_AnIdentityTokenIsReturnedForDeviceGrantRequests()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
+                        Assert.Equal(TokenTypeHints.DeviceCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
+                            .SetTokenType(TokenTypeHints.DeviceCode)
+                            .SetPresenters("Fabrikam");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetScopes(Scopes.OpenId)
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.True(context.GenerateIdentityToken);
+                        Assert.True(context.IncludeIdentityToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                DeviceCode = "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+                GrantType = GrantTypes.DeviceCode
+            });
+
+            // Assert
+            Assert.NotNull(response.IdToken);
+        }
+
+        [Fact]
         public async Task ProcessSignIn_AnIdentityTokenIsReturnedForRefreshTokenGrantRequests()
         {
             // Arrange
@@ -2788,15 +3030,8 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.NotNull(response.IdToken);
         }
 
-        [Theory]
-        [InlineData("custom_error", null, null)]
-        [InlineData("custom_error", "custom_description", null)]
-        [InlineData("custom_error", "custom_description", "custom_uri")]
-        [InlineData(null, "custom_description", null)]
-        [InlineData(null, "custom_description", "custom_uri")]
-        [InlineData(null, null, "custom_uri")]
-        [InlineData(null, null, null)]
-        public async Task ProcessSignIn_AllowsRejectingRequest(string error, string description, string uri)
+        [Fact]
+        public async Task ProcessSignIn_AUserCodeIsReturnedForDeviceRequests()
         {
             // Arrange
             await using var server = await CreateServerAsync(options =>
@@ -2806,81 +3041,35 @@ namespace OpenIddict.Server.IntegrationTests
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
 
                         return default;
                     }));
 
                 options.AddEventHandler<ProcessSignInContext>(builder =>
+                {
                     builder.UseInlineHandler(context =>
                     {
-                        context.Reject(error, description, uri);
+                        Assert.True(context.GenerateUserCode);
+                        Assert.True(context.IncludeUserCode);
 
                         return default;
-                    }));
+                    });
+
+                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                });
             });
 
             await using var client = await server.CreateClientAsync();
 
             // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            var response = await client.PostAsync("/connect/device", new OpenIddictRequest
             {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code,
-                Scope = Scopes.OpenId
+                ClientId = "Fabrikam"
             });
 
             // Assert
-            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
-            Assert.Equal(description, response.ErrorDescription);
-            Assert.Equal(uri, response.ErrorUri);
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_AllowsHandlingResponse()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<HandleTokenRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetClaim(Claims.Subject, "Bob le Magnifique");
-
-                        return default;
-                    }));
-
-                options.AddEventHandler<ProcessSignInContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Transaction.SetProperty("custom_response", new
-                        {
-                            name = "Bob le Bricoleur"
-                        });
-
-                        context.HandleRequest();
-
-                        return default;
-                    }));
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            });
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
+            Assert.NotNull(response.UserCode);
         }
 
         [Fact]
@@ -2931,89 +3120,6 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.NotNull(response.IdToken);
-            Assert.NotNull(response.RefreshToken);
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_RefreshTokenIsIssuedForAuthorizationCodeRequests()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AuthorizationCode)
-                            .SetPresenters("Fabrikam")
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = GrantTypes.AuthorizationCode,
-                RedirectUri = "http://www.fabrikam.com/path"
-            });
-
-            // Assert
-            Assert.NotNull(response.RefreshToken);
-        }
-
-        [Fact]
-        public async Task ProcessSignIn_RefreshTokenIsAlwaysIssued()
-        {
-            // Arrange
-            await using var server = await CreateServerAsync(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-            });
-
-            await using var client = await server.CreateClientAsync();
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
             Assert.NotNull(response.RefreshToken);
         }
 
@@ -3376,6 +3482,168 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.NotNull(response.Code);
 
             Mock.Get(manager).Verify(manager => manager.CreateAsync(It.IsAny<OpenIddictAuthorizationDescriptor>(), It.IsAny<CancellationToken>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_ExpiresInIsReturnedWhenExpirationDateIsKnown()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.NotNull(response.ExpiresIn);
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_ScopesAreReturnedWhenTheyDifferFromRequestedScopes()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+                options.RegisterScopes(Scopes.Phone, Scopes.Profile);
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetScopes(Scopes.Profile)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = "openid phone profile"
+            });
+
+            // Assert
+            Assert.Equal(Scopes.Profile, response.Scope);
+        }
+
+        [Theory]
+        [InlineData("custom_error", null, null)]
+        [InlineData("custom_error", "custom_description", null)]
+        [InlineData("custom_error", "custom_description", "custom_uri")]
+        [InlineData(null, "custom_description", null)]
+        [InlineData(null, "custom_description", "custom_uri")]
+        [InlineData(null, null, "custom_uri")]
+        [InlineData(null, null, null)]
+        public async Task ProcessSignIn_AllowsRejectingRequest(string error, string description, string uri)
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Reject(error, description, uri);
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
+            Assert.Equal(description, response.ErrorDescription);
+            Assert.Equal(uri, response.ErrorUri);
+        }
+
+        [Fact]
+        public async Task ProcessSignIn_AllowsHandlingResponse()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessSignInContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Transaction.SetProperty("custom_response", new
+                        {
+                            name = "Bob le Bricoleur"
+                        });
+
+                        context.HandleRequest();
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
