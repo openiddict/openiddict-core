@@ -393,14 +393,14 @@ namespace OpenIddict.Server
 
                         // Ensure the issuer ends with a trailing slash, as it is necessary
                         // for Uri's constructor to correctly compute correct absolute URLs.
-                        if (!issuer.OriginalString.EndsWith("/"))
+                        if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
                         {
                             issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
                         }
 
                         // Ensure the endpoint does not start with a leading slash, as it is necessary
                         // for Uri's constructor to correctly compute correct absolute URLs.
-                        if (endpoint.OriginalString.StartsWith("/"))
+                        if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
                         {
                             endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
                         }
