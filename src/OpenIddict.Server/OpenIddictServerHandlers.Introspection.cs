@@ -796,8 +796,8 @@ namespace OpenIddict.Server
                     // If the access token doesn't contain any explicit presenter/audience, the token is assumed
                     // to be not specific to any resource server/client application and the check is bypassed.
                     if (context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
-                        context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId) &&
-                        context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
+                        context.Principal.HasClaim(Claims.Private.Audience) && !context.Principal.HasAudience(context.ClientId) &&
+                        context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID6106));
 
@@ -813,7 +813,7 @@ namespace OpenIddict.Server
                     // If the refresh token doesn't contain any explicit presenter, the token is
                     // assumed to be not specific to any client application and the check is bypassed.
                     if (context.Principal.HasTokenType(TokenTypeHints.RefreshToken) &&
-                        context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
+                        context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                     {
                         context.Logger.LogError(SR.GetResourceString(SR.ID6108));
 

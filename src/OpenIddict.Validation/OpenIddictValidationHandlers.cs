@@ -460,7 +460,7 @@ namespace OpenIddict.Validation
 
                 // In OpenIddict 3.0, the audiences allowed to receive a token are stored in "oi_aud".
                 // If no such claim exists, try to infer them from the standard "aud" JWT claims.
-                if (!context.Principal.HasAudience())
+                if (!context.Principal.HasClaim(Claims.Private.Audience))
                 {
                     var audiences = context.Principal.GetClaims(Claims.Audience);
                     if (audiences.Any())
@@ -477,7 +477,7 @@ namespace OpenIddict.Validation
                 // specified. To ensure presenters stored in JWT tokens created by OpenIddict 1.x/2.x
                 // can still be read with OpenIddict 3.0, the presenter is automatically inferred from
                 // the "azp" or "client_id" claim if no "oi_prst" claim was found in the principal.
-                if (!context.Principal.HasPresenter())
+                if (!context.Principal.HasClaim(Claims.Private.Presenter))
                 {
                     var presenter = context.Principal.GetClaim(Claims.AuthorizedParty) ??
                                     context.Principal.GetClaim(Claims.ClientId);
@@ -491,7 +491,7 @@ namespace OpenIddict.Validation
                 // In OpenIddict 3.0, the scopes granted to an application are stored in "oi_scp".
                 // If no such claim exists, try to infer them from the standard "scope" JWT claim,
                 // which is guaranteed to be a unique space-separated claim containing all the values.
-                if (!context.Principal.HasScope())
+                if (!context.Principal.HasClaim(Claims.Private.Scope))
                 {
                     var scope = context.Principal.GetClaim(Claims.Scope);
                     if (!string.IsNullOrEmpty(scope))
