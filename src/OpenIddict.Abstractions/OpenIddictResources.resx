@@ -1506,6 +1506,12 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID4010" xml:space="preserve">
     <value>The token shouldn't be null or empty at this point.</value>
   </data>
+  <data name="ID4011" xml:space="preserve">
+    <value>EC-based keys shouldn't have a null OID.</value>
+  </data>
+  <data name="ID4012" xml:space="preserve">
+    <value>EC-based keys should have a non-null OID raw value or friendly name.</value>
+  </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
   </data>
