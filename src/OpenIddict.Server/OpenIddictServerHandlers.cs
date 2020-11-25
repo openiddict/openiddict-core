@@ -1459,7 +1459,7 @@ namespace OpenIddict.Server
 
                 // Restore the internal claims resolved from the authorization code/refresh token.
                 foreach (var claims in notification.Principal.Claims
-                    .Where(claim => claim.Type.StartsWith(Claims.Prefixes.Private))
+                    .Where(claim => claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.OrdinalIgnoreCase))
                     .GroupBy(claim => claim.Type))
                 {
                     // If the specified principal already contains one claim of the iterated type, ignore them.
@@ -4258,14 +4258,14 @@ namespace OpenIddict.Server
 
                     // Ensure the issuer ends with a trailing slash, as it is necessary
                     // for Uri's constructor to correctly compute correct absolute URLs.
-                    if (!issuer.OriginalString.EndsWith("/"))
+                    if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
                     {
                         issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
                     }
 
                     // Ensure the endpoint does not start with a leading slash, as it is necessary
                     // for Uri's constructor to correctly compute correct absolute URLs.
-                    if (endpoint.OriginalString.StartsWith("/"))
+                    if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
                     {
                         endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
                     }

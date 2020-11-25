@@ -123,12 +123,12 @@ namespace OpenIddict.Validation
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
                         }
 
-                        if (!issuer.OriginalString.EndsWith("/"))
+                        if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
                         {
                             issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
                         }
 
-                        if (options.MetadataAddress.OriginalString.StartsWith("/"))
+                        if (options.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
                         {
                             options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
                                 1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
