@@ -1207,6 +1207,7 @@ namespace OpenIddict.Server
                             Debug.Assert(parameters.Value.Q.X is not null &&
                                          parameters.Value.Q.Y is not null, SR.GetResourceString(SR.ID4004));
 
+                            Debug.Assert(parameters.Value.Curve.Oid is not null, SR.GetResourceString(SR.ID4011));
                             Debug.Assert(parameters.Value.Curve.IsNamed, SR.GetResourceString(SR.ID4005));
 
                             key.Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
@@ -1244,12 +1245,27 @@ namespace OpenIddict.Server
                     return default;
 
 #if SUPPORTS_ECDSA
-                    static bool IsCurve(ECParameters parameters, ECCurve curve) =>
+                    static bool IsCurve(ECParameters parameters, ECCurve curve)
+                    {
+                        Debug.Assert(parameters.Curve.Oid is not null, SR.GetResourceString(SR.ID4011));
+                        Debug.Assert(curve.Oid is not null, SR.GetResourceString(SR.ID4011));
+
                         // Warning: on .NET Framework 4.x and .NET Core 2.1, exported ECParameters generally have
-                        // a null OID value attached. To work around this limitation, both the friendly names and
-                        // the raw OID value are compared to determine whether the curve is of the specified type.
-                        string.Equals(parameters.Curve.Oid?.Value, curve.Oid?.Value, StringComparison.Ordinal) ||
-                        string.Equals(parameters.Curve.Oid?.FriendlyName, curve.Oid?.FriendlyName, StringComparison.Ordinal);
+                        // a null OID value attached. To work around this limitation, both the raw OID values and
+                        // the friendly names are compared to determine whether the curve is of the specified type.
+                        if (!string.IsNullOrEmpty(parameters.Curve.Oid.Value) && !string.IsNullOrEmpty(curve.Oid.Value))
+                        {
+                            return string.Equals(parameters.Curve.Oid.Value, curve.Oid.Value, StringComparison.Ordinal);
+                        }
+
+                        if (!string.IsNullOrEmpty(parameters.Curve.Oid.FriendlyName) && !string.IsNullOrEmpty(curve.Oid.FriendlyName))
+                        {
+                            return string.Equals(parameters.Curve.Oid.FriendlyName, curve.Oid.FriendlyName, StringComparison.Ordinal);
+                        }
+
+                        Debug.Fail(SR.GetResourceString(SR.ID4012));
+                        return false;
+                    }
 #endif
 
                     static byte[] GetCertificateHash(X509Certificate2 certificate, HashAlgorithmName algorithm)
