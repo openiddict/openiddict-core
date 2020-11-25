@@ -1984,21 +1984,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
         [Theory]
         [InlineData(new string[0], false)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        public void HasAudience_ReturnsExpectedResult(string[] audience, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Audience, audience.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasAudience());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
         [InlineData(new[] { "contoso" }, false)]
         [InlineData(new[] { "contoso", "fabrikam" }, true)]
         [InlineData(new[] { "fabrikam" }, true)]
@@ -2007,7 +1992,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
         [InlineData(new[] { "FABRIKAM" }, false)]
         [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
-        public void HasAudience_ReturnsAppropriateResult(string[] audience, bool result)
+        public void HasAudience_ReturnsExpectedResult(string[] audience, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2048,21 +2033,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
         [Theory]
         [InlineData(new string[0], false)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        public void HasPresenter_ReturnsExpectedResult(string[] presenter, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasPresenter());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
         [InlineData(new[] { "contoso" }, false)]
         [InlineData(new[] { "contoso", "fabrikam" }, true)]
         [InlineData(new[] { "fabrikam" }, true)]
@@ -2071,7 +2041,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
         [InlineData(new[] { "FABRIKAM" }, false)]
         [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
-        public void HasPresenter_ReturnsAppropriateResult(string[] presenter, bool result)
+        public void HasPresenter_ReturnsExpectedResult(string[] presenter, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2112,21 +2082,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
         [Theory]
         [InlineData(new string[0], false)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        public void HasResource_ReturnsExpectedResult(string[] resource, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasResource());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
         [InlineData(new[] { "contoso" }, false)]
         [InlineData(new[] { "contoso", "fabrikam" }, true)]
         [InlineData(new[] { "fabrikam" }, true)]
@@ -2135,7 +2090,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
         [InlineData(new[] { "FABRIKAM" }, false)]
         [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
-        public void HasResource_ReturnsAppropriateResult(string[] resource, bool result)
+        public void HasResource_ReturnsExpectedResult(string[] resource, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2148,7 +2103,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasScope_ThrowsAnExceptionForNullPrincipal()
+        public void ClaimsPrincipal_HasScope_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null!;
@@ -2176,21 +2131,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
         [Theory]
         [InlineData(new string[0], false)]
-        [InlineData(new[] { "openid" }, true)]
-        public void ClaimsPrincipal_HasScope_ReturnsExpectedResult(string[] scope, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasScope());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
         [InlineData(new[] { "profile" }, false)]
         [InlineData(new[] { "profile", "openid" }, true)]
         [InlineData(new[] { "openid" }, true)]
@@ -2199,7 +2139,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(new[] { "PROFILE", "OPENID" }, false)]
         [InlineData(new[] { "OPENID" }, false)]
         [InlineData(new[] { "OPENID", "PROFILE" }, false)]
-        public void HasScope_ReturnsAppropriateResult(string[] scope, bool result)
+        public void ClaimsPrincipal_HasScope_ReturnsExpectedResult(string[] scope, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();

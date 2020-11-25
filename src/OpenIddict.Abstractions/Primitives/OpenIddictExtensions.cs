@@ -1301,14 +1301,6 @@ namespace OpenIddict.Abstractions
             => principal.GetClaim(Claims.Private.TokenType);
 
         /// <summary>
-        /// Determines whether the claims principal contains at least one audience.
-        /// </summary>
-        /// <param name="principal">The claims principal.</param>
-        /// <returns><c>true</c> if the principal contains at least one audience.</returns>
-        public static bool HasAudience(this ClaimsPrincipal principal)
-            => principal.HasClaim(Claims.Private.Audience);
-
-        /// <summary>
         /// Determines whether the claims principal contains the given audience.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
@@ -1328,14 +1320,6 @@ namespace OpenIddict.Abstractions
 
             return principal.HasClaim(Claims.Private.Audience, audience);
         }
-
-        /// <summary>
-        /// Determines whether the claims principal contains at least one presenter.
-        /// </summary>
-        /// <param name="principal">The claims principal.</param>
-        /// <returns><c>true</c> if the principal contains at least one presenter.</returns>
-        public static bool HasPresenter(this ClaimsPrincipal principal)
-            => principal.HasClaim(Claims.Private.Presenter);
 
         /// <summary>
         /// Determines whether the claims principal contains the given presenter.
@@ -1359,14 +1343,6 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Determines whether the claims principal contains at least one resource.
-        /// </summary>
-        /// <param name="principal">The claims principal.</param>
-        /// <returns><c>true</c> if the principal contains at least one resource.</returns>
-        public static bool HasResource(this ClaimsPrincipal principal)
-            => principal.HasClaim(Claims.Private.Resource);
-
-        /// <summary>
         /// Determines whether the claims principal contains the given resource.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
@@ -1386,14 +1362,6 @@ namespace OpenIddict.Abstractions
 
             return principal.HasClaim(Claims.Private.Resource, resource);
         }
-
-        /// <summary>
-        /// Determines whether the claims principal contains at least one scope.
-        /// </summary>
-        /// <param name="principal">The claims principal.</param>
-        /// <returns><c>true</c> if the principal contains at least one scope.</returns>
-        public static bool HasScope(this ClaimsPrincipal principal)
-            => principal.HasClaim(Claims.Private.Scope);
 
         /// <summary>
         /// Determines whether the claims principal contains the given scope.

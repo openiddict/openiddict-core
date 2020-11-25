@@ -624,7 +624,7 @@ namespace OpenIddict.Server
 
                 // In OpenIddict 3.0, the audiences allowed to receive a token are stored in "oi_aud".
                 // If no such claim exists, try to infer them from the standard "aud" JWT claims.
-                if (!context.Principal.HasAudience())
+                if (!context.Principal.HasClaim(Claims.Private.Audience))
                 {
                     var audiences = context.Principal.GetClaims(Claims.Audience);
                     if (audiences.Any())
@@ -641,7 +641,7 @@ namespace OpenIddict.Server
                 // specified. To ensure presenters stored in JWT tokens created by OpenIddict 1.x/2.x
                 // can still be read with OpenIddict 3.0, the presenter is automatically inferred from
                 // the "azp" or "client_id" claim if no "oi_prst" claim was found in the principal.
-                if (!context.Principal.HasPresenter())
+                if (!context.Principal.HasClaim(Claims.Private.Presenter))
                 {
                     var presenter = context.Principal.GetClaim(Claims.AuthorizedParty) ??
                                     context.Principal.GetClaim(Claims.ClientId);
@@ -655,7 +655,7 @@ namespace OpenIddict.Server
                 // In OpenIddict 3.0, the scopes granted to an application are stored in "oi_scp".
                 // If no such claim exists, try to infer them from the standard "scope" JWT claim,
                 // which is guaranteed to be a unique space-separated claim containing all the values.
-                if (!context.Principal.HasScope())
+                if (!context.Principal.HasClaim(Claims.Private.Scope))
                 {
                     var scope = context.Principal.GetClaim(Claims.Scope);
                     if (!string.IsNullOrEmpty(scope))
@@ -1510,7 +1510,7 @@ namespace OpenIddict.Server
                 // Always include the "openid" scope when the developer doesn't explicitly call SetScopes.
                 // Note: the application is allowed to specify a different "scopes": in this case,
                 // don't replace the "scopes" property stored in the authentication ticket.
-                if (!context.Principal.HasScope() && context.Request.HasScope(Scopes.OpenId))
+                if (!context.Principal.HasClaim(Claims.Private.Scope) && context.Request.HasScope(Scopes.OpenId))
                 {
                     context.Principal.SetScopes(Scopes.OpenId);
                 }
@@ -1546,7 +1546,7 @@ namespace OpenIddict.Server
 
                 // Add the validated client_id to the list of authorized presenters,
                 // unless the presenters were explicitly set by the developer.
-                if (!context.Principal.HasPresenter() && !string.IsNullOrEmpty(context.ClientId))
+                if (!context.Principal.HasClaim(Claims.Private.Presenter) && !string.IsNullOrEmpty(context.ClientId))
                 {
                     context.Principal.SetPresenters(context.ClientId);
                 }
@@ -1581,7 +1581,8 @@ namespace OpenIddict.Server
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // When a "resources" property cannot be found in the ticket, infer it from the "audiences" property.
-                if (context.Principal.HasAudience() && !context.Principal.HasResource())
+                if (context.Principal.HasClaim(Claims.Private.Audience) &&
+                   !context.Principal.HasClaim(Claims.Private.Resource))
                 {
                     context.Principal.SetResources(context.Principal.GetAudiences());
                 }
