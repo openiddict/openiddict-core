@@ -289,6 +289,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2083), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2083), response.ErrorUri);
         }
 
         [Theory]

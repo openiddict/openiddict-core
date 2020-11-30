@@ -38,6 +38,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Theory]
@@ -152,6 +153,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(string.Format(SR.GetResourceString(message), Parameters.PostLogoutRedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(message), response.ErrorUri);
         }
 
         [Fact]
@@ -180,6 +182,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -224,6 +227,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(applications[0], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());

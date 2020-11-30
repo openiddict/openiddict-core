@@ -38,6 +38,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Theory]
@@ -165,6 +166,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2004), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2004), response.ErrorUri);
         }
 
         [Fact]
@@ -203,6 +205,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2019), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2019), response.ErrorUri);
         }
 
         [Theory]

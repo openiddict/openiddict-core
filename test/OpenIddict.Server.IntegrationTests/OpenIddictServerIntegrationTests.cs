@@ -1180,7 +1180,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.AccessDenied, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2015), response.ErrorDescription);
-            Assert.Null(response.ErrorUri);
+            Assert.Equal(SR.FormatID8000(SR.ID2015), response.ErrorUri);
         }
 
         [Fact]
@@ -1214,7 +1214,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2024), response.ErrorDescription);
-            Assert.Null(response.ErrorUri);
+            Assert.Equal(SR.FormatID8000(SR.ID2024), response.ErrorUri);
         }
 
         [Fact]
@@ -1262,7 +1262,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InsufficientAccess, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2025), response.ErrorDescription);
-            Assert.Null(response.ErrorUri);
+            Assert.Equal(SR.FormatID8000(SR.ID2025), response.ErrorUri);
         }
 
         [Theory]

@@ -42,6 +42,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Theory]
@@ -152,6 +153,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
@@ -188,6 +190,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2035(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2035), response.ErrorUri);
         }
 
         [Fact]
@@ -228,6 +231,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidScope, response.Error);
             Assert.Equal(SR.FormatID2052(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
         }
 
         [Fact]
@@ -365,6 +369,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -401,6 +406,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal(SR.FormatID2053(Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2053), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -438,6 +444,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal(SR.FormatID2054(Parameters.ClientSecret), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2054), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -478,6 +485,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2055), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2055), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
@@ -521,6 +529,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2056), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2056), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -564,6 +573,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2121), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2121), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -612,6 +622,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2065(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2065), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
@@ -660,6 +671,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2051), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2051), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
@@ -976,6 +988,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Theory]

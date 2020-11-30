@@ -41,6 +41,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Fact]
@@ -65,6 +66,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.RequestNotSupported, response.Error);
             Assert.Equal(SR.FormatID2028(Parameters.Request), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2028), response.ErrorUri);
         }
 
         [Fact]
@@ -87,6 +89,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.RequestUriNotSupported, response.Error);
             Assert.Equal(SR.FormatID2028(Parameters.RequestUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2028), response.ErrorUri);
         }
 
         [Theory]
@@ -197,6 +200,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
@@ -217,6 +221,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Theory]
@@ -241,6 +246,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(string.Format(SR.GetResourceString(message), Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(message), response.ErrorUri);
         }
 
         [Fact]
@@ -262,6 +268,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Theory]
@@ -290,6 +297,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2033(Parameters.ResponseType, Parameters.ResponseMode), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2033), response.ErrorUri);
         }
 
         [Theory]
@@ -317,6 +325,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.Nonce), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Theory]
@@ -341,6 +350,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2034(Scopes.OpenId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2034), response.ErrorUri);
         }
 
         [Theory]
@@ -367,6 +377,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2052(Parameters.Prompt), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
         }
 
         [Theory]
@@ -411,6 +422,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Null(response.Error);
             Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
             Assert.NotNull(response.AccessToken);
             Assert.NotNull(response.Code);
             Assert.NotNull(response.IdToken);
@@ -440,6 +452,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
@@ -474,6 +487,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Null(response.Error);
             Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
             Assert.NotNull(response.Code);
         }
 
@@ -502,6 +516,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2040(Parameters.CodeChallenge, Parameters.CodeChallengeMethod, ResponseTypes.Code), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2040), response.ErrorUri);
         }
 
         [Fact]
@@ -524,6 +539,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2037(Parameters.CodeChallengeMethod, Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
         }
 
         [Fact]
@@ -547,6 +563,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
@@ -567,6 +584,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Theory]
@@ -604,6 +622,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Theory]
@@ -638,6 +657,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
@@ -660,6 +680,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.ResponseMode), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
@@ -705,6 +726,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidScope, response.Error);
             Assert.Equal(SR.FormatID2052(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
         }
 
         [Fact]
@@ -835,6 +857,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2035(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2035), response.ErrorUri);
         }
 
         [Fact]
@@ -856,6 +879,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.ResponseMode), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
@@ -878,6 +902,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
@@ -906,6 +931,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
@@ -928,6 +954,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2032(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Theory]
@@ -996,6 +1023,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2041(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2041), response.ErrorUri);
         }
 
         [Fact]
@@ -1017,6 +1045,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2029(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
@@ -1103,6 +1132,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -1149,6 +1179,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
             Assert.Equal(SR.FormatID2043(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2043), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()), Times.Once());
@@ -1193,6 +1224,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2046), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2046), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -1271,6 +1303,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
             Assert.Equal(SR.GetResourceString(description), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(description), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, permissions[0], It.IsAny<CancellationToken>()), Times.Once());
@@ -1324,6 +1357,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
             Assert.Equal(SR.FormatID2043(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2043), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()), Times.Once());
@@ -1437,6 +1471,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2065(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2065), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
@@ -1475,6 +1510,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2043(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2043), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
@@ -1524,6 +1560,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.GetResourceString(SR.ID2051), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2051), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
@@ -1574,6 +1611,7 @@ namespace OpenIddict.Server.IntegrationTests
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
             Assert.Equal(SR.FormatID2054(Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2054), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,

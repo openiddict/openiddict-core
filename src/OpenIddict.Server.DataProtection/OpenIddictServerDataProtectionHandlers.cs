@@ -102,7 +102,8 @@ namespace OpenIddict.Server.DataProtection
                             OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
                             _                                  => Errors.InvalidToken
                         },
-                        description: SR.GetResourceString(SR.ID2004));
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
 
                     return default;
                 }

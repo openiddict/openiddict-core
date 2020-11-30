@@ -109,7 +109,8 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2081(HeaderNames.Host));
+                        description: SR.FormatID2081(HeaderNames.Host),
+                        uri: SR.FormatID8000(SR.ID2081));
 
                     return default;
                 }
@@ -119,7 +120,8 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2082(HeaderNames.Host));
+                        description: SR.FormatID2082(HeaderNames.Host),
+                        uri: SR.FormatID8000(SR.ID2082));
 
                     return default;
                 }

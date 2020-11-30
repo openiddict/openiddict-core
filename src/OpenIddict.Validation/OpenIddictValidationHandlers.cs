@@ -85,7 +85,8 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000));
+                        description: SR.GetResourceString(SR.ID2000),
+                        uri: SR.FormatID8000(SR.ID2000));
 
                     return default;
                 }
@@ -146,7 +147,8 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2004));
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
 
                     return;
                 }
@@ -254,6 +256,15 @@ namespace OpenIddict.Validation
                             SecurityTokenInvalidSignatureException     => SR.GetResourceString(SR.ID2091),
 
                             _ => SR.GetResourceString(SR.ID2004)
+                        },
+                        uri: result.Exception switch
+                        {
+                            SecurityTokenInvalidIssuerException        => SR.FormatID8000(SR.ID2088),
+                            SecurityTokenInvalidTypeException          => SR.FormatID8000(SR.ID2089),
+                            SecurityTokenSignatureKeyNotFoundException => SR.FormatID8000(SR.ID2090),
+                            SecurityTokenInvalidSignatureException     => SR.FormatID8000(SR.ID2091),
+
+                            _ => SR.FormatID8000(SR.ID2004)
                         });
 
                     return;
@@ -324,7 +335,8 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2092));
+                        description: SR.GetResourceString(SR.ID2092),
+                        uri: SR.FormatID8000(SR.ID2092));
 
                     return;
                 }
@@ -349,7 +361,8 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2004));
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
 
                     return;
                 }
@@ -591,7 +604,8 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2004));
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
 
                     return default;
                 }
@@ -650,7 +664,8 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2019));
+                        description: SR.GetResourceString(SR.ID2019),
+                        uri: SR.FormatID8000(SR.ID2019));
 
                     return default;
                 }
@@ -700,7 +715,8 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2093));
+                        description: SR.GetResourceString(SR.ID2093),
+                        uri: SR.FormatID8000(SR.ID2093));
 
                     return default;
                 }
@@ -712,7 +728,8 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2094));
+                        description: SR.GetResourceString(SR.ID2094),
+                        uri: SR.FormatID8000(SR.ID2094));
 
                     return default;
                 }
@@ -770,7 +787,8 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2019));
+                        description: SR.GetResourceString(SR.ID2019),
+                        uri: SR.FormatID8000(SR.ID2019));
 
                     return;
                 }
@@ -833,7 +851,8 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2023));
+                        description: SR.GetResourceString(SR.ID2023),
+                        uri: SR.FormatID8000(SR.ID2023));
 
                     return;
                 }
@@ -892,6 +911,7 @@ namespace OpenIddict.Validation
                 {
                     context.Response.Error = Errors.InsufficientAccess;
                     context.Response.ErrorDescription = SR.GetResourceString(SR.ID2095);
+                    context.Response.ErrorUri = SR.FormatID8000(SR.ID2095);
                 }
 
                 return default;

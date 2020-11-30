@@ -314,7 +314,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.Token));
+                            description: SR.FormatID2029(Parameters.Token),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -353,7 +354,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.FormatID2029(Parameters.ClientId));
+                            description: SR.FormatID2029(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -406,7 +408,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.FormatID2052(Parameters.ClientId));
+                            description: SR.FormatID2052(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -464,7 +467,8 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidClient,
-                                description: SR.FormatID2053(Parameters.ClientSecret));
+                                description: SR.FormatID2053(Parameters.ClientSecret),
+                                uri: SR.FormatID8000(SR.ID2053));
 
                             return;
                         }
@@ -479,7 +483,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.FormatID2054(Parameters.ClientSecret));
+                            description: SR.FormatID2054(Parameters.ClientSecret),
+                            uri: SR.FormatID8000(SR.ID2054));
 
                         return;
                     }
@@ -541,7 +546,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.GetResourceString(SR.ID2055));
+                            description: SR.GetResourceString(SR.ID2055),
+                            uri: SR.FormatID8000(SR.ID2055));
 
                         return;
                     }
@@ -598,7 +604,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: SR.GetResourceString(SR.ID2078));
+                            description: SR.GetResourceString(SR.ID2078),
+                            uri: SR.FormatID8000(SR.ID2078));
 
                         return;
                     }
@@ -694,7 +701,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: SR.GetResourceString(SR.ID2079));
+                            description: SR.GetResourceString(SR.ID2079),
+                            uri: SR.FormatID8000(SR.ID2079));
 
                         return default;
                     }
@@ -746,7 +754,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: SR.GetResourceString(SR.ID2080));
+                            description: SR.GetResourceString(SR.ID2080),
+                            uri: SR.FormatID8000(SR.ID2080));
 
                         return default;
                     }
@@ -762,7 +771,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: SR.GetResourceString(SR.ID2080));
+                            description: SR.GetResourceString(SR.ID2080),
+                            uri: SR.FormatID8000(SR.ID2080));
 
                         return default;
                     }
@@ -847,7 +857,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: SR.GetResourceString(SR.ID2079));
+                            description: SR.GetResourceString(SR.ID2079),
+                            uri: SR.FormatID8000(SR.ID2079));
 
                         return;
                     }
@@ -859,7 +870,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: SR.GetResourceString(SR.ID2004));
+                            description: SR.GetResourceString(SR.ID2004),
+                            uri: SR.FormatID8000(SR.ID2004));
 
                         return;
                     }
@@ -869,7 +881,8 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: SR.GetResourceString(SR.ID2079));
+                            description: SR.GetResourceString(SR.ID2079),
+                            uri: SR.FormatID8000(SR.ID2079));
 
                         return;
                     }

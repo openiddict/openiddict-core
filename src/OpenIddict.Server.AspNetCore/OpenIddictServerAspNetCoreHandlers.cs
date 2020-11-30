@@ -213,7 +213,8 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2081(HeaderNames.Host));
+                        description: SR.FormatID2081(HeaderNames.Host),
+                        uri: SR.FormatID8000(SR.ID2081));
 
                     return default;
                 }
@@ -223,7 +224,8 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2082(HeaderNames.Host));
+                        description: SR.FormatID2082(HeaderNames.Host),
+                        uri: SR.FormatID8000(SR.ID2082));
 
                     return default;
                 }
@@ -279,7 +281,8 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2083));
+                        description: SR.GetResourceString(SR.ID2083),
+                        uri: SR.FormatID8000(SR.ID2083));
 
                     return default;
                 }
@@ -424,7 +427,8 @@ namespace OpenIddict.Server.AspNetCore
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2084));
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return default;
                 }
@@ -480,7 +484,8 @@ namespace OpenIddict.Server.AspNetCore
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2081(HeaderNames.ContentType));
+                            description: SR.FormatID2081(HeaderNames.ContentType),
+                            uri: SR.FormatID8000(SR.ID2081));
 
                         return;
                     }
@@ -492,7 +497,8 @@ namespace OpenIddict.Server.AspNetCore
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2082(HeaderNames.ContentType));
+                            description: SR.FormatID2082(HeaderNames.ContentType),
+                            uri: SR.FormatID8000(SR.ID2082));
 
                         return;
                     }
@@ -506,7 +512,8 @@ namespace OpenIddict.Server.AspNetCore
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2084));
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return;
                 }
@@ -555,7 +562,8 @@ namespace OpenIddict.Server.AspNetCore
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2081(HeaderNames.ContentType));
+                            description: SR.FormatID2081(HeaderNames.ContentType),
+                            uri: SR.FormatID8000(SR.ID2081));
 
                         return;
                     }
@@ -567,7 +575,8 @@ namespace OpenIddict.Server.AspNetCore
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2082(HeaderNames.ContentType));
+                            description: SR.FormatID2082(HeaderNames.ContentType),
+                            uri: SR.FormatID8000(SR.ID2082));
 
                         return;
                     }
@@ -581,7 +590,8 @@ namespace OpenIddict.Server.AspNetCore
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2084));
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return;
                 }
@@ -639,7 +649,8 @@ namespace OpenIddict.Server.AspNetCore
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2087));
+                        description: SR.GetResourceString(SR.ID2087),
+                        uri: SR.FormatID8000(SR.ID2087));
 
                     return default;
                 }
@@ -654,7 +665,8 @@ namespace OpenIddict.Server.AspNetCore
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.GetResourceString(SR.ID2055));
+                            description: SR.GetResourceString(SR.ID2055),
+                            uri: SR.FormatID8000(SR.ID2055));
 
                         return default;
                     }
@@ -670,7 +682,8 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2055));
+                        description: SR.GetResourceString(SR.ID2055),
+                        uri: SR.FormatID8000(SR.ID2055));
 
                     return default;
                 }

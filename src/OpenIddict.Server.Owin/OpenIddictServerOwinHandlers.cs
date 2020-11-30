@@ -202,7 +202,8 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2081(Headers.Host));
+                        description: SR.FormatID2081(Headers.Host),
+                        uri: SR.FormatID8000(SR.ID2081));
 
                     return default;
                 }
@@ -212,7 +213,8 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2082(Headers.Host));
+                        description: SR.FormatID2082(Headers.Host),
+                        uri: SR.FormatID8000(SR.ID2082));
 
                     return default;
                 }
@@ -268,7 +270,8 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2083));
+                        description: SR.GetResourceString(SR.ID2083),
+                        uri: SR.FormatID8000(SR.ID2083));
 
                     return default;
                 }
@@ -362,7 +365,8 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2084));
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return default;
                 }
@@ -418,7 +422,8 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2081(Headers.ContentType));
+                            description: SR.FormatID2081(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2081));
 
                         return;
                     }
@@ -430,7 +435,8 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2082(Headers.ContentType));
+                            description: SR.FormatID2082(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2082));
 
                         return;
                     }
@@ -444,7 +450,8 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2084));
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return;
                 }
@@ -493,7 +500,8 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2081(Headers.ContentType));
+                            description: SR.FormatID2081(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2081));
 
                         return;
                     }
@@ -505,7 +513,8 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2082(Headers.ContentType));
+                            description: SR.FormatID2082(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2082));
 
                         return;
                     }
@@ -519,7 +528,8 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2084));
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return;
                 }
@@ -577,7 +587,8 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2087));
+                        description: SR.GetResourceString(SR.ID2087),
+                        uri: SR.FormatID8000(SR.ID2087));
 
                     return default;
                 }
@@ -592,7 +603,8 @@ namespace OpenIddict.Server.Owin
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.GetResourceString(SR.ID2055));
+                            description: SR.GetResourceString(SR.ID2055),
+                            uri: SR.FormatID8000(SR.ID2055));
 
                         return default;
                     }
@@ -608,7 +620,8 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2055));
+                        description: SR.GetResourceString(SR.ID2055),
+                        uri: SR.FormatID8000(SR.ID2055));
 
                     return default;
                 }
