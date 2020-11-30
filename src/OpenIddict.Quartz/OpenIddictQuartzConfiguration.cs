@@ -28,7 +28,7 @@ namespace OpenIddict.Quartz
             {
                 builder.StoreDurably()
                        .WithIdentity(OpenIddictQuartzJob.Identity)
-                       .WithDescription(SR.GetResourceString(SR.ID8000));
+                       .WithDescription(SR.GetResourceString(SR.ID8001));
             });
 
             options.AddTrigger(builder =>
@@ -38,7 +38,7 @@ namespace OpenIddict.Quartz
                 // to fire 2 minutes after the application starts to ensure it's executed at least once.
                 builder.ForJob(OpenIddictQuartzJob.Identity)
                        .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
-                       .WithDescription(SR.GetResourceString(SR.ID8001))
+                       .WithDescription(SR.GetResourceString(SR.ID8002))
                        .StartAt(DateBuilder.FutureDate(2, IntervalUnit.Minute));
             });
         }

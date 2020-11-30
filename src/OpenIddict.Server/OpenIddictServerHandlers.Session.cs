@@ -338,7 +338,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2030(Parameters.PostLogoutRedirectUri));
+                            description: SR.FormatID2030(Parameters.PostLogoutRedirectUri),
+                            uri: SR.FormatID8000(SR.ID2030));
 
                         return default;
                     }
@@ -349,7 +350,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2031(Parameters.PostLogoutRedirectUri));
+                            description: SR.FormatID2031(Parameters.PostLogoutRedirectUri),
+                            uri: SR.FormatID8000(SR.ID2031));
 
                         return default;
                     }
@@ -399,7 +401,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2052(Parameters.PostLogoutRedirectUri));
+                            description: SR.FormatID2052(Parameters.PostLogoutRedirectUri),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }

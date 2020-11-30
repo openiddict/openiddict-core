@@ -63,7 +63,8 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.GetResourceString(SR.ID2096));
+                            description: SR.GetResourceString(SR.ID2096),
+                            uri: SR.FormatID8000(SR.ID2096));
 
                         return default;
                     }
@@ -72,7 +73,8 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.GetResourceString(SR.ID2097));
+                            description: SR.GetResourceString(SR.ID2097),
+                            uri: SR.FormatID8000(SR.ID2097));
 
                         return default;
                     }
@@ -81,7 +83,8 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.GetResourceString(SR.ID2098));
+                            description: SR.GetResourceString(SR.ID2098),
+                            uri: SR.FormatID8000(SR.ID2098));
 
                         return default;
                     }
@@ -122,7 +125,8 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.GetResourceString(SR.ID2099));
+                            description: SR.GetResourceString(SR.ID2099),
+                            uri: SR.FormatID8000(SR.ID2099));
 
                         return default;
                     }
@@ -131,7 +135,8 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.GetResourceString(SR.ID2100));
+                            description: SR.GetResourceString(SR.ID2100),
+                            uri: SR.FormatID8000(SR.ID2100));
 
                         return default;
                     }
@@ -170,7 +175,8 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.GetResourceString(SR.ID2101));
+                            description: SR.GetResourceString(SR.ID2101),
+                            uri: SR.FormatID8000(SR.ID2101));
 
                         return default;
                     }
@@ -224,7 +230,8 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.FormatID2102(JsonWebKeySetParameterNames.Keys));
+                            description: SR.FormatID2102(JsonWebKeySetParameterNames.Keys),
+                            uri: SR.FormatID8000(SR.ID2102));
 
                         return default;
                     }
@@ -270,7 +277,8 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: SR.GetResourceString(SR.ID2103));
+                                description: SR.GetResourceString(SR.ID2103),
+                                uri: SR.FormatID8000(SR.ID2103));
 
                             return default;
                         }
@@ -281,7 +289,8 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: SR.GetResourceString(SR.ID2104));
+                                description: SR.GetResourceString(SR.ID2104),
+                                uri: SR.FormatID8000(SR.ID2104));
 
                             return default;
                         }
@@ -292,7 +301,8 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: SR.GetResourceString(SR.ID2104));
+                                description: SR.GetResourceString(SR.ID2104),
+                                uri: SR.FormatID8000(SR.ID2104));
 
                             return default;
                         }

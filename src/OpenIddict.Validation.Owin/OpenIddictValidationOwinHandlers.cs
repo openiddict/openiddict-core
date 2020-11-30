@@ -107,7 +107,8 @@ namespace OpenIddict.Validation.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2081(Headers.Host));
+                        description: SR.FormatID2081(Headers.Host),
+                        uri: SR.FormatID8000(SR.ID2081));
 
                     return default;
                 }
@@ -117,7 +118,8 @@ namespace OpenIddict.Validation.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.FormatID2082(Headers.Host));
+                        description: SR.FormatID2082(Headers.Host),
+                        uri: SR.FormatID8000(SR.ID2082));
 
                     return default;
                 }

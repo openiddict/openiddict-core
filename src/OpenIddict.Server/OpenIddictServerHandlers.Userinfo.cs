@@ -339,7 +339,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.MissingToken,
-                            description: SR.FormatID2029(Parameters.AccessToken));
+                            description: SR.FormatID2029(Parameters.AccessToken),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }

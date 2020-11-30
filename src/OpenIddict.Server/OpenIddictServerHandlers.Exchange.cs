@@ -364,7 +364,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.GrantType));
+                            description: SR.FormatID2029(Parameters.GrantType),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -376,7 +377,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedGrantType,
-                            description: SR.FormatID2032(Parameters.GrantType));
+                            description: SR.FormatID2032(Parameters.GrantType),
+                            uri: SR.FormatID8000(SR.ID2032));
 
                         return default;
                     }
@@ -387,7 +389,8 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2035(Scopes.OfflineAccess));
+                            description: SR.FormatID2035(Scopes.OfflineAccess),
+                            uri: SR.FormatID8000(SR.ID2035));
 
                         return default;
                     }
@@ -435,7 +438,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.FormatID2029(Parameters.ClientId));
+                            description: SR.FormatID2029(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -476,7 +480,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.Code));
+                            description: SR.FormatID2029(Parameters.Code),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -516,7 +521,8 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2057(Parameters.ClientId, Parameters.ClientSecret));
+                            description: SR.FormatID2057(Parameters.ClientId, Parameters.ClientSecret),
+                            uri: SR.FormatID8000(SR.ID2057));
 
                         return default;
                     }
@@ -555,7 +561,8 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2058(Parameters.DeviceCode));
+                            description: SR.FormatID2058(Parameters.DeviceCode),
+                            uri: SR.FormatID8000(SR.ID2058));
 
                         return default;
                     }
@@ -596,7 +603,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.RefreshToken));
+                            description: SR.FormatID2029(Parameters.RefreshToken),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -638,7 +646,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2059(Parameters.Username, Parameters.Password));
+                            description: SR.FormatID2059(Parameters.Username, Parameters.Password),
+                            uri: SR.FormatID8000(SR.ID2059));
 
                         return default;
                     }
@@ -685,7 +694,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.CodeVerifier));
+                            description: SR.FormatID2029(Parameters.CodeVerifier),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -765,7 +775,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidScope,
-                            description: SR.FormatID2052(Parameters.Scope));
+                            description: SR.FormatID2052(Parameters.Scope),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -816,7 +827,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.FormatID2052(Parameters.ClientId));
+                            description: SR.FormatID2052(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -874,7 +886,8 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.UnauthorizedClient,
-                                description: SR.FormatID2043(Parameters.GrantType));
+                                description: SR.FormatID2043(Parameters.GrantType),
+                                uri: SR.FormatID8000(SR.ID2043));
 
                             return;
                         }
@@ -886,7 +899,8 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidClient,
-                                description: SR.FormatID2053(Parameters.ClientSecret));
+                                description: SR.FormatID2053(Parameters.ClientSecret),
+                                uri: SR.FormatID8000(SR.ID2053));
 
                             return;
                         }
@@ -901,7 +915,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.FormatID2054(Parameters.ClientSecret));
+                            description: SR.FormatID2054(Parameters.ClientSecret),
+                            uri: SR.FormatID8000(SR.ID2054));
 
                         return;
                     }
@@ -963,7 +978,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: SR.GetResourceString(SR.ID2055));
+                            description: SR.GetResourceString(SR.ID2055),
+                            uri: SR.FormatID8000(SR.ID2055));
 
                         return;
                     }
@@ -1020,7 +1036,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: SR.GetResourceString(SR.ID2063));
+                            description: SR.GetResourceString(SR.ID2063),
+                            uri: SR.FormatID8000(SR.ID2063));
 
                         return;
                     }
@@ -1077,7 +1094,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: SR.GetResourceString(SR.ID2064));
+                            description: SR.GetResourceString(SR.ID2064),
+                            uri: SR.FormatID8000(SR.ID2064));
 
                         return;
                     }
@@ -1091,7 +1109,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2065(Scopes.OfflineAccess));
+                            description: SR.FormatID2065(Scopes.OfflineAccess),
+                            uri: SR.FormatID8000(SR.ID2065));
 
                         return;
                     }
@@ -1157,7 +1176,8 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: SR.GetResourceString(SR.ID2051));
+                                description: SR.GetResourceString(SR.ID2051),
+                                uri: SR.FormatID8000(SR.ID2051));
 
                             return;
                         }
@@ -1225,7 +1245,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2054(Parameters.CodeVerifier));
+                            description: SR.FormatID2054(Parameters.CodeVerifier),
+                            uri: SR.FormatID8000(SR.ID2054));
 
                         return;
                     }
@@ -1362,7 +1383,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidGrant,
                             description: context.Request.IsAuthorizationCodeGrantType() ? SR.GetResourceString(SR.ID2066) :
                                          context.Request.IsDeviceCodeGrantType()        ? SR.GetResourceString(SR.ID2067) :
-                                                                                          SR.GetResourceString(SR.ID2068));
+                                                                                          SR.GetResourceString(SR.ID2068),
+                            uri: context.Request.IsAuthorizationCodeGrantType() ? SR.FormatID8000(SR.ID2066) :
+                                 context.Request.IsDeviceCodeGrantType()        ? SR.FormatID8000(SR.ID2067) :
+                                                                                  SR.FormatID8000(SR.ID2068));
 
                         return default;
                     }
@@ -1379,7 +1403,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidGrant,
                             description: context.Request.IsAuthorizationCodeGrantType() ? SR.GetResourceString(SR.ID2069) :
                                          context.Request.IsDeviceCodeGrantType()        ? SR.GetResourceString(SR.ID2070) :
-                                                                                          SR.GetResourceString(SR.ID2071));
+                                                                                          SR.GetResourceString(SR.ID2071),
+                            uri: context.Request.IsAuthorizationCodeGrantType() ? SR.FormatID8000(SR.ID2069) :
+                                 context.Request.IsDeviceCodeGrantType()        ? SR.FormatID8000(SR.ID2070) :
+                                                                                  SR.FormatID8000(SR.ID2071));
 
                         return default;
                     }
@@ -1437,7 +1464,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.RedirectUri));
+                            description: SR.FormatID2029(Parameters.RedirectUri),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -1448,7 +1476,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidGrant,
-                            description: SR.FormatID2072(Parameters.RedirectUri));
+                            description: SR.FormatID2072(Parameters.RedirectUri),
+                            uri: SR.FormatID8000(SR.ID2072));
 
                         return default;
                     }
@@ -1504,7 +1533,8 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: SR.FormatID2073(Parameters.CodeVerifier, Parameters.CodeChallenge));
+                                description: SR.FormatID2073(Parameters.CodeVerifier, Parameters.CodeChallenge),
+                                uri: SR.FormatID8000(SR.ID2073));
 
                             return default;
                         }
@@ -1519,7 +1549,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2029(Parameters.CodeVerifier));
+                            description: SR.FormatID2029(Parameters.CodeVerifier),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -1563,7 +1594,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidGrant,
-                            description: SR.FormatID2052(Parameters.CodeVerifier));
+                            description: SR.FormatID2052(Parameters.CodeVerifier),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return default;
                     }
@@ -1618,7 +1650,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidGrant,
-                            description: SR.FormatID2074(Parameters.Scope));
+                            description: SR.FormatID2074(Parameters.Scope),
+                            uri: SR.FormatID8000(SR.ID2074));
 
                         return default;
                     }
@@ -1633,7 +1666,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidGrant,
-                            description: SR.FormatID2052(Parameters.Scope));
+                            description: SR.FormatID2052(Parameters.Scope),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return default;
                     }

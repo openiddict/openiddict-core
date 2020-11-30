@@ -112,7 +112,8 @@ namespace OpenIddict.Server.AspNetCore
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2052(Parameters.RequestId));
+                            description: SR.FormatID2052(Parameters.RequestId),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -129,7 +130,8 @@ namespace OpenIddict.Server.AspNetCore
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: SR.FormatID2052(Parameters.RequestId));
+                            description: SR.FormatID2052(Parameters.RequestId),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }

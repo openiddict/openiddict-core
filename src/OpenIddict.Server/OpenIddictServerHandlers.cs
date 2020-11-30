@@ -213,7 +213,8 @@ namespace OpenIddict.Server
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: SR.GetResourceString(SR.ID2000));
+                        description: SR.GetResourceString(SR.ID2000),
+                        uri: SR.FormatID8000(SR.ID2000));
 
                     return default;
                 }
@@ -345,6 +346,17 @@ namespace OpenIddict.Server
                                 => SR.GetResourceString(SR.ID2003),
 
                             _ => SR.GetResourceString(SR.ID2004)
+                        },
+                        uri: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                => SR.FormatID8000(SR.ID2001),
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => SR.FormatID8000(SR.ID2002),
+                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                => SR.FormatID8000(SR.ID2003),
+
+                            _ => SR.FormatID8000(SR.ID2004),
                         });
 
                     return;
@@ -472,6 +484,30 @@ namespace OpenIddict.Server
                             SecurityTokenInvalidSignatureException     => SR.GetResourceString(SR.ID2091),
 
                             _ => SR.GetResourceString(SR.ID2004)
+                        },
+                        uri: result.Exception switch
+                        {
+                            SecurityTokenInvalidTypeException => context.EndpointType switch
+                            {
+                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                    => SR.FormatID8000(SR.ID2005),
+
+                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                    => SR.FormatID8000(SR.ID2006),
+
+                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                    => SR.FormatID8000(SR.ID2007),
+
+                                OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2008),
+
+                                _ => SR.FormatID8000(SR.ID2089)
+                            },
+
+                            SecurityTokenInvalidIssuerException        => SR.FormatID8000(SR.ID2088),
+                            SecurityTokenSignatureKeyNotFoundException => SR.FormatID8000(SR.ID2090),
+                            SecurityTokenInvalidSignatureException     => SR.FormatID8000(SR.ID2091),
+
+                            _ => SR.FormatID8000(SR.ID2004)
                         });
 
                     return default;
@@ -771,6 +807,20 @@ namespace OpenIddict.Server
                                 => SR.GetResourceString(SR.ID2003),
 
                             _ => SR.GetResourceString(SR.ID2004)
+                        },
+                        uri: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                                => SR.FormatID8000(SR.ID2009),
+
+                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                => SR.FormatID8000(SR.ID2001),
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => SR.FormatID8000(SR.ID2002),
+                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                => SR.FormatID8000(SR.ID2003),
+
+                            _ => SR.FormatID8000(SR.ID2004)
                         });
 
 
@@ -863,6 +913,17 @@ namespace OpenIddict.Server
                                 => SR.GetResourceString(SR.ID2003),
 
                             _ => SR.GetResourceString(SR.ID2004)
+                        },
+                        uri: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                => SR.FormatID8000(SR.ID2001),
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => SR.FormatID8000(SR.ID2002),
+                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                => SR.FormatID8000(SR.ID2003),
+
+                            _ => SR.FormatID8000(SR.ID2004)
                         });
 
                     return;
@@ -900,6 +961,17 @@ namespace OpenIddict.Server
                                         => SR.GetResourceString(SR.ID2012),
 
                                     _ => SR.GetResourceString(SR.ID2013)
+                                },
+                                uri: context.EndpointType switch
+                                {
+                                    OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                        => SR.FormatID8000(SR.ID2010),
+                                    OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                        => SR.FormatID8000(SR.ID2011),
+                                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                        => SR.FormatID8000(SR.ID2012),
+
+                                    _ => SR.FormatID8000(SR.ID2013)
                                 });
 
                             // Revoke all the token entries associated with the authorization.
@@ -920,7 +992,8 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.AuthorizationPending,
-                                description: SR.GetResourceString(SR.ID2014));
+                                description: SR.GetResourceString(SR.ID2014),
+                                uri: SR.FormatID8000(SR.ID2014));
 
                             return;
                         }
@@ -932,7 +1005,8 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.AccessDenied,
-                                description: SR.GetResourceString(SR.ID2015));
+                                description: SR.GetResourceString(SR.ID2015),
+                                uri: SR.FormatID8000(SR.ID2015));
 
                             return;
                         }
@@ -959,6 +1033,17 @@ namespace OpenIddict.Server
                                 => SR.GetResourceString(SR.ID2018),
 
                             _ => SR.GetResourceString(SR.ID2019)
+                        },
+                        uri: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                => SR.FormatID8000(SR.ID2016),
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => SR.FormatID8000(SR.ID2017),
+                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                => SR.FormatID8000(SR.ID2018),
+
+                            _ => SR.FormatID8000(SR.ID2019)
                         });
 
                     return;
@@ -1068,6 +1153,17 @@ namespace OpenIddict.Server
                                 => SR.GetResourceString(SR.ID2022),
 
                             _ => SR.GetResourceString(SR.ID2023)
+                        },
+                        uri: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                => SR.FormatID8000(SR.ID2020),
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => SR.FormatID8000(SR.ID2021),
+                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                => SR.FormatID8000(SR.ID2022),
+
+                            _ => SR.FormatID8000(SR.ID2023)
                         });
 
                     return;
@@ -1129,6 +1225,17 @@ namespace OpenIddict.Server
                                 => SR.GetResourceString(SR.ID2018),
 
                             _ => SR.GetResourceString(SR.ID2019)
+                        },
+                        uri: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                => SR.FormatID8000(SR.ID2016),
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => SR.FormatID8000(SR.ID2017),
+                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                => SR.FormatID8000(SR.ID2018),
+
+                            _ => SR.FormatID8000(SR.ID2019)
                         });
 
                     return default;
@@ -1214,6 +1321,17 @@ namespace OpenIddict.Server
 
                     OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
                     OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2025),
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
+                };
+
+                context.Response.ErrorUri ??= context.EndpointType switch
+                {
+                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                        => SR.FormatID8000(SR.ID2015),
+
+                    OpenIddictServerEndpointType.Token    => SR.FormatID8000(SR.ID2024),
+                    OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2025),
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
                 };

@@ -2048,9 +2048,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The device request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
-    <value>Removes orphaned tokens and authorizations from the database.</value>
+    <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>
   <data name="ID8001" xml:space="preserve">
+    <value>Removes orphaned tokens and authorizations from the database.</value>
+  </data>
+  <data name="ID8002" xml:space="preserve">
     <value>Starts the scheduled task at regular intervals.</value>
   </data>
 </root>

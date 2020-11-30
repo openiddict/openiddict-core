@@ -106,7 +106,8 @@ namespace OpenIddict.Validation.DataProtection
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2004));
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
 
                     return default;
                 }
