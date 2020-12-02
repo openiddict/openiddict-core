@@ -444,10 +444,10 @@ To use key rollover, register both the new certificate and the old one in the cr
     <value>No custom verification request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateVerificationRequestContext&gt;' must be implemented to validate verification requests (e.g to ensure the user_code is valid).</value>
   </data>
   <data name="ID0096" xml:space="preserve">
-    <value>No custom verification authentication handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;' must be implemented to validate device and user codes (e.g by retrieving them from a database).</value>
+    <value>No custom verification authentication handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;' must be implemented to handle device and user codes (e.g by retrieving them from a database).</value>
   </data>
   <data name="ID0097" xml:space="preserve">
-    <value>No custom verification sign-in handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessSignInContext&gt;' must be implemented to generate device and user codes and storing them in a database, if applicable.</value>
+    <value>No custom verification sign-in handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessSignInContext&gt;' must be implemented to handle device and user codes and store them in a database, if applicable.</value>
   </data>
   <data name="ID0098" xml:space="preserve">
     <value>The event handler of type '{0}' couldn't be resolved.

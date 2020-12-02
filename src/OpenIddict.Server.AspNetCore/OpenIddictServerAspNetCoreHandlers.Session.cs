@@ -354,7 +354,7 @@ namespace OpenIddict.Server.AspNetCore
                     var location = QueryHelpers.AddQueryString(context.PostLogoutRedirectUri,
                         from parameter in context.Response.GetParameters()
                         let values = (string?[]?) parameter.Value
-                        where values != null
+                        where values is not null
                         from value in values
                         where !string.IsNullOrEmpty(value)
                         select KeyValuePair.Create(parameter.Key, value));
