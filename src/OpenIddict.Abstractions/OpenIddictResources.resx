@@ -406,6 +406,9 @@ To enable DI support, call 'services.AddQuartz(options =&gt; options.UseMicrosof
   <data name="ID0083" xml:space="preserve">
     <value>Reference tokens cannot be used when disabling token storage.</value>
   </data>
+  <data name="ID0084" xml:space="preserve">
+    <value>The device grant must be allowed when enabling the device endpoint.</value>
+  </data>
   <data name="ID0085" xml:space="preserve">
     <value>At least one encryption key must be registered in the OpenIddict server options.
 Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddEncryptionCertificate()' or 'services.AddOpenIddict().AddServer().AddDevelopmentEncryptionCertificate()' or call 'services.AddOpenIddict().AddServer().AddEphemeralEncryptionKey()' to use an ephemeral key.</value>
@@ -1116,9 +1119,6 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID0286" xml:space="preserve">
     <value>The specified principal doesn't contain a valid claims-based identity.</value>
   </data>
-  <data name="ID0287" xml:space="preserve">
-    <value>The device grant must be allowed when enabling the device endpoint.</value>
-  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1200,6 +1200,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID2026" xml:space="preserve">
     <value>The specified user code is no longer valid.</value>
   </data>
+  <data name="ID2027" xml:space="preserve">
+    <value>The client application is not allowed to use the device code flow.</value>
+  </data>
   <data name="ID2028" xml:space="preserve">
     <value>The '{0}' parameter is not supported.</value>
   </data>
@@ -1266,6 +1269,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID2049" xml:space="preserve">
     <value>The client application is not allowed to use the hybrid flow.</value>
   </data>
+  <data name="ID2050" xml:space="preserve">
+    <value>The client type cannot be null or empty.</value>
+  </data>
   <data name="ID2051" xml:space="preserve">
     <value>This client application is not allowed to use the specified scope.</value>
   </data>
@@ -1295,6 +1301,12 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   </data>
   <data name="ID2060" xml:space="preserve">
     <value>A scope with the same name already exists.</value>
+  </data>
+  <data name="ID2061" xml:space="preserve">
+    <value>Callback URLs cannot be null or empty.</value>
+  </data>
+  <data name="ID2062" xml:space="preserve">
+    <value>Callback URLs must be valid absolute URLs.</value>
   </data>
   <data name="ID2063" xml:space="preserve">
     <value>This client application is not allowed to use the token endpoint.</value>
@@ -1460,18 +1472,6 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   </data>
   <data name="ID2117" xml:space="preserve">
     <value>The specified authorization type is not supported by the default token manager.</value>
-  </data>
-  <data name="ID2118" xml:space="preserve">
-    <value>The client type cannot be null or empty.</value>
-  </data>
-  <data name="ID2119" xml:space="preserve">
-    <value>Callback URLs cannot be null or empty.</value>
-  </data>
-  <data name="ID2120" xml:space="preserve">
-    <value>Callback URLs must be valid absolute URLs.</value>
-  </data>
-  <data name="ID2121" xml:space="preserve">
-    <value>The client application is not allowed to use the device code flow.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -1833,8 +1833,14 @@ The principal used to create the token contained the following claims: {Claims}.
   <data name="ID6104" xml:space="preserve">
     <value>The introspection request was rejected because the received token was of an unsupported type.</value>
   </data>
+  <data name="ID6105" xml:space="preserve">
+    <value>Potentially sensitive application claims were excluded from the introspection response as the client '{ClientId}' was not explicitly listed as an audience.</value>
+  </data>
   <data name="ID6106" xml:space="preserve">
     <value>The introspection request was rejected because the access token was issued to a different client or for another resource server.</value>
+  </data>
+  <data name="ID6107" xml:space="preserve">
+    <value>Potentially sensitive application claims were excluded from the introspection response as the client '{ClientId}' is a public application.</value>
   </data>
   <data name="ID6108" xml:space="preserve">
     <value>The introspection request was rejected because the refresh token was issued to a different client.</value>
@@ -1866,8 +1872,14 @@ The principal used to create the token contained the following claims: {Claims}.
   <data name="ID6117" xml:space="preserve">
     <value>The revocation request was rejected because the received token was of an unsupported type.</value>
   </data>
+  <data name="ID6118" xml:space="preserve">
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device code flow.</value>
+  </data>
   <data name="ID6119" xml:space="preserve">
     <value>The revocation request was rejected because the access token was issued to a different client or for another resource server.</value>
+  </data>
+  <data name="ID6120" xml:space="preserve">
+    <value>The device request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
   </data>
   <data name="ID6121" xml:space="preserve">
     <value>The revocation request was rejected because the refresh token was issued to a different client.</value>
@@ -1987,10 +1999,10 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>Client authentication cannot be enforced for public applications.</value>
   </data>
   <data name="ID6160" xml:space="preserve">
-    <value>Client authentication failed for {Client} because no client secret was associated with the application.</value>
+    <value>Client authentication failed for {ClientId} because no client secret was associated with the application.</value>
   </data>
   <data name="ID6161" xml:space="preserve">
-    <value>Client authentication failed for {Client}.</value>
+    <value>Client authentication failed for {ClientId}.</value>
   </data>
   <data name="ID6162" xml:space="preserve">
     <value>Client validation failed because '{RedirectUri}' was not a valid redirect_uri for {Client}.</value>
@@ -2008,44 +2020,38 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6166" xml:space="preserve">
     <value>An exception occurred while trying to revoke the authorization '{Identifier}'.</value>
   </data>
-  <data name="ID6171" xml:space="preserve">
-    <value>The token '{Identifier}' was successfully marked as redeemed.</value>
-  </data>
-  <data name="ID6172" xml:space="preserve">
-    <value>A concurrency exception occurred while trying to redeem the token '{Identifier}'.</value>
-  </data>
-  <data name="ID6173" xml:space="preserve">
-    <value>An exception occurred while trying to redeem the token '{Identifier}'.</value>
-  </data>
-  <data name="ID6174" xml:space="preserve">
-    <value>The token '{Identifier}' was successfully marked as rejected.</value>
-  </data>
-  <data name="ID6175" xml:space="preserve">
-    <value>A concurrency exception occurred while trying to reject the token '{Identifier}'.</value>
-  </data>
-  <data name="ID6176" xml:space="preserve">
-    <value>An exception occurred while trying to reject the token '{Identifier}'.</value>
-  </data>
-  <data name="ID6177" xml:space="preserve">
-    <value>The token '{Identifier}' was successfully revoked.</value>
-  </data>
-  <data name="ID6178" xml:space="preserve">
-    <value>A concurrency exception occurred while trying to revoke the token '{Identifier}'.</value>
-  </data>
-  <data name="ID6179" xml:space="preserve">
-    <value>An exception occurred while trying to revoke the token '{Identifier}'.</value>
-  </data>
-  <data name="ID6180" xml:space="preserve">
+  <data name="ID6167" xml:space="preserve">
     <value>A signing key of type '{Type}' was ignored because its EC curve couldn't be inferred.</value>
   </data>
-  <data name="ID6181" xml:space="preserve">
+  <data name="ID6168" xml:space="preserve">
+    <value>The token '{Identifier}' was successfully marked as redeemed.</value>
+  </data>
+  <data name="ID6169" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to redeem the token '{Identifier}'.</value>
+  </data>
+  <data name="ID6170" xml:space="preserve">
+    <value>An exception occurred while trying to redeem the token '{Identifier}'.</value>
+  </data>
+  <data name="ID6171" xml:space="preserve">
+    <value>The token '{Identifier}' was successfully marked as rejected.</value>
+  </data>
+  <data name="ID6172" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to reject the token '{Identifier}'.</value>
+  </data>
+  <data name="ID6173" xml:space="preserve">
+    <value>An exception occurred while trying to reject the token '{Identifier}'.</value>
+  </data>
+  <data name="ID6174" xml:space="preserve">
+    <value>The token '{Identifier}' was successfully revoked.</value>
+  </data>
+  <data name="ID6175" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to revoke the token '{Identifier}'.</value>
+  </data>
+  <data name="ID6176" xml:space="preserve">
+    <value>An exception occurred while trying to revoke the token '{Identifier}'.</value>
+  </data>
+  <data name="ID6177" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the '{ResponseType}' response type.</value>
-  </data>
-  <data name="ID6182" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to use the device code flow.</value>
-  </data>
-  <data name="ID6183" xml:space="preserve">
-    <value>The device request was rejected because the application '{ClientId}' was not allowed to request the '{Scope}' scope.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

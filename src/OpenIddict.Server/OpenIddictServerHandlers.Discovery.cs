@@ -1199,7 +1199,7 @@ namespace OpenIddict.Server
 
                             if (string.IsNullOrEmpty(curve))
                             {
-                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6180), credentials.Key.GetType().Name);
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6167), credentials.Key.GetType().Name);
 
                                 continue;
                             }

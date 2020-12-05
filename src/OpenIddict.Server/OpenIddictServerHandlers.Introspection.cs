@@ -968,6 +968,8 @@ namespace OpenIddict.Server
                     // application-specific claims contained in the introspected access/identity token.
                     if (!context.Principal.HasAudience(context.Request.ClientId))
                     {
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6105), context.Request.ClientId);
+
                         return;
                     }
 
@@ -980,6 +982,8 @@ namespace OpenIddict.Server
                     // Public clients are not allowed to access sensitive claims as authentication cannot be enforced.
                     if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                     {
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6107), context.Request.ClientId);
+
                         return;
                     }
 
@@ -992,8 +996,8 @@ namespace OpenIddict.Server
                         // Make sure to always update this list when adding new built-in claim properties.
                         var type = group.Key;
                         if (type is Claims.Audience or Claims.ExpiresAt or Claims.IssuedAt or
-                                    Claims.Issuer or Claims.NotBefore or Claims.Scope or
-                                    Claims.Subject or Claims.TokenType or Claims.TokenUsage)
+                                    Claims.Issuer   or Claims.NotBefore or Claims.Scope or
+                                    Claims.Subject  or Claims.TokenType or Claims.TokenUsage)
                         {
                             continue;
                         }

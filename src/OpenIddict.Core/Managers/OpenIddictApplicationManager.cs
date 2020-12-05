@@ -1179,7 +1179,7 @@ namespace OpenIddict.Core
             var type = await Store.GetClientTypeAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult(SR.GetResourceString(SR.ID2118));
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2050));
             }
 
             else
@@ -1214,7 +1214,7 @@ namespace OpenIddict.Core
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    yield return new ValidationResult(SR.GetResourceString(SR.ID2119));
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2061));
 
                     break;
                 }
@@ -1222,7 +1222,7 @@ namespace OpenIddict.Core
                 // Ensure the address is a valid absolute URL.
                 if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                 {
-                    yield return new ValidationResult(SR.GetResourceString(SR.ID2120));
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2062));
 
                     break;
                 }

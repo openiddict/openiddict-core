@@ -572,8 +572,8 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID2121), response.ErrorDescription);
-            Assert.Equal(SR.FormatID8000(SR.ID2121), response.ErrorUri);
+            Assert.Equal(SR.GetResourceString(SR.ID2027), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2027), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,

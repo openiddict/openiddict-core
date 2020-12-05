@@ -776,12 +776,12 @@ namespace OpenIddict.Server
                     // Reject the request if the application is not allowed to use the device code grant.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.DeviceCode))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6182), context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6118), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: SR.GetResourceString(SR.ID2121),
-                            uri: SR.FormatID8000(SR.ID2121));
+                            description: SR.GetResourceString(SR.ID2027),
+                            uri: SR.FormatID8000(SR.ID2027));
 
                         return;
                     }
@@ -791,7 +791,7 @@ namespace OpenIddict.Server
                     if (context.Request.HasScope(Scopes.OfflineAccess) &&
                        !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6183), context.ClientId, Scopes.OfflineAccess);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6120), context.ClientId, Scopes.OfflineAccess);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
