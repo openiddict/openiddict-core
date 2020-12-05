@@ -1061,21 +1061,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation(SR.GetResourceString(SR.ID6171), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6168), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6172), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6169), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6173), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6170), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1100,21 +1100,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation(SR.GetResourceString(SR.ID6174), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6171), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6175), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6172), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6176), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6173), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
@@ -1139,21 +1139,21 @@ namespace OpenIddict.Core
             {
                 await UpdateAsync(token, cancellationToken);
 
-                Logger.LogInformation(SR.GetResourceString(SR.ID6177), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6174), await Store.GetIdAsync(token, cancellationToken));
 
                 return true;
             }
 
             catch (ConcurrencyException exception)
             {
-                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6178), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogDebug(exception, SR.GetResourceString(SR.ID6175), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6179), await Store.GetIdAsync(token, cancellationToken));
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6176), await Store.GetIdAsync(token, cancellationToken));
 
                 return false;
             }

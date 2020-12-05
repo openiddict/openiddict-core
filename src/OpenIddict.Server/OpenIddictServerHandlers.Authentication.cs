@@ -1448,7 +1448,7 @@ namespace OpenIddict.Server
                     // Reject requests that specify a response_type for which no permission was granted.
                     if (!await HasPermissionAsync(context.Request.GetResponseTypes()))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6181), context.ClientId, context.Request.ResponseType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6177), context.ClientId, context.Request.ResponseType);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
