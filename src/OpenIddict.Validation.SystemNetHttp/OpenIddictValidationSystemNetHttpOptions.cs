@@ -23,6 +23,6 @@ namespace OpenIddict.Validation.SystemNetHttp
         public IAsyncPolicy<HttpResponseMessage>? HttpErrorPolicy { get; set; }
             = HttpPolicyExtensions.HandleTransientHttpError()
                 .OrResult(response => response.StatusCode == HttpStatusCode.NotFound)
-                .WaitAndRetryAsync(4, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
+                .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
     }
 }

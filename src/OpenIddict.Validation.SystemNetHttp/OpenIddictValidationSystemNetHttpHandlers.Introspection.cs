@@ -30,11 +30,13 @@ namespace OpenIddict.Validation.SystemNetHttp
                 AttachBasicAuthenticationCredentials.Descriptor,
                 AttachFormParameters<PrepareIntrospectionRequestContext>.Descriptor,
                 SendHttpRequest<ApplyIntrospectionRequestContext>.Descriptor,
+                DisposeHttpRequest<ApplyIntrospectionRequestContext>.Descriptor,
 
                 /*
                  * Introspection response processing:
                  */
-                ExtractJsonHttpResponse<ExtractIntrospectionResponseContext>.Descriptor);
+                ExtractJsonHttpResponse<ExtractIntrospectionResponseContext>.Descriptor,
+                DisposeHttpResponse<ExtractIntrospectionResponseContext>.Descriptor);
 
             /// <summary>
             /// Contains the logic responsible of attaching the client credentials to the HTTP Authorization header.
@@ -70,45 +72,44 @@ namespace OpenIddict.Validation.SystemNetHttp
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
                     }
 
+                    // If no client identifier was attached to the request, skip the following logic.
+                    if (string.IsNullOrEmpty(context.Request.ClientId))
+                    {
+                        return;
+                    }
+
                     var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
                     // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
-                    // However, this authentication method is known to have compatibility issues with how the
-                    // client credentials are encoded, that MUST be formURL-encoded before being base64-encoded.
+                    // However, this authentication method is known to have compatibility issues with the way the
+                    // client credentials are encoded (they MUST be formURL-encoded before being base64-encoded).
                     // To guarantee that the OpenIddict validation handler can be used with servers implementing
                     // non-standard encoding, the client_secret_post is always preferred when it's explicitly
                     // listed as a supported client authentication method for the introspection endpoint.
                     // If client_secret_post is not listed or if the server returned an empty methods list,
-                    // client_secret_basic is always used, as it MUST be supported by all OAuth 2.0 servers.
+                    // client_secret_basic is always used, as it MUST be implemented by all OAuth 2.0 servers.
                     //
                     // See https://tools.ietf.org/html/rfc8414#section-2
                     // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
                     if (!configuration.IntrospectionEndpointAuthMethodsSupported.Contains(ClientAuthenticationMethods.ClientSecretPost))
                     {
-                        var builder = new StringBuilder()
+                        // Important: the credentials MUST be formURL-encoded before being base64-encoded.
+                        var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
                             .Append(EscapeDataString(context.Request.ClientId))
                             .Append(':')
-                            .Append(EscapeDataString(context.Request.ClientSecret));
-
-                        var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(builder.ToString()));
+                            .Append(EscapeDataString(context.Request.ClientSecret))
+                            .ToString()));
 
                         // Attach the authorization header containing the client credentials to the HTTP request.
                         request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Basic, credentials);
 
-                        // Remove the client credentials from the request.
+                        // Remove the client credentials from the request payload to ensure they are not sent twice.
                         context.Request.ClientId = context.Request.ClientSecret = null;
                     }
 
                     static string? EscapeDataString(string? value)
-                    {
-                        if (string.IsNullOrEmpty(value))
-                        {
-                            return null;
-                        }
-
-                        return Uri.EscapeDataString(value).Replace("%20", "+");
-                    }
+                        => value is not null ? Uri.EscapeDataString(value).Replace("%20", "+") : null;
                 }
             }
         }
