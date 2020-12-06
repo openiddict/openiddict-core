@@ -20,11 +20,13 @@ namespace OpenIddict.Validation.SystemNetHttp
                 PrepareGetHttpRequest<PrepareConfigurationRequestContext>.Descriptor,
                 AttachQueryStringParameters<PrepareConfigurationRequestContext>.Descriptor,
                 SendHttpRequest<ApplyConfigurationRequestContext>.Descriptor,
+                DisposeHttpRequest<ApplyConfigurationRequestContext>.Descriptor,
 
                 /*
                  * Configuration response processing:
                  */
                 ExtractJsonHttpResponse<ExtractConfigurationResponseContext>.Descriptor,
+                DisposeHttpResponse<ExtractConfigurationResponseContext>.Descriptor,
 
                 /*
                  * Cryptography request processing:
@@ -32,11 +34,13 @@ namespace OpenIddict.Validation.SystemNetHttp
                 PrepareGetHttpRequest<PrepareCryptographyRequestContext>.Descriptor,
                 AttachQueryStringParameters<PrepareCryptographyRequestContext>.Descriptor,
                 SendHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
+                DisposeHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
 
                 /*
                  * Configuration response processing:
                  */
-                ExtractJsonHttpResponse<ExtractCryptographyResponseContext>.Descriptor);
+                ExtractJsonHttpResponse<ExtractCryptographyResponseContext>.Descriptor,
+                DisposeHttpResponse<ExtractCryptographyResponseContext>.Descriptor);
         }
     }
 }

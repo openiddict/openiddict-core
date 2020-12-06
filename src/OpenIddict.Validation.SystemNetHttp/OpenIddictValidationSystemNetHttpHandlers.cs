@@ -9,10 +9,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using OpenIddict.Abstractions;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
@@ -46,6 +48,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .Build();
 
             /// <inheritdoc/>
+            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+                Justification = "The HTTP request message is disposed later by a dedicated handler.")]
             public ValueTask HandleAsync(TContext context)
             {
                 if (context is null)
@@ -53,12 +57,17 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var request = new HttpRequestMessage(HttpMethod.Get, context.Address);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
+                var request = new HttpRequestMessage(HttpMethod.Get, context.Address)
+                {
+                    Headers =
+                    {
+                        Accept = { new MediaTypeWithQualityHeaderValue("application/json") },
+                        AcceptCharset = { new StringWithQualityHeaderValue("utf-8") }
+                    }
+                };
 
                 // Store the HttpRequestMessage in the transaction properties.
-                context.Transaction.Properties[typeof(HttpRequestMessage).FullName!] = request;
+                context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!, request);
 
                 return default;
             }
@@ -81,6 +90,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .Build();
 
             /// <inheritdoc/>
+            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+                Justification = "The HTTP request message is disposed later by a dedicated handler.")]
             public ValueTask HandleAsync(TContext context)
             {
                 if (context is null)
@@ -88,12 +99,17 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var request = new HttpRequestMessage(HttpMethod.Post, context.Address);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
+                var request = new HttpRequestMessage(HttpMethod.Post, context.Address)
+                {
+                    Headers =
+                    {
+                        Accept = { new MediaTypeWithQualityHeaderValue("application/json") },
+                        AcceptCharset = { new StringWithQualityHeaderValue("utf-8") }
+                    }
+                };
 
                 // Store the HttpRequestMessage in the transaction properties.
-                context.Transaction.Properties[typeof(HttpRequestMessage).FullName!] = request;
+                context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!, request);
 
                 return default;
             }
@@ -116,7 +132,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(TContext context)
+            public ValueTask HandleAsync(TContext context)
             {
                 if (context is null)
                 {
@@ -134,25 +150,35 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
                 }
 
-                if (request.RequestUri is not null)
+                if (request.RequestUri is null || context.Transaction.Request.Count == 0)
                 {
-                    // Note: System.Net.Http doesn't expose convenient methods allowing to create
-                    // query strings from existing key/value pairs. To work around this limitation,
-                    // a FormUrlEncodedContent is instantiated and used to manually create the URL.
-                    using var content = new FormUrlEncodedContent(
-                        from parameter in context.Transaction.Request.GetParameters()
-                        let values = (string[]?) parameter.Value
-                        where values is not null
-                        from value in values
-                        select new KeyValuePair<string, string>(parameter.Key, value));
-
-                    var builder = new UriBuilder(request.RequestUri)
-                    {
-                        Query = await content.ReadAsStringAsync()
-                    };
-
-                    request.RequestUri = builder.Uri;
+                    return default;
                 }
+
+                var builder = new StringBuilder();
+
+                foreach (var (key, value) in
+                    from parameter in context.Transaction.Request.GetParameters()
+                    let values = (string?[]?) parameter.Value
+                    where values is not null
+                    from value in values
+                    where !string.IsNullOrEmpty(value)
+                    select (parameter.Key, Value: value))
+                {
+                    if (builder.Length > 0)
+                    {
+                        builder.Append('&');
+                    }
+
+                    builder.Append(Uri.EscapeDataString(key));
+                    builder.Append('=');
+                    builder.Append(Uri.EscapeDataString(value));
+                }
+
+                // Compute the final request URI using the base address and the query string.
+                request.RequestUri = new UriBuilder(request.RequestUri) { Query = builder.ToString() }.Uri;
+
+                return default;
             }
         }
 
@@ -218,7 +244,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<SendHttpRequest<TContext>>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(DisposeHttpRequest<TContext>.Descriptor.Order - 50_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -252,7 +278,48 @@ namespace OpenIddict.Validation.SystemNetHttp
                 }
 
                 // Store the HttpResponseMessage in the transaction properties.
-                context.Transaction.Properties[typeof(HttpResponseMessage).FullName!] = response;
+                context.Transaction.SetProperty(typeof(HttpResponseMessage).FullName!, response);
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of disposing of the HTTP request message.
+        /// </summary>
+        public class DisposeHttpRequest<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpMetadataAddress>()
+                    .UseSingletonHandler<DisposeHttpRequest<TContext>>()
+                    .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage();
+                if (request is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                }
+
+                request.Dispose();
+
+                // Remove the request from the transaction properties.
+                context.Transaction.SetProperty<HttpRequestMessage>(typeof(HttpRequestMessage).FullName!, null);
+
+                return default;
             }
         }
 
@@ -268,7 +335,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<ExtractJsonHttpResponse<TContext>>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(DisposeHttpResponse<TContext>.Descriptor.Order - 50_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -294,6 +361,47 @@ namespace OpenIddict.Validation.SystemNetHttp
                 // Note: ReadFromJsonAsync() automatically validates the content type and the content encoding
                 // and transcode the response stream if a non-UTF-8 response is returned by the remote server.
                 context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of disposing of the HTTP response message.
+        /// </summary>
+        public class DisposeHttpResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpMetadataAddress>()
+                    .UseSingletonHandler<DisposeHttpResponse<TContext>>()
+                    .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var response = context.Transaction.GetHttpResponseMessage();
+                if (response is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+                }
+
+                response.Dispose();
+
+                // Remove the response from the transaction properties.
+                context.Transaction.SetProperty<HttpResponseMessage>(typeof(HttpResponseMessage).FullName!, null);
+
+                return default;
             }
         }
     }
