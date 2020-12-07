@@ -489,7 +489,7 @@ This may indicate that it was not properly registered in the dependency injectio
 This may indicate that an instance of another handler was registered with the same scheme.</value>
   </data>
   <data name="ID0109" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core server cannot be used as the default scheme handler.
+    <value>The OpenIddict ASP.NET Core server handler cannot be used as the default scheme handler.
 Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, DefaultForbidScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme point to an instance of the OpenIddict ASP.NET Core server handler.</value>
   </data>
   <data name="ID0110" xml:space="preserve">
@@ -712,7 +712,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
 This may indicate that an instance of another handler was registered with the same scheme.</value>
   </data>
   <data name="ID0165" xml:space="preserve">
-    <value>The OpenIddict ASP.NET Core validation cannot be used as the default sign-in/sign-out handler.
+    <value>The OpenIddict ASP.NET Core validation handler cannot be used as the default sign-in/sign-out handler.
 Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme point to an instance of the OpenIddict ASP.NET Core validation handler.</value>
   </data>
   <data name="ID0166" xml:space="preserve">
