@@ -572,10 +572,10 @@ Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.A
     <value>The client secret cannot be null or empty when using introspection.</value>
   </data>
   <data name="ID0133" xml:space="preserve">
-    <value>Authorization validation cannot be enabled when using introspection.</value>
+    <value>Authorization entry validation cannot be enabled when using introspection.</value>
   </data>
   <data name="ID0134" xml:space="preserve">
-    <value>Token validation cannot be enabled when using introspection.</value>
+    <value>Token entry validation cannot be enabled when using introspection.</value>
   </data>
   <data name="ID0135" xml:space="preserve">
     <value>A discovery client must be registered when using server discovery.
