@@ -33,13 +33,13 @@ namespace OpenIddict.Quartz
 
             options.AddTrigger(builder =>
             {
-                // Note: this trigger uses a quite long interval (1 hour), which means it may be potentially
-                // never reached if the application is shut down or recycled. As such, this trigger is set up
-                // to fire 2 minutes after the application starts to ensure it's executed at least once.
+                // Note: this trigger uses a quite long interval (1 hour), which means it may be potentially never
+                // reached if the application is shut down or recycled. As such, this trigger is set up to fire
+                // between 1 and 10 minutes after the application starts to ensure the job is executed at least once.
                 builder.ForJob(OpenIddictQuartzJob.Identity)
                        .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
                        .WithDescription(SR.GetResourceString(SR.ID8002))
-                       .StartAt(DateBuilder.FutureDate(2, IntervalUnit.Minute));
+                       .StartAt(DateBuilder.FutureDate(new Random().Next(1, 10), IntervalUnit.Minute));
             });
         }
     }
