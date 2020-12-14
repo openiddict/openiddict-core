@@ -309,7 +309,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(1, options.SigningCredentials.Count);
+            Assert.Single(options.SigningCredentials);
             Assert.Equal(SecurityAlgorithms.RsaSha256, options.SigningCredentials[0].Algorithm);
             Assert.NotNull(options.SigningCredentials[0].Kid);
         }
@@ -345,7 +345,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(1, options.SigningCredentials.Count);
+            Assert.Single(options.SigningCredentials);
         }
 
         [Theory]
