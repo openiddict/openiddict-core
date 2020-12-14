@@ -3029,7 +3029,7 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of creating an access token entry.
+        /// Contains the logic responsible of creating a device code entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class CreateDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
