@@ -998,7 +998,7 @@ namespace OpenIddict.Server
                             return;
                         }
 
-                        // If the device code is marked as rejected, return an authorization_pending error.
+                        // If the device code is marked as rejected, return an access_denied error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Rejected))
                         {
                             context.Logger.LogError(SR.GetResourceString(SR.ID6004), identifier);
