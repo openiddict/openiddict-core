@@ -22,7 +22,7 @@ namespace Mvc.Server.Controllers
         //
         // GET: /api/userinfo
         [Authorize(AuthenticationSchemes = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)]
-        [HttpGet("~/connect/userinfo"), Produces("application/json")]
+        [HttpGet("~/connect/userinfo"), HttpPost("~/connect/userinfo"), Produces("application/json")]
         public async Task<IActionResult> Userinfo()
         {
             var user = await _userManager.GetUserAsync(User);
