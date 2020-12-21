@@ -1,7 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <PackageReference Update="AngleSharp" Version="0.14.0" />
+    <PackageReference Update="AngleSharp" Version="1.0.0-alpha-844" />
     <PackageReference Update="EntityFramework" Version="6.4.4" />
     <PackageReference Update="MartinCostello.Logging.XUnit" Version="0.1.0" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.0" />
@@ -14,7 +14,7 @@
     <PackageReference Update="MongoDB.Bson" Version="2.11.5" />
     <PackageReference Update="MongoDB.Driver" Version="2.11.5" />
     <PackageReference Update="Moq" Version="4.15.2" />
-    <PackageReference Update="Portable.BouncyCastle" Version="1.8.8" />
+    <PackageReference Update="Portable.BouncyCastle" Version="1.8.9" />
     <PackageReference Update="Quartz.Extensions.DependencyInjection" Version="3.2.3" />
     <PackageReference Update="Quartz.Extensions.Hosting" Version="3.2.3" />
     <PackageReference Update="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="1.0.0-alpha.160" />
