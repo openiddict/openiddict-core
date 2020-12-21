@@ -221,6 +221,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     let values = (string[]?) parameter.Value
                     where values is not null
                     from value in values
+                    where !string.IsNullOrEmpty(value)
                     select new KeyValuePair<string, string>(parameter.Key, value));
 
                 return default;
