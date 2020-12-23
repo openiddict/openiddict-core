@@ -1,4 +1,5 @@
-﻿# OpenIddict
+﻿# OpenIddict :christmas_tree:
+
 ### The OpenID Connect stack you'll be addicted to.
 
 [![Build status](https://github.com/openiddict/openiddict-core/workflows/build/badge.svg?branch=dev&event=push)](https://github.com/openiddict/openiddict-core/actions?query=workflow%3Abuild+branch%3Adev+event%3Apush)
@@ -29,7 +30,7 @@ which is based on OpenIddict, comes with sensible defaults and offers a built-in
 
 ## Compatibility matrix
 
-| Web framework version | .NET runtime version | OpenIddict 2.0                          | OpenIddict 2.0.1                        | OpenIddict 3.0                          |
+| Web framework version | .NET runtime version | OpenIddict 2.0 :exclamation:            | OpenIddict 2.0.1 :exclamation:          | OpenIddict 3.0                          |
 |-----------------------|----------------------|-----------------------------------------|-----------------------------------------|-----------------------------------------|
 | ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
 | ASP.NET Core 2.1      | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      | :heavy_check_mark:                      |
@@ -43,6 +44,8 @@ which is based on OpenIddict, comes with sensible defaults and offers a built-in
 | OWIN/Katana 4.1       | .NET Framework 4.6.1 | :x:                                     | :x:                                     | :heavy_check_mark: :information_source: |
 | OWIN/Katana 4.1       | .NET Framework 4.7.2 | :x:                                     | :x:                                     | :heavy_check_mark:                      |
 | OWIN/Katana 4.1       | .NET Framework 4.8   | :x:                                     | :x:                                     | :heavy_check_mark:                      |
+
+:exclamation: **Note: OpenIddict 2.x is no longer supported. Users are strongly encouraged to migrate to OpenIddict 3.0**.
 
 :information_source: **Note: the following features are not available when targeting .NET Framework 4.6.1**:
  - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
