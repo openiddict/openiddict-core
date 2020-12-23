@@ -16,6 +16,7 @@ using System.Text.Json;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Properties;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.DataProtection
 {
@@ -66,7 +67,7 @@ namespace OpenIddict.Server.DataProtection
                 var version = reader.ReadInt32();
                 if (version != 5)
                 {
-                    return (null, ImmutableDictionary.Create<string, string>());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
                 }
 
                 // Read the authentication scheme associated to the ticket.
@@ -150,9 +151,9 @@ namespace OpenIddict.Server.DataProtection
             {
                 // Read the version of the format used to serialize the properties.
                 var version = reader.ReadInt32();
-                if (version != 5)
+                if (version != 1)
                 {
-                    return ImmutableDictionary.Create<string, string>();
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
                 }
 
                 var count = reader.ReadInt32();
@@ -363,7 +364,7 @@ namespace OpenIddict.Server.DataProtection
             static void WriteProperties(BinaryWriter writer, IReadOnlyDictionary<string, string> properties)
             {
                 // Write the version of the format used to serialize the properties.
-                writer.Write(/* version: */ 5);
+                writer.Write(/* version: */ 1);
                 writer.Write(properties.Count);
 
                 foreach (var property in properties)
