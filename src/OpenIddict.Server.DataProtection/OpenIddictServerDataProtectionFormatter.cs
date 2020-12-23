@@ -22,7 +22,7 @@ namespace OpenIddict.Server.DataProtection
 {
     public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProtectionFormatter
     {
-        public ClaimsPrincipal? ReadToken(BinaryReader reader)
+        public ClaimsPrincipal ReadToken(BinaryReader reader)
         {
             if (reader is null)
             {
@@ -30,10 +30,6 @@ namespace OpenIddict.Server.DataProtection
             }
 
             var (principal, properties) = Read(reader);
-            if (principal is null)
-            {
-                return null;
-            }
 
             // Tokens serialized using the ASP.NET Core Data Protection stack are compound
             // of both claims and special authentication properties. To ensure existing tokens
@@ -61,7 +57,7 @@ namespace OpenIddict.Server.DataProtection
                 .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
                 .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
-            static (ClaimsPrincipal? principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
+            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
             {
                 // Read the version of the format used to serialize the ticket.
                 var version = reader.ReadInt32();
@@ -75,10 +71,6 @@ namespace OpenIddict.Server.DataProtection
 
                 // Read the number of identities stored in the serialized payload.
                 var count = reader.ReadInt32();
-                if (count < 0)
-                {
-                    return (null, ImmutableDictionary.Create<string, string>());
-                }
 
                 var identities = new ClaimsIdentity[count];
                 for (var index = 0; index != count; ++index)

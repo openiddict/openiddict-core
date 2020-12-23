@@ -11,6 +11,6 @@ namespace OpenIddict.Validation.DataProtection
 {
     public interface IOpenIddictValidationDataProtectionFormatter
     {
-        ClaimsPrincipal? ReadToken(BinaryReader reader);
+        ClaimsPrincipal ReadToken(BinaryReader reader);
     }
 }

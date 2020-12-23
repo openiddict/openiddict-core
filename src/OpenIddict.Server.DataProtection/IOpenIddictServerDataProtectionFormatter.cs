@@ -11,7 +11,7 @@ namespace OpenIddict.Server.DataProtection
 {
     public interface IOpenIddictServerDataProtectionFormatter
     {
-        ClaimsPrincipal? ReadToken(BinaryReader reader);
+        ClaimsPrincipal ReadToken(BinaryReader reader);
         void WriteToken(BinaryWriter writer, ClaimsPrincipal principal);
     }
 }
