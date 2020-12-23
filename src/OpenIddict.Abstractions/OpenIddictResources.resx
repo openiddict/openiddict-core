@@ -1119,6 +1119,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID0286" xml:space="preserve">
     <value>The specified principal doesn't contain a valid claims-based identity.</value>
   </data>
+  <data name="ID0287" xml:space="preserve">
+    <value>The payload of this authentication ticket was serialized using an unsupported formatter version.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
