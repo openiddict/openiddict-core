@@ -68,14 +68,10 @@ with an ECDSA certificate/key will always result in a `PlatformNotSupportedExcep
 - **[Adding OpenIddict 3.0 to an OWIN application](https://kevinchalet.com/2020/03/03/adding-openiddict-3-0-to-an-owin-application/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Creating an OpenID Connect server proxy with OpenIddict 3.0's degraded mode](https://kevinchalet.com/2020/02/18/creating-an-openid-connect-server-proxy-with-openiddict-3-0-s-degraded-mode/)** by [Kévin Chalet](https://github.com/kevinchalet)
 
-*Posts written for previous versions of OpenIddict*: 
+**OpenIddict-based projects maintained by third parties**:
 
-- **[Implementing an OpenIddict Authorization server: Social Login with GitHub](https://www.jerriepelser.com/blog/implementing-openiddict-authorization-server-part-2/)** by [Jerrie Pelser](https://github.com/jerriep)
-- **[Implementing an OpenIddict Authorization server: A Basic Authorization Server](https://www.jerriepelser.com/blog/implementing-openiddict-authorization-server-part-1/)** by [Jerrie Pelser](https://github.com/jerriep)
-- **[Implementing simple token authentication in ASP.NET Core with OpenIddict](https://kevinchalet.com/2017/01/30/implementing-simple-token-authentication-in-aspnet-core-with-openiddict/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[Bearer Token Authentication in ASP.NET Core](https://devblogs.microsoft.com/aspnet/bearer-token-authentication-in-asp-net-core/)** by [Mike Rousos](https://github.com/mjrousos) (for the Microsoft .NET Web Development and Tools blog)
-- **[Creating your own OpenID Connect server with ASOS](https://kevinchalet.com/2016/07/13/creating-your-own-openid-connect-server-with-asos-introduction/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[Using OpenIddict to easily add token authentication to your .NET web apps](http://overengineer.net/Using-OpenIddict-to-easily-add-token-authentication-to-your-.NET-web-apps)** by [Josh Comley](https://github.com/joshcomley)
+- **[OrchardCore OpenID module](https://github.com/OrchardCMS/OrchardCore)**: turnkey OpenID Connect server and token validation solution, built with multitenancy in mind
+- **[OpenIddict UI](https://github.com/thomasduft/openiddict-ui)** by [Thomas Duft](https://github.com/thomasduft): headless UI for managing client applications and scopes
 
 ## Security policy
 
