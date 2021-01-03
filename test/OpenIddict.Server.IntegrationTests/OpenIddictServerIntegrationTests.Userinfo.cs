@@ -14,8 +14,9 @@ using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.FunctionalTests
+namespace OpenIddict.Server.IntegrationTests
 {
     public abstract partial class OpenIddictServerIntegrationTests
     {
@@ -28,14 +29,16 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractUserinfoRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/connect/userinfo", new OpenIddictRequest());
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Theory]
@@ -49,7 +52,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -61,6 +64,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest());
@@ -75,7 +80,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractUserinfoRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -93,18 +98,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/userinfo");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ExtractUserinfoRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -117,18 +124,21 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/userinfo");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ValidateUserinfoRequest_MissingTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
@@ -137,15 +147,15 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.MissingToken, response.Error);
-            Assert.Equal("The mandatory access token is missing.", response.ErrorDescription);
+            Assert.Empty(response.GetParameters());
         }
 
         [Fact]
         public async Task ValidateUserinfoRequest_InvalidTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
@@ -155,14 +165,15 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal("The specified token is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2004), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2004), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateUserinfoRequest_ExpiredTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -183,6 +194,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -191,7 +204,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal("The specified token is no longer valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2019), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2019), response.ErrorUri);
         }
 
         [Theory]
@@ -205,7 +219,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -233,6 +247,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -249,7 +265,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -282,6 +298,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -289,14 +307,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ValidateUserinfoRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -324,6 +342,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -331,14 +351,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task HandleUserinfoRequest_BasicClaimsAreCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -360,6 +380,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -368,16 +390,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(3, response.Count);
-            Assert.Equal("http://localhost/", (string) response[Claims.Issuer]);
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) response[Claims.Audience]);
+            Assert.Equal("http://localhost/", (string?) response[Claims.Issuer]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) response[Claims.Audience]);
         }
 
         [Fact]
         public async Task HandleUserinfoRequest_NonBasicClaimsAreNotReturnedWhenNoScopeWasGranted()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -407,6 +429,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -415,16 +439,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(3, response.Count);
-            Assert.Equal("http://localhost/", (string) response[Claims.Issuer]);
-            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal("Fabrikam", (string) response[Claims.Audience]);
+            Assert.Equal("http://localhost/", (string?) response[Claims.Issuer]);
+            Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+            Assert.Equal("Fabrikam", (string?) response[Claims.Audience]);
         }
 
         [Fact]
         public async Task HandleUserinfoRequest_ProfileClaimsAreCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -453,6 +477,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -460,16 +486,16 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob", (string) response[Claims.GivenName]);
-            Assert.Equal("Saint-Clar", (string) response[Claims.FamilyName]);
-            Assert.Equal("04/09/1933", (string) response[Claims.Birthdate]);
+            Assert.Equal("Bob", (string?) response[Claims.GivenName]);
+            Assert.Equal("Saint-Clar", (string?) response[Claims.FamilyName]);
+            Assert.Equal("04/09/1933", (string?) response[Claims.Birthdate]);
         }
 
         [Fact]
         public async Task HandleUserinfoRequest_EmailClaimIsCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -493,6 +519,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -500,14 +528,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("bob@le-magnifique.com", (string) response[Claims.Email]);
+            Assert.Equal("bob@le-magnifique.com", (string?) response[Claims.Email]);
         }
 
         [Fact]
         public async Task HandleUserinfoRequest_PhoneClaimIsCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -531,6 +559,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -538,7 +568,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("0148962355", (string) response[Claims.PhoneNumber]);
+            Assert.Equal("0148962355", (string?) response[Claims.PhoneNumber]);
         }
 
         [Theory]
@@ -552,7 +582,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -580,6 +610,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -596,7 +628,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -629,6 +661,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -636,14 +670,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task HandleUserinfoRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -671,6 +705,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -678,14 +714,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ApplyUserinfoResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -718,23 +754,40 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
-                Token = "SlAV32hkKG"
+                AccessToken = "SlAV32hkKG"
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ApplyUserinfoResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SlAV32hkKG", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
 
                 options.AddEventHandler<ApplyUserinfoResponseContext>(builder =>
                     builder.UseInlineHandler(context =>
@@ -750,15 +803,17 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
-                Token = "SlAV32hkKG"
+                AccessToken = "SlAV32hkKG"
             });
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
-            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]) response["parameter_with_multiple_values"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
     }
 }

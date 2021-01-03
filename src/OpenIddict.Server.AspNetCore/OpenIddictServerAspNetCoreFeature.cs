@@ -15,6 +15,6 @@ namespace OpenIddict.Server.AspNetCore
         /// Gets or sets the server transaction that encapsulates all specific
         /// information about an individual OpenID Connect server request.
         /// </summary>
-        public OpenIddictServerTransaction Transaction { get; set; }
+        public OpenIddictServerTransaction? Transaction { get; set; }
     }
 }

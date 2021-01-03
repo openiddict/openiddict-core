@@ -5,7 +5,6 @@
  */
 
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
@@ -23,6 +22,6 @@ namespace OpenIddict.Validation
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        ValueTask HandleAsync([NotNull] TContext context);
+        ValueTask HandleAsync(TContext context);
     }
 }

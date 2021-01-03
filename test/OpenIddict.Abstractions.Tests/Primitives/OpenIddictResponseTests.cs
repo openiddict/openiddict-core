@@ -1,3 +1,4 @@
+
 /*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
@@ -6,6 +7,7 @@
 
 using System.Collections.Generic;
 using Xunit;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
@@ -18,98 +20,91 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.AccessToken),
-                    /* name: */ OpenIddictConstants.Parameters.AccessToken,
+                    /* name: */ Parameters.AccessToken,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.Code),
-                    /* name: */ OpenIddictConstants.Parameters.Code,
+                    /* name: */ Parameters.Code,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.DeviceCode),
-                    /* name: */ OpenIddictConstants.Parameters.DeviceCode,
+                    /* name: */ Parameters.DeviceCode,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.Error),
-                    /* name: */ OpenIddictConstants.Parameters.Error,
+                    /* name: */ Parameters.Error,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.ErrorDescription),
-                    /* name: */ OpenIddictConstants.Parameters.ErrorDescription,
+                    /* name: */ Parameters.ErrorDescription,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.ErrorUri),
-                    /* name: */ OpenIddictConstants.Parameters.ErrorUri,
+                    /* name: */ Parameters.ErrorUri,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.ExpiresIn),
-                    /* name: */ OpenIddictConstants.Parameters.ExpiresIn,
+                    /* name: */ Parameters.ExpiresIn,
                     /* value: */ new OpenIddictParameter((long?) 42)
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.IdToken),
-                    /* name: */ OpenIddictConstants.Parameters.IdToken,
-                    /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
-                };
-
-                yield return new object[]
-                {
-                    /* property: */ nameof(OpenIddictResponse.Realm),
-                    /* name: */ OpenIddictConstants.Parameters.Realm,
+                    /* name: */ Parameters.IdToken,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.RefreshToken),
-                    /* name: */ OpenIddictConstants.Parameters.RefreshToken,
+                    /* name: */ Parameters.RefreshToken,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.Scope),
-                    /* name: */ OpenIddictConstants.Parameters.Scope,
+                    /* name: */ Parameters.Scope,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.State),
-                    /* name: */ OpenIddictConstants.Parameters.State,
+                    /* name: */ Parameters.State,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.TokenType),
-                    /* name: */ OpenIddictConstants.Parameters.TokenType,
+                    /* name: */ Parameters.TokenType,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
 
                 yield return new object[]
                 {
                     /* property: */ nameof(OpenIddictResponse.UserCode),
-                    /* name: */ OpenIddictConstants.Parameters.UserCode,
+                    /* name: */ Parameters.UserCode,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
             }
@@ -124,7 +119,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             response.SetParameter(name, value);
 
             // Act and assert
-            Assert.Equal(value.Value, typeof(OpenIddictResponse).GetProperty(property).GetValue(response));
+            Assert.Equal(value.Value, typeof(OpenIddictResponse).GetProperty(property)!.GetValue(response));
         }
 
         [Theory]
@@ -135,7 +130,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var response = new OpenIddictResponse();
 
             // Act
-            typeof(OpenIddictResponse).GetProperty(property).SetValue(response, value.Value);
+            typeof(OpenIddictResponse).GetProperty(property)!.SetValue(response, value.Value);
 
             // Assert
             Assert.Equal(value, response.GetParameter(name));

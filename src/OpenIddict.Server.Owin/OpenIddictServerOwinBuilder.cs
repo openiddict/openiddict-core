@@ -6,11 +6,11 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Owin;
 using OpenIddict.Server.Owin;
 using Owin;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictServerOwinBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictServerOwinBuilder([NotNull] IServiceCollection services)
+        public OpenIddictServerOwinBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -39,9 +39,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder Configure([NotNull] Action<OpenIddictServerOwinOptions> configuration)
+        public OpenIddictServerOwinBuilder Configure(Action<OpenIddictServerOwinOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Disables the transport security requirement (HTTPS) during development.
+        /// Disables the transport security requirement (HTTPS).
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
         public OpenIddictServerOwinBuilder DisableTransportSecurityRequirement()
@@ -120,23 +120,38 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.EnableVerificationEndpointPassthrough = true);
 
         /// <summary>
-        /// Enables authorization endpoint caching, so that authorization requests
+        /// Enables authorization request caching, so that authorization requests
         /// are automatically stored in the distributed cache, which allows flowing
         /// large payloads across requests. Enabling this option is recommended
         /// when using external authentication providers or when large GET or POST
         /// OpenID Connect authorization requests support is required.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder EnableAuthorizationEndpointCaching()
-            => Configure(options => options.EnableAuthorizationEndpointCaching = true);
+        public OpenIddictServerOwinBuilder EnableAuthorizationRequestCaching()
+            => Configure(options => options.EnableAuthorizationRequestCaching = true);
 
         /// <summary>
-        /// Enables logout endpoint caching, so that logout requests
+        /// Enables logout request caching, so that logout requests
         /// are automatically stored in the distributed cache.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder EnableLogoutEndpointCaching()
-            => Configure(options => options.EnableLogoutEndpointCaching = true);
+        public OpenIddictServerOwinBuilder EnableLogoutRequestCaching()
+            => Configure(options => options.EnableLogoutRequestCaching = true);
+
+        /// <summary>
+        /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        /// <param name="realm">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+        public OpenIddictServerOwinBuilder SetRealm(string realm)
+        {
+            if (string.IsNullOrEmpty(realm))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0107), nameof(realm));
+            }
+
+            return Configure(options => options.Realm = realm);
+        }
 
         /// <summary>
         /// Sets the caching policy used by the authorization endpoint.
@@ -144,14 +159,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="policy">The caching policy.</param>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder SetAuthorizationEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        public OpenIddictServerOwinBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
         {
-            if (policy == null)
+            if (policy is null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            return Configure(options => options.AuthorizationEndpointCachingPolicy = policy);
+            return Configure(options => options.AuthorizationRequestCachingPolicy = policy);
         }
 
         /// <summary>
@@ -160,36 +175,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="policy">The caching policy.</param>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder SetLogoutEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        public OpenIddictServerOwinBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy)
         {
-            if (policy == null)
+            if (policy is null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            return Configure(options => options.LogoutEndpointCachingPolicy = policy);
+            return Configure(options => options.LogoutRequestCachingPolicy = policy);
         }
 
-        /// <summary>
-        /// Determines whether the specified object is equal to the current object.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
-        /// <summary>
-        /// Serves as the default hash function.
-        /// </summary>
-        /// <returns>A hash code for the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

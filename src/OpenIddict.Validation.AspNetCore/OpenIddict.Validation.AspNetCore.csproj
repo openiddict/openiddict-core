@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1;net5.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,16 +13,14 @@
     <ProjectReference Include="..\OpenIddict.Validation\OpenIddict.Validation.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup
+    Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0')) ">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+  <ItemGroup
+    Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' Or $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0')) ">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" />
   </ItemGroup>
 
 </Project>

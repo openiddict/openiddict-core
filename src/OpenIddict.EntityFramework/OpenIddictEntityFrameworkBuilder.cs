@@ -7,12 +7,11 @@
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Text;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -25,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictEntityFrameworkBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictEntityFrameworkBuilder([NotNull] IServiceCollection services)
+        public OpenIddictEntityFrameworkBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -40,9 +39,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-        public OpenIddictEntityFrameworkBuilder Configure([NotNull] Action<OpenIddictEntityFrameworkOptions> configuration)
+        public OpenIddictEntityFrameworkBuilder Configure(Action<OpenIddictEntityFrameworkOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -58,10 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
         public OpenIddictEntityFrameworkBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-            where TScope : OpenIddictScope<TKey>
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+            where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictEntityFrameworkScope<TKey>
+            where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
             // Note: unlike Entity Framework Core 1.x/2.x/3.x, Entity Framework 6.x
@@ -70,11 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (typeof(TApplication).IsGenericType || typeof(TAuthorization).IsGenericType ||
                 typeof(TScope).IsGenericType || typeof(TToken).IsGenericType)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The Entity Framework 6.x stores cannot be used with generic types.")
-                    .Append("Consider creating non-generic classes derived from the default entities ")
-                    .Append("for the application, authorization, scope and token entities.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0277));
             }
 
             Services.Configure<OpenIddictCoreOptions>(options =>
@@ -102,16 +97,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-        public OpenIddictEntityFrameworkBuilder UseDbContext([NotNull] Type type)
+        public OpenIddictEntityFrameworkBuilder UseDbContext(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (!typeof(DbContext).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             Services.TryAddScoped(type);
@@ -119,26 +114,16 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options => options.DbContextType = type);
         }
 
-        /// <summary>
-        /// Determines whether the specified object is equal to the current object.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
-        /// <summary>
-        /// Serves as the default hash function.
-        /// </summary>
-        /// <returns>A hash code for the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

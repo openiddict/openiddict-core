@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using OpenIddict.Validation.ServerIntegration;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -20,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictValidationServerIntegrationBuilder([NotNull] IServiceCollection services)
+        public OpenIddictValidationServerIntegrationBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -35,9 +34,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationServerIntegrationBuilder"/>.</returns>
-        public OpenIddictValidationServerIntegrationBuilder Configure([NotNull] Action<OpenIddictValidationServerIntegrationOptions> configuration)
+        public OpenIddictValidationServerIntegrationBuilder Configure(Action<OpenIddictValidationServerIntegrationOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -47,26 +46,16 @@ namespace Microsoft.Extensions.DependencyInjection
             return this;
         }
 
-        /// <summary>
-        /// Determines whether the specified object is equal to the current object.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
-        /// <summary>
-        /// Serves as the default hash function.
-        /// </summary>
-        /// <returns>A hash code for the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

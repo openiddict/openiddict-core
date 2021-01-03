@@ -8,14 +8,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Core
 {
@@ -30,8 +30,8 @@ namespace OpenIddict.Core
         private readonly IOpenIddictTokenStore<TToken> _store;
 
         public OpenIddictTokenCache(
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options,
-            [NotNull] IOpenIddictTokenStoreResolver resolver)
+            IOptionsMonitor<OpenIddictCoreOptions> options,
+            IOpenIddictTokenStoreResolver resolver)
         {
             _cache = new MemoryCache(new MemoryCacheOptions
             {
@@ -42,15 +42,10 @@ namespace OpenIddict.Core
             _store = resolver.Get<TToken>();
         }
 
-        /// <summary>
-        /// Add the specified token to the cache.
-        /// </summary>
-        /// <param name="token">The token to add to the cache.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public async ValueTask AddAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public async ValueTask AddAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -109,38 +104,20 @@ namespace OpenIddict.Core
                 Subject = await _store.GetSubjectAsync(token, cancellationToken)
             });
 
-            var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-            if (signal == null)
-            {
-                throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-            }
-
-            using (var entry = _cache.CreateEntry(new
+            await CreateEntryAsync(new
             {
                 Method = nameof(FindByIdAsync),
                 Identifier = await _store.GetIdAsync(token, cancellationToken)
-            }))
-            {
-                entry.AddExpirationToken(signal)
-                     .SetSize(1L)
-                     .SetValue(token);
-            }
+            }, token, cancellationToken);
 
-            using (var entry = _cache.CreateEntry(new
+            await CreateEntryAsync(new
             {
                 Method = nameof(FindByReferenceIdAsync),
                 Identifier = await _store.GetReferenceIdAsync(token, cancellationToken)
-            }))
-            {
-                entry.AddExpirationToken(signal)
-                     .SetSize(1L)
-                     .SetValue(token);
-            }
+            }, token, cancellationToken);
         }
 
-        /// <summary>
-        /// Disposes the resources held by this instance.
-        /// </summary>
+        /// <inheritdoc/>
         public void Dispose()
         {
             foreach (var signal in _signals)
@@ -151,64 +128,44 @@ namespace OpenIddict.Core
             _cache.Dispose();
         }
 
-        /// <summary>
-        /// Retrieves the tokens corresponding to the specified
-        /// subject and associated with the application identifier.
-        /// </summary>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="client">The client associated with the token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The tokens corresponding to the subject/client.</returns>
-        public IAsyncEnumerable<TToken> FindAsync([NotNull] string subject,
-            [NotNull] string client, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public IAsyncEnumerable<TToken> FindAsync(string subject, string client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return tokens.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TToken> ExecuteAsync()
-            {
-                var tokens = ImmutableArray.CreateRange(await _store.FindAsync(
-                    subject, client, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var token in tokens)
+                var parameters = new
                 {
-                    await AddAsync(token, cancellationToken);
-                }
+                    Method = nameof(FindAsync),
+                    Subject = subject,
+                    Client = client
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
                 {
-                    foreach (var token in tokens)
+                    var builder = ImmutableArray.CreateBuilder<TToken>();
+
+                    await foreach (var token in _store.FindAsync(subject, client, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(token);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(token, cancellationToken);
                     }
 
-                    entry.SetSize(tokens.Length);
-                    entry.SetValue(tokens);
+                    tokens = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, tokens, cancellationToken);
                 }
 
                 foreach (var token in tokens)
@@ -216,75 +173,54 @@ namespace OpenIddict.Core
                     yield return token;
                 }
             }
-
-            return ExecuteAsync();
         }
 
-        /// <summary>
-        /// Retrieves the tokens matching the specified parameters.
-        /// </summary>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="client">The client associated with the token.</param>
-        /// <param name="status">The token status.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The tokens corresponding to the criteria.</returns>
+        /// <inheritdoc/>
         public IAsyncEnumerable<TToken> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, CancellationToken cancellationToken)
+            string subject, string client,
+            string status, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return tokens.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TToken> ExecuteAsync()
-            {
-                var tokens = ImmutableArray.CreateRange(await _store.FindAsync(
-                    subject, client, status, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var token in tokens)
+                var parameters = new
                 {
-                    await AddAsync(token, cancellationToken);
-                }
+                    Method = nameof(FindAsync),
+                    Subject = subject,
+                    Client = client,
+                    Status = status
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
                 {
-                    foreach (var token in tokens)
+                    var builder = ImmutableArray.CreateBuilder<TToken>();
+
+                    await foreach (var token in _store.FindAsync(subject, client, status, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(token);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(token, cancellationToken);
                     }
 
-                    entry.SetSize(tokens.Length);
-                    entry.SetValue(tokens);
+                    tokens = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, tokens, cancellationToken);
                 }
 
                 foreach (var token in tokens)
@@ -292,82 +228,60 @@ namespace OpenIddict.Core
                     yield return token;
                 }
             }
-
-            return ExecuteAsync();
         }
 
-        /// <summary>
-        /// Retrieves the tokens matching the specified parameters.
-        /// </summary>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="client">The client associated with the token.</param>
-        /// <param name="status">The token status.</param>
-        /// <param name="type">The token type.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The tokens corresponding to the criteria.</returns>
+        /// <inheritdoc/>
         public IAsyncEnumerable<TToken> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken)
+            string subject, string client,
+            string status, string type, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status,
-                Type = type
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return tokens.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TToken> ExecuteAsync()
-            {
-                var tokens = ImmutableArray.CreateRange(await _store.FindAsync(
-                    subject, client, status, type, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var token in tokens)
+                var parameters = new
                 {
-                    await AddAsync(token, cancellationToken);
-                }
+                    Method = nameof(FindAsync),
+                    Subject = subject,
+                    Client = client,
+                    Status = status,
+                    Type = type
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
                 {
-                    foreach (var token in tokens)
+                    var builder = ImmutableArray.CreateBuilder<TToken>();
+
+                    await foreach (var token in _store.FindAsync(subject, client, status, type, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(token);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(token, cancellationToken);
                     }
 
-                    entry.SetSize(tokens.Length);
-                    entry.SetValue(tokens);
+                    tokens = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, tokens, cancellationToken);
                 }
 
                 foreach (var token in tokens)
@@ -375,60 +289,40 @@ namespace OpenIddict.Core
                     yield return token;
                 }
             }
-
-            return ExecuteAsync();
         }
 
-        /// <summary>
-        /// Retrieves the list of tokens corresponding to the specified application identifier.
-        /// </summary>
-        /// <param name="identifier">The application identifier associated with the tokens.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The tokens corresponding to the specified application.</returns>
-        public IAsyncEnumerable<TToken> FindByApplicationIdAsync(
-            [NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public IAsyncEnumerable<TToken> FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindByApplicationIdAsync),
-                Identifier = identifier
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return tokens.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TToken> ExecuteAsync()
-            {
-                var tokens = ImmutableArray.CreateRange(await _store.FindByApplicationIdAsync(
-                    identifier, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var token in tokens)
+                var parameters = new
                 {
-                    await AddAsync(token, cancellationToken);
-                }
+                    Method = nameof(FindByApplicationIdAsync),
+                    Identifier = identifier
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
                 {
-                    foreach (var token in tokens)
+                    var builder = ImmutableArray.CreateBuilder<TToken>();
+
+                    await foreach (var token in _store.FindByApplicationIdAsync(identifier, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(token);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(token, cancellationToken);
                     }
 
-                    entry.SetSize(tokens.Length);
-                    entry.SetValue(tokens);
+                    tokens = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, tokens, cancellationToken);
                 }
 
                 foreach (var token in tokens)
@@ -436,60 +330,40 @@ namespace OpenIddict.Core
                     yield return token;
                 }
             }
-
-            return ExecuteAsync();
         }
 
-        /// <summary>
-        /// Retrieves the list of tokens corresponding to the specified authorization identifier.
-        /// </summary>
-        /// <param name="identifier">The authorization identifier associated with the tokens.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The tokens corresponding to the specified authorization.</returns>
-        public IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(
-            [NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindByAuthorizationIdAsync),
-                Identifier = identifier
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return tokens.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TToken> ExecuteAsync()
-            {
-                var tokens = ImmutableArray.CreateRange(await _store.FindByAuthorizationIdAsync(
-                    identifier, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var token in tokens)
+                var parameters = new
                 {
-                    await AddAsync(token, cancellationToken);
-                }
+                    Method = nameof(FindByAuthorizationIdAsync),
+                    Identifier = identifier
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
                 {
-                    foreach (var token in tokens)
+                    var builder = ImmutableArray.CreateBuilder<TToken>();
+
+                    await foreach (var token in _store.FindByAuthorizationIdAsync(identifier, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(token);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(token, cancellationToken);
                     }
 
-                    entry.SetSize(tokens.Length);
-                    entry.SetValue(tokens);
+                    tokens = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, tokens, cancellationToken);
                 }
 
                 foreach (var token in tokens)
@@ -497,24 +371,14 @@ namespace OpenIddict.Core
                     yield return token;
                 }
             }
-
-            return ExecuteAsync();
         }
 
-        /// <summary>
-        /// Retrieves a token using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the token corresponding to the unique identifier.
-        /// </returns>
-        public ValueTask<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var parameters = new
@@ -523,56 +387,32 @@ namespace OpenIddict.Core
                 Identifier = identifier
             };
 
-            if (_cache.TryGetValue(parameters, out TToken token))
+            if (_cache.TryGetValue(parameters, out TToken? token))
             {
-                return new ValueTask<TToken>(token);
+                return new ValueTask<TToken?>(token);
             }
 
-            async Task<TToken> ExecuteAsync()
+            return new ValueTask<TToken?>(ExecuteAsync());
+
+            async Task<TToken?> ExecuteAsync()
             {
-                if ((token = await _store.FindByIdAsync(identifier, cancellationToken)) != null)
+                if ((token = await _store.FindByIdAsync(identifier, cancellationToken)) is not null)
                 {
                     await AddAsync(token, cancellationToken);
                 }
 
-                using (var entry = _cache.CreateEntry(parameters))
-                {
-                    if (token != null)
-                    {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
-
-                        entry.AddExpirationToken(signal);
-                    }
-
-                    entry.SetSize(1L);
-                    entry.SetValue(token);
-                }
+                await CreateEntryAsync(parameters, token, cancellationToken);
 
                 return token;
             }
-
-            return new ValueTask<TToken>(ExecuteAsync());
         }
 
-        /// <summary>
-        /// Retrieves the list of tokens corresponding to the specified reference identifier.
-        /// Note: the reference identifier may be hashed or encrypted for security reasons.
-        /// </summary>
-        /// <param name="identifier">The reference identifier associated with the tokens.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the specified reference identifier.
-        /// </returns>
-        public ValueTask<TToken> FindByReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var parameters = new
@@ -581,90 +421,58 @@ namespace OpenIddict.Core
                 Identifier = identifier
             };
 
-            if (_cache.TryGetValue(parameters, out TToken token))
+            if (_cache.TryGetValue(parameters, out TToken? token))
             {
-                return new ValueTask<TToken>(token);
+                return new ValueTask<TToken?>(token);
             }
 
-            async Task<TToken> ExecuteAsync()
+            return new ValueTask<TToken?>(ExecuteAsync());
+
+            async Task<TToken?> ExecuteAsync()
             {
-                if ((token = await _store.FindByReferenceIdAsync(identifier, cancellationToken)) != null)
+                if ((token = await _store.FindByReferenceIdAsync(identifier, cancellationToken)) is not null)
                 {
                     await AddAsync(token, cancellationToken);
                 }
 
-                using (var entry = _cache.CreateEntry(parameters))
-                {
-                    if (token != null)
-                    {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
-
-                        entry.AddExpirationToken(signal);
-                    }
-
-                    entry.SetSize(1L);
-                    entry.SetValue(token);
-                }
+                await CreateEntryAsync(parameters, token, cancellationToken);
 
                 return token;
             }
-
-            return new ValueTask<TToken>(ExecuteAsync());
         }
 
-        /// <summary>
-        /// Retrieves the list of tokens corresponding to the specified subject.
-        /// </summary>
-        /// <param name="subject">The subject associated with the tokens.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>The tokens corresponding to the specified subject.</returns>
-        public IAsyncEnumerable<TToken> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public IAsyncEnumerable<TToken> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindBySubjectAsync),
-                Identifier = subject
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return tokens.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TToken> ExecuteAsync()
-            {
-                var tokens = ImmutableArray.CreateRange(await _store.FindBySubjectAsync(
-                    subject, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var token in tokens)
+                var parameters = new
                 {
-                    await AddAsync(token, cancellationToken);
-                }
+                    Method = nameof(FindBySubjectAsync),
+                    Identifier = subject
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
                 {
-                    foreach (var token in tokens)
+                    var builder = ImmutableArray.CreateBuilder<TToken>();
+
+                    await foreach (var token in _store.FindBySubjectAsync(subject, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(token);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(token, cancellationToken);
                     }
 
-                    entry.SetSize(tokens.Length);
-                    entry.SetValue(tokens);
+                    tokens = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, tokens, cancellationToken);
                 }
 
                 foreach (var token in tokens)
@@ -672,19 +480,12 @@ namespace OpenIddict.Core
                     yield return token;
                 }
             }
-
-            return ExecuteAsync();
         }
 
-        /// <summary>
-        /// Removes the specified token from the cache.
-        /// </summary>
-        /// <param name="token">The token to remove from the cache.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public async ValueTask RemoveAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        public async ValueTask RemoveAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -692,13 +493,77 @@ namespace OpenIddict.Core
             var identifier = await _store.GetIdAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new InvalidOperationException("The application identifier cannot be extracted.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0205));
             }
 
-            if (_signals.TryRemove(identifier, out CancellationTokenSource signal))
+            if (_signals.TryRemove(identifier, out CancellationTokenSource? signal))
             {
                 signal.Cancel();
+                signal.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Creates a cache entry for the specified key.
+        /// </summary>
+        /// <param name="key">The cache key.</param>
+        /// <param name="token">The token to store in the cache entry, if applicable.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        protected virtual async ValueTask CreateEntryAsync(object key, TToken? token, CancellationToken cancellationToken)
+        {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            using var entry = _cache.CreateEntry(key);
+
+            if (token is not null)
+            {
+                var signal = await CreateExpirationSignalAsync(token, cancellationToken);
+                if (signal is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
+                }
+
+                entry.AddExpirationToken(signal);
+            }
+
+            entry.SetSize(1L);
+            entry.SetValue(token);
+        }
+
+        /// <summary>
+        /// Creates a cache entry for the specified key.
+        /// </summary>
+        /// <param name="key">The cache key.</param>
+        /// <param name="tokens">The tokens to store in the cache entry.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        protected virtual async ValueTask CreateEntryAsync(
+            object key, ImmutableArray<TToken> tokens, CancellationToken cancellationToken)
+        {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            using var entry = _cache.CreateEntry(key);
+
+            foreach (var token in tokens)
+            {
+                var signal = await CreateExpirationSignalAsync(token, cancellationToken);
+                if (signal is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
+                }
+
+                entry.AddExpirationToken(signal);
+            }
+
+            entry.SetSize(tokens.Length);
+            entry.SetValue(tokens);
         }
 
         /// <summary>
@@ -711,9 +576,9 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns an expiration signal for the specified token.
         /// </returns>
-        protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TToken token, CancellationToken cancellationToken)
         {
-            if (token == null)
+            if (token is null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
@@ -721,7 +586,7 @@ namespace OpenIddict.Core
             var identifier = await _store.GetIdAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new InvalidOperationException("The token identifier cannot be extracted.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0205));
             }
 
             var signal = _signals.GetOrAdd(identifier, _ => new CancellationTokenSource());

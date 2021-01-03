@@ -1,13 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1;net5.0;netstandard2.0;netstandard2.1</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Easy-to-use OpenID Connect server for ASP.NET 4.x/OWIN and ASP.NET Core.</Description>
+    <Description>Versatile OpenID Connect stack for .NET.
+
+Note: this metapackage only references the generic core, server and validation packages.
+To use these features on ASP.NET Core or OWIN/Katana/ASP.NET 4.x, reference the OpenIddict.AspNetCore or OpenIddict.Owin package.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +20,15 @@
     <ProjectReference Include="..\OpenIddict.Validation\OpenIddict.Validation.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation.ServerIntegration\OpenIddict.Validation.ServerIntegration.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation.SystemNetHttp\OpenIddict.Validation.SystemNetHttp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\netcoreapp2.1\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\netcoreapp3.1\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\net5.0\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\netstandard2.0\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\netstandard2.1\_._" />
   </ItemGroup>
 
 </Project>

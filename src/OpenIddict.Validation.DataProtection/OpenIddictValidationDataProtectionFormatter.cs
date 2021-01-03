@@ -7,31 +7,26 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.IO;
 using System.Security.Claims;
 using System.Text.Json;
-using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Properties;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation.DataProtection
 {
     public class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
     {
-        public ClaimsPrincipal ReadToken([NotNull] BinaryReader reader)
+        public ClaimsPrincipal ReadToken(BinaryReader reader)
         {
-            if (reader == null)
+            if (reader is null)
             {
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            var (principal, properties) = Read(reader, version: 5);
-            if (principal == null)
-            {
-                return null;
-            }
+            var (principal, properties) = Read(reader);
 
             // Tokens serialized using the ASP.NET Core Data Protection stack are compound
             // of both claims and special authentication properties. To ensure existing tokens
@@ -39,8 +34,6 @@ namespace OpenIddict.Validation.DataProtection
 
             return principal
                 .SetAudiences(GetArrayProperty(properties, Properties.Audiences))
-                .SetCreationDate(GetDateProperty(properties, Properties.Issued))
-                .SetExpirationDate(GetDateProperty(properties, Properties.Expires))
                 .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
                 .SetResources(GetArrayProperty(properties, Properties.Resources))
                 .SetScopes(GetArrayProperty(properties, Properties.Scopes))
@@ -50,17 +43,24 @@ namespace OpenIddict.Validation.DataProtection
                 .SetClaim(Claims.Private.AuthorizationId, GetProperty(properties, Properties.InternalAuthorizationId))
                 .SetClaim(Claims.Private.CodeChallenge, GetProperty(properties, Properties.CodeChallenge))
                 .SetClaim(Claims.Private.CodeChallengeMethod, GetProperty(properties, Properties.CodeChallengeMethod))
+                .SetClaim(Claims.Private.CreationDate, GetProperty(properties, Properties.Issued))
+                .SetClaim(Claims.Private.DeviceCodeId, GetProperty(properties, Properties.DeviceCodeId))
+                .SetClaim(Claims.Private.DeviceCodeLifetime, GetProperty(properties, Properties.DeviceCodeLifetime))
                 .SetClaim(Claims.Private.IdentityTokenLifetime, GetProperty(properties, Properties.IdentityTokenLifetime))
+                .SetClaim(Claims.Private.ExpirationDate, GetProperty(properties, Properties.Expires))
                 .SetClaim(Claims.Private.Nonce, GetProperty(properties, Properties.Nonce))
                 .SetClaim(Claims.Private.RedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
                 .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime))
-                .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId));
+                .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
+                .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
-            static (ClaimsPrincipal principal, ImmutableDictionary<string, string> properties) Read(BinaryReader reader, int version)
+            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the ticket.
+                var version = reader.ReadInt32();
+                if (version != 5)
                 {
-                    return (null, ImmutableDictionary.Create<string, string>());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
                 }
 
                 // Read the authentication scheme associated to the ticket.
@@ -68,10 +68,6 @@ namespace OpenIddict.Validation.DataProtection
 
                 // Read the number of identities stored in the serialized payload.
                 var count = reader.ReadInt32();
-                if (count < 0)
-                {
-                    return (null, ImmutableDictionary.Create<string, string>());
-                }
 
                 var identities = new ClaimsIdentity[count];
                 for (var index = 0; index != count; ++index)
@@ -79,7 +75,7 @@ namespace OpenIddict.Validation.DataProtection
                     identities[index] = ReadIdentity(reader);
                 }
 
-                var properties = ReadProperties(reader, version);
+                var properties = ReadProperties(reader);
 
                 return (new ClaimsPrincipal(identities), properties);
             }
@@ -140,21 +136,23 @@ namespace OpenIddict.Validation.DataProtection
                 return claim;
             }
 
-            static ImmutableDictionary<string, string> ReadProperties(BinaryReader reader, int version)
+            static IReadOnlyDictionary<string, string> ReadProperties(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the properties.
+                var version = reader.ReadInt32();
+                if (version != 1)
                 {
-                    return ImmutableDictionary.Create<string, string>();
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
                 }
 
-                var properties = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
                 var count = reader.ReadInt32();
+                var properties = new Dictionary<string, string>(count, StringComparer.Ordinal);
                 for (var index = 0; index != count; ++index)
                 {
                     properties.Add(reader.ReadString(), reader.ReadString());
                 }
 
-                return properties.ToImmutable();
+                return properties;
             }
 
             static string ReadWithDefault(BinaryReader reader, string defaultValue)
@@ -169,16 +167,32 @@ namespace OpenIddict.Validation.DataProtection
                 return value;
             }
 
-            static string GetProperty(IReadOnlyDictionary<string, string> properties, string name)
+            static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? value : null;
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ?
-                JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
+            {
+                if (properties.TryGetValue(name, out var value))
+                {
+                    using var document = JsonDocument.Parse(value);
+                    var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
 
-            static DateTimeOffset? GetDateProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ? (DateTimeOffset?)
-                DateTimeOffset.ParseExact(value, "r", CultureInfo.InvariantCulture) : null;
+                    foreach (var element in document.RootElement.EnumerateArray())
+                    {
+                        var item = element.GetString();
+                        if (string.IsNullOrEmpty(item))
+                        {
+                            continue;
+                        }
+
+                        builder.Add(item);
+                    }
+
+                    return builder.ToImmutable();
+                }
+
+                return ImmutableArray.Create<string>();
+            }
         }
     }
 }

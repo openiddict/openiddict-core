@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
@@ -23,9 +22,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractConfigurationRequestContext"/> class.
             /// </summary>
-            public ExtractConfigurationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractConfigurationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -38,9 +46,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateConfigurationRequestContext"/> class.
             /// </summary>
-            public ValidateConfigurationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateConfigurationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -53,9 +70,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleConfigurationRequestContext"/> class.
             /// </summary>
-            public HandleConfigurationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleConfigurationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
 
             /// <summary>
@@ -67,118 +93,107 @@ namespace OpenIddict.Server
             /// <summary>
             /// Gets or sets the authorization endpoint address.
             /// </summary>
-            public Uri AuthorizationEndpoint { get; set; }
+            public Uri? AuthorizationEndpoint { get; set; }
 
             /// <summary>
             /// Gets or sets the JWKS endpoint address.
             /// </summary>
-            public Uri CryptographyEndpoint { get; set; }
+            public Uri? CryptographyEndpoint { get; set; }
 
             /// <summary>
             /// Gets or sets the device endpoint address.
             /// </summary>
-            public Uri DeviceEndpoint { get; set; }
+            public Uri? DeviceEndpoint { get; set; }
 
             /// <summary>
             /// Gets or sets the introspection endpoint address.
             /// </summary>
-            public Uri IntrospectionEndpoint { get; set; }
+            public Uri? IntrospectionEndpoint { get; set; }
 
             /// <summary>
             /// Gets or sets the logout endpoint address.
             /// </summary>
-            public Uri LogoutEndpoint { get; set; }
+            public Uri? LogoutEndpoint { get; set; }
 
             /// <summary>
             /// Gets or sets the revocation endpoint address.
             /// </summary>
-            public Uri RevocationEndpoint { get; set; }
+            public Uri? RevocationEndpoint { get; set; }
 
             /// <summary>
             /// Gets or sets the token endpoint address.
             /// </summary>
-            public Uri TokenEndpoint { get; set; }
+            public Uri? TokenEndpoint { get; set; }
 
             /// <summary>
             /// Gets or sets the userinfo endpoint address.
             /// </summary>
-            public Uri UserinfoEndpoint { get; set; }
+            public Uri? UserinfoEndpoint { get; set; }
 
             /// <summary>
             /// Gets the list of claims supported by the authorization server.
             /// </summary>
-            public ISet<string> Claims { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets a list of the code challenge methods
             /// supported by the authorization server.
             /// </summary>
-            public ISet<string> CodeChallengeMethods { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> CodeChallengeMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets the list of grant types
             /// supported by the authorization server.
             /// </summary>
-            public ISet<string> GrantTypes { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets a list of signing algorithms supported by the
             /// authorization server for signing the identity tokens.
             /// </summary>
-            public ISet<string> IdTokenSigningAlgorithms { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> IdTokenSigningAlgorithms { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets a list of client authentication methods supported by
             /// the introspection endpoint provided by the authorization server.
             /// </summary>
-            public ISet<string> IntrospectionEndpointAuthenticationMethods { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> IntrospectionEndpointAuthenticationMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets the list of response modes
             /// supported by the authorization server.
             /// </summary>
-            public ISet<string> ResponseModes { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> ResponseModes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets the list of response types
             /// supported by the authorization server.
             /// </summary>
-            public ISet<string> ResponseTypes { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> ResponseTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets a list of client authentication methods supported by
             /// the revocation endpoint provided by the authorization server.
             /// </summary>
-            public ISet<string> RevocationEndpointAuthenticationMethods { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> RevocationEndpointAuthenticationMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets the list of scope values
             /// supported by the authorization server.
             /// </summary>
-            public ISet<string> Scopes { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets the list of subject types
             /// supported by the authorization server.
             /// </summary>
-            public ISet<string> SubjectTypes { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> SubjectTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets a list of client authentication methods supported by
             /// the token endpoint provided by the authorization server.
             /// </summary>
-            public ISet<string> TokenEndpointAuthenticationMethods { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> TokenEndpointAuthenticationMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -189,9 +204,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyConfigurationResponseContext"/> class.
             /// </summary>
-            public ApplyConfigurationResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyConfigurationResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -199,7 +232,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
 
         /// <summary>
@@ -211,9 +244,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractCryptographyRequestContext"/> class.
             /// </summary>
-            public ExtractCryptographyRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractCryptographyRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
         }
 
@@ -226,9 +277,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateCryptographyRequestContext"/> class.
             /// </summary>
-            public ValidateCryptographyRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateCryptographyRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -241,15 +301,24 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleCryptographyRequestContext"/> class.
             /// </summary>
-            public HandleCryptographyRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleCryptographyRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets the list of JSON Web Keys exposed by the JWKS endpoint.
             /// </summary>
-            public IList<JsonWebKey> Keys { get; } = new List<JsonWebKey>();
+            public List<JsonWebKey> Keys { get; } = new List<JsonWebKey>();
         }
 
         /// <summary>
@@ -260,9 +329,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyCryptographyResponseContext"/> class.
             /// </summary>
-            public ApplyCryptographyResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyCryptographyResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -270,7 +357,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
     }
 }

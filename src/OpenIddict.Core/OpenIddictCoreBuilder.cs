@@ -6,11 +6,11 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.Extensions;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictCoreBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictCoreBuilder([NotNull] IServiceCollection services)
+        public OpenIddictCoreBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -38,9 +38,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder Configure([NotNull] Action<OpenIddictCoreOptions> configuration)
+        public OpenIddictCoreBuilder Configure(Action<OpenIddictCoreOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -72,18 +72,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddApplicationStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddApplicationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictApplicationStore<>)
@@ -92,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictApplicationStore<>), type, lifetime));
@@ -129,18 +128,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddAuthorizationStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddAuthorizationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictAuthorizationStore<>)
@@ -149,7 +147,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictAuthorizationStore<>), type, lifetime));
@@ -186,18 +184,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddScopeStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddScopeStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictScopeStore<>)
@@ -206,7 +203,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictScopeStore<>), type, lifetime));
@@ -243,18 +240,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="type">The type of the custom store.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddTokenStore(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        public OpenIddictCoreBuilder AddTokenStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictTokenStore<>)
@@ -263,7 +259,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictTokenStore<>), type, lifetime));
@@ -298,17 +294,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceApplicationManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceApplicationManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictApplicationManager<>)
@@ -317,7 +313,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -355,16 +351,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceApplicationStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (!typeof(IOpenIddictApplicationStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictApplicationStoreResolver), type, lifetime));
@@ -392,17 +388,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceAuthorizationManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceAuthorizationManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictAuthorizationManager<>)
@@ -411,7 +407,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -449,16 +445,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (!typeof(IOpenIddictAuthorizationStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictAuthorizationStoreResolver), type, lifetime));
@@ -486,17 +482,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceScopeManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceScopeManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictScopeManager<>)
@@ -505,7 +501,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -543,16 +539,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceScopeStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (!typeof(IOpenIddictScopeStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictScopeStoreResolver), type, lifetime));
@@ -580,17 +576,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceTokenManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceTokenManager(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>));
-            if (root == null)
+            if (root is null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictTokenManager<>)
@@ -599,7 +595,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -637,16 +633,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder ReplaceTokenStoreResolver(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (!typeof(IOpenIddictTokenStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictTokenStoreResolver), type, lifetime));
@@ -686,16 +682,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The application entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultApplicationEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultApplicationEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             return Configure(options => options.DefaultApplicationType = type);
@@ -713,16 +709,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The authorization entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             return Configure(options => options.DefaultAuthorizationType = type);
@@ -740,16 +736,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The scope entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultScopeEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultScopeEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             return Configure(options => options.DefaultScopeType = type);
@@ -767,16 +763,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The token entity type.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultTokenEntity([NotNull] Type type)
+        public OpenIddictCoreBuilder SetDefaultTokenEntity(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
             }
 
             return Configure(options => options.DefaultTokenType = type);
@@ -792,32 +788,22 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (limit < 10)
             {
-                throw new ArgumentException("The cache size cannot be less than 10.", nameof(limit));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0233), nameof(limit));
             }
 
             return Configure(options => options.EntityCacheLimit = limit);
         }
 
-        /// <summary>
-        /// Determines whether the specified object is equal to the current object.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
-        /// <summary>
-        /// Serves as the default hash function.
-        /// </summary>
-        /// <returns>A hash code for the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

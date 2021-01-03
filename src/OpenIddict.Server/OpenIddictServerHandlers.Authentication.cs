@@ -7,15 +7,17 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -47,13 +49,14 @@ namespace OpenIddict.Server
                 ValidateScopeParameter.Descriptor,
                 ValidateNonceParameter.Descriptor,
                 ValidatePromptParameter.Descriptor,
-                ValidateCodeChallengeParameters.Descriptor,
+                ValidateProofKeyForCodeExchangeParameters.Descriptor,
                 ValidateClientId.Descriptor,
                 ValidateClientType.Descriptor,
                 ValidateClientRedirectUri.Descriptor,
                 ValidateScopes.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
+                ValidateResponseTypePermissions.Descriptor,
                 ValidateScopePermissions.Descriptor,
                 ValidateProofKeyForCodeExchangeRequirement.Descriptor,
 
@@ -69,41 +72,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractAuthorizationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractAuthorizationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<ExtractAuthorizationRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
-                    }
-
                     var notification = new ExtractAuthorizationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -126,16 +120,12 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The authorization request was not correctly extracted. To extract authorization requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractAuthorizationRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0027));
                     }
 
-                    context.Logger.LogInformation("The authorization request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6030), notification.Request);
                 }
             }
 
@@ -144,45 +134,36 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateAuthorizationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateAuthorizationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<ValidateAuthorizationRequest>()
                         .SetOrder(ExtractAuthorizationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
-                    }
-
                     var notification = new ValidateAuthorizationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the redirect_uri without triggering a new validation process.
-                    context.Transaction.SetProperty(typeof(ValidateAuthorizationRequestContext).FullName, notification);
+                    context.Transaction.SetProperty(typeof(ValidateAuthorizationRequestContext).FullName!, notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -207,10 +188,10 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(notification.RedirectUri))
                     {
-                        throw new InvalidOperationException("The request cannot be validated because no redirect_uri was specified.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0028));
                     }
 
-                    context.Logger.LogInformation("The authorization request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6031));
                 }
             }
 
@@ -219,41 +200,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleAuthorizationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleAuthorizationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<HandleAuthorizationRequest>()
                         .SetOrder(ValidateAuthorizationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
-                    }
-
                     var notification = new HandleAuthorizationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -276,7 +248,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Principal != null)
+                    if (notification.Principal is not null)
                     {
                         var @event = new ProcessSignInContext(context.Transaction)
                         {
@@ -284,7 +256,7 @@ namespace OpenIddict.Server
                             Response = new OpenIddictResponse()
                         };
 
-                        await _provider.DispatchAsync(@event);
+                        await _dispatcher.DispatchAsync(@event);
 
                         if (@event.IsRequestHandled)
                         {
@@ -308,12 +280,7 @@ namespace OpenIddict.Server
                         }
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The authorization request was not handled. To handle authorization requests, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<HandleAuthorizationRequestContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .Append("Alternatively, enable the pass-through mode to handle them at a later stage.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0029));
                 }
             }
 
@@ -322,41 +289,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyAuthorizationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyAuthorizationResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyAuthorizationResponse(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireAuthorizationRequest>()
                         .UseScopedHandler<ApplyAuthorizationResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] TContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Authorization)
-                    {
-                        return;
-                    }
-
                     var notification = new ApplyAuthorizationResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -370,11 +328,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The authorization response was not correctly applied. To apply authorization responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyAuthorizationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0030));
                 }
             }
 
@@ -390,18 +344,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateRequestParameter>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -409,12 +358,12 @@ namespace OpenIddict.Server
                     // Reject requests using the unsupported request parameter.
                     if (!string.IsNullOrEmpty(context.Request.Request))
                     {
-                        context.Logger.LogError("The authorization request was rejected because it contained " +
-                                                "an unsupported parameter: {Parameter}.", "request");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6032), Parameters.Request);
 
                         context.Reject(
                             error: Errors.RequestNotSupported,
-                            description: "The 'request' parameter is not supported.");
+                            description: SR.FormatID2028(Parameters.Request),
+                            uri: SR.FormatID8000(SR.ID2028));
 
                         return default;
                     }
@@ -435,18 +384,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateRequestUriParameter>()
                         .SetOrder(ValidateRequestParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -454,12 +398,12 @@ namespace OpenIddict.Server
                     // Reject requests using the unsupported request_uri parameter.
                     if (!string.IsNullOrEmpty(context.Request.RequestUri))
                     {
-                        context.Logger.LogError("The authorization request was rejected because it contained " +
-                                                "an unsupported parameter: {Parameter}.", "request_uri");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6032), Parameters.RequestUri);
 
                         context.Reject(
                             error: Errors.RequestUriNotSupported,
-                            description: "The 'request_uri' parameter is not supported.");
+                            description: SR.FormatID2028(Parameters.RequestUri),
+                            uri: SR.FormatID8000(SR.ID2028));
 
                         return default;
                     }
@@ -480,18 +424,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateClientIdParameter>()
                         .SetOrder(ValidateRequestUriParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -500,12 +439,12 @@ namespace OpenIddict.Server
                     // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                     if (string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError("The authorization request was rejected because " +
-                                                "the mandatory 'client_id' parameter was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'client_id' parameter is missing.");
+                            description: SR.FormatID2029(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -526,18 +465,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateRedirectUriParameter>()
                         .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -551,12 +485,12 @@ namespace OpenIddict.Server
                     {
                         if (context.Request.HasScope(Scopes.OpenId))
                         {
-                            context.Logger.LogError("The authorization request was rejected because " +
-                                                    "the mandatory 'redirect_uri' parameter was missing.");
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: "The mandatory 'redirect_uri' parameter is missing.");
+                                description: SR.FormatID2029(Parameters.RedirectUri),
+                                uri: SR.FormatID8000(SR.ID2029));
 
                             return default;
                         }
@@ -572,14 +506,14 @@ namespace OpenIddict.Server
                     // To ensure relative redirect_uris are correctly rejected on these platforms,
                     // an additional check using IsWellFormedOriginalString() is made here.
                     // See https://github.com/dotnet/corefx/issues/22098 for more information.
-                    if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
-                        context.Logger.LogError("The authorization request was rejected because the 'redirect_uri' parameter " +
-                                                "didn't correspond to a valid absolute URL: {RedirectUri}.", context.RedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6034), Parameters.RedirectUri, context.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'redirect_uri' parameter must be a valid absolute URL.");
+                            description: SR.FormatID2030(Parameters.RedirectUri),
+                            uri: SR.FormatID8000(SR.ID2030));
 
                         return default;
                     }
@@ -589,12 +523,12 @@ namespace OpenIddict.Server
                     // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
                     if (!string.IsNullOrEmpty(uri.Fragment))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the 'redirect_uri' " +
-                                                "contained a URL fragment: {RedirectUri}.", context.RedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6035), Parameters.RedirectUri, context.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'redirect_uri' parameter must not include a fragment.");
+                            description: SR.FormatID2031(Parameters.RedirectUri),
+                            uri: SR.FormatID8000(SR.ID2031));
 
                         return default;
                     }
@@ -615,18 +549,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateResponseTypeParameter>()
                         .SetOrder(ValidateRedirectUriParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -634,12 +563,52 @@ namespace OpenIddict.Server
                     // Reject requests missing the mandatory response_type parameter.
                     if (string.IsNullOrEmpty(context.Request.ResponseType))
                     {
-                        context.Logger.LogError("The authorization request was rejected because " +
-                                                "the mandatory 'response_type' parameter was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.ResponseType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'response_type' parameter is missing.");
+                            description: SR.FormatID2029(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2029));
+
+                        return default;
+                    }
+
+                    // Reject code flow requests if the server is not configured to allow the authorization code grant type.
+                    if (context.Request.IsAuthorizationCodeFlow() && !context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnsupportedResponseType,
+                            description: SR.FormatID2032(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2032));
+
+                        return default;
+                    }
+
+                    // Reject implicit flow requests if the server is not configured to allow the implicit grant type.
+                    if (context.Request.IsImplicitFlow() && !context.Options.GrantTypes.Contains(GrantTypes.Implicit))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnsupportedResponseType,
+                            description: SR.FormatID2032(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2032));
+
+                        return default;
+                    }
+
+                    // Reject hybrid flow requests if the server is not configured to allow the authorization code or implicit grant types.
+                    if (context.Request.IsHybridFlow() && (!context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
+                                                           !context.Options.GrantTypes.Contains(GrantTypes.Implicit)))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnsupportedResponseType,
+                            description: SR.FormatID2032(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2032));
 
                         return default;
                     }
@@ -649,12 +618,12 @@ namespace OpenIddict.Server
                     if (!context.Options.ResponseTypes.Any(type =>
                         types.SetEquals(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the '{ResponseType}' " +
-                                                "response type is not supported.", context.Request.ResponseType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
 
                         context.Reject(
                             error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' parameter is not allowed.");
+                            description: SR.FormatID2032(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2032));
 
                         return default;
                     }
@@ -675,18 +644,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateResponseModeParameter>()
                         .SetOrder(ValidateResponseTypeParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -697,13 +661,12 @@ namespace OpenIddict.Server
                     if (context.Request.IsQueryResponseMode() && (context.Request.HasResponseType(ResponseTypes.IdToken) ||
                                                                   context.Request.HasResponseType(ResponseTypes.Token)))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the 'response_type'/'response_mode' " +
-                                                "combination was invalid: {ResponseType} ; {ResponseMode}.",
-                                                context.Request.ResponseType, context.Request.ResponseMode);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6037), context.Request.ResponseType, context.Request.ResponseMode);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'response_type'/'response_mode' combination is invalid.");
+                            description: SR.FormatID2033(Parameters.ResponseType, Parameters.ResponseMode),
+                            uri: SR.FormatID8000(SR.ID2033));
 
                         return default;
                     }
@@ -712,12 +675,12 @@ namespace OpenIddict.Server
                     // if the default response_mode inferred from the response_type was explicitly disabled in the options.
                     if (!ValidateResponseMode(context.Request, context.Options))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the '{ResponseMode}' " +
-                                                "response mode is not supported.", context.Request.ResponseMode);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6038), context.Request.ResponseMode);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'response_mode' parameter is not supported.");
+                            description: SR.FormatID2032(Parameters.ResponseMode),
+                            uri: SR.FormatID8000(SR.ID2032));
 
                         return default;
                     }
@@ -763,18 +726,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateScopeParameter>()
                         .SetOrder(ValidateResponseModeParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -782,11 +740,12 @@ namespace OpenIddict.Server
                     // Reject authorization requests containing the id_token response_type if no openid scope has been received.
                     if (context.Request.HasResponseType(ResponseTypes.IdToken) && !context.Request.HasScope(Scopes.OpenId))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the 'openid' scope was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6039), Scopes.OpenId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'openid' scope is missing.");
+                            description: SR.FormatID2034(Scopes.OpenId),
+                            uri: SR.FormatID8000(SR.ID2034));
 
                         return default;
                     }
@@ -796,7 +755,8 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'offline_access' scope is not allowed.");
+                            description: SR.FormatID2035(Scopes.OfflineAccess),
+                            uri: SR.FormatID8000(SR.ID2035));
 
                         return default;
                     }
@@ -817,18 +777,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateNonceParameter>()
                         .SetOrder(ValidateScopeParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -845,11 +800,12 @@ namespace OpenIddict.Server
 
                     if (context.Request.IsImplicitFlow() || context.Request.IsHybridFlow())
                     {
-                        context.Logger.LogError("The authorization request was rejected because the mandatory 'nonce' parameter was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.Nonce);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'nonce' parameter is missing.");
+                            description: SR.FormatID2029(Parameters.Nonce),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -870,18 +826,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidatePromptParameter>()
                         .SetOrder(ValidateNonceParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -891,11 +842,12 @@ namespace OpenIddict.Server
                                                                     context.Request.HasPrompt(Prompts.Login) ||
                                                                     context.Request.HasPrompt(Prompts.SelectAccount)))
                     {
-                        context.Logger.LogError("The authorization request was rejected because an invalid prompt parameter was specified.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6040));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'prompt' parameter is invalid.");
+                            description: SR.FormatID2052(Parameters.Prompt),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return default;
                     }
@@ -905,33 +857,46 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting authorization requests that don't specify valid code challenge parameters.
+            /// Contains the logic responsible of rejecting authorization requests that don't specify valid PKCE parameters.
             /// </summary>
-            public class ValidateCodeChallengeParameters : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            public class ValidateProofKeyForCodeExchangeParameters : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
-                        .UseSingletonHandler<ValidateCodeChallengeParameters>()
+                        .UseSingletonHandler<ValidateProofKeyForCodeExchangeParameters>()
                         .SetOrder(ValidatePromptParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    // If OpenIddict was configured to require PKCE, reject the request if the code challenge
+                    // is missing and if an authorization code was requested by the client application.
+                    if (context.Options.RequireProofKeyForCodeExchange &&
+                        context.Request.HasResponseType(ResponseTypes.Code) &&
+                        string.IsNullOrEmpty(context.Request.CodeChallenge))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2029(Parameters.CodeChallenge),
+                            uri: SR.FormatID8000(SR.ID2029));
+
+                        return default;
+                    }
+
+                    // At this point, stop validating the PKCE parameters if both the
+                    // code_challenge and code_challenge_method parameter are missing.
                     if (string.IsNullOrEmpty(context.Request.CodeChallenge) &&
                         string.IsNullOrEmpty(context.Request.CodeChallengeMethod))
                     {
@@ -941,11 +906,12 @@ namespace OpenIddict.Server
                     // Ensure a code_challenge was specified if a code_challenge_method was used.
                     if (string.IsNullOrEmpty(context.Request.CodeChallenge))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the code_challenge was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'code_challenge_method' parameter cannot be used without 'code_challenge'.");
+                            description: SR.FormatID2037(Parameters.CodeChallengeMethod, Parameters.CodeChallenge),
+                            uri: SR.FormatID8000(SR.ID2037));
 
                         return default;
                     }
@@ -955,12 +921,12 @@ namespace OpenIddict.Server
                     if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                         !context.Options.CodeChallengeMethods.Contains(CodeChallengeMethods.Plain))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the " +
-                                                "required 'code_challenge_method' parameter was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallengeMethod);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'code_challenge_method' parameter must be specified.");
+                            description: SR.FormatID2029(Parameters.CodeChallengeMethod),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -969,12 +935,12 @@ namespace OpenIddict.Server
                     if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
                         !context.Options.CodeChallengeMethods.Contains(context.Request.CodeChallengeMethod))
                     {
-                        context.Logger.LogError("The authorization request was rejected because " +
-                                                "the specified code challenge method was not supported.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6041));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'code_challenge_method' parameter is not supported.");
+                            description: SR.FormatID2032(Parameters.CodeChallengeMethod),
+                            uri: SR.FormatID8000(SR.ID2032));
 
                         return default;
                     }
@@ -982,13 +948,12 @@ namespace OpenIddict.Server
                     // When code_challenge or code_challenge_method is specified, ensure the response_type includes "code".
                     if (!context.Request.HasResponseType(ResponseTypes.Code))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the response type " +
-                                                "was not compatible with 'code_challenge'/'code_challenge_method'.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6042));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'code_challenge' and 'code_challenge_method' parameters " +
-                                         "can only be used with a response type containing 'code'.");
+                            description: SR.FormatID2040(Parameters.CodeChallenge, Parameters.CodeChallengeMethod, ResponseTypes.Code),
+                            uri: SR.FormatID8000(SR.ID2040));
 
                         return default;
                     }
@@ -996,12 +961,12 @@ namespace OpenIddict.Server
                     // Reject authorization requests that contain response_type=token when a code_challenge is specified.
                     if (context.Request.HasResponseType(ResponseTypes.Token))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the " +
-                                                "specified response type was not compatible with PKCE.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6043));
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'response_type' parameter is not allowed when using PKCE.");
+                            description: SR.FormatID2041(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2041));
 
                         return default;
                     }
@@ -1018,15 +983,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientId() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateClientId([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientId(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1036,32 +995,29 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientId>()
-                        .SetOrder(ValidateCodeChallengeParameters.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateProofKeyForCodeExchangeParameters.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        context.Logger.LogError("The authorization request was rejected because the client " +
-                                                "application was not found: '{ClientId}'.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6044), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'client_id' parameter is invalid.");
+                            description: SR.FormatID2052(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -1069,23 +1025,18 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting authorization requests
-            /// that use a response_type incompatible with the client application.
-            /// Note: this handler is not used when the degraded mode is enabled.
+            /// Contains the logic responsible of rejecting authorization requests that use a
+            /// response_type containing token if the application is a confidential client.
+            /// Note: this handler is not used when the degraded mode is enabled
+            /// or when response type permissions enforcement is not disabled.
             /// </summary>
             public class ValidateClientType : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientType() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateClientType([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientType(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1096,41 +1047,44 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientType>()
                         .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // To prevent downgrade attacks, ensure that authorization requests returning an access token directly
-                    // from the authorization endpoint are rejected if the client_id corresponds to a confidential application.
-                    // Note: when using the authorization code grant, the ValidateClientSecret handler is responsible of rejecting
-                    // the token request if the client_id corresponds to an unauthenticated confidential client.
-                    if (context.Request.HasResponseType(ResponseTypes.Token) &&
-                        await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
+                    // from the authorization endpoint are rejected if the client_id corresponds to a confidential application
+                    // and if response type permissions enforcement was explicitly disabled in the server options.
+                    // Users who want to enable this advanced scenario are encouraged to re-enable permissions validation.
+                    //
+                    // Alternatively, this handler can be removed from the handlers list using the events model APIs.
+                    if (!context.Options.IgnoreResponseTypePermissions || !context.Request.HasResponseType(ResponseTypes.Token))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the confidential application '{ClientId}' " +
-                                                "was not allowed to retrieve an access token from the authorization endpoint.", context.ClientId);
+                        return;
+                    }
+
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6045), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The specified 'response_type' parameter is not valid for this client application.");
+                            description: SR.FormatID2043(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2043));
 
                         return;
                     }
@@ -1145,15 +1099,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientRedirectUri() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateClientRedirectUri([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientRedirectUri(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1164,26 +1112,23 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientRedirectUri>()
                         .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // If no explicit redirect_uri was specified, retrieve the addresses associated with
@@ -1193,12 +1138,12 @@ namespace OpenIddict.Server
                         var addresses = await _applicationManager.GetRedirectUrisAsync(application);
                         if (addresses.Length != 1)
                         {
-                            context.Logger.LogError("The authorization request was rejected because " +
-                                                    "the mandatory 'redirect_uri' parameter was missing.");
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: "The mandatory 'redirect_uri' parameter is missing.");
+                                description: SR.FormatID2029(Parameters.RedirectUri),
+                                uri: SR.FormatID8000(SR.ID2029));
 
                             return;
                         }
@@ -1211,12 +1156,12 @@ namespace OpenIddict.Server
                     // Otherwise, ensure that the specified redirect_uri is valid and is associated with the client application.
                     if (!await _applicationManager.ValidateRedirectUriAsync(application, context.RedirectUri))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the redirect_uri " +
-                                                "was invalid: '{RedirectUri}'.", context.RedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6046), context.RedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'redirect_uri' parameter is not valid for this client application.");
+                            description: SR.FormatID2043(Parameters.RedirectUri),
+                            uri: SR.FormatID8000(SR.ID2043));
 
                         return;
                     }
@@ -1225,21 +1170,13 @@ namespace OpenIddict.Server
 
             /// <summary>
             /// Contains the logic responsible of rejecting authorization requests that use unregistered scopes.
-            /// Note: this handler is not used when the degraded mode is enabled or when scope validation is disabled.
+            /// Note: this handler partially works with the degraded mode but is not used when scope validation is disabled.
             /// </summary>
             public class ValidateScopes : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
             {
-                private readonly IOpenIddictScopeManager _scopeManager;
+                private readonly IOpenIddictScopeManager? _scopeManager;
 
-                public ValidateScopes() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
-
-                public ValidateScopes([NotNull] IOpenIddictScopeManager scopeManager)
+                public ValidateScopes(IOpenIddictScopeManager? scopeManager = null)
                     => _scopeManager = scopeManager;
 
                 /// <summary>
@@ -1248,21 +1185,25 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .AddFilter<RequireScopeValidationEnabled>()
-                        .AddFilter<RequireDegradedModeDisabled>()
-                        .UseScopedHandler<ValidateScopes>()
+                        .UseScopedHandler<ValidateScopes>(static provider =>
+                        {
+                            // Note: the scope manager is only resolved if the degraded mode was not enabled to ensure
+                            // invalid core configuration exceptions are not thrown even if the managers were registered.
+                            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                            return options.EnableDegradedMode ?
+                                new ValidateScopes() :
+                                new ValidateScopes(provider.GetService<IOpenIddictScopeManager>() ??
+                                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
+                        })
                         .SetOrder(ValidateClientRedirectUri.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1271,23 +1212,35 @@ namespace OpenIddict.Server
                     var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
                     scopes.ExceptWith(context.Options.Scopes);
 
-                    if (scopes.Count != 0)
+                    // Note: the remaining scopes are only checked if the degraded mode was not enabled,
+                    // as this requires using the scope manager, which is never used with the degraded mode,
+                    // even if the service was registered and resolved from the dependency injection container.
+                    if (scopes.Count != 0 && !context.Options.EnableDegradedMode)
                     {
+                        if (_scopeManager is null)
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+                        }
+
                         await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {
-                            scopes.Remove(await _scopeManager.GetNameAsync(scope));
+                            var name = await _scopeManager.GetNameAsync(scope);
+                            if (!string.IsNullOrEmpty(name))
+                            {
+                                scopes.Remove(name);
+                            }
                         }
                     }
 
                     // If at least one scope was not recognized, return an error.
                     if (scopes.Count != 0)
                     {
-                        context.Logger.LogError("The authentication request was rejected because " +
-                                                "invalid scopes were specified: {Scopes}.", scopes);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6047), scopes);
 
                         context.Reject(
                             error: Errors.InvalidScope,
-                            description: "The specified 'scope' parameter is not valid.");
+                            description: SR.FormatID2052(Parameters.Scope),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -1302,15 +1255,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateEndpointPermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateEndpointPermissions([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1322,37 +1269,34 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateEndpointPermissions>()
                         .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // Reject the request if the application is not allowed to use the authorization endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Authorization))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the authorization endpoint.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6048), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "This client application is not allowed to use the authorization endpoint.");
+                            description: SR.GetResourceString(SR.ID2046),
+                            uri: SR.FormatID8000(SR.ID2046));
 
                         return;
                     }
@@ -1367,15 +1311,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateGrantTypePermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateGrantTypePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1387,84 +1325,164 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateGrantTypePermissions>()
                         .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
-                    // Reject the request if the application is not allowed to use the authorization code flow.
+                    // Reject the request if the application is not allowed to use the authorization code grant.
                     if (context.Request.IsAuthorizationCodeFlow() &&
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the authorization code flow.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6049), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The client application is not allowed to use the authorization code flow.");
+                            description: SR.GetResourceString(SR.ID2047),
+                            uri: SR.FormatID8000(SR.ID2047));
 
                         return;
                     }
 
-                    // Reject the request if the application is not allowed to use the implicit flow.
+                    // Reject the request if the application is not allowed to use the implicit grant.
                     if (context.Request.IsImplicitFlow() &&
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the implicit flow.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6050), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The client application is not allowed to use the implicit flow.");
+                            description: SR.GetResourceString(SR.ID2048),
+                            uri: SR.FormatID8000(SR.ID2048));
 
                         return;
                     }
 
-                    // Reject the request if the application is not allowed to use the authorization code/implicit flows.
+                    // Reject the request if the application is not allowed to use the authorization code/implicit grants.
                     if (context.Request.IsHybridFlow() &&
                        (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.AuthorizationCode) ||
                         !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.Implicit)))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the hybrid flow.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6051), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The client application is not allowed to use the hybrid flow.");
+                            description: SR.GetResourceString(SR.ID2049),
+                            uri: SR.FormatID8000(SR.ID2049));
 
                         return;
                     }
 
-                    // Reject the request if the offline_access scope was request and if
-                    // the application is not allowed to use the refresh token grant type.
+                    // Reject the request if the offline_access scope was request and
+                    // if the application is not allowed to use the refresh token grant.
                     if (context.Request.HasScope(Scopes.OfflineAccess) &&
                        !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to request the 'offline_access' scope.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6052), context.ClientId, Scopes.OfflineAccess);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The client application is not allowed to use the 'offline_access' scope.");
+                            description: SR.FormatID2065(Scopes.OfflineAccess),
+                            uri: SR.FormatID8000(SR.ID2065));
 
                         return;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of rejecting authorization requests made by unauthorized applications.
+            /// Note: this handler is not used when the degraded mode is enabled or when grant type permissions are disabled.
+            /// </summary>
+            public class ValidateResponseTypePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateResponseTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                public ValidateResponseTypePermissions(IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                        .AddFilter<RequireResponseTypePermissionsEnabled>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .UseScopedHandler<ValidateResponseTypePermissions>()
+                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+                    }
+
+                    // Reject requests that specify a response_type for which no permission was granted.
+                    if (!await HasPermissionAsync(context.Request.GetResponseTypes()))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6177), context.ClientId, context.Request.ResponseType);
+
+                        context.Reject(
+                            error: Errors.UnauthorizedClient,
+                            description: SR.FormatID2043(Parameters.ResponseType),
+                            uri: SR.FormatID8000(SR.ID2043));
+
+                        return;
+                    }
+
+                    async ValueTask<bool> HasPermissionAsync(IEnumerable<string> types)
+                    {
+                        // Note: response type permissions are always prefixed with "rst:".
+                        const string prefix = Permissions.Prefixes.ResponseType;
+
+                        foreach (var permission in await _applicationManager.GetPermissionsAsync(application))
+                        {
+                            // Ignore permissions that are not response type permissions.
+                            if (!permission.StartsWith(prefix, StringComparison.Ordinal))
+                            {
+                                continue;
+                            }
+
+                            // Note: response types can be specified in any order. To ensure permissions are correctly
+                            // checked even if the order differs from the one specified in the request, a HashSet is used.
+                            var values = permission.Substring(prefix.Length, permission.Length - prefix.Length)
+                                                   .Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (values.Length != 0 && new HashSet<string>(values, StringComparer.Ordinal).SetEquals(types))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
                     }
                 }
             }
@@ -1477,15 +1495,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateScopePermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateScopePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateScopePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateScopePermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1496,27 +1508,24 @@ namespace OpenIddict.Server
                         .AddFilter<RequireScopePermissionsEnabled>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateScopePermissions>()
-                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateResponseTypePermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     foreach (var scope in context.Request.GetScopes())
@@ -1531,12 +1540,12 @@ namespace OpenIddict.Server
                         // Reject the request if the application is not allowed to use the iterated scope.
                         if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                         {
-                            context.Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6052), context.ClientId, scope);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: "This client application is not allowed to use the specified scope.");
+                                description: SR.GetResourceString(SR.ID2051),
+                                uri: SR.FormatID8000(SR.ID2051));
 
                             return;
                         }
@@ -1553,15 +1562,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateProofKeyForCodeExchangeRequirement([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateProofKeyForCodeExchangeRequirement(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -1572,21 +1575,18 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateProofKeyForCodeExchangeRequirement>()
                         .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                     // If a code_challenge was provided, the request is always considered valid,
                     // whether the proof key for code exchange requirement is enforced or not.
@@ -1596,19 +1596,19 @@ namespace OpenIddict.Server
                     }
 
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
                     {
-                        context.Logger.LogError("The authorization request was rejected because the " +
-                                                "required 'code_challenge' parameter was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6033), Parameters.CodeChallenge);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'code_challenge' parameter is missing.");
+                            description: SR.FormatID2054(Parameters.CodeChallenge),
+                            uri: SR.FormatID8000(SR.ID2054));
 
                         return;
                     }
@@ -1628,33 +1628,28 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .UseSingletonHandler<AttachRedirectUri>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Request == null)
+                    if (context.Request is null)
                     {
                         return default;
                     }
 
                     var notification = context.Transaction.GetProperty<ValidateAuthorizationRequestContext>(
-                        typeof(ValidateAuthorizationRequestContext).FullName);
+                        typeof(ValidateAuthorizationRequestContext).FullName!);
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if an error
                     // is returned from the ExtractAuthorizationRequest/ValidateAuthorizationRequest events).
-                    if (notification != null && !notification.IsRejected)
+                    if (notification is not null && !notification.IsRejected)
                     {
                         context.RedirectUri = notification.RedirectUri;
                     }
@@ -1676,23 +1671,18 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .UseSingletonHandler<InferResponseMode>()
                         .SetOrder(AttachRedirectUri.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Request == null)
+                    if (context.Request is null)
                     {
                         return default;
                     }
@@ -1723,18 +1713,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .UseSingletonHandler<AttachResponseState>()
                         .SetOrder(InferResponseMode.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }

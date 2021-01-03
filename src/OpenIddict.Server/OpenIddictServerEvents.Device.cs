@@ -5,7 +5,7 @@
  */
 
 using System.Security.Claims;
-using JetBrains.Annotations;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
@@ -20,9 +20,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractDeviceRequestContext"/> class.
             /// </summary>
-            public ExtractDeviceRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractDeviceRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -35,9 +44,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateDeviceRequestContext"/> class.
             /// </summary>
-            public ValidateDeviceRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateDeviceRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -50,9 +68,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleDeviceRequestContext"/> class.
             /// </summary>
-            public HandleDeviceRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleDeviceRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -64,9 +91,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyDeviceResponseContext"/> class.
             /// </summary>
-            public ApplyDeviceResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyDeviceResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -74,7 +119,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
 
         /// <summary>
@@ -86,9 +131,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ExtractVerificationRequestContext"/> class.
             /// </summary>
-            public ExtractVerificationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ExtractVerificationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
             }
         }
 
@@ -101,15 +155,24 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ValidateVerificationRequestContext"/> class.
             /// </summary>
-            public ValidateVerificationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public ValidateVerificationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
 
             /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
             /// Gets or sets the security principal extracted from the user code.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
         }
 
         /// <summary>
@@ -121,9 +184,18 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="HandleVerificationRequestContext"/> class.
             /// </summary>
-            public HandleVerificationRequestContext([NotNull] OpenIddictServerTransaction transaction)
+            public HandleVerificationRequestContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
             }
         }
 
@@ -135,9 +207,27 @@ namespace OpenIddict.Server
             /// <summary>
             /// Creates a new instance of the <see cref="ApplyVerificationResponseContext"/> class.
             /// </summary>
-            public ApplyVerificationResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ApplyVerificationResponseContext(OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
 
             /// <summary>
@@ -145,7 +235,7 @@ namespace OpenIddict.Server
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
             /// </summary>
-            public string Error => Response.Error;
+            public string? Error => Response.Error;
         }
     }
 }

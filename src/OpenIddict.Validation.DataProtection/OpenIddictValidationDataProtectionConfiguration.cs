@@ -5,10 +5,8 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation.DataProtection
 {
@@ -24,32 +22,29 @@ namespace OpenIddict.Validation.DataProtection
         /// Creates a new instance of the <see cref="OpenIddictValidationDataProtectionConfiguration"/> class.
         /// </summary>
         /// <param name="dataProtectionProvider">The ASP.NET Core Data Protection provider.</param>
-        public OpenIddictValidationDataProtectionConfiguration([NotNull] IDataProtectionProvider dataProtectionProvider)
+        public OpenIddictValidationDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
             => _dataProtectionProvider = dataProtectionProvider;
 
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
             // Register the built-in event handlers used by the OpenIddict Data Protection validation components.
-            foreach (var handler in OpenIddictValidationDataProtectionHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationDataProtectionHandlers.DefaultHandlers);
         }
 
         /// <summary>
         /// Populates the default OpenIddict ASP.NET Core Data Protection validation options
         /// and ensures that the configuration is in a consistent and valid state.
         /// </summary>
-        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictValidationDataProtectionOptions options)
+        public void PostConfigure(string name, OpenIddictValidationDataProtectionOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }

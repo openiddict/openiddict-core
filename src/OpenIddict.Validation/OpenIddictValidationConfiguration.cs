@@ -5,11 +5,13 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using static OpenIddict.Validation.OpenIddictValidationEvents;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -18,114 +20,139 @@ namespace OpenIddict.Validation
     /// </summary>
     public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
     {
+        private readonly OpenIddictValidationService _service;
+
+        public OpenIddictValidationConfiguration(OpenIddictValidationService service)
+            => _service = service;
+
         /// <summary>
         /// Populates the default OpenIddict validation options and ensures
         /// that the configuration is in a consistent and valid state.
         /// </summary>
-        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictValidationOptions options)
+        public void PostConfigure(string name, OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.JsonWebTokenHandler == null)
+            if (options.JsonWebTokenHandler is null)
             {
-                throw new InvalidOperationException("The security token handler cannot be null.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
             }
 
-            if (options.Issuer != null || options.MetadataAddress != null)
+            if (options.Configuration is null && options.ConfigurationManager is null &&
+                options.Issuer is null && options.MetadataAddress is null)
             {
-                if (options.MetadataAddress == null)
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
+            }
+
+            if (options.ValidationType == OpenIddictValidationType.Introspection)
+            {
+                if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
                 {
-                    options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0129));
                 }
 
-                if (!options.MetadataAddress.IsAbsoluteUri)
+                if (options.Issuer is null && options.MetadataAddress is null)
                 {
-                    if (options.Issuer == null || !options.Issuer.IsAbsoluteUri)
-                    {
-                        throw new InvalidOperationException("The authority must be provided and must be an absolute URL.");
-                    }
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0130));
+                }
 
-                    if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
-                    {
-                        throw new InvalidOperationException("The authority cannot contain a fragment or a query string.");
-                    }
+                if (string.IsNullOrEmpty(options.ClientId))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0131));
+                }
 
-                    if (!options.Issuer.OriginalString.EndsWith("/"))
-                    {
-                        options.Issuer = new Uri(options.Issuer.OriginalString + "/", UriKind.Absolute);
-                    }
+                if (string.IsNullOrEmpty(options.ClientSecret))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0132));
+                }
 
-                    if (options.MetadataAddress.OriginalString.StartsWith("/"))
-                    {
-                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
-                            1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
-                    }
+                if (options.EnableAuthorizationEntryValidation)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0133));
+                }
 
-                    options.MetadataAddress = new Uri(options.Issuer, options.MetadataAddress);
+                if (options.EnableTokenEntryValidation)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0134));
                 }
             }
 
-            foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key))
+            // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.EncryptionCredentials.Count != 0 &&
+                options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                    (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
             {
-                if (!string.IsNullOrEmpty(key.KeyId))
-                {
-                    continue;
-                }
-
-                key.KeyId = GetKeyIdentifier(key);
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
             }
 
-            static string GetKeyIdentifier(SecurityKey key)
+            if (options.ConfigurationManager is null)
             {
-                // When no key identifier can be retrieved from the security keys, a value is automatically
-                // inferred from the hexadecimal representation of the certificate thumbprint (SHA-1)
-                // when the key is bound to a X.509 certificate or from the public part of the signing key.
-
-                if (key is X509SecurityKey x509SecurityKey)
+                if (options.Configuration is not null)
                 {
-                    return x509SecurityKey.Certificate.Thumbprint;
+                    options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(options.Configuration);
                 }
 
-                if (key is RsaSecurityKey rsaSecurityKey)
+                else
                 {
-                    // Note: if the RSA parameters are not attached to the signing key,
-                    // extract them by calling ExportParameters on the RSA instance.
-                    var parameters = rsaSecurityKey.Parameters;
-                    if (parameters.Modulus == null)
+                    if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                        !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
                     {
-                        parameters = rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false);
-
-                        Debug.Assert(parameters.Modulus != null,
-                            "A null modulus shouldn't be returned by RSA.ExportParameters().");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
                     }
 
-                    // Only use the 40 first chars of the base64url-encoded modulus.
-                    var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
-                    return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                    if (options.MetadataAddress is null)
+                    {
+                        options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
+                    }
+
+                    if (!options.MetadataAddress.IsAbsoluteUri)
+                    {
+                        var issuer = options.Issuer;
+                        if (issuer is null || !issuer.IsAbsoluteUri)
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
+                        }
+
+                        if (!string.IsNullOrEmpty(issuer.Fragment) || !string.IsNullOrEmpty(issuer.Query))
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
+                        }
+
+                        if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
+                        {
+                            issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
+                        }
+
+                        if (options.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
+                        {
+                            options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
+                                1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
+                        }
+
+                        options.MetadataAddress = new Uri(issuer, options.MetadataAddress);
+                    }
+
+                    options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                        options.MetadataAddress.AbsoluteUri, new OpenIddictValidationRetriever(_service))
+                    {
+                        AutomaticRefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval,
+                        RefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval
+                    };
                 }
-
-#if SUPPORTS_ECDSA
-                if (key is ECDsaSecurityKey ecsdaSecurityKey)
-                {
-                    // Extract the ECDSA parameters from the signing credentials.
-                    var parameters = ecsdaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false);
-
-                    Debug.Assert(parameters.Q.X != null,
-                        "Invalid coordinates shouldn't be returned by ECDsa.ExportParameters().");
-
-                    // Only use the 40 first chars of the base64url-encoded X coordinate.
-                    var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
-                    return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
-                }
-#endif
-
-                return null;
             }
+
+            // Sort the handlers collection using the order associated with each handler.
+            options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
+
+            // Attach the encryption credentials to the token validation parameters.
+            options.TokenValidationParameters.TokenDecryptionKeys =
+                from credentials in options.EncryptionCredentials
+                select credentials.Key;
         }
     }
 }

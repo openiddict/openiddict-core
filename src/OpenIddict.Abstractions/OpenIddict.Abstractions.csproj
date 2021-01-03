@@ -1,26 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net461;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OpenIddict's abstractions.</Description>
+    <Description>Abstractions and primitives used by the OpenIddict components.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="System.Collections.Immutable" Version="$(ImmutableCollectionsVersion)" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DataAnnotationsVersion)" />
-    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" />
+    <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(BclAsyncInterfacesVersion)" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(TasksExtensionsVersion)" />
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
+    <PackageReference Include="Microsoft.Bcl.HashCode" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+    <PackageReference Include="System.ComponentModel.Annotations" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="**\*.resx" GenerateSource="true" GenerateResourcesCodeAsConstants="true" />
   </ItemGroup>
 
 </Project>

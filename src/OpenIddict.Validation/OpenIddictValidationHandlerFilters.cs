@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
@@ -18,32 +17,64 @@ namespace OpenIddict.Validation
         /// <summary>
         /// Represents a filter that excludes the associated handlers if authorization validation was not enabled.
         /// </summary>
-        public class RequireAuthorizationValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
+        public class RequireAuthorizationEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Options.EnableAuthorizationValidation);
+                return new ValueTask<bool>(context.Options.EnableAuthorizationEntryValidation);
             }
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if reference access tokens are disabled.
+        /// Represents a filter that excludes the associated handlers if local validation is not used.
         /// </summary>
-        public class RequireReferenceAccessTokensEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
+        public class RequireLocalValidation : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Options.UseReferenceAccessTokens);
+                return new ValueTask<bool>(context.Options.ValidationType == OpenIddictValidationType.Direct);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if introspection is not used.
+        /// </summary>
+        public class RequireIntrospectionValidation : IOpenIddictValidationHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.Options.ValidationType == OpenIddictValidationType.Introspection);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if token validation was not enabled.
+        /// </summary>
+        public class RequireTokenEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.Options.EnableTokenEntryValidation);
             }
         }
     }

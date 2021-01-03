@@ -8,12 +8,6 @@ namespace OpenIddict.Abstractions
 {
     public static class OpenIddictConstants
     {
-        public static class AuthorizationTypes
-        {
-            public const string AdHoc = "ad-hoc";
-            public const string Permanent = "permanent";
-        }
-
         public static class Algorithms
         {
             public const string EcdsaSha256 = "ES256";
@@ -28,6 +22,36 @@ namespace OpenIddict.Abstractions
             public const string RsaSsaPssSha256 = "PS256";
             public const string RsaSsaPssSha384 = "PS384";
             public const string RsaSsaPssSha512 = "PS512";
+        }
+
+        public static class AuthenticationMethodReferences
+        {
+            public const string Face = "face";
+            public const string Fingerprint = "fpt";
+            public const string Geolocation = "geo";
+            public const string HardwareKey = "hwk";
+            public const string Iris = "iris";
+            public const string KnowledgeBased = "kba";
+            public const string MultiChannel = "mca";
+            public const string MultiFactor = "mfa";
+            public const string OneTimePassword = "otp";
+            public const string Password = "pwd";
+            public const string PersonalIdentificationNumber = "pin";
+            public const string Retina = "retina";
+            public const string RiskBased = "rba";
+            public const string ShortMessageService = "sms";
+            public const string SmartCard = "sc";
+            public const string SoftwareKey = "swk";
+            public const string Telephone = "tel";
+            public const string UserPresence = "user";
+            public const string Voiceprint = "vbm";
+            public const string WindowsIntegratedAuthentication = "wia";
+        }
+
+        public static class AuthorizationTypes
+        {
+            public const string AdHoc = "ad-hoc";
+            public const string Permanent = "permanent";
         }
 
         public static class Claims
@@ -88,13 +112,16 @@ namespace OpenIddict.Abstractions
             public static class Private
             {
                 public const string AccessTokenLifetime = "oi_act_lft";
-                public const string AuthorizationId = "oi_au_id";
+                public const string Audience = "oi_aud";
                 public const string AuthorizationCodeLifetime = "oi_auc_lft";
+                public const string AuthorizationId = "oi_au_id";
                 public const string ClaimDestinationsMap = "oi_cl_dstn";
                 public const string CodeChallenge = "oi_cd_chlg";
                 public const string CodeChallengeMethod = "oi_cd_chlg_meth";
+                public const string CreationDate = "oi_crt_dt";
                 public const string DeviceCodeId = "oi_dvc_id";
                 public const string DeviceCodeLifetime = "oi_dvc_lft";
+                public const string ExpirationDate = "oi_exp_dt";
                 public const string IdentityTokenLifetime = "oi_idt_lft";
                 public const string Nonce = "oi_nce";
                 public const string Presenter = "oi_prst";
@@ -117,7 +144,6 @@ namespace OpenIddict.Abstractions
         public static class ClientTypes
         {
             public const string Confidential = "confidential";
-            public const string Hybrid = "hybrid";
             public const string Public = "public";
         }
 
@@ -186,6 +212,11 @@ namespace OpenIddict.Abstractions
         {
             public const string AccessToken = "at+jwt";
             public const string IdentityToken = "JWT";
+
+            public static class Prefixes
+            {
+                public const string Application = "application/";
+            }
 
             public static class Private
             {
@@ -325,7 +356,20 @@ namespace OpenIddict.Abstractions
             {
                 public const string Endpoint = "ept:";
                 public const string GrantType = "gt:";
+                public const string ResponseType = "rst:";
                 public const string Scope = "scp:";
+            }
+
+            public static class ResponseTypes
+            {
+                public const string Code = "rst:code";
+                public const string CodeIdToken = "rst:code id_token";
+                public const string CodeIdTokenToken = "rst:code id_token token";
+                public const string CodeToken = "rst:code token";
+                public const string IdToken = "rst:id_token";
+                public const string IdTokenToken = "rst:id_token token";
+                public const string None = "rst:none";
+                public const string Token = "rst:token";
             }
 
             public static class Scopes

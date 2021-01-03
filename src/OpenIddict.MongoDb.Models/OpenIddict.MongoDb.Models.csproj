@@ -1,18 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <SignAssembly>false</SignAssembly>
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Document-oriented entities for the MongoDB stores.</Description>
+    <Description>Document-oriented entities for the OpenIddict MongoDB stores.</Description>
     <PackageTags>$(PackageTags);mongodb;models</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" Version="$(MongoDbVersion)" />
+    <PackageReference Include="MongoDB.Bson" />
+    <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
 </Project>

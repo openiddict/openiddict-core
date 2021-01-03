@@ -16,7 +16,7 @@ namespace OpenIddict.Abstractions.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictBuilder(services));

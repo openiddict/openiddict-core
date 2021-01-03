@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation.SystemNetHttp
@@ -20,21 +19,16 @@ namespace OpenIddict.Validation.SystemNetHttp
         /// </summary>
         public class RequireHttpMetadataAddress : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Options.MetadataAddress == null)
-                {
-                    return new ValueTask<bool>(false);
-                }
-
                 return new ValueTask<bool>(
-                    string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
             }
         }
     }

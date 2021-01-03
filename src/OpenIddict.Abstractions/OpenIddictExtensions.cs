@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -20,9 +19,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The services collection.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddOpenIddict([NotNull] this IServiceCollection services)
+        public static OpenIddictBuilder AddOpenIddict(this IServiceCollection services)
         {
-            if (services == null)
+            if (services is null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
@@ -37,16 +36,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The configuration delegate used to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddOpenIddict(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<OpenIddictBuilder> configuration)
+        public static IServiceCollection AddOpenIddict(this IServiceCollection services, Action<OpenIddictBuilder> configuration)
         {
-            if (services == null)
+            if (services is null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

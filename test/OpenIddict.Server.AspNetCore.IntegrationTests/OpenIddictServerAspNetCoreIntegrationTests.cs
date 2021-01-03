@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -16,22 +17,31 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
-using OpenIddict.Server.FunctionalTests;
+using OpenIddict.Server.IntegrationTests;
 using Xunit;
+using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlers;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.AspNetCore.FunctionalTests
+namespace OpenIddict.Server.AspNetCore.IntegrationTests
 {
     public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServerIntegrationTests
     {
+        public OpenIddictServerAspNetCoreIntegrationTests(ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         [Fact]
         public async Task ProcessChallenge_ReturnsParametersFromAuthenticationProperties()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetTokenEndpointUris("/challenge/custom");
@@ -44,6 +54,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
@@ -58,11 +70,11 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
             Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_parameter"]).ValueKind);
             Assert.Equal(42, (long) response["integer_parameter"]);
             Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
-            Assert.Equal("Bob l'Eponge", (string) response["string_parameter"]);
+            Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
             Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]) response["array_parameter"]);
+            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
             Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
-            Assert.Equal("value", (string) response["object_parameter"]?["parameter"]);
+            Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
             Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
         }
 
@@ -70,7 +82,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetTokenEndpointUris("/challenge/custom");
@@ -83,6 +95,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
@@ -168,12 +182,20 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         [InlineData("/.WELL-KNOWN/JWKS/SUBPATH", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/.well-known/jwks/subpath/", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/.WELL-KNOWN/JWKS/SUBPATH/", OpenIddictServerEndpointType.Unknown)]
-        public Task ProcessRequest_MatchesCorrespondingEndpoint(string path, OpenIddictServerEndpointType type)
+        public async Task ProcessRequest_MatchesCorrespondingEndpoint(string path, OpenIddictServerEndpointType type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SignOut();
+
+                        return default;
+                    }));
 
                 options.AddEventHandler<ProcessRequestContext>(builder =>
                     builder.UseInlineHandler(context =>
@@ -185,8 +207,10 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
-            return client.PostAsync(path, new OpenIddictRequest());
+            await client.PostAsync(path, new OpenIddictRequest());
         }
 
         [Theory]
@@ -199,12 +223,20 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         [InlineData("/custom/connect/userinfo", OpenIddictServerEndpointType.Userinfo)]
         [InlineData("/custom/.well-known/openid-configuration", OpenIddictServerEndpointType.Configuration)]
         [InlineData("/custom/.well-known/jwks", OpenIddictServerEndpointType.Cryptography)]
-        public Task ProcessRequest_AllowsOverridingEndpoint(string address, OpenIddictServerEndpointType type)
+        public async Task ProcessRequest_AllowsOverridingEndpoint(string address, OpenIddictServerEndpointType type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SignOut();
+
+                        return default;
+                    }));
 
                 options.AddEventHandler<ProcessRequestContext>(builder =>
                 {
@@ -223,8 +255,10 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
-            return client.PostAsync(address, new OpenIddictRequest());
+            await client.PostAsync(address, new OpenIddictRequest());
         }
 
         [Theory]
@@ -239,7 +273,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ProcessRequest_RejectsInsecureHttpRequests(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -247,12 +281,15 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                        .Configure(options => options.DisableTransportSecurityRequirement = false);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("This server only accepts HTTPS requests.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2083), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2083), response.ErrorUri);
         }
 
         [Theory]
@@ -268,7 +305,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ProcessRequest_AllowsHandlingResponse(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -286,11 +323,13 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Theory]
@@ -306,7 +345,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ProcessRequest_AllowsSkippingHandler(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -319,18 +358,20 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ProcessSignIn_ReturnsParametersFromAuthenticationProperties()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetTokenEndpointUris("/signin/custom");
@@ -343,6 +384,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/signin/custom", new OpenIddictRequest
@@ -357,11 +400,11 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
             Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_parameter"]).ValueKind);
             Assert.Equal(42, (long) response["integer_parameter"]);
             Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
-            Assert.Equal("Bob l'Eponge", (string) response["string_parameter"]);
+            Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
             Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
-            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]) response["array_parameter"]);
+            Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
             Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
-            Assert.Equal("value", (string) response["object_parameter"]?["parameter"]);
+            Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
             Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
         }
 
@@ -369,7 +412,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ProcessSignOut_ReturnsParametersFromAuthenticationProperties()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetLogoutEndpointUris("/signout/custom");
@@ -383,6 +426,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/signout/custom", new OpenIddictRequest
             {
@@ -393,14 +438,25 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
             // Assert
             Assert.True((bool) response["boolean_parameter"]);
             Assert.Equal(42, (long) response["integer_parameter"]);
-            Assert.Equal("Bob l'Eponge", (string) response["string_parameter"]);
+            Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         }
 
-        protected override OpenIddictServerIntegrationTestClient CreateClient(Action<OpenIddictServerBuilder> configuration = null)
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The caller is responsible of disposing the test server.")]
+        protected override
+#if SUPPORTS_GENERIC_HOST
+            async
+#endif
+            ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
         {
+#if SUPPORTS_GENERIC_HOST
+            var builder = new HostBuilder();
+#else
             var builder = new WebHostBuilder();
-
+#endif
             builder.UseEnvironment("Testing");
+
+            builder.ConfigureLogging(options => options.AddXUnit(OutputHelper));
 
             builder.ConfigureServices(ConfigureServices);
             builder.ConfigureServices(services =>
@@ -416,15 +472,35 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     });
             });
 
-            builder.Configure(app =>
+#if SUPPORTS_GENERIC_HOST
+            builder.ConfigureWebHost(options =>
+            {
+                options.UseTestServer();
+                options.Configure(ConfigurePipeline);
+            });
+#else
+            builder.Configure(ConfigurePipeline);
+#endif
+
+#if SUPPORTS_GENERIC_HOST
+            var host = await builder.StartAsync();
+
+            return new OpenIddictServerAspNetCoreIntegrationTestServer(host);
+#else
+            var server = new TestServer(builder);
+
+            return new ValueTask<OpenIddictServerIntegrationTestServer>(new OpenIddictServerAspNetCoreIntegrationTestServer(server));
+#endif
+
+            void ConfigurePipeline(IApplicationBuilder app)
             {
                 app.Use(next => async context =>
                 {
                     await next(context);
 
                     var feature = context.Features.Get<OpenIddictServerAspNetCoreFeature>();
-                    var response = feature?.Transaction.GetProperty<object>("custom_response");
-                    if (response != null)
+                    var response = feature?.Transaction?.GetProperty<object>("custom_response");
+                    if (response is not null)
                     {
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
@@ -454,8 +530,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                         var principal = new ClaimsPrincipal(identity);
 
                         var properties = new AuthenticationProperties(
-                            items: new Dictionary<string, string>(),
-                            parameters: new Dictionary<string, object>
+                            items: new Dictionary<string, string?>(),
+                            parameters: new Dictionary<string, object?>
                             {
                                 ["boolean_parameter"] = true,
                                 ["integer_parameter"] = 42,
@@ -477,8 +553,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     else if (context.Request.Path == "/signout/custom")
                     {
                         var properties = new AuthenticationProperties(
-                            items: new Dictionary<string, string>(),
-                            parameters: new Dictionary<string, object>
+                            items: new Dictionary<string, string?>(),
+                            parameters: new Dictionary<string, object?>
                             {
                                 ["boolean_parameter"] = true,
                                 ["integer_parameter"] = 42,
@@ -498,13 +574,13 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     else if (context.Request.Path == "/challenge/custom")
                     {
                         var properties = new AuthenticationProperties(
-                            items: new Dictionary<string, string>
+                            items: new Dictionary<string, string?>
                             {
                                 [OpenIddictServerAspNetCoreConstants.Properties.Error] = "custom_error",
                                 [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "custom_error_description",
                                 [OpenIddictServerAspNetCoreConstants.Properties.ErrorUri] = "custom_error_uri"
                             },
-                            parameters: new Dictionary<string, object>
+                            parameters: new Dictionary<string, object?>
                             {
                                 ["boolean_parameter"] = true,
                                 ["integer_parameter"] = 42,
@@ -520,7 +596,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     else if (context.Request.Path == "/authenticate")
                     {
                         var result = await context.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-                        if (result?.Principal == null)
+                        if (result?.Principal is null)
                         {
                             return;
                         }
@@ -528,7 +604,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(
                             new OpenIddictResponse(result.Principal.Claims.GroupBy(claim => claim.Type)
-                                .Select(group => new KeyValuePair<string, string[]>(
+                                .Select(group => new KeyValuePair<string, string?[]?>(
                                     group.Key, group.Select(claim => claim.Value).ToArray())))));
                         return;
                     }
@@ -544,10 +620,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                         name = "Bob le Magnifique"
                     }));
                 });
-            });
-
-            var server = new TestServer(builder);
-            return new OpenIddictServerIntegrationTestClient(server.CreateClient());
+            }
         }
     }
 }

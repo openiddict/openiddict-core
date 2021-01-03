@@ -59,6 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Owin", "src\Open
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{6E8E862C-3F26-47D9-9C20-E3E87FD7CDFC}"
 	ProjectSection(SolutionItems) = preProject
+		eng\CodeAnalysis.ruleset = eng\CodeAnalysis.ruleset
 		eng\key.snk = eng\key.snk
 		eng\Signing.props = eng\Signing.props
 		eng\Version.Details.xml = eng\Version.Details.xml
@@ -67,11 +68,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{6E8E862C-3F2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{F6F3C8E0-BBD7-41A5-9E20-385DC185DBC0}"
 	ProjectSection(SolutionItems) = preProject
-		.travis.yml = .travis.yml
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		Build.cmd = Build.cmd
+		build.sh = build.sh
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		global.json = global.json
+		LICENSE.md = LICENSE.md
 		NuGet.config = NuGet.config
+		package-icon.png = package-icon.png
+		Packages.props = Packages.props
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Validation", "src\OpenIddict.Validation\OpenIddict.Validation.csproj", "{17C10B53-278B-416F-9090-8531179BDF2E}"
@@ -91,6 +99,17 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.AspNetCore.IntegrationTests", "test\OpenIddict.Server.AspNetCore.IntegrationTests\OpenIddict.Server.AspNetCore.IntegrationTests.csproj", "{FBFDB9E2-4A44-4B90-B896-E094BFC05C03}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.Owin.IntegrationTests", "test\OpenIddict.Server.Owin.IntegrationTests\OpenIddict.Server.Owin.IntegrationTests.csproj", "{E62124D4-3660-4590-B4D1-787168BBBEDD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.Tests", "test\OpenIddict.Server.Tests\OpenIddict.Server.Tests.csproj", "{D94B10D3-3DD3-4829-B305-17C48833AB33}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C5E38924-35AF-48E3-B629-A56BCBC02F04}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Quartz", "src\OpenIddict.Quartz\OpenIddict.Quartz.csproj", "{FD150A90-1997-45C7-9EBE-7C6E62E464E8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Quartz.Tests", "test\OpenIddict.Quartz.Tests\OpenIddict.Quartz.Tests.csproj", "{01420929-33B8-4B60-A618-8C8B5F139630}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -226,6 +245,18 @@ Global
 		{E62124D4-3660-4590-B4D1-787168BBBEDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E62124D4-3660-4590-B4D1-787168BBBEDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E62124D4-3660-4590-B4D1-787168BBBEDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD150A90-1997-45C7-9EBE-7C6E62E464E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD150A90-1997-45C7-9EBE-7C6E62E464E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD150A90-1997-45C7-9EBE-7C6E62E464E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD150A90-1997-45C7-9EBE-7C6E62E464E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01420929-33B8-4B60-A618-8C8B5F139630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01420929-33B8-4B60-A618-8C8B5F139630}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01420929-33B8-4B60-A618-8C8B5F139630}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01420929-33B8-4B60-A618-8C8B5F139630}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -263,6 +294,9 @@ Global
 		{0947C388-31DD-45C0-8DD2-61582C648F07} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{FBFDB9E2-4A44-4B90-B896-E094BFC05C03} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{E62124D4-3660-4590-B4D1-787168BBBEDD} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
+		{D94B10D3-3DD3-4829-B305-17C48833AB33} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
+		{FD150A90-1997-45C7-9EBE-7C6E62E464E8} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{01420929-33B8-4B60-A618-8C8B5F139630} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}

@@ -19,8 +19,11 @@ namespace OpenIddict.Server.AspNetCore
 
         public static class JsonWebTokenTypes
         {
-            public const string AuthorizationRequest = "oi_auth_req";
-            public const string LogoutRequest = "oi_lgt_req";
+            public static class Private
+            {
+                public const string AuthorizationRequest = "oi_authrq+jwt";
+                public const string LogoutRequest = "oi_lgtrq+jwt";
+            }
         }
 
         public static class Properties
@@ -28,7 +31,6 @@ namespace OpenIddict.Server.AspNetCore
             public const string Error = ".error";
             public const string ErrorDescription = ".error_description";
             public const string ErrorUri = ".error_uri";
-            public const string Realm = ".realm";
             public const string Scope = ".scope";
         }
     }

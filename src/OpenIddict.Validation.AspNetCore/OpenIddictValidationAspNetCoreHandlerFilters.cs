@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
@@ -24,14 +23,14 @@ namespace OpenIddict.Validation.AspNetCore
         /// </summary>
         public class RequireHttpRequest : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Transaction.GetHttpRequest() != null);
+                return new ValueTask<bool>(context.Transaction.GetHttpRequest() is not null);
             }
         }
     }

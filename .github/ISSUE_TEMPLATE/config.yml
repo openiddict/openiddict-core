@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Sponsor the project
+    url: https://github.com/sponsors/kevinchalet
+    about: In recognition of their support, sponsors can get private support and depending on the selected tier, an access to security announcements and patches
+  - name: Ask a question (community support)
+    url: https://stackoverflow.com/questions/ask?tags=openiddict
+    about: Ask a question that will be answered by the OpenIddict community

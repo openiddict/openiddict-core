@@ -1,11 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net461;net472;netcoreapp2.1;netcoreapp3.1;net5.0;netstandard2.0;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OpenID Connect validation components for OpenIddict.</Description>
+    <Description>OpenIddict token validation services.
+
+Note: this package only contains the generic/host-agnostic validation components.
+To use the validation feature on ASP.NET Core or OWIN/Katana, reference the OpenIddict.Validation.AspNetCore or OpenIddict.Validation.Owin package.</Description>
     <PackageTags>$(PackageTags);validation</PackageTags>
   </PropertyGroup>
 
@@ -14,9 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(IdentityModelVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
   </ItemGroup>
 
 </Project>

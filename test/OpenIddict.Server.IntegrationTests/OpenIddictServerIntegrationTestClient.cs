@@ -9,21 +9,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
-namespace OpenIddict.Server.FunctionalTests
+namespace OpenIddict.Server.IntegrationTests
 {
     /// <summary>
     /// Exposes methods that allow sending OpenID Connect
     /// requests and extracting the corresponding responses.
     /// </summary>
-    public class OpenIddictServerIntegrationTestClient
+    public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the OpenID Connect client.
@@ -49,12 +50,12 @@ namespace OpenIddict.Server.FunctionalTests
         /// <param name="parser">The HTML parser used to parse the responses returned by the OpenID Connect server.</param>
         public OpenIddictServerIntegrationTestClient(HttpClient client, HtmlParser parser)
         {
-            if (client == null)
+            if (client is null)
             {
                 throw new ArgumentNullException(nameof(client));
             }
 
-            if (parser == null)
+            if (parser is null)
             {
                 throw new ArgumentNullException(nameof(parser));
             }
@@ -102,7 +103,7 @@ namespace OpenIddict.Server.FunctionalTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> GetAsync(string uri, OpenIddictRequest request)
         {
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -134,7 +135,7 @@ namespace OpenIddict.Server.FunctionalTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> PostAsync(string uri, OpenIddictRequest request)
         {
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -167,7 +168,7 @@ namespace OpenIddict.Server.FunctionalTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> SendAsync(string method, string uri, OpenIddictRequest request)
         {
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -195,12 +196,12 @@ namespace OpenIddict.Server.FunctionalTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public Task<OpenIddictResponse> SendAsync(HttpMethod method, string uri, OpenIddictRequest request)
         {
-            if (method == null)
+            if (method is null)
             {
                 throw new ArgumentNullException(nameof(method));
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
@@ -223,28 +224,31 @@ namespace OpenIddict.Server.FunctionalTests
         /// <returns>The OpenID Connect response returned by the server.</returns>
         public virtual async Task<OpenIddictResponse> SendAsync(HttpMethod method, Uri uri, OpenIddictRequest request)
         {
-            if (method == null)
+            if (method is null)
             {
                 throw new ArgumentNullException(nameof(method));
             }
 
-            if (uri == null)
+            if (uri is null)
             {
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (HttpClient.BaseAddress == null && !uri.IsAbsoluteUri)
+            if (HttpClient.BaseAddress is null && !uri.IsAbsoluteUri)
             {
                 throw new ArgumentException("The address cannot be a relative URI when no base address " +
                                             "is associated with the HTTP client.", nameof(uri));
             }
 
-            return await GetResponseAsync(await HttpClient.SendAsync(CreateRequestMessage(request, method, uri)));
+            using var message = CreateRequestMessage(request, method, uri);
+            using var response = await HttpClient.SendAsync(message);
+
+            return await GetResponseAsync(response);
         }
 
         private HttpRequestMessage CreateRequestMessage(OpenIddictRequest request, HttpMethod method, Uri uri)
@@ -252,27 +256,27 @@ namespace OpenIddict.Server.FunctionalTests
             // Note: a dictionary is deliberately not used here to allow multiple parameters with the
             // same name to be specified. While initially not allowed by the core OAuth2 specification,
             // this is required for derived drafts like the OAuth2 token exchange specification.
-            var parameters = new List<KeyValuePair<string, string>>();
+            var parameters = new List<KeyValuePair<string?, string?>>();
 
             foreach (var parameter in request.GetParameters())
             {
                 // If the parameter is null or empty, send an empty value.
                 if (OpenIddictParameter.IsNullOrEmpty(parameter.Value))
                 {
-                    parameters.Add(new KeyValuePair<string, string>(parameter.Key, string.Empty));
+                    parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, string.Empty));
 
                     continue;
                 }
 
-                var values = (string[]) parameter.Value;
-                if (values == null || values.Length == 0)
+                var values = (string?[]?) parameter.Value;
+                if (values is null || values.Length == 0)
                 {
                     continue;
                 }
 
                 foreach (var value in values)
                 {
-                    parameters.Add(new KeyValuePair<string, string>(parameter.Key, value));
+                    parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, value));
                 }
             }
 
@@ -282,19 +286,28 @@ namespace OpenIddict.Server.FunctionalTests
 
                 foreach (var parameter in parameters)
                 {
+                    if (string.IsNullOrEmpty(parameter.Key))
+                    {
+                        continue;
+                    }
+
                     if (builder.Length != 0)
                     {
                         builder.Append('&');
                     }
 
                     builder.Append(UrlEncoder.Default.Encode(parameter.Key));
-                    builder.Append('=');
-                    builder.Append(UrlEncoder.Default.Encode(parameter.Value));
+
+                    if (!string.IsNullOrEmpty(parameter.Value))
+                    {
+                        builder.Append('=');
+                        builder.Append(UrlEncoder.Default.Encode(parameter.Value));
+                    }
                 }
 
                 if (!uri.IsAbsoluteUri)
                 {
-                    uri = new Uri(HttpClient.BaseAddress, uri);
+                    uri = new Uri(HttpClient.BaseAddress!, uri);
                 }
 
                 uri = new UriBuilder(uri) { Query = builder.ToString() }.Uri;
@@ -312,7 +325,45 @@ namespace OpenIddict.Server.FunctionalTests
 
         private async Task<OpenIddictResponse> GetResponseAsync(HttpResponseMessage message)
         {
-            if (message.Headers.Location != null)
+            if (message.Headers.WwwAuthenticate.Count != 0)
+            {
+                var response = new OpenIddictResponse();
+
+                foreach (var header in message.Headers.WwwAuthenticate)
+                {
+                    if (string.IsNullOrEmpty(header.Parameter))
+                    {
+                        continue;
+                    }
+
+                    foreach (var parameter in header.Parameter.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var values = parameter.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (values.Length != 2)
+                        {
+                            continue;
+                        }
+
+                        var name = values[0]?.Trim(' ', '"');
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            continue;
+                        }
+
+                        var value = values[1]?.Trim(' ', '"');
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            continue;
+                        }
+
+                        response.SetParameter(name, value);
+                    }
+                }
+
+                return response;
+            }
+
+            else if (message.Headers.Location is not null)
             {
                 var payload = message.Headers.Location.Fragment;
                 if (string.IsNullOrEmpty(payload))
@@ -325,7 +376,7 @@ namespace OpenIddict.Server.FunctionalTests
                     return new OpenIddictResponse();
                 }
 
-                string UnescapeDataString(string value)
+                static string? UnescapeDataString(string value)
                 {
                     if (string.IsNullOrEmpty(value))
                     {
@@ -338,9 +389,9 @@ namespace OpenIddict.Server.FunctionalTests
                 // Note: a dictionary is deliberately not used here to allow multiple parameters with the
                 // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
                 // this is required for derived drafts like the OAuth2 token exchange specification.
-                var parameters = new List<KeyValuePair<string, string>>();
+                var parameters = new List<KeyValuePair<string, string?>>();
 
-                foreach (var element in new StringTokenizer(payload, OpenIddictConstants.Separators.Ampersand))
+                foreach (var element in new StringTokenizer(payload, Separators.Ampersand))
                 {
                     var segment = element;
                     if (segment.Length == 0)
@@ -368,7 +419,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                     var value = UnescapeDataString(segment.Substring(index + 1, segment.Length - (index + 1)));
 
-                    parameters.Add(new KeyValuePair<string, string>(name, value));
+                    parameters.Add(new KeyValuePair<string, string?>(name, value));
                 }
 
                 return new OpenIddictResponse(
@@ -380,12 +431,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
-                // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
-                // that always return their HTTP responses encoded using UTF-8. As such, the stream
-                // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-                using var stream = await message.Content.ReadAsStreamAsync();
-
-                return await JsonSerializer.DeserializeAsync<OpenIddictResponse>(stream);
+                return (await message.Content!.ReadFromJsonAsync<OpenIddictResponse>())!;
             }
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
@@ -393,9 +439,9 @@ namespace OpenIddict.Server.FunctionalTests
                 // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
                 // that always return their HTTP responses encoded using UTF-8. As such, the stream
                 // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-                using var stream = await message.Content.ReadAsStreamAsync();
+                using var stream = await message.Content!.ReadAsStreamAsync();
                 using var document = await HtmlParser.ParseDocumentAsync(stream);
-                
+
                 // Note: a dictionary is deliberately not used here to allow multiple parameters with the
                 // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
                 // this is required for derived drafts like the OAuth2 token exchange specification.
@@ -426,7 +472,7 @@ namespace OpenIddict.Server.FunctionalTests
                 // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
                 // that always return their HTTP responses encoded using UTF-8. As such, the stream
                 // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-                using var stream = await message.Content.ReadAsStreamAsync();
+                using var stream = await message.Content!.ReadAsStreamAsync();
                 using var reader = new StreamReader(stream);
 
                 // Note: a dictionary is deliberately not used here to allow multiple parameters with the
@@ -434,7 +480,7 @@ namespace OpenIddict.Server.FunctionalTests
                 // this is required for derived drafts like the OAuth2 token exchange specification.
                 var parameters = new List<KeyValuePair<string, string>>();
 
-                for (var line = await reader.ReadLineAsync(); line != null; line = await reader.ReadLineAsync())
+                for (var line = await reader.ReadLineAsync(); line is not null; line = await reader.ReadLineAsync())
                 {
                     var index = line.IndexOf(':');
                     if (index == -1)
@@ -461,6 +507,13 @@ namespace OpenIddict.Server.FunctionalTests
             }
 
             return new OpenIddictResponse();
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            HttpClient.Dispose();
+
+            return default;
         }
     }
 }

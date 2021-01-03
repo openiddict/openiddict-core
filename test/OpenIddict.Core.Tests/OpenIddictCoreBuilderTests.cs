@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Core.Tests
 {
@@ -20,7 +21,7 @@ namespace OpenIddict.Core.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictCoreBuilder(services));
@@ -39,7 +40,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceApplicationManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -77,7 +78,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericApplicationManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictApplicationManager<CustomApplication>) &&
                 service.ImplementationType == typeof(ClosedGenericApplicationManager));
@@ -97,7 +98,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceApplicationStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -130,7 +131,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceAuthorizationManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -168,7 +169,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericAuthorizationManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictAuthorizationManager<CustomAuthorization>) &&
                 service.ImplementationType == typeof(ClosedGenericAuthorizationManager));
@@ -187,7 +188,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceAuthorizationStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -220,7 +221,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceScopeManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -258,7 +259,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericScopeManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictScopeManager<CustomScope>) &&
                 service.ImplementationType == typeof(ClosedGenericScopeManager));
@@ -278,7 +279,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceScopeStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -311,7 +312,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceTokenManager(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -349,7 +350,7 @@ namespace OpenIddict.Core.Tests
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(ClosedGenericTokenManager) &&
-                service.ImplementationFactory != null);
+                service.ImplementationFactory is not null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictTokenManager<CustomToken>) &&
                 service.ImplementationType == typeof(ClosedGenericTokenManager));
@@ -369,7 +370,7 @@ namespace OpenIddict.Core.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.ReplaceTokenStoreResolver(typeof(object)));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -435,7 +436,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultApplicationEntity(type: null);
+                return builder.SetDefaultApplicationEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -455,7 +456,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -485,7 +486,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultAuthorizationEntity(type: null);
+                return builder.SetDefaultAuthorizationEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -505,7 +506,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -535,7 +536,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultScopeEntity(type: null);
+                return builder.SetDefaultScopeEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -555,7 +556,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -585,7 +586,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.SetDefaultTokenEntity(type: null);
+                return builder.SetDefaultTokenEntity(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -605,7 +606,7 @@ namespace OpenIddict.Core.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -679,10 +680,10 @@ namespace OpenIddict.Core.Tests
         {
             public ClosedGenericApplicationManager(
                 IOpenIddictApplicationCache<CustomApplication> cache,
-                IOpenIddictApplicationStoreResolver resolver,
                 ILogger<OpenIddictApplicationManager<CustomApplication>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictApplicationStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }
@@ -692,10 +693,10 @@ namespace OpenIddict.Core.Tests
         {
             public OpenGenericApplicationManager(
                 IOpenIddictApplicationCache<TApplication> cache,
-                IOpenIddictApplicationStoreResolver resolver,
                 ILogger<OpenIddictApplicationManager<TApplication>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictApplicationStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }
@@ -704,10 +705,10 @@ namespace OpenIddict.Core.Tests
         {
             public ClosedGenericAuthorizationManager(
                 IOpenIddictAuthorizationCache<CustomAuthorization> cache,
-                IOpenIddictAuthorizationStoreResolver resolver,
                 ILogger<OpenIddictAuthorizationManager<CustomAuthorization>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictAuthorizationStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }
@@ -717,10 +718,10 @@ namespace OpenIddict.Core.Tests
         {
             public OpenGenericAuthorizationManager(
                 IOpenIddictAuthorizationCache<TAuthorization> cache,
-                IOpenIddictAuthorizationStoreResolver resolver,
                 ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictAuthorizationStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }
@@ -729,10 +730,10 @@ namespace OpenIddict.Core.Tests
         {
             public ClosedGenericScopeManager(
                 IOpenIddictScopeCache<CustomScope> cache,
-                IOpenIddictScopeStoreResolver resolver,
                 ILogger<OpenIddictScopeManager<CustomScope>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictScopeStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }
@@ -742,10 +743,10 @@ namespace OpenIddict.Core.Tests
         {
             public OpenGenericScopeManager(
                 IOpenIddictScopeCache<TScope> cache,
-                IOpenIddictScopeStoreResolver resolver,
                 ILogger<OpenIddictScopeManager<TScope>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictScopeStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }
@@ -754,10 +755,10 @@ namespace OpenIddict.Core.Tests
         {
             public ClosedGenericTokenManager(
                 IOpenIddictTokenCache<CustomToken> cache,
-                IOpenIddictTokenStoreResolver resolver,
                 ILogger<OpenIddictTokenManager<CustomToken>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictTokenStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }
@@ -767,10 +768,10 @@ namespace OpenIddict.Core.Tests
         {
             public OpenGenericTokenManager(
                 IOpenIddictTokenCache<TToken> cache,
-                IOpenIddictTokenStoreResolver resolver,
                 ILogger<OpenIddictTokenManager<TToken>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(cache, resolver, logger, options)
+                IOptionsMonitor<OpenIddictCoreOptions> options,
+                IOpenIddictTokenStoreResolver resolver)
+                : base(cache, logger, options, resolver)
             {
             }
         }

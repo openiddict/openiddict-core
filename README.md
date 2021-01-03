@@ -1,61 +1,95 @@
-﻿# OpenIddict
-### The OpenID Connect server you'll be addicted to.
+﻿# OpenIddict :christmas_tree:
 
-[![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2/branch/dev?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core/branch/dev)
-[![Build status](https://travis-ci.org/openiddict/openiddict-core.svg?branch=dev)](https://travis-ci.org/openiddict/openiddict-core)
+### The OpenID Connect stack you'll be addicted to.
 
-> **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0.0 alpha packages haven't been heavily tested: don't use them in production**.
-Nightly builds can be downloaded from the MyGet repository: https://www.myget.org/F/openiddict/api/v3/index.json
+[![Build status](https://github.com/openiddict/openiddict-core/workflows/build/badge.svg?branch=dev&event=push)](https://github.com/openiddict/openiddict-core/actions?query=workflow%3Abuild+branch%3Adev+event%3Apush)
 
-### Compatibility matrix
+## What's OpenIddict?
 
-|                  | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (alpha) |
-|------------------|--------------------|--------------------|------------------------|
-| ASP.NET Core 2.1 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:     |
-| ASP.NET Core 3.1 | :warning:          | :heavy_check_mark: | :heavy_check_mark:     |
-| OWIN/Katana 4.1  | :x:                | :x:                | :heavy_check_mark:     |
-
-### What's OpenIddict?
-
-OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.1 or 3.1 application**,
-and **starting in OpenIddict 3.0, any ASP.NET 4.x or OWIN application too**.
+OpenIddict aims at providing a **versatile solution** to implement an **OpenID Connect server and token validation in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
+and starting in OpenIddict 3.0, **any ASP.NET 4.x or OWIN application too**.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
 
 OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**, **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)** out-of-the-box, but you can also provide your own stores.
 
-### Why an OpenID Connect server?
+## I want something simple and easy to configure
 
-Adding an OpenID Connect server to your application **allows you to support token authentication**.
-It also allows you to manage all your users using local password or an external identity provider
-(e.g. Facebook or Google) for all your applications in one central place,
-with the power to control who can access your API and the information that is exposed to each client.
-
-## Documentation
-
-**The documentation for the latest stable release (2.0.1) can be found in the [dedicated repository](https://openiddict.github.io/openiddict-documentation)**.
-
-## Samples
-
-**[Specialized samples for the latest stable release can be found in the samples repository](https://github.com/openiddict/openiddict-samples):**
-
-  - [Authorization code flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/CodeFlow)
-  - [Implicit flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/ImplicitFlow)
-  - [Password flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/PasswordFlow)
-  - [Client credentials flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/ClientCredentialsFlow)
-  - [Refresh flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/RefreshFlow)
-
---------------
+**Developers looking for a simple and turnkey solution are strongly encouraged to use [OrchardCore and its OpenID module](https://docs.orchardcore.net/en/dev/docs/reference/modules/OpenId/)**,
+which is based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
 
 ## Getting started
 
-To use OpenIddict 3.0, you need to:
+**To implement a custom OpenID Connect server using OpenIddict, the simplest option is to clone one of the official samples** from the [openiddict-samples repository](https://github.com/openiddict/openiddict-samples).
 
-  - **Install the latest [.NET Core 3.1 tooling](https://www.microsoft.com/net/download)**.
+## Documentation
 
-  - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
+**The documentation – still a work in progress – can be found in the [dedicated repository](https://openiddict.github.io/openiddict-documentation)**.
 
-  - **Create a `NuGet.config` file referencing the OpenIddict feed** (at the root of your solution):
+## Compatibility matrix
+
+| Web framework version | .NET runtime version | OpenIddict 2.0 :exclamation:            | OpenIddict 2.0.1 :exclamation:          | OpenIddict 3.0                          |
+|-----------------------|----------------------|-----------------------------------------|-----------------------------------------|-----------------------------------------|
+| ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
+| ASP.NET Core 2.1      | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| ASP.NET Core 2.1      | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| ASP.NET Core 2.1      | .NET Core 2.1        | :heavy_check_mark:                      | :heavy_check_mark:                      | :heavy_check_mark:                      |
+|                       |                      |                                         |                                         |                                         |
+| ASP.NET Core 3.1      | .NET Core 3.1        | :warning:                               | :heavy_check_mark:                      | :heavy_check_mark:                      |
+|                       |                      |                                         |                                         |                                         |
+| ASP.NET Core 5.0      | .NET 5.0             | :warning:                               | :heavy_check_mark:                      | :heavy_check_mark:                      |
+|                       |                      |                                         |                                         |                                         |
+| OWIN/Katana 4.1       | .NET Framework 4.6.1 | :x:                                     | :x:                                     | :heavy_check_mark: :information_source: |
+| OWIN/Katana 4.1       | .NET Framework 4.7.2 | :x:                                     | :x:                                     | :heavy_check_mark:                      |
+| OWIN/Katana 4.1       | .NET Framework 4.8   | :x:                                     | :x:                                     | :heavy_check_mark:                      |
+
+:exclamation: **Note: OpenIddict 2.x is no longer supported. Users are strongly encouraged to migrate to OpenIddict 3.0**.
+
+:information_source: **Note: the following features are not available when targeting .NET Framework 4.6.1**:
+ - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
+will result in a `PlatformNotSupportedException` being thrown at runtime if no valid development certificate can be found and a new one must be generated.
+ - X.509 ECDSA signing certificates/keys: calling `AddSigningCertificate()` or `AddSigningKey()`
+with an ECDSA certificate/key will always result in a `PlatformNotSupportedException` being thrown at runtime.
+
+--------------
+
+## Resources
+
+**Looking for additional resources to help you get started with 3.0?** Don't miss these interesting blog posts:
+
+- **[OpenIddict 3.0 general availability](https://kevinchalet.com/2020/12/23/openiddict-3-0-general-availability/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Setting up an Authorization Server with OpenIddict](https://dev.to/robinvanderknaap/setting-up-an-authorization-server-with-openiddict-part-i-introduction-4jid)** by [Robin van der Knaap](https://dev.to/robinvanderknaap)
+- **[Introducing OpenIddict 3.0's first release candidate version](https://kevinchalet.com/2020/11/17/introducing-openiddict-3-0-s-first-release-candidate-version/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[OpenIddict 3.0 beta6 is out](https://kevinchalet.com/2020/10/27/openiddict-3-0-beta6-is-out/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Introducing Quartz.NET support and new languages in OpenIddict 3.0 beta4](https://kevinchalet.com/2020/10/02/introducing-quartz-net-support-and-new-languages-in-openiddict-3-0-beta4/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Introducing localization support in OpenIddict 3.0 beta3](https://kevinchalet.com/2020/08/03/introducing-localization-support-in-openiddict-3-0-beta3/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[OpenIddict 3.0 beta2 is out](https://kevinchalet.com/2020/07/08/openiddict-3-0-beta2-is-out/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Introducing OpenIddict 3.0 beta1](https://kevinchalet.com/2020/06/11/introducing-openiddict-3-0-beta1/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Adding OpenIddict 3.0 to an OWIN application](https://kevinchalet.com/2020/03/03/adding-openiddict-3-0-to-an-owin-application/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Creating an OpenID Connect server proxy with OpenIddict 3.0's degraded mode](https://kevinchalet.com/2020/02/18/creating-an-openid-connect-server-proxy-with-openiddict-3-0-s-degraded-mode/)** by [Kévin Chalet](https://github.com/kevinchalet)
+
+**OpenIddict-based projects maintained by third parties**:
+
+- **[OrchardCore OpenID module](https://github.com/OrchardCMS/OrchardCore)**: turnkey OpenID Connect server and token validation solution, built with multitenancy in mind
+- **[OpenIddict UI](https://github.com/thomasduft/openiddict-ui)** by [Thomas Duft](https://github.com/thomasduft): headless UI for managing client applications and scopes
+
+## Security policy
+
+Security issues and bugs should be reported privately by emailing security@openiddict.com.
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+
+## Support
+
+If you need support, please make sure you [sponsor the project](https://github.com/sponsors/kevinchalet) before creating a GitHub ticket.
+If you're not a sponsor, you can post your questions on Gitter or StackOverflow:
+
+- **Gitter: [https://gitter.im/openiddict/openiddict-core](https://gitter.im/openiddict/openiddict-core)**
+- **StackOverflow: [https://stackoverflow.com/questions/tagged/openiddict](https://stackoverflow.com/questions/tagged/openiddict)**
+
+## Nightly builds
+
+If you want to try out the latest features and bug fixes, there is a MyGet feed with nightly builds of OpenIddict.
+To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the root of your solution):
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -66,153 +100,6 @@ To use OpenIddict 3.0, you need to:
   </packageSources>
 </configuration>
 ```
-
-  - **Update your `.csproj` file** to reference the `OpenIddict` packages:
-
-```xml
-<PackageReference Include="OpenIddict.AspNetCore" Version="3.0.0-*" />
-<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="3.0.0-*" />
-```
-
-  - **Configure the OpenIddict core, server and validation services** in `Startup.ConfigureServices`:
-
-```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddOpenIddict()
-
-        // Register the OpenIddict core components.
-        .AddCore(options =>
-        {
-            // Configure OpenIddict to use the Entity Framework Core stores and models.
-            options.UseEntityFrameworkCore()
-                   .UseDbContext<ApplicationDbContext>();
-        })
-
-        // Register the OpenIddict server components.
-        .AddServer(options =>
-        {
-            // Enable the token endpoint (required to use the password flow).
-            options.SetTokenEndpointUris("/connect/token");
-
-            // Allow client applications to use the grant_type=password flow.
-            options.AllowPasswordFlow();
-
-            // Accept requests sent by unknown clients (i.e that don't send a client_id).
-            // When this option is not used, a client registration must be
-            // created for each client using IOpenIddictApplicationManager.
-            options.AcceptAnonymousClients();
-
-            // Register the signing and encryption credentials.
-            options.AddDevelopmentEncryptionCertificate()
-                   .AddDevelopmentSigningCertificate();
-
-            // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
-            options.UseAspNetCore()
-                   .EnableTokenEndpointPassthrough()
-                   .DisableTransportSecurityRequirement(); // During development, you can disable the HTTPS requirement.
-        })
-
-        // Register the OpenIddict validation components.
-        .AddValidation(options =>
-        {
-            // Import the configuration from the local OpenIddict server instance.
-            options.UseLocalServer();
-
-            // Register the ASP.NET Core host.
-            options.UseAspNetCore();
-        });
-}
-```
-
-> **Note:** for more information about the different options and configurations available, check out 
-[the documentation](https://openiddict.github.io/openiddict-documentation/configuration/index.html).
-
-  - **Make sure the authentication middleware is registered before the other middleware, including `app.UseEndpoints()`**:
-
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.UseRouting();
-
-    app.UseAuthentication();
-    app.UseAuthorization();
-
-    app.UseEndpoints(endpoints =>
-    {
-        endpoints.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
-        endpoints.MapRazorPages();
-    });
-}
-```
-
-  - **Update your Entity Framework Core context registration to register the OpenIddict entities**:
-
-```csharp
-services.AddDbContext<ApplicationDbContext>(options =>
-{
-    // Configure the context to use Microsoft SQL Server.
-    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]);
-
-    // Register the entity sets needed by OpenIddict.
-    // Note: use the generic overload if you need
-    // to replace the default OpenIddict entities.
-    options.UseOpenIddict();
-});
-```
-
-> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure you use the `options.ReplaceDefaultEntities<TKey>()` core extension accepting a `TKey` generic argument and use the generic `options.UseOpenIddict<TKey>()` overload to configure Entity Framework Core to use the specified key type:
-
-
-```csharp
-services.AddOpenIddict()
-    .AddCore(options =>
-    {
-        // Configure OpenIddict to use the default entities with a custom key type.
-        options.UseEntityFrameworkCore()
-               .UseDbContext<ApplicationDbContext>()
-               .ReplaceDefaultEntities<Guid>();
-    });
-
-services.AddDbContext<ApplicationDbContext>(options =>
-{
-    // Configure the context to use Microsoft SQL Server.
-    options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
-
-    options.UseOpenIddict<Guid>();
-});
-```
-
-  - **Create your own authorization controller**:
-
-To **support the password or the client credentials flow, you must provide your own token endpoint action**.
-To enable authorization code/implicit flows support, you'll similarly have to create your own authorization endpoint action and your own views/view models.
-
-The **Mvc.Server sample comes with an [`AuthorizationController` that supports both the password flow and the authorization code flow and that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs)**.
-
-## Resources
-
-**Looking for additional resources to help you get started with 3.0?** Don't miss these interesting blog posts:
-
-- **[Creating an OpenID Connect server proxy with OpenIddict 3.0's degraded mode](https://kevinchalet.com/2020/02/18/creating-an-openid-connect-server-proxy-with-openiddict-3-0-s-degraded-mode/)** by [Kévin Chalet](https://github.com/kevinchalet)
-
-*Posts written for previous versions of OpenIddict*: 
-
-- **[Setting up ASP.NET v5 (vNext) to use JWT tokens (using OpenIddict)](http://capesean.co.za/blog/asp-net-5-jwt-tokens/)** by [Sean Walsh](https://github.com/capesean)
-- **[Using OpenIddict to easily add token authentication to your .NET web apps](http://overengineer.net/Using-OpenIddict-to-easily-add-token-authentication-to-your-.NET-web-apps)** by [Josh Comley](https://github.com/joshcomley)
-- **[Authorizing your .NET Core MVC6 API requests with OpenIddict and Identity](http://kerryritter.com/authorizing-your-net-core-mvc6-api-requests-with-openiddict-and-identity/)** by [Kerry Ritter](https://github.com/kerryritter)
-- **[Creating your own OpenID Connect server with ASOS](http://kevinchalet.com/2016/07/13/creating-your-own-openid-connect-server-with-asos-introduction/)** by [Kévin Chalet](https://github.com/kevinchalet)
-- **[Bearer Token Authentication in ASP.NET Core](https://devblogs.microsoft.com/aspnet/bearer-token-authentication-in-asp-net-core/)** by [Mike Rousos](https://github.com/mjrousos) (for the Microsoft .NET Web Development and Tools blog)
-- **[Implementing simple token authentication in ASP.NET Core with OpenIddict](http://kevinchalet.com/2017/01/30/implementing-simple-token-authentication-in-aspnet-core-with-openiddict/)** by [Kévin Chalet](https://github.com/kevinchalet)
-
-## Support
-
-**Need help or wanna share your thoughts?** Don't hesitate to join us on Gitter or ask your question on StackOverflow:
-
-- **Gitter: [https://gitter.im/openiddict/openiddict-core](https://gitter.im/openiddict/openiddict-core)**
-- **StackOverflow: [https://stackoverflow.com/questions/tagged/openiddict](https://stackoverflow.com/questions/tagged/openiddict)**
 
 ## Contributors
 

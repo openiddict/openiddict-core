@@ -6,7 +6,6 @@
 
 using System;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Owin;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
@@ -22,14 +21,14 @@ namespace OpenIddict.Validation.Owin
         /// </summary>
         public class RequireOwinRequest : IOpenIddictValidationHandlerFilter<BaseContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Transaction.GetOwinRequest() != null);
+                return new ValueTask<bool>(context.Transaction.GetOwinRequest() is not null);
             }
         }
     }

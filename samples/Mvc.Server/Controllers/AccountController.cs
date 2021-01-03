@@ -154,7 +154,7 @@ namespace Mvc.Server.Controllers
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null)
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
+            if (info is null)
             {
                 return RedirectToAction(nameof(Login));
             }
@@ -194,7 +194,7 @@ namespace Mvc.Server.Controllers
             {
                 // Get the information about the user from the external login provider
                 var info = await _signInManager.GetExternalLoginInfoAsync();
-                if (info == null)
+                if (info is null)
                 {
                     return View("ExternalLoginFailure");
                 }
@@ -221,12 +221,12 @@ namespace Mvc.Server.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
-            if (userId == null || code == null)
+            if (userId is null || code is null)
             {
                 return View("Error");
             }
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (user is null)
             {
                 return View("Error");
             }
@@ -253,7 +253,7 @@ namespace Mvc.Server.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByNameAsync(model.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                if (user is null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return View("ForgotPasswordConfirmation");
@@ -287,7 +287,7 @@ namespace Mvc.Server.Controllers
         [AllowAnonymous]
         public IActionResult ResetPassword(string code = null)
         {
-            return code == null ? View("Error") : View();
+            return code is null ? View("Error") : View();
         }
 
         //
@@ -302,7 +302,7 @@ namespace Mvc.Server.Controllers
                 return View(model);
             }
             var user = await _userManager.FindByNameAsync(model.Email);
-            if (user == null)
+            if (user is null)
             {
                 // Don't reveal that the user does not exist
                 return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
@@ -332,7 +332,7 @@ namespace Mvc.Server.Controllers
         public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
         {
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
+            if (user is null)
             {
                 return View("Error");
             }
@@ -354,7 +354,7 @@ namespace Mvc.Server.Controllers
             }
 
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
+            if (user is null)
             {
                 return View("Error");
             }
@@ -387,7 +387,7 @@ namespace Mvc.Server.Controllers
         {
             // Require that the user has already logged in via username/password or external login
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
+            if (user is null)
             {
                 return View("Error");
             }

@@ -5,12 +5,9 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Claims;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation
@@ -26,7 +23,7 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="BaseContext"/> class.
             /// </summary>
-            protected BaseContext([NotNull] OpenIddictValidationTransaction transaction)
+            protected BaseContext(OpenIddictValidationTransaction transaction)
                 => Transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
 
             /// <summary>
@@ -46,7 +43,7 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Gets or sets the issuer address associated with the current transaction, if available.
             /// </summary>
-            public Uri Issuer
+            public Uri? Issuer
             {
                 get => Transaction.Issuer;
                 set => Transaction.Issuer = value;
@@ -61,39 +58,18 @@ namespace OpenIddict.Validation
             /// Gets the OpenIddict validation options.
             /// </summary>
             public OpenIddictValidationOptions Options => Transaction.Options;
-
-            /// <summary>
-            /// Gets the dictionary containing the properties associated with this event.
-            /// </summary>
-            public IDictionary<string, object> Properties { get; }
-                = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-            /// <summary>
-            /// Gets or sets the OpenIddict request or <c>null</c> if it couldn't be extracted.
-            /// </summary>
-            public OpenIddictRequest Request
-            {
-                get => Transaction.Request;
-                set => Transaction.Request = value;
-            }
-
-            /// <summary>
-            /// Gets or sets the OpenIddict response, if applicable.
-            /// </summary>
-            public OpenIddictResponse Response
-            {
-                get => Transaction.Response;
-                set => Transaction.Response = value;
-            }
         }
 
+        /// <summary>
+        /// Represents an abstract base class used for certain event contexts.
+        /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public abstract class BaseRequestContext : BaseContext
         {
             /// <summary>
             /// Creates a new instance of the <see cref="BaseRequestContext"/> class.
             /// </summary>
-            protected BaseRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            protected BaseRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
             }
@@ -127,12 +103,32 @@ namespace OpenIddict.Validation
         /// Represents an abstract base class used for certain event contexts.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
+        public abstract class BaseExternalContext : BaseValidatingContext
+        {
+            /// <summary>
+            /// Creates a new instance of the <see cref="BaseRequestContext"/> class.
+            /// </summary>
+            protected BaseExternalContext(OpenIddictValidationTransaction transaction)
+                : base(transaction)
+            {
+            }
+
+            /// <summary>
+            /// Gets or sets the address of the external endpoint to communicate with.
+            /// </summary>
+            public Uri? Address { get; set; }
+        }
+
+        /// <summary>
+        /// Represents an abstract base class used for certain event contexts.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public abstract class BaseValidatingContext : BaseRequestContext
         {
             /// <summary>
             /// Creates a new instance of the <see cref="BaseValidatingContext"/> class.
             /// </summary>
-            protected BaseValidatingContext([NotNull] OpenIddictValidationTransaction transaction)
+            protected BaseValidatingContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
             }
@@ -145,46 +141,17 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Gets or sets the "error" parameter returned to the client application.
             /// </summary>
-            public string Error { get; private set; }
+            public string? Error { get; private set; }
 
             /// <summary>
             /// Gets or sets the "error_description" parameter returned to the client application.
             /// </summary>
-            public string ErrorDescription { get; private set; }
+            public string? ErrorDescription { get; private set; }
 
             /// <summary>
             /// Gets or sets the "error_uri" parameter returned to the client application.
             /// </summary>
-            public string ErrorUri { get; private set; }
-
-            /// <summary>
-            /// Rejects the request.
-            /// </summary>
-            public virtual void Reject() => IsRejected = true;
-
-            /// <summary>
-            /// Rejects the request.
-            /// </summary>
-            /// <param name="error">The "error" parameter returned to the client application.</param>
-            public virtual void Reject(string error)
-            {
-                Error = error;
-
-                Reject();
-            }
-
-            /// <summary>
-            /// Rejects the request.
-            /// </summary>
-            /// <param name="error">The "error" parameter returned to the client application.</param>
-            /// <param name="description">The "error_description" parameter returned to the client application.</param>
-            public virtual void Reject(string error, string description)
-            {
-                Error = error;
-                ErrorDescription = description;
-
-                Reject();
-            }
+            public string? ErrorUri { get; private set; }
 
             /// <summary>
             /// Rejects the request.
@@ -192,13 +159,13 @@ namespace OpenIddict.Validation
             /// <param name="error">The "error" parameter returned to the client application.</param>
             /// <param name="description">The "error_description" parameter returned to the client application.</param>
             /// <param name="uri">The "error_uri" parameter returned to the client application.</param>
-            public virtual void Reject(string error, string description, string uri)
+            public virtual void Reject(string? error = null, string? description = null, string? uri = null)
             {
                 Error = error;
                 ErrorDescription = description;
                 ErrorUri = uri;
 
-                Reject();
+                IsRejected = true;
             }
         }
 
@@ -210,7 +177,7 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ProcessRequestContext"/> class.
             /// </summary>
-            public ProcessRequestContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ProcessRequestContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
             }
@@ -224,9 +191,27 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ProcessErrorContext"/> class.
             /// </summary>
-            public ProcessErrorContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ProcessErrorContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+            /// </summary>
+            public OpenIddictRequest? Request
+            {
+                get => Transaction.Request;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
         }
 
@@ -238,24 +223,34 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ProcessAuthenticationContext"/> class.
             /// </summary>
-            public ProcessAuthenticationContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ProcessAuthenticationContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
-                => TokenValidationParameters = transaction.Options.TokenValidationParameters.Clone();
+            {
+            }
 
             /// <summary>
-            /// Gets the token validation parameters used for the current request.
+            /// Gets or sets the request.
             /// </summary>
-            public TokenValidationParameters TokenValidationParameters { get; }
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
 
             /// <summary>
             /// Gets or sets the security principal.
             /// </summary>
-            public ClaimsPrincipal Principal { get; set; }
+            public ClaimsPrincipal? Principal { get; set; }
 
             /// <summary>
             /// Gets or sets the token to validate.
             /// </summary>
-            public string Token { get; set; }
+            public string? Token { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expected type of the token.
+            /// </summary>
+            public string? TokenType { get; set; }
         }
 
         /// <summary>
@@ -266,9 +261,27 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Creates a new instance of the <see cref="ProcessChallengeContext"/> class.
             /// </summary>
-            public ProcessChallengeContext([NotNull] OpenIddictValidationTransaction transaction)
+            public ProcessChallengeContext(OpenIddictValidationTransaction transaction)
                 : base(transaction)
             {
+            }
+
+            /// <summary>
+            /// Gets or sets the request.
+            /// </summary>
+            public OpenIddictRequest Request
+            {
+                get => Transaction.Request!;
+                set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets or sets the response.
+            /// </summary>
+            public OpenIddictResponse Response
+            {
+                get => Transaction.Response!;
+                set => Transaction.Response = value;
             }
         }
     }

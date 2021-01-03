@@ -7,8 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace MongoDB.Driver
 {
@@ -24,18 +24,18 @@ namespace MongoDB.Driver
         /// <param name="source">The query source.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The streamed async enumeration containing the results.</returns>
-        internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>([NotNull] this IAsyncCursorSource<T> source, CancellationToken cancellationToken)
+        internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IAsyncCursorSource<T> source, CancellationToken cancellationToken)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            return ExecuteAsync();
+            return ExecuteAsync(source, cancellationToken);
 
-            async IAsyncEnumerable<T> ExecuteAsync()
+            static async IAsyncEnumerable<T> ExecuteAsync(IAsyncCursorSource<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                using var cursor = await source.ToCursorAsync();
+                using var cursor = await source.ToCursorAsync(cancellationToken);
 
                 while (await cursor.MoveNextAsync(cancellationToken))
                 {
@@ -54,22 +54,14 @@ namespace MongoDB.Driver
         /// <param name="source">The query source.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The streamed async enumeration containing the results.</returns>
-        internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>([NotNull] this IQueryable<T> source, CancellationToken cancellationToken)
+        internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            return ExecuteAsync();
-
-            async IAsyncEnumerable<T> ExecuteAsync()
-            {
-                await foreach (var element in ((IAsyncCursorSource<T>) source).ToAsyncEnumerable(cancellationToken))
-                {
-                    yield return element;
-                }
-            }
+            return ((IAsyncCursorSource<T>) source).ToAsyncEnumerable(cancellationToken);
         }
     }
 }

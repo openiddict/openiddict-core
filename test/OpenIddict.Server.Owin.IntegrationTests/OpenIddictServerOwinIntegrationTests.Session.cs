@@ -7,11 +7,12 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
-using OpenIddict.Server.FunctionalTests;
+using OpenIddict.Server.IntegrationTests;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Owin.FunctionalTests
+namespace OpenIddict.Server.Owin.IntegrationTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
@@ -19,7 +20,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
@@ -29,20 +31,22 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'request_id' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2028(Parameters.RequestId), response.ErrorDescription);
         }
 
         [Fact]
         public async Task ExtractLogoutRequest_InvalidRequestIdParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddDistributedMemoryCache();
 
                 options.UseOwin()
-                       .EnableLogoutEndpointCaching();
+                       .EnableLogoutRequestCaching();
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
@@ -52,7 +56,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'request_id' parameter is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.RequestId), response.ErrorDescription);
         }
     }
 }

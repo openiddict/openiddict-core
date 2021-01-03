@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server;
@@ -22,14 +21,15 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class OpenIddictServerDataProtectionExtensions
     {
         /// <summary>
-        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container.
+        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
+        /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public static OpenIddictServerDataProtectionBuilder UseDataProtection([NotNull] this OpenIddictServerBuilder builder)
+        public static OpenIddictServerDataProtectionBuilder UseDataProtection(this OpenIddictServerBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -41,7 +41,11 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
             // Register the built-in filter used by the default OpenIddict Data Protection event handlers.
-            builder.Services.TryAddSingleton<RequirePreferDataProtectionFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionAccessTokenFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionAuthorizationCodeFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionDeviceCodeFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionRefreshTokenFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionUserCodeFormatEnabled>();
 
             // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
             builder.Services.TryAddEnumerable(new[]
@@ -54,22 +58,22 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container.
+        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
+        /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="configuration">The configuration delegate used to configure the server services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public static OpenIddictServerBuilder UseDataProtection(
-            [NotNull] this OpenIddictServerBuilder builder,
-            [NotNull] Action<OpenIddictServerDataProtectionBuilder> configuration)
+            this OpenIddictServerBuilder builder, Action<OpenIddictServerDataProtectionBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

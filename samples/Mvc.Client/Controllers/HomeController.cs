@@ -33,13 +33,13 @@ namespace Mvc.Client.Controllers
 
             using var client = _httpClientFactory.CreateClient();
 
-            using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:54540/api/message");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:44395/api/message");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             using var response = await client.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            return View("Home", model: await response.Content.ReadAsStringAsync());
+            return View("Home", model: await response.Content.ReadAsStringAsync(cancellationToken));
         }
     }
 }

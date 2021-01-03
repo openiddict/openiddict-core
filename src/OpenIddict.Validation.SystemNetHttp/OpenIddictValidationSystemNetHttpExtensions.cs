@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -28,15 +27,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public static OpenIddictValidationSystemNetHttpBuilder UseSystemNetHttp([NotNull] this OpenIddictValidationBuilder builder)
+        public static OpenIddictValidationSystemNetHttpBuilder UseSystemNetHttp(this OpenIddictValidationBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
             builder.Services.AddHttpClient();
-            builder.Services.AddMemoryCache();
 
             // Register the built-in validation event handlers used by the OpenIddict System.Net.Http components.
             // Note: the order used here is not important, as the actual order is set in the options.
@@ -63,15 +61,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictValidationBuilder UseSystemNetHttp(
-            [NotNull] this OpenIddictValidationBuilder builder,
-            [NotNull] Action<OpenIddictValidationSystemNetHttpBuilder> configuration)
+            this OpenIddictValidationBuilder builder, Action<OpenIddictValidationSystemNetHttpBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

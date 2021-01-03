@@ -6,14 +6,15 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Text;
+using System.Diagnostics;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -60,41 +61,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractRevocationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractRevocationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireRevocationRequest>()
                         .UseScopedHandler<ExtractRevocationRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Revocation)
-                    {
-                        return;
-                    }
-
                     var notification = new ExtractRevocationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -117,16 +109,12 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The revocation request was not correctly extracted. To extract revocation requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractRevocationRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0048));
                     }
 
-                    context.Logger.LogInformation("The revocation request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6109), notification.Request);
                 }
             }
 
@@ -135,45 +123,36 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateRevocationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateRevocationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireRevocationRequest>()
                         .UseScopedHandler<ValidateRevocationRequest>()
                         .SetOrder(ExtractRevocationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Revocation)
-                    {
-                        return;
-                    }
-
                     var notification = new ValidateRevocationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the principal without triggering a new validation process.
-                    context.Transaction.SetProperty(typeof(ValidateRevocationRequestContext).FullName, notification);
+                    context.Transaction.SetProperty(typeof(ValidateRevocationRequestContext).FullName!, notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -196,7 +175,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The revocation request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6110));
                 }
             }
 
@@ -205,41 +184,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleRevocationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleRevocationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireRevocationRequest>()
                         .UseScopedHandler<HandleRevocationRequest>()
                         .SetOrder(ValidateRevocationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Revocation)
-                    {
-                        return;
-                    }
-
                     var notification = new HandleRevocationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -262,7 +232,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Response = new OpenIddictResponse();
+                    context.Transaction.Response = new OpenIddictResponse();
                 }
             }
 
@@ -271,41 +241,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyRevocationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyRevocationResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyRevocationResponse(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireRevocationRequest>()
                         .UseScopedHandler<ApplyRevocationResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] TContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Revocation)
-                    {
-                        return;
-                    }
-
                     var notification = new ApplyRevocationResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -319,11 +280,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The revocation response was not correctly applied. To apply revocation responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyRevocationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0049));
                 }
             }
 
@@ -339,18 +296,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseSingletonHandler<ValidateTokenParameter>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -358,11 +310,12 @@ namespace OpenIddict.Server
                     // Reject revocation requests missing the mandatory token parameter.
                     if (string.IsNullOrEmpty(context.Request.Token))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the token was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6111), Parameters.Token);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'token' parameter is missing.");
+                            description: SR.FormatID2029(Parameters.Token),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -383,18 +336,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseSingletonHandler<ValidateClientIdParameter>()
                         .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -402,11 +350,12 @@ namespace OpenIddict.Server
                     // At this stage, reject the revocation request unless the client identification requirement was disabled.
                     if (!context.Options.AcceptAnonymousClients && string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the mandatory 'client_id' was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6111), Parameters.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The mandatory 'client_id' parameter is missing.");
+                            description: SR.FormatID2029(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2029));
 
                         return default;
                     }
@@ -423,15 +372,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientId() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateClientId([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientId(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -443,33 +386,30 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientId>()
                         .SetOrder(ValidateClientIdParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     // Retrieve the application details corresponding to the requested client_id.
                     // If no entity can be found, this likely indicates that the client_id is invalid.
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        context.Logger.LogError("The revocation request was rejected because the client " +
-                                                "application was not found: '{ClientId}'.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6112), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The specified 'client_id' parameter is invalid.");
+                            description: SR.FormatID2052(Parameters.ClientId),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -485,15 +425,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientType() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateClientType([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientType(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -505,26 +439,23 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientType>()
                         .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
@@ -532,12 +463,12 @@ namespace OpenIddict.Server
                         // Reject revocation requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
                         {
-                            context.Logger.LogError("The revocation request was rejected because the public application '{ClientId}' " +
-                                                    "was not allowed to send a client secret.", context.ClientId);
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6113), context.ClientId);
 
                             context.Reject(
                                 error: Errors.InvalidClient,
-                                description: "The 'client_secret' parameter is not valid for this client application.");
+                                description: SR.FormatID2053(Parameters.ClientSecret),
+                                uri: SR.FormatID8000(SR.ID2053));
 
                             return;
                         }
@@ -548,12 +479,12 @@ namespace OpenIddict.Server
                     // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
                     if (string.IsNullOrEmpty(context.ClientSecret))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify a client secret.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6114), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The 'client_secret' parameter required for this client application is missing.");
+                            description: SR.FormatID2054(Parameters.ClientSecret),
+                            uri: SR.FormatID8000(SR.ID2054));
 
                         return;
                     }
@@ -568,15 +499,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientSecret() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateClientSecret([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -588,38 +513,41 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientSecret>()
                         .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
-                    // If the application is not a public client, validate the client secret.
-                    if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
-                        !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
+                    // If the application is a public client, don't validate the client secret.
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the confidential or hybrid application " +
-                                                "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
+                        return;
+                    }
+
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientSecret), SR.FormatID4000(Parameters.ClientSecret));
+
+                    if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
+                    {
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6115), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The specified client credentials are invalid.");
+                            description: SR.GetResourceString(SR.ID2055),
+                            uri: SR.FormatID8000(SR.ID2055));
 
                         return;
                     }
@@ -635,15 +563,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateEndpointPermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateEndpointPermissions([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -656,37 +578,34 @@ namespace OpenIddict.Server
                         .AddFilter<RequireEndpointPermissionsEnabled>()
                         .UseScopedHandler<ValidateEndpointPermissions>()
                         .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
+                    if (application is null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
                     }
 
                     // Reject the request if the application is not allowed to use the revocation endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Revocation))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the application '{ClientId}' " +
-                                                "was not allowed to use the revocation endpoint.", context.ClientId);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6116), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "This client application is not allowed to use the revocation endpoint.");
+                            description: SR.GetResourceString(SR.ID2078),
+                            uri: SR.FormatID8000(SR.ID2078));
 
                         return;
                     }
@@ -698,10 +617,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateToken : IOpenIddictServerHandler<ValidateRevocationRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateToken([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -710,24 +629,19 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseScopedHandler<ValidateToken>()
                         .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
                     var notification = new ProcessAuthenticationContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -767,44 +681,28 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseSingletonHandler<ValidateTokenType>()
                         .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
                     if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
-                        !context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode) &&
                         !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
                     {
-                        context.Logger.LogError("The revocation request was rejected because " +
-                                                "the received token was of an unsupported type.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6117));
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: "This token cannot be revoked.");
-
-                        return default;
-                    }
-
-                    // If the received token is an access token, return an error if reference tokens are not enabled.
-                    if (!context.Options.UseReferenceAccessTokens && context.Principal.HasTokenType(TokenTypeHints.AccessToken))
-                    {
-                        context.Logger.LogError("The revocation request was rejected because the access token was not revocable.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
+                            description: SR.GetResourceString(SR.ID2079),
+                            uri: SR.FormatID8000(SR.ID2079));
 
                         return default;
                     }
@@ -830,77 +728,34 @@ namespace OpenIddict.Server
                         .AddFilter<RequireClientIdParameter>()
                         .UseSingletonHandler<ValidateAuthorizedParty>()
                         .SetOrder(ValidateTokenType.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    // When the revoked token is an authorization code, the caller must be
-                    // listed as a presenter (i.e the party the authorization code was issued to).
-                    if (context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode))
-                    {
-                        if (!context.Principal.HasPresenter())
-                        {
-                            throw new InvalidOperationException("The presenters list cannot be extracted from the authorization code.");
-                        }
-
-                        if (!context.Principal.HasPresenter(context.ClientId))
-                        {
-                            context.Logger.LogError("The revocation request was rejected because the " +
-                                                    "authorization code was issued to a different client.");
-
-                            context.Reject(
-                                error: Errors.InvalidToken,
-                                description: "The client application is not allowed to revoke the specified token.");
-
-                            return default;
-                        }
-
-                        return default;
-                    }
+                    Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     // When the revoked token is an access token, the caller must be listed either as a presenter
                     // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
                     // If the access token doesn't contain any explicit presenter/audience, the token is assumed
                     // to be not specific to any resource server/client application and the check is bypassed.
                     if (context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
-                        context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId) &&
-                        context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
+                        context.Principal.HasClaim(Claims.Private.Audience) && !context.Principal.HasAudience(context.ClientId) &&
+                        context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the access token " +
-                                                "was issued to a different client or for another resource server.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6119));
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The client application is not allowed to revoke the specified token.");
-
-                        return default;
-                    }
-
-                    // When the revoked token is an identity token, the caller must be listed as an audience
-                    // (i.e the client application the identity token was initially issued to).
-                    // If the identity token doesn't contain any explicit audience, the token is
-                    // assumed to be not specific to any client application and the check is bypassed.
-                    if (context.Principal.HasTokenType(TokenTypeHints.IdToken) &&
-                        context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId))
-                    {
-                        context.Logger.LogError("The revocation request was rejected because the " +
-                                                "identity token was issued to a different client.");
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The client application is not allowed to revoke the specified token.");
+                            description: SR.GetResourceString(SR.ID2080),
+                            uri: SR.FormatID8000(SR.ID2080));
 
                         return default;
                     }
@@ -910,14 +765,14 @@ namespace OpenIddict.Server
                     // If the refresh token doesn't contain any explicit presenter, the token is
                     // assumed to be not specific to any client application and the check is bypassed.
                     if (context.Principal.HasTokenType(TokenTypeHints.RefreshToken) &&
-                        context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
+                        context.Principal.HasClaim(Claims.Private.Presenter) && !context.Principal.HasPresenter(context.ClientId))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the " +
-                                                "refresh token was issued to a different client.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6121));
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The client application is not allowed to revoke the specified token.");
+                            description: SR.GetResourceString(SR.ID2080),
+                            uri: SR.FormatID8000(SR.ID2080));
 
                         return default;
                     }
@@ -939,25 +794,20 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleRevocationRequestContext>()
                         .UseSingletonHandler<AttachPrincipal>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleRevocationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
                     var notification = context.Transaction.GetProperty<ValidateRevocationRequestContext>(
-                        typeof(ValidateRevocationRequestContext).FullName) ??
-                        throw new InvalidOperationException("The authentication context cannot be found.");
+                        typeof(ValidateRevocationRequestContext).FullName!) ??
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                     context.Principal ??= notification.Principal;
 
@@ -973,15 +823,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictTokenManager _tokenManager;
 
-                public RevokeToken() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public RevokeToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public RevokeToken([NotNull] IOpenIddictTokenManager tokenManager)
+                public RevokeToken(IOpenIddictTokenManager tokenManager)
                     => _tokenManager = tokenManager;
 
                 /// <summary>
@@ -992,43 +836,42 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<RevokeToken>()
                         .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] HandleRevocationRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(HandleRevocationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
                     // Extract the token identifier from the authentication principal.
-                    var identifier = context.Principal.GetInternalTokenId();
+                    var identifier = context.Principal.GetTokenId();
                     if (string.IsNullOrEmpty(identifier))
                     {
-                        context.Logger.LogError("The revocation request was rejected because the token had no internal identifier.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6122));
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
+                            description: SR.GetResourceString(SR.ID2079),
+                            uri: SR.FormatID8000(SR.ID2079));
 
                         return;
                     }
 
                     var token = await _tokenManager.FindByIdAsync(identifier);
-                    if (token == null)
+                    if (token is null)
                     {
-                        context.Logger.LogInformation("The token '{Identifier}' was not revoked because it couldn't be found.", identifier);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6123), identifier);
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The specified token is invalid.");
+                            description: SR.GetResourceString(SR.ID2004),
+                            uri: SR.FormatID8000(SR.ID2004));
 
                         return;
                     }
@@ -1038,7 +881,8 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
+                            description: SR.GetResourceString(SR.ID2079),
+                            uri: SR.FormatID8000(SR.ID2079));
 
                         return;
                     }
@@ -1057,18 +901,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyRevocationResponseContext>()
                         .UseSingletonHandler<NormalizeErrorResponse>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyRevocationResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyRevocationResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }

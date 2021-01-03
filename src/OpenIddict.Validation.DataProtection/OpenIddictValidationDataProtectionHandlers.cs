@@ -9,16 +9,18 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants;
+using static OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlers;
+using Properties = OpenIddict.Validation.OpenIddictValidationConstants.Properties;
+using Schemes = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes.Schemes;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation.DataProtection
 {
@@ -38,7 +40,7 @@ namespace OpenIddict.Validation.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictValidationDataProtectionOptions> _options;
 
-            public ValidateDataProtectionToken([NotNull] IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options)
+            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -48,35 +50,42 @@ namespace OpenIddict.Validation.DataProtection
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateDataProtectionToken>()
                     .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 500)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                if (context.Principal is not null)
+                {
+                    return default;
+                }
+
+                // Note: ASP.NET Core Data Protection tokens always start with "CfDJ8", that corresponds
+                // to the base64 representation of the magic "09 F0 C9 F0" header identifying DP payloads.
+                if (string.IsNullOrEmpty(context.Token) || !context.Token.StartsWith("CfDJ8", StringComparison.Ordinal))
                 {
                     return default;
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = context.Options.UseReferenceAccessTokens ?
-                    _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                        Purposes.Handlers.Server, Purposes.Formats.AccessToken,
-                        Purposes.Features.ReferenceTokens, Purposes.Schemes.Server) :
-                    _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                        Purposes.Handlers.Server, Purposes.Formats.AccessToken, Purposes.Schemes.Server);
+                var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(context.TokenType switch
+                {
+                    null => throw new InvalidOperationException(SR.GetResourceString(SR.ID0167)),
+
+                    TokenTypeHints.AccessToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
+                        => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+
+                    TokenTypeHints.AccessToken => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                });
 
                 try
                 {
@@ -85,22 +94,25 @@ namespace OpenIddict.Validation.DataProtection
 
                     // Note: since the data format relies on a data protector using different "purposes" strings
                     // per token type, the token processed at this stage is guaranteed to be of the expected type.
-                    context.Principal = _options.CurrentValue.Formatter.ReadToken(reader)?.SetTokenType(TokenTypeHints.AccessToken);
+                    context.Principal = _options.CurrentValue.Formatter.ReadToken(reader)?.SetTokenType(context.TokenType);
                 }
 
                 catch (Exception exception)
                 {
-                    context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", context.Token);
+                    context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), context.Token);
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (context.Principal == null)
+                if (context.Principal is null)
                 {
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
+
                     return default;
                 }
 
-                context.Logger.LogTrace("The self-contained DP token '{Token}' was successfully validated and the following " +
-                                        "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6152), context.Token, context.Principal.Claims);
 
                 return default;
             }

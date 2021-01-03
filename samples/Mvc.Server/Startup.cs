@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
+using Quartz;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server
@@ -19,7 +19,7 @@ namespace Mvc.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddControllersWithViews();
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -47,20 +47,41 @@ namespace Mvc.Server
                 options.ClaimsIdentity.RoleClaimType = Claims.Role;
             });
 
+            // OpenIddict offers native integration with Quartz.NET to perform scheduled tasks
+            // (like pruning orphaned authorizations/tokens from the database) at regular intervals.
+            services.AddQuartz(options =>
+            {
+                options.UseMicrosoftDependencyInjectionJobFactory();
+                options.UseSimpleTypeLoader();
+                options.UseInMemoryStore();
+            });
+
+            // Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
+            services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+
             services.AddOpenIddict()
 
                 // Register the OpenIddict core components.
                 .AddCore(options =>
                 {
                     // Configure OpenIddict to use the Entity Framework Core stores and models.
+                    // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
                     options.UseEntityFrameworkCore()
                            .UseDbContext<ApplicationDbContext>();
+
+                    // Developers who prefer using MongoDB can remove the previous lines
+                    // and configure OpenIddict to use the specified MongoDB database:
+                    // options.UseMongoDb()
+                    //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
+
+                    // Enable Quartz.NET integration.
+                    options.UseQuartz();
                 })
 
                 // Register the OpenIddict server components.
                 .AddServer(options =>
                 {
-                    // Enable the authorization, logout, token and userinfo endpoints.
+                    // Enable the authorization, device, logout, token, userinfo and verification endpoints.
                     options.SetAuthorizationEndpointUris("/connect/authorize")
                            .SetDeviceEndpointUris("/connect/device")
                            .SetLogoutEndpointUris("/connect/logout")
@@ -68,7 +89,7 @@ namespace Mvc.Server
                            .SetUserinfoEndpointUris("/connect/userinfo")
                            .SetVerificationEndpointUris("/connect/verify");
 
-                    // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
+                    // Note: this sample uses the code, device code, password and refresh token flows, but you
                     // can enable the other flows if you need to support implicit or client credentials.
                     options.AllowAuthorizationCodeFlow()
                            .AllowDeviceCodeFlow()
@@ -81,6 +102,9 @@ namespace Mvc.Server
                     // Register the signing and encryption credentials.
                     options.AddDevelopmentEncryptionCertificate()
                            .AddDevelopmentSigningCertificate();
+
+                    // Force client applications to use Proof Key for Code Exchange (PKCE).
+                    options.RequireProofKeyForCodeExchange();
 
                     // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                     options.UseAspNetCore()
@@ -107,6 +131,7 @@ namespace Mvc.Server
                     //
                     // options.IgnoreEndpointPermissions()
                     //        .IgnoreGrantTypePermissions()
+                    //        .IgnoreResponseTypePermissions()
                     //        .IgnoreScopePermissions();
 
                     // Note: when issuing access tokens used by third-party APIs
@@ -128,6 +153,14 @@ namespace Mvc.Server
 
                     // Register the ASP.NET Core host.
                     options.UseAspNetCore();
+
+                    // For applications that need immediate access token or authorization
+                    // revocation, the database entry of the received tokens and their
+                    // associated authorizations can be validated for each API call.
+                    // Enabling these options may have a negative impact on performance.
+                    //
+                    // options.EnableAuthorizationEntryValidation();
+                    // options.EnableTokenEntryValidation();
                 });
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
@@ -146,20 +179,16 @@ namespace Mvc.Server
 
             app.UseStatusCodePagesWithReExecute("/error");
 
-            // Note: ASP.NET Core is impacted by a bug that prevents the status code pages
-            // from working correctly with endpoint routing. For more information, visit
-            // https://github.com/aspnet/AspNetCore/issues/13715#issuecomment-528929683.
-            app.Use((context, next) =>
-            {
-                context.SetEndpoint(null);
-
-                return next();
-            });
-
             app.UseRouting();
 
-            app.UseAuthentication();
+            app.UseRequestLocalization(options =>
+            {
+                options.AddSupportedCultures("en-US", "fr-FR");
+                options.AddSupportedUICultures("en-US", "fr-FR");
+                options.SetDefaultCulture("en-US");
+            });
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(options => options.MapControllerRoute(

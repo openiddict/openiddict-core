@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using OpenIddict.Validation.DataProtection;
 
@@ -22,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictValidationDataProtectionBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictValidationDataProtectionBuilder([NotNull] IServiceCollection services)
+        public OpenIddictValidationDataProtectionBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -37,9 +36,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
-        public OpenIddictValidationDataProtectionBuilder Configure([NotNull] Action<OpenIddictValidationDataProtectionOptions> configuration)
+        public OpenIddictValidationDataProtectionBuilder Configure(Action<OpenIddictValidationDataProtectionOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -55,9 +54,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="provider">The data protection provider used to create token protectors.</param>
         /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
-        public OpenIddictValidationDataProtectionBuilder UseDataProtectionProvider([NotNull] IDataProtectionProvider provider)
+        public OpenIddictValidationDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
         {
-            if (provider == null)
+            if (provider is null)
             {
                 throw new ArgumentNullException(nameof(provider));
             }
@@ -68,11 +67,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
         /// </summary>
-        /// <param name="formatter">The formatter used to read and write tokens.</param>
+        /// <param name="formatter">The formatter used to read tokens.</param>
         /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
-        public OpenIddictValidationDataProtectionBuilder UseFormatter([NotNull] IOpenIddictValidationDataProtectionFormatter formatter)
+        public OpenIddictValidationDataProtectionBuilder UseFormatter(IOpenIddictValidationDataProtectionFormatter formatter)
         {
-            if (formatter == null)
+            if (formatter is null)
             {
                 throw new ArgumentNullException(nameof(formatter));
             }
@@ -80,26 +79,16 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options => options.Formatter = formatter);
         }
 
-        /// <summary>
-        /// Determines whether the specified object is equal to the current object.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
-        /// <summary>
-        /// Serves as the default hash function.
-        /// </summary>
-        /// <returns>A hash code for the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

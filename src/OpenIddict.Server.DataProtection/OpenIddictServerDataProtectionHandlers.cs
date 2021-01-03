@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,7 +21,9 @@ using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHand
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 using Schemes = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Purposes.Schemes;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.DataProtection
 {
@@ -34,7 +35,7 @@ namespace OpenIddict.Server.DataProtection
              * Authentication processing:
              */
             ValidateDataProtectionToken.Descriptor,
-            
+
             /*
              * Sign-in processing:
              */
@@ -51,7 +52,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public ValidateDataProtectionToken([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -61,29 +62,30 @@ namespace OpenIddict.Server.DataProtection
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateDataProtectionToken>()
                     .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessAuthenticationContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                if (context.Principal is not null)
                 {
                     return default;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
+                // Note: ASP.NET Core Data Protection tokens always start with "CfDJ8", that corresponds
+                // to the base64 representation of the magic "09 F0 C9 F0" header identifying DP payloads.
+                if (string.IsNullOrEmpty(context.Token) || !context.Token.StartsWith("CfDJ8", StringComparison.Ordinal))
+                {
+                    return default;
+                }
+
                 var principal = !string.IsNullOrEmpty(context.TokenType) ?
                     ValidateToken(context.Token, context.TokenType) :
                     ValidateToken(context.Token, TokenTypeHints.AccessToken)       ??
@@ -91,36 +93,45 @@ namespace OpenIddict.Server.DataProtection
                     ValidateToken(context.Token, TokenTypeHints.AuthorizationCode) ??
                     ValidateToken(context.Token, TokenTypeHints.DeviceCode)        ??
                     ValidateToken(context.Token, TokenTypeHints.UserCode);
-                if (principal == null)
+
+                if (principal is null)
                 {
+                    context.Reject(
+                        error: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
+                            _                                  => Errors.InvalidToken
+                        },
+                        description: SR.GetResourceString(SR.ID2004),
+                        uri: SR.FormatID8000(SR.ID2004));
+
                     return default;
                 }
 
                 context.Principal = principal;
 
-                context.Logger.LogTrace("The DP token '{Token}' was successfully validated and the following claims " +
-                                        "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6152), context.Token, context.Principal.Claims);
 
                 return default;
 
-                ClaimsPrincipal ValidateToken(string token, string type)
+                ClaimsPrincipal? ValidateToken(string token, string type)
                 {
                     // Create a Data Protection protector using the provider registered in the options.
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
                     {
-                        TokenTypeHints.AccessToken when context.Options.UseReferenceAccessTokens
+                        TokenTypeHints.AccessToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server       },
 
-                        TokenTypeHints.AuthorizationCode when !context.Options.DisableTokenStorage
+                        TokenTypeHints.AuthorizationCode when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
 
-                        TokenTypeHints.DeviceCode when !context.Options.DisableTokenStorage
+                        TokenTypeHints.DeviceCode when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server        },
 
-                        TokenTypeHints.RefreshToken when !context.Options.DisableTokenStorage
+                        TokenTypeHints.RefreshToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server      },
 
-                        TokenTypeHints.UserCode when !context.Options.DisableTokenStorage
+                        TokenTypeHints.UserCode when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server          },
 
                         TokenTypeHints.AccessToken       => new[] { Handlers.Server, Formats.AccessToken,       Schemes.Server },
@@ -129,7 +140,7 @@ namespace OpenIddict.Server.DataProtection
                         TokenTypeHints.RefreshToken      => new[] { Handlers.Server, Formats.RefreshToken,      Schemes.Server },
                         TokenTypeHints.UserCode          => new[] { Handlers.Server, Formats.UserCode,          Schemes.Server },
 
-                        _ => throw new InvalidOperationException("The specified token type is not supported.")
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
                     });
 
                     try
@@ -144,7 +155,7 @@ namespace OpenIddict.Server.DataProtection
 
                     catch (Exception exception)
                     {
-                        context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", token);
+                        context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), token);
 
                         return null;
                     }
@@ -159,7 +170,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionAccessToken([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionAccessToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -167,22 +178,17 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAccessTokenIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireAccessTokenGenerated>()
+                    .AddFilter<RequireDataProtectionAccessTokenFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -191,6 +197,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.AccessToken))
                 {
                     return default;
+                }
+
+                if (context.AccessTokenPrincipal is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -205,12 +216,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.AccessTokenPrincipal);
 
-                context.Response.AccessToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.AccessToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The access token '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013),
+                    context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
+                    context.AccessToken, context.AccessTokenPrincipal.Claims);
 
                 return default;
             }
@@ -223,7 +233,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionAuthorizationCode([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionAuthorizationCode(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -231,22 +241,17 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireAuthorizationCodeIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireAuthorizationCodeGenerated>()
+                    .AddFilter<RequireDataProtectionAuthorizationCodeFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -255,6 +260,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.Code))
                 {
                     return default;
+                }
+
+                if (context.AuthorizationCodePrincipal is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -269,12 +279,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.AuthorizationCodePrincipal);
 
-                context.Response.Code = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.AuthorizationCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The authorization code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.Code, context.AuthorizationCodePrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016),
+                    context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
+                    context.AuthorizationCode, context.AuthorizationCodePrincipal.Claims);
 
                 return default;
             }
@@ -287,7 +296,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionDeviceCode([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionDeviceCode(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -295,22 +304,17 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDeviceCodeIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
+                    .AddFilter<RequireDataProtectionDeviceCodeFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionDeviceCode>()
                     .SetOrder(GenerateIdentityModelDeviceCode.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -319,6 +323,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.DeviceCode))
                 {
                     return default;
+                }
+
+                if (context.DeviceCodePrincipal is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -333,12 +342,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.DeviceCodePrincipal);
 
-                context.Response.DeviceCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.DeviceCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The device code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.DeviceCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.DeviceCode, context.DeviceCodePrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6019),
+                    context.DeviceCodePrincipal.GetClaim(Claims.JwtId),
+                    context.DeviceCode, context.DeviceCodePrincipal.Claims);
 
                 return default;
             }
@@ -351,7 +359,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionRefreshToken([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionRefreshToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -359,22 +367,17 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireRefreshTokenIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireRefreshTokenGenerated>()
+                    .AddFilter<RequireDataProtectionRefreshTokenFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -385,8 +388,13 @@ namespace OpenIddict.Server.DataProtection
                     return default;
                 }
 
+                if (context.RefreshTokenPrincipal is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
+                }
+
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = !context.Options.DisableTokenStorage ?
+                var protector = context.Options.UseReferenceRefreshTokens ?
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server) :
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
@@ -397,12 +405,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.RefreshTokenPrincipal);
 
-                context.Response.RefreshToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.RefreshToken = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The refresh token '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6023),
+                    context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
+                    context.RefreshToken, context.RefreshTokenPrincipal.Claims);
 
                 return default;
             }
@@ -415,7 +422,7 @@ namespace OpenIddict.Server.DataProtection
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionUserCode([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public GenerateDataProtectionUserCode(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             /// <summary>
@@ -423,22 +430,17 @@ namespace OpenIddict.Server.DataProtection
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireUserCodeIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireUserCodeGenerated>()
+                    .AddFilter<RequireDataProtectionUserCodeFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionUserCode>()
                     .SetOrder(GenerateIdentityModelUserCode.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -447,6 +449,11 @@ namespace OpenIddict.Server.DataProtection
                 if (!string.IsNullOrEmpty(context.Response.UserCode))
                 {
                     return default;
+                }
+
+                if (context.UserCodePrincipal is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
@@ -461,12 +468,11 @@ namespace OpenIddict.Server.DataProtection
 
                 _options.CurrentValue.Formatter.WriteToken(writer, context.UserCodePrincipal);
 
-                context.Response.UserCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
+                context.UserCode = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace("The user code '{Identifier}' was successfully created: {Payload}. " +
-                                        "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.UserCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.UserCode, context.UserCodePrincipal.Claims);
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6026),
+                    context.UserCodePrincipal.GetClaim(Claims.JwtId),
+                    context.UserCode, context.UserCodePrincipal.Claims);
 
                 return default;
             }

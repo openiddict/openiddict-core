@@ -7,33 +7,29 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Properties;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.DataProtection
 {
     public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProtectionFormatter
     {
-        public ClaimsPrincipal ReadToken([NotNull] BinaryReader reader)
+        public ClaimsPrincipal ReadToken(BinaryReader reader)
         {
-            if (reader == null)
+            if (reader is null)
             {
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            var (principal, properties) = Read(reader, version: 5);
-            if (principal == null)
-            {
-                return null;
-            }
+            var (principal, properties) = Read(reader);
 
             // Tokens serialized using the ASP.NET Core Data Protection stack are compound
             // of both claims and special authentication properties. To ensure existing tokens
@@ -41,8 +37,6 @@ namespace OpenIddict.Server.DataProtection
 
             return principal
                 .SetAudiences(GetArrayProperty(properties, Properties.Audiences))
-                .SetCreationDate(GetDateProperty(properties, Properties.Issued))
-                .SetExpirationDate(GetDateProperty(properties, Properties.Expires))
                 .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
                 .SetResources(GetArrayProperty(properties, Properties.Resources))
                 .SetScopes(GetArrayProperty(properties, Properties.Scopes))
@@ -52,17 +46,24 @@ namespace OpenIddict.Server.DataProtection
                 .SetClaim(Claims.Private.AuthorizationId, GetProperty(properties, Properties.InternalAuthorizationId))
                 .SetClaim(Claims.Private.CodeChallenge, GetProperty(properties, Properties.CodeChallenge))
                 .SetClaim(Claims.Private.CodeChallengeMethod, GetProperty(properties, Properties.CodeChallengeMethod))
+                .SetClaim(Claims.Private.CreationDate, GetProperty(properties, Properties.Issued))
+                .SetClaim(Claims.Private.DeviceCodeId, GetProperty(properties, Properties.DeviceCodeId))
+                .SetClaim(Claims.Private.DeviceCodeLifetime, GetProperty(properties, Properties.DeviceCodeLifetime))
                 .SetClaim(Claims.Private.IdentityTokenLifetime, GetProperty(properties, Properties.IdentityTokenLifetime))
+                .SetClaim(Claims.Private.ExpirationDate, GetProperty(properties, Properties.Expires))
                 .SetClaim(Claims.Private.Nonce, GetProperty(properties, Properties.Nonce))
                 .SetClaim(Claims.Private.RedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
                 .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime))
-                .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId));
+                .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
+                .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
-            static (ClaimsPrincipal principal, ImmutableDictionary<string, string> properties) Read(BinaryReader reader, int version)
+            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the ticket.
+                var version = reader.ReadInt32();
+                if (version != 5)
                 {
-                    return (null, ImmutableDictionary.Create<string, string>());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
                 }
 
                 // Read the authentication scheme associated to the ticket.
@@ -70,10 +71,6 @@ namespace OpenIddict.Server.DataProtection
 
                 // Read the number of identities stored in the serialized payload.
                 var count = reader.ReadInt32();
-                if (count < 0)
-                {
-                    return (null, ImmutableDictionary.Create<string, string>());
-                }
 
                 var identities = new ClaimsIdentity[count];
                 for (var index = 0; index != count; ++index)
@@ -81,7 +78,7 @@ namespace OpenIddict.Server.DataProtection
                     identities[index] = ReadIdentity(reader);
                 }
 
-                var properties = ReadProperties(reader, version);
+                var properties = ReadProperties(reader);
 
                 return (new ClaimsPrincipal(identities), properties);
             }
@@ -142,21 +139,23 @@ namespace OpenIddict.Server.DataProtection
                 return claim;
             }
 
-            static ImmutableDictionary<string, string> ReadProperties(BinaryReader reader, int version)
+            static IReadOnlyDictionary<string, string> ReadProperties(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the properties.
+                var version = reader.ReadInt32();
+                if (version != 1)
                 {
-                    return ImmutableDictionary.Create<string, string>();
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
                 }
 
-                var properties = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
                 var count = reader.ReadInt32();
+                var properties = new Dictionary<string, string>(count, StringComparer.Ordinal);
                 for (var index = 0; index != count; ++index)
                 {
                     properties.Add(reader.ReadString(), reader.ReadString());
                 }
 
-                return properties.ToImmutable();
+                return properties;
             }
 
             static string ReadWithDefault(BinaryReader reader, string defaultValue)
@@ -171,26 +170,42 @@ namespace OpenIddict.Server.DataProtection
                 return value;
             }
 
-            static string GetProperty(IReadOnlyDictionary<string, string> properties, string name)
+            static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? value : null;
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ?
-                JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
+            {
+                if (properties.TryGetValue(name, out var value))
+                {
+                    using var document = JsonDocument.Parse(value);
+                    var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
 
-            static DateTimeOffset? GetDateProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ? (DateTimeOffset?)
-                DateTimeOffset.ParseExact(value, "r", CultureInfo.InvariantCulture) : null;
+                    foreach (var element in document.RootElement.EnumerateArray())
+                    {
+                        var item = element.GetString();
+                        if (string.IsNullOrEmpty(item))
+                        {
+                            continue;
+                        }
+
+                        builder.Add(item);
+                    }
+
+                    return builder.ToImmutable();
+                }
+
+                return ImmutableArray.Create<string>();
+            }
         }
 
-        public void WriteToken([NotNull] BinaryWriter writer, [NotNull] ClaimsPrincipal principal)
+        public void WriteToken(BinaryWriter writer, ClaimsPrincipal principal)
         {
-            if (writer == null)
+            if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            if (principal == null)
+            if (principal is null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
@@ -201,20 +216,23 @@ namespace OpenIddict.Server.DataProtection
             // can't include authentication properties. To ensure tokens can be used with previous versions
             // of OpenIddict (1.x/2.x), well-known claims are manually mapped to their properties equivalents.
 
-            SetProperty(properties, Properties.Issued, principal.GetCreationDate()?.ToString("r", CultureInfo.InvariantCulture));
-            SetProperty(properties, Properties.Expires, principal.GetExpirationDate()?.ToString("r", CultureInfo.InvariantCulture));
+            SetProperty(properties, Properties.Issued, principal.GetClaim(Claims.Private.CreationDate));
+            SetProperty(properties, Properties.Expires, principal.GetClaim(Claims.Private.ExpirationDate));
 
             SetProperty(properties, Properties.AccessTokenLifetime, principal.GetClaim(Claims.Private.AccessTokenLifetime));
             SetProperty(properties, Properties.AuthorizationCodeLifetime, principal.GetClaim(Claims.Private.AuthorizationCodeLifetime));
+            SetProperty(properties, Properties.DeviceCodeLifetime, principal.GetClaim(Claims.Private.DeviceCodeLifetime));
             SetProperty(properties, Properties.IdentityTokenLifetime, principal.GetClaim(Claims.Private.IdentityTokenLifetime));
             SetProperty(properties, Properties.RefreshTokenLifetime, principal.GetClaim(Claims.Private.RefreshTokenLifetime));
+            SetProperty(properties, Properties.UserCodeLifetime, principal.GetClaim(Claims.Private.UserCodeLifetime));
 
             SetProperty(properties, Properties.CodeChallenge, principal.GetClaim(Claims.Private.CodeChallenge));
             SetProperty(properties, Properties.CodeChallengeMethod, principal.GetClaim(Claims.Private.CodeChallengeMethod));
 
-            SetProperty(properties, Properties.InternalAuthorizationId, principal.GetInternalAuthorizationId());
-            SetProperty(properties, Properties.InternalTokenId, principal.GetInternalTokenId());
+            SetProperty(properties, Properties.InternalAuthorizationId, principal.GetAuthorizationId());
+            SetProperty(properties, Properties.InternalTokenId, principal.GetTokenId());
 
+            SetProperty(properties, Properties.DeviceCodeId, principal.GetClaim(Claims.Private.DeviceCodeId));
             SetProperty(properties, Properties.Nonce, principal.GetClaim(Claims.Private.Nonce));
             SetProperty(properties, Properties.OriginalRedirectUri, principal.GetClaim(Claims.Private.RedirectUri));
 
@@ -224,40 +242,38 @@ namespace OpenIddict.Server.DataProtection
             SetArrayProperty(properties, Properties.Scopes, principal.GetScopes());
 
             // Copy the principal and exclude the claim that were mapped to authentication properties.
-            principal = principal.Clone(claim => claim.Type switch
-            {
-                Claims.Audience  => false,
-                Claims.ExpiresAt => false,
-                Claims.IssuedAt  => false,
+            principal = principal.Clone(claim => claim.Type is not (
+                Claims.Private.AccessTokenLifetime or
+                Claims.Private.Audience or
+                Claims.Private.AuthorizationCodeLifetime or
+                Claims.Private.AuthorizationId or
+                Claims.Private.CodeChallenge or
+                Claims.Private.CodeChallengeMethod or
+                Claims.Private.CreationDate or
+                Claims.Private.DeviceCodeId or
+                Claims.Private.DeviceCodeLifetime or
+                Claims.Private.ExpirationDate or
+                Claims.Private.IdentityTokenLifetime or
+                Claims.Private.Nonce or
+                Claims.Private.Presenter or
+                Claims.Private.RedirectUri or
+                Claims.Private.RefreshTokenLifetime or
+                Claims.Private.Resource or
+                Claims.Private.Scope or
+                Claims.Private.TokenId or
+                Claims.Private.UserCodeLifetime));
 
-                Claims.Private.AccessTokenLifetime       => false,
-                Claims.Private.AuthorizationCodeLifetime => false,
-                Claims.Private.AuthorizationId           => false,
-                Claims.Private.CodeChallenge             => false,
-                Claims.Private.CodeChallengeMethod       => false,
-                Claims.Private.IdentityTokenLifetime     => false,
-                Claims.Private.Nonce                     => false,
-                Claims.Private.Presenter                 => false,
-                Claims.Private.RedirectUri               => false,
-                Claims.Private.RefreshTokenLifetime      => false,
-                Claims.Private.Resource                  => false,
-                Claims.Private.Scope                     => false,
-                Claims.Private.TokenId                   => false,
-
-                _ => true
-            });
-
-            Write(writer, version: 5, principal.Identity.AuthenticationType, principal, properties);
+            Write(writer, principal.Identity?.AuthenticationType, principal, properties);
             writer.Flush();
 
             // Note: the following local methods closely matches the logic used by ASP.NET Core's
             // authentication stack and MUST NOT be modified to ensure tokens encrypted using
             // the OpenID Connect server middleware can be read by OpenIddict (and vice-versa).
 
-            static void Write(BinaryWriter writer, int version, string scheme,
-                ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties)
+            static void Write(BinaryWriter writer, string? scheme, ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties)
             {
-                writer.Write(version);
+                // Write the version of the format used to serialize the ticket.
+                writer.Write(/* version: */ 5);
                 writer.Write(scheme ?? string.Empty);
 
                 // Write the number of identities contained in the principal.
@@ -268,7 +284,7 @@ namespace OpenIddict.Server.DataProtection
                     WriteIdentity(writer, identity);
                 }
 
-                WriteProperties(writer, version, properties);
+                WriteProperties(writer, properties);
             }
 
             static void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
@@ -297,7 +313,7 @@ namespace OpenIddict.Server.DataProtection
                     writer.Write(false);
                 }
 
-                if (identity.Actor != null)
+                if (identity.Actor is not null)
                 {
                     writer.Write(true);
                     WriteIdentity(writer, identity.Actor);
@@ -311,12 +327,12 @@ namespace OpenIddict.Server.DataProtection
 
             static void WriteClaim(BinaryWriter writer, Claim claim)
             {
-                if (writer == null)
+                if (writer is null)
                 {
                     throw new ArgumentNullException(nameof(writer));
                 }
 
-                if (claim == null)
+                if (claim is null)
                 {
                     throw new ArgumentNullException(nameof(claim));
                 }
@@ -337,9 +353,10 @@ namespace OpenIddict.Server.DataProtection
                 }
             }
 
-            static void WriteProperties(BinaryWriter writer, int version, IReadOnlyDictionary<string, string> properties)
+            static void WriteProperties(BinaryWriter writer, IReadOnlyDictionary<string, string> properties)
             {
-                writer.Write(version);
+                // Write the version of the format used to serialize the properties.
+                writer.Write(/* version: */ 1);
                 writer.Write(properties.Count);
 
                 foreach (var property in properties)
@@ -352,7 +369,7 @@ namespace OpenIddict.Server.DataProtection
             static void WriteWithDefault(BinaryWriter writer, string value, string defaultValue)
                 => writer.Write(string.Equals(value, defaultValue, StringComparison.Ordinal) ? "\0" : value);
 
-            static void SetProperty(IDictionary<string, string> properties, string name, string value)
+            static void SetProperty(IDictionary<string, string> properties, string name, string? value)
             {
                 if (string.IsNullOrEmpty(value))
                 {
@@ -374,11 +391,24 @@ namespace OpenIddict.Server.DataProtection
 
                 else
                 {
-                    properties[name] = JsonSerializer.Serialize(values, new JsonSerializerOptions
+                    using var stream = new MemoryStream();
+                    using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
                     {
                         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                        WriteIndented = false
+                        Indented = false
                     });
+
+                    writer.WriteStartArray();
+
+                    foreach (var value in values)
+                    {
+                        writer.WriteStringValue(value);
+                    }
+
+                    writer.WriteEndArray();
+                    writer.Flush();
+
+                    properties[name] = Encoding.UTF8.GetString(stream.ToArray());
                 }
             }
         }

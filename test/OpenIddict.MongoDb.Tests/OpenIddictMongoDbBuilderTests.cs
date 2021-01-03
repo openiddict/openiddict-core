@@ -12,6 +12,7 @@ using Moq;
 using OpenIddict.Core;
 using OpenIddict.MongoDb.Models;
 using Xunit;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests
 {
@@ -21,29 +22,12 @@ namespace OpenIddict.MongoDb.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictMongoDbBuilder(services));
 
             Assert.Equal("services", exception.ParamName);
-        }
-
-        [Fact]
-        public void DisableInitialization_InitializationIsCorrectlyDisabled()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.DisableInitialization();
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
-
-            Assert.True(options.DisableInitialization);
         }
 
         [Fact]
@@ -127,7 +111,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetApplicationsCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]
@@ -160,7 +144,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationsCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]
@@ -193,7 +177,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetScopesCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]
@@ -213,23 +197,6 @@ namespace OpenIddict.MongoDb.Tests
             Assert.Equal("custom_collection", options.ScopesCollectionName);
         }
 
-        [Fact]
-        public void SetInitializationTimeout_TimeoutIsCorrectlySet()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetInitializationTimeout(TimeSpan.FromDays(42));
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
-
-            Assert.Equal(TimeSpan.FromDays(42), options.InitializationTimeout);
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -243,7 +210,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetTokensCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0261), exception.Message);
         }
 
         [Fact]
@@ -273,7 +240,7 @@ namespace OpenIddict.MongoDb.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.UseDatabase(database: null);
+                return builder.UseDatabase(database: null!);
             });
 
             Assert.Equal("database", exception.ParamName);
@@ -308,9 +275,9 @@ namespace OpenIddict.MongoDb.Tests
             return services;
         }
 
-        public class CustomApplication : OpenIddictApplication { }
-        public class CustomAuthorization : OpenIddictAuthorization { }
-        public class CustomScope : OpenIddictScope { }
-        public class CustomToken : OpenIddictToken { }
+        public class CustomApplication : OpenIddictMongoDbApplication { }
+        public class CustomAuthorization : OpenIddictMongoDbAuthorization { }
+        public class CustomScope : OpenIddictMongoDbScope { }
+        public class CustomToken : OpenIddictMongoDbToken { }
     }
 }

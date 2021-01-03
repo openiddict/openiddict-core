@@ -6,8 +6,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
 
@@ -24,37 +25,39 @@ namespace System.Data.Entity
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbModelBuilder UseOpenIddict([NotNull] this DbModelBuilder builder)
-            => builder.UseOpenIddict<OpenIddictApplication,
-                                     OpenIddictAuthorization,
-                                     OpenIddictScope,
-                                     OpenIddictToken, string>();
+        public static DbModelBuilder UseOpenIddict(this DbModelBuilder builder)
+            => builder.UseOpenIddict<OpenIddictEntityFrameworkApplication,
+                                     OpenIddictEntityFrameworkAuthorization,
+                                     OpenIddictEntityFrameworkScope,
+                                     OpenIddictEntityFrameworkToken, string>();
 
         /// <summary>
         /// Registers the OpenIddict entity sets in the Entity Framework 6.x
         /// context using the specified entities and the specified key type.
-        /// Note: using this method requires creating non-generic derived classes
-        /// for all the OpenIddict entities (application, authorization, scope, token).
         /// </summary>
+        /// <remarks>
+        /// Note: when using custom entities, the new entities MUST be registered by calling
+        /// <see cref="OpenIddictEntityFrameworkBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
+        /// </remarks>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this DbModelBuilder builder)
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-            where TScope : OpenIddictScope<TKey>
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+        public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this DbModelBuilder builder)
+            where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictEntityFrameworkScope<TKey>
+            where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
             builder.Configurations
-                .Add(new OpenIddictApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
-                .Add(new OpenIddictAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
-                .Add(new OpenIddictScopeConfiguration<TScope, TKey>())
-                .Add(new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
+                .Add(new OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
+                .Add(new OpenIddictEntityFrameworkAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
+                .Add(new OpenIddictEntityFrameworkScopeConfiguration<TScope, TKey>())
+                .Add(new OpenIddictEntityFrameworkTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
 
             return builder;
         }
@@ -66,16 +69,16 @@ namespace System.Data.Entity
         /// <param name="source">The query source.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The non-streamed async enumeration containing the results.</returns>
-        internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>([NotNull] this IQueryable<T> source, CancellationToken cancellationToken)
+        internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
         {
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            return ExecuteAsync(cancellationToken);
+            return ExecuteAsync(source, cancellationToken);
 
-            async IAsyncEnumerable<T> ExecuteAsync(CancellationToken cancellationToken)
+            static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 foreach (var element in await source.ToListAsync(cancellationToken))
                 {

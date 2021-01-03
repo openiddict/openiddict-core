@@ -5,20 +5,24 @@
  */
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 #if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
 using Org.BouncyCastle.Crypto;
@@ -36,19 +40,24 @@ namespace OpenIddict.Core
     /// <summary>
     /// Provides methods allowing to manage the applications stored in the store.
     /// </summary>
+    /// <remarks>
+    /// Applications that do not want to depend on a specific entity type can use the non-generic
+    /// <see cref="IOpenIddictApplicationManager"/> instead, for which the actual entity type
+    /// is resolved at runtime based on the default entity type registered in the core options.
+    /// </remarks>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
     public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplicationManager where TApplication : class
     {
         public OpenIddictApplicationManager(
-            [NotNull] IOpenIddictApplicationCache<TApplication> cache,
-            [NotNull] IOpenIddictApplicationStoreResolver resolver,
-            [NotNull] ILogger<OpenIddictApplicationManager<TApplication>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            IOpenIddictApplicationCache<TApplication> cache,
+            ILogger<OpenIddictApplicationManager<TApplication>> logger,
+            IOptionsMonitor<OpenIddictCoreOptions> options,
+            IOpenIddictApplicationStoreResolver resolver)
         {
             Cache = cache;
-            Store = resolver.Get<TApplication>();
             Logger = logger;
             Options = options;
+            Store = resolver.Get<TApplication>();
         }
 
         /// <summary>
@@ -93,9 +102,9 @@ namespace OpenIddict.Core
         /// whose result returns the number of applications that match the specified query.
         /// </returns>
         public virtual ValueTask<long> CountAsync<TResult>(
-            [NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
+            Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -111,7 +120,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual ValueTask CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask CreateAsync(TApplication application, CancellationToken cancellationToken = default)
             => CreateAsync(application, secret: null, cancellationToken);
 
         /// <summary>
@@ -125,18 +134,16 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async ValueTask CreateAsync(
-            [NotNull] TApplication application,
-            [CanBeNull] string secret, CancellationToken cancellationToken = default)
+        public virtual async ValueTask CreateAsync(TApplication application, string? secret, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             if (!string.IsNullOrEmpty(await Store.GetClientSecretAsync(application, cancellationToken)))
             {
-                throw new ArgumentException("The client secret hash cannot be set on the application entity.", nameof(application));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0206), nameof(application));
             }
 
             // If no client type was specified, assume it's a public application if no secret was provided.
@@ -154,11 +161,11 @@ namespace OpenIddict.Core
                 await Store.SetClientSecretAsync(application, secret, cancellationToken);
             }
 
-            var results = await ValidateAsync(application, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(application, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to create a new application:");
+                builder.AppendLine(SR.GetResourceString(SR.ID0207));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -166,7 +173,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(application, cancellationToken);
@@ -174,6 +181,19 @@ namespace OpenIddict.Core
             if (!Options.CurrentValue.DisableEntityCaching)
             {
                 await Cache.AddAsync(application, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TApplication application, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(application, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -189,17 +209,17 @@ namespace OpenIddict.Core
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
         public virtual async ValueTask<TApplication> CreateAsync(
-            [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
+            OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
             var application = await Store.InstantiateAsync(cancellationToken);
-            if (application == null)
+            if (application is null)
             {
-                throw new InvalidOperationException("An error occurred while trying to create a new application.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
             }
 
             await PopulateAsync(application, descriptor, cancellationToken);
@@ -226,9 +246,9 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async ValueTask DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual async ValueTask DeleteAsync(TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -250,19 +270,19 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual async ValueTask<TApplication> FindByClientIdAsync(
-            [NotNull] string identifier, CancellationToken cancellationToken = default)
+        public virtual async ValueTask<TApplication?> FindByClientIdAsync(
+            string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var application = Options.CurrentValue.DisableEntityCaching ?
                 await Store.FindByClientIdAsync(identifier, cancellationToken) :
                 await Cache.FindByClientIdAsync(identifier, cancellationToken);
 
-            if (application == null)
+            if (application is null)
             {
                 return null;
             }
@@ -288,18 +308,18 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual async ValueTask<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        public virtual async ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
             var application = Options.CurrentValue.DisableEntityCaching ?
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
-            if (application == null)
+            if (application is null)
             {
                 return null;
             }
@@ -323,11 +343,11 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
         public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-            [NotNull] string address, CancellationToken cancellationToken = default)
+            string address, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
             var applications = Options.CurrentValue.DisableEntityCaching ?
@@ -339,12 +359,23 @@ namespace OpenIddict.Core
                 return applications;
             }
 
+            return ExecuteAsync(cancellationToken);
+
             // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return applications.WhereAwait(async application =>
-                (await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken)).Contains(address, StringComparer.Ordinal));
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var application in applications)
+                {
+                    var addresses = await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken);
+                    if (addresses.Contains(address, StringComparer.Ordinal))
+                    {
+                        yield return application;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -354,11 +385,11 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
         public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-            [NotNull] string address, CancellationToken cancellationToken = default)
+            string address, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
             var applications = Options.CurrentValue.DisableEntityCaching ?
@@ -374,8 +405,19 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return applications.WhereAwait(async application =>
-                (await Store.GetRedirectUrisAsync(application, cancellationToken)).Contains(address, StringComparer.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var application in applications)
+                {
+                    var addresses = await Store.GetRedirectUrisAsync(application, cancellationToken);
+                    if (addresses.Contains(address, StringComparer.Ordinal))
+                    {
+                        yield return application;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -389,14 +431,14 @@ namespace OpenIddict.Core
         /// whose result returns the first element returned when executing the query.
         /// </returns>
         public virtual ValueTask<TResult> GetAsync<TResult>(
-            [NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
+            Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return GetAsync((applications, state) => state(applications), query, cancellationToken);
+            return GetAsync(static (applications, query) => query(applications), query, cancellationToken);
         }
 
         /// <summary>
@@ -412,10 +454,10 @@ namespace OpenIddict.Core
         /// whose result returns the first element returned when executing the query.
         /// </returns>
         public virtual ValueTask<TResult> GetAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken = default)
+            Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -432,10 +474,10 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client identifier associated with the application.
         /// </returns>
-        public virtual ValueTask<string> GetClientIdAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string?> GetClientIdAsync(
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -452,10 +494,10 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        public virtual ValueTask<string> GetClientTypeAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string?> GetClientTypeAsync(
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -472,10 +514,10 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the consent type of the application (by default, "explicit").
         /// </returns>
-        public virtual async ValueTask<string> GetConsentTypeAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual async ValueTask<string?> GetConsentTypeAsync(
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -498,15 +540,41 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        public virtual ValueTask<string> GetDisplayNameAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string?> GetDisplayNameAsync(
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             return Store.GetDisplayNameAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the localized display names associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the localized display names associated with the application.
+        /// </returns>
+        public virtual async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(
+            TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
+            if (names is null || names.Count == 0)
+            {
+                return ImmutableDictionary.Create<CultureInfo, string>();
+            }
+
+            return names;
         }
 
         /// <summary>
@@ -518,14 +586,75 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        public virtual ValueTask<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string?> GetIdAsync(TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             return Store.GetIdAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an application
+        /// and corresponding to the current UI culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized display name associated with the application.
+        /// </returns>
+        public virtual ValueTask<string?> GetLocalizedDisplayNameAsync(
+            TApplication application, CancellationToken cancellationToken = default)
+            => GetLocalizedDisplayNameAsync(application, CultureInfo.CurrentUICulture, cancellationToken);
+
+        /// <summary>
+        /// Retrieves the localized display name associated with an application
+        /// and corresponding to the specified culture or one of its parents.
+        /// If no matching value can be found, the non-localized value is returned.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="culture">The culture (typically <see cref="CultureInfo.CurrentUICulture"/>).</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the matching localized display name associated with the application.
+        /// </returns>
+        public virtual async ValueTask<string?> GetLocalizedDisplayNameAsync(
+            TApplication application, CultureInfo culture, CancellationToken cancellationToken = default)
+        {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (culture is null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
+            var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
+            if (names is null || names.IsEmpty)
+            {
+                return await Store.GetDisplayNameAsync(application, cancellationToken);
+            }
+
+            do
+            {
+                if (names.TryGetValue(culture, out var name))
+                {
+                    return name;
+                }
+
+                culture = culture.Parent;
+            }
+
+            while (culture != CultureInfo.InvariantCulture);
+
+            return await Store.GetDisplayNameAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -538,9 +667,9 @@ namespace OpenIddict.Core
         /// whose result returns all the permissions associated with the application.
         /// </returns>
         public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -558,14 +687,34 @@ namespace OpenIddict.Core
         /// whose result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
         public virtual ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             return Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the application.
+        /// </returns>
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(
+            TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (application is null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetPropertiesAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -578,9 +727,9 @@ namespace OpenIddict.Core
         /// whose result returns all the redirect_uri associated with the application.
         /// </returns>
         public virtual ValueTask<ImmutableArray<string>> GetRedirectUrisAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -598,9 +747,9 @@ namespace OpenIddict.Core
         /// whose result returns all the requirements associated with the application.
         /// </returns>
         public virtual ValueTask<ImmutableArray<string>> GetRequirementsAsync(
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -616,16 +765,16 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the application has the specified client type, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> HasClientTypeAsync(
-            [NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken = default)
+            TApplication application, string type, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The client type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0209), nameof(type));
             }
 
             return string.Equals(await GetClientTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
@@ -639,16 +788,16 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the application has the specified consent type, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> HasConsentTypeAsync(
-            [NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken = default)
+            TApplication application, string type, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The consent type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0210), nameof(type));
             }
 
             return string.Equals(await GetConsentTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
@@ -662,16 +811,16 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the application has been granted the specified permission, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> HasPermissionAsync(
-            [NotNull] TApplication application, [NotNull] string permission, CancellationToken cancellationToken = default)
+            TApplication application, string permission, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             if (string.IsNullOrEmpty(permission))
             {
-                throw new ArgumentException("The permission name cannot be null or empty.", nameof(permission));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0211), nameof(permission));
             }
 
             return (await GetPermissionsAsync(application, cancellationToken)).Contains(permission, StringComparer.Ordinal);
@@ -685,16 +834,16 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the requirement has been enforced for the specified application, <c>false</c> otherwise.</returns>
         public virtual async ValueTask<bool> HasRequirementAsync(
-            [NotNull] TApplication application, [NotNull] string requirement, CancellationToken cancellationToken = default)
+            TApplication application, string requirement, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             if (string.IsNullOrEmpty(requirement))
             {
-                throw new ArgumentException("The requirement name cannot be null or empty.", nameof(requirement));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0212), nameof(requirement));
             }
 
             return (await GetRequirementsAsync(application, cancellationToken)).Contains(requirement, StringComparer.Ordinal);
@@ -708,7 +857,7 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>All the elements returned when executing the specified query.</returns>
         public virtual IAsyncEnumerable<TApplication> ListAsync(
-            [CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default)
+            int? count = null, int? offset = null, CancellationToken cancellationToken = default)
             => Store.ListAsync(count, offset, cancellationToken);
 
         /// <summary>
@@ -719,14 +868,14 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>All the elements returned when executing the specified query.</returns>
         public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
-            [NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
+            Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ListAsync((applications, state) => state(applications), query, cancellationToken);
+            return ListAsync(static (applications, query) => query(applications), query, cancellationToken);
         }
 
         /// <summary>
@@ -739,10 +888,10 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>All the elements returned when executing the specified query.</returns>
         public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken = default)
+            Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            TState state, CancellationToken cancellationToken = default)
         {
-            if (query == null)
+            if (query is null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
@@ -759,15 +908,15 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async ValueTask PopulateAsync([NotNull] TApplication application,
-            [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
+        public virtual async ValueTask PopulateAsync(TApplication application,
+            OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -777,12 +926,14 @@ namespace OpenIddict.Core
             await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
             await Store.SetConsentTypeAsync(application, descriptor.ConsentType, cancellationToken);
             await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
-            await Store.SetPermissionsAsync(application, ImmutableArray.CreateRange(descriptor.Permissions), cancellationToken);
+            await Store.SetDisplayNamesAsync(application, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
+            await Store.SetPermissionsAsync(application, descriptor.Permissions.ToImmutableArray(), cancellationToken);
             await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
+            await Store.SetPropertiesAsync(application, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
             await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
-            await Store.SetRequirementsAsync(application, ImmutableArray.CreateRange(descriptor.Requirements), cancellationToken);
+            await Store.SetRequirementsAsync(application, descriptor.Requirements.ToImmutableArray(), cancellationToken);
         }
 
         /// <summary>
@@ -795,15 +946,15 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual async ValueTask PopulateAsync(
-            [NotNull] OpenIddictApplicationDescriptor descriptor,
-            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+            OpenIddictApplicationDescriptor descriptor,
+            TApplication application, CancellationToken cancellationToken = default)
         {
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -818,22 +969,34 @@ namespace OpenIddict.Core
             descriptor.Requirements.Clear();
             descriptor.Requirements.UnionWith(await Store.GetRequirementsAsync(application, cancellationToken));
 
+            descriptor.DisplayNames.Clear();
+            foreach (var pair in await Store.GetDisplayNamesAsync(application, cancellationToken))
+            {
+                descriptor.DisplayNames.Add(pair.Key, pair.Value);
+            }
+
             descriptor.PostLogoutRedirectUris.Clear();
             foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
             {
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0213));
                 }
 
                 // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                 {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0214));
                 }
 
                 descriptor.PostLogoutRedirectUris.Add(uri);
+            }
+
+            descriptor.Properties.Clear();
+            foreach (var pair in await Store.GetPropertiesAsync(application, cancellationToken))
+            {
+                descriptor.Properties.Add(pair.Key, pair.Value);
             }
 
             descriptor.RedirectUris.Clear();
@@ -842,13 +1005,13 @@ namespace OpenIddict.Core
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0213));
                 }
 
                 // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                 {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID0214));
                 }
 
                 descriptor.RedirectUris.Add(uri);
@@ -863,18 +1026,18 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async ValueTask UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual async ValueTask UpdateAsync(TApplication application, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var results = await ValidateAsync(application, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(application, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing application:");
+                builder.AppendLine(SR.GetResourceString(SR.ID0215));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -882,7 +1045,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(application, cancellationToken);
@@ -891,6 +1054,19 @@ namespace OpenIddict.Core
             {
                 await Cache.RemoveAsync(application, cancellationToken);
                 await Cache.AddAsync(application, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TApplication application, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(application, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -905,10 +1081,9 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async ValueTask UpdateAsync([NotNull] TApplication application,
-            [CanBeNull] string secret, CancellationToken cancellationToken = default)
+        public virtual async ValueTask UpdateAsync(TApplication application, string? secret, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -936,15 +1111,15 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async ValueTask UpdateAsync([NotNull] TApplication application,
-            [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
+        public virtual async ValueTask UpdateAsync(TApplication application,
+            OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (descriptor == null)
+            if (descriptor is null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
@@ -972,9 +1147,9 @@ namespace OpenIddict.Core
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The validation error encountered when validating the application.</returns>
         public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
-            [NotNull] TApplication application, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+            TApplication application, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -983,7 +1158,7 @@ namespace OpenIddict.Core
             var identifier = await Store.GetClientIdAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                yield return new ValidationResult("The client identifier cannot be null or empty.");
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2036));
             }
 
             else
@@ -993,42 +1168,40 @@ namespace OpenIddict.Core
                 // the casing is different). To avoid issues when the client identifier is part of an index
                 // using the same collation, an error is added even if the two identifiers don't exactly match.
                 var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
-                if (other != null && !string.Equals(
+                if (other is not null && !string.Equals(
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult("An application with the same client identifier already exists.");
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2111));
                 }
             }
 
             var type = await Store.GetClientTypeAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult("The client type cannot be null or empty.");
+                yield return new ValidationResult(SR.GetResourceString(SR.ID2050));
             }
 
             else
             {
                 // Ensure the application type is supported by the manager.
                 if (!string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(type, ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new ValidationResult("Only 'confidential', 'hybrid' or 'public' applications are " +
-                                                      "supported by the default application manager.");
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2112));
                 }
 
                 // Ensure a client secret was specified if the client is a confidential application.
                 var secret = await Store.GetClientSecretAsync(application, cancellationToken);
                 if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new ValidationResult("The client secret cannot be null or empty for a confidential application.");
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2113));
                 }
 
                 // Ensure no client secret was specified if the client is a public application.
                 else if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new ValidationResult("A client secret cannot be associated with a public application.");
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2114));
                 }
             }
 
@@ -1041,15 +1214,15 @@ namespace OpenIddict.Core
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    yield return new ValidationResult("Callback URLs cannot be null or empty.");
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2061));
 
                     break;
                 }
 
                 // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                 {
-                    yield return new ValidationResult("Callback URLs must be valid absolute URLs.");
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2062));
 
                     break;
                 }
@@ -1057,7 +1230,7 @@ namespace OpenIddict.Core
                 // Ensure the address doesn't contain a fragment.
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    yield return new ValidationResult("Callback URLs cannot contain a fragment.");
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID2115));
 
                     break;
                 }
@@ -1076,20 +1249,20 @@ namespace OpenIddict.Core
         /// whose result returns a boolean indicating whether the client secret was valid.
         /// </returns>
         public virtual async ValueTask<bool> ValidateClientSecretAsync(
-            [NotNull] TApplication application, [NotNull] string secret, CancellationToken cancellationToken = default)
+            TApplication application, string secret, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
             if (string.IsNullOrEmpty(secret))
             {
-                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0216), nameof(secret));
             }
 
             if (await HasClientTypeAsync(application, ClientTypes.Public, cancellationToken))
             {
-                Logger.LogWarning("Client authentication cannot be enforced for public applications.");
+                Logger.LogWarning(SR.GetResourceString(SR.ID6159));
 
                 return false;
             }
@@ -1097,17 +1270,14 @@ namespace OpenIddict.Core
             var value = await Store.GetClientSecretAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(value))
             {
-                Logger.LogError("Client authentication failed for {Client} because " +
-                                "no client secret was associated with the application.",
-                                await GetClientIdAsync(application, cancellationToken));
+                Logger.LogError(SR.GetResourceString(SR.ID6160), await GetClientIdAsync(application, cancellationToken));
 
                 return false;
             }
 
             if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
             {
-                Logger.LogWarning("Client authentication failed for {Client}.",
-                    await GetClientIdAsync(application, cancellationToken));
+                Logger.LogWarning(SR.GetResourceString(SR.ID6161), await GetClientIdAsync(application, cancellationToken));
 
                 return false;
             }
@@ -1126,16 +1296,16 @@ namespace OpenIddict.Core
         /// whose result returns a boolean indicating whether the redirect_uri was valid.
         /// </returns>
         public virtual async ValueTask<bool> ValidateRedirectUriAsync(
-            [NotNull] TApplication application, [NotNull] string address, CancellationToken cancellationToken = default)
+            TApplication application, string address, CancellationToken cancellationToken = default)
         {
-            if (application == null)
+            if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
             foreach (var uri in await Store.GetRedirectUrisAsync(application, cancellationToken))
@@ -1148,8 +1318,7 @@ namespace OpenIddict.Core
                 }
             }
 
-            Logger.LogWarning("Client validation failed because '{RedirectUri}' was not a valid redirect_uri " +
-                              "for {Client}.", address, await GetClientIdAsync(application, cancellationToken));
+            Logger.LogWarning(SR.GetResourceString(SR.ID6162), address, await GetClientIdAsync(application, cancellationToken));
 
             return false;
         }
@@ -1163,11 +1332,11 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        protected virtual ValueTask<string> ObfuscateClientSecretAsync([NotNull] string secret, CancellationToken cancellationToken = default)
+        protected virtual ValueTask<string> ObfuscateClientSecretAsync(string secret, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(secret))
             {
-                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0216), nameof(secret));
             }
 
             // Note: the PRF, iteration count, salt length and key length currently all match the default values
@@ -1206,19 +1375,20 @@ namespace OpenIddict.Core
                 payload[0] = 0x01;
 
                 // Write the hashing algorithm version.
-                WriteNetworkByteOrder(payload, 1, algorithm switch
+                BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(1, 4), algorithm switch
                 {
-                    { Name: nameof(SHA1)   } => (uint) 0,
-                    { Name: nameof(SHA256) } => (uint) 1,
-                    { Name: nameof(SHA512) } => (uint) 2,
-                    _ => throw new InvalidOperationException("The specified HMAC algorithm is not valid.")
+                    var name when name == HashAlgorithmName.SHA1   => 0,
+                    var name when name == HashAlgorithmName.SHA256 => 1,
+                    var name when name == HashAlgorithmName.SHA512 => 2,
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0217))
                 });
 
                 // Write the iteration count of the algorithm.
-                WriteNetworkByteOrder(payload, 5, (uint) iterations);
+                BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(5, 8), (uint) iterations);
 
                 // Write the size of the salt.
-                WriteNetworkByteOrder(payload, 9, (uint) salt.Length);
+                BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(9, 12), (uint) salt.Length);
 
                 // Write the salt.
                 salt.CopyTo(payload.Slice(13));
@@ -1227,14 +1397,6 @@ namespace OpenIddict.Core
                 key.CopyTo(payload.Slice(13 + salt.Length));
 
                 return payload;
-            }
-
-            static void WriteNetworkByteOrder(Span<byte> buffer, int offset, uint value)
-            {
-                buffer[offset + 0] = (byte) (value >> 24);
-                buffer[offset + 1] = (byte) (value >> 16);
-                buffer[offset + 2] = (byte) (value >> 8);
-                buffer[offset + 3] = (byte) (value >> 0);
             }
         }
 
@@ -1250,16 +1412,16 @@ namespace OpenIddict.Core
         /// whose result returns a boolean indicating whether the specified value was valid.
         /// </returns>
         protected virtual ValueTask<bool> ValidateClientSecretAsync(
-            [NotNull] string secret, [NotNull] string comparand, CancellationToken cancellationToken = default)
+            string secret, string comparand, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(secret))
             {
-                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0216), nameof(secret));
             }
 
             if (string.IsNullOrEmpty(comparand))
             {
-                throw new ArgumentException("The comparand cannot be null or empty.", nameof(comparand));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0218), nameof(comparand));
             }
 
             try
@@ -1269,8 +1431,7 @@ namespace OpenIddict.Core
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An error occurred while trying to verify a client secret. " +
-                                             "This may indicate that the hashed entry is corrupted or malformed.");
+                Logger.LogWarning(exception, SR.GetResourceString(SR.ID6163));
 
                 return new ValueTask<bool>(false);
             }
@@ -1294,19 +1455,20 @@ namespace OpenIddict.Core
                 }
 
                 // Read the hashing algorithm version.
-                var algorithm = (int) ReadNetworkByteOrder(payload, 1) switch
+                var algorithm = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(1, 4)) switch
                 {
                     0 => HashAlgorithmName.SHA1,
                     1 => HashAlgorithmName.SHA256,
                     2 => HashAlgorithmName.SHA512,
-                    _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0217))
                 };
 
                 // Read the iteration count of the algorithm.
-                var iterations = (int) ReadNetworkByteOrder(payload, 5);
+                var iterations = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(5, 8));
 
                 // Read the size of the salt and ensure it's more than 128 bits.
-                var saltLength = (int) ReadNetworkByteOrder(payload, 9);
+                var saltLength = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(9, 12));
                 if (saltLength < 128 / 8)
                 {
                     return false;
@@ -1332,14 +1494,10 @@ namespace OpenIddict.Core
                     b: DeriveKey(secret, salt, algorithm, iterations, keyLength));
 #endif
             }
-
-            static uint ReadNetworkByteOrder(ReadOnlySpan<byte> buffer, int offset) =>
-                ((uint) buffer[offset + 0] << 24) |
-                ((uint) buffer[offset + 1] << 16) |
-                ((uint) buffer[offset + 2] << 8)  |
-                ((uint) buffer[offset + 3]);
         }
 
+        [SuppressMessage("Security", "CA5379:Do not use weak key derivation function algorithm",
+            Justification = "The SHA-1 digest algorithm is still supported for backward compatibility.")]
         private static byte[] DeriveKey(string secret, ReadOnlySpan<byte> salt,
             HashAlgorithmName algorithm, int iterations, int length)
         {
@@ -1349,10 +1507,11 @@ namespace OpenIddict.Core
 #else
             var generator = new Pkcs5S2ParametersGenerator(algorithm switch
             {
-                { Name: nameof(SHA1)   } => (IDigest) new Sha1Digest(),
-                { Name: nameof(SHA256) } => new Sha256Digest(),
-                { Name: nameof(SHA512) } => new Sha512Digest(),
-                _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
+                var name when name == HashAlgorithmName.SHA1   => new Sha1Digest(),
+                var name when name == HashAlgorithmName.SHA256 => new Sha256Digest(),
+                var name when name == HashAlgorithmName.SHA512 => new Sha512Digest(),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0217))
             });
 
             generator.Init(PbeParametersGenerator.Pkcs5PasswordToBytes(secret.ToCharArray()), salt.ToArray(), iterations);
@@ -1362,111 +1521,163 @@ namespace OpenIddict.Core
 #endif
         }
 
+        /// <inheritdoc/>
         ValueTask<long> IOpenIddictApplicationManager.CountAsync(CancellationToken cancellationToken)
             => CountAsync(cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<long> IOpenIddictApplicationManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => CountAsync(query, cancellationToken);
 
+        /// <inheritdoc/>
         async ValueTask<object> IOpenIddictApplicationManager.CreateAsync(OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
             => await CreateAsync(descriptor, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask IOpenIddictApplicationManager.CreateAsync(object application, CancellationToken cancellationToken)
             => CreateAsync((TApplication) application, cancellationToken);
 
-        ValueTask IOpenIddictApplicationManager.CreateAsync(object application, string secret, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        ValueTask IOpenIddictApplicationManager.CreateAsync(object application, string? secret, CancellationToken cancellationToken)
             => CreateAsync((TApplication) application, secret, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask IOpenIddictApplicationManager.DeleteAsync(object application, CancellationToken cancellationToken)
             => DeleteAsync((TApplication) application, cancellationToken);
 
-        async ValueTask<object> IOpenIddictApplicationManager.FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        async ValueTask<object?> IOpenIddictApplicationManager.FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
             => await FindByClientIdAsync(identifier, cancellationToken);
 
-        async ValueTask<object> IOpenIddictApplicationManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        async ValueTask<object?> IOpenIddictApplicationManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
             => await FindByIdAsync(identifier, cancellationToken);
 
+        /// <inheritdoc/>
         IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
-            => FindByPostLogoutRedirectUriAsync(address, cancellationToken).OfType<object>();
+            => FindByPostLogoutRedirectUriAsync(address, cancellationToken);
 
+        /// <inheritdoc/>
         IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
-            => FindByRedirectUriAsync(address, cancellationToken).OfType<object>();
+            => FindByRedirectUriAsync(address, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<TResult> IOpenIddictApplicationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => GetAsync(query, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<TResult> IOpenIddictApplicationManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
             => GetAsync(query, state, cancellationToken);
 
-        ValueTask<string> IOpenIddictApplicationManager.GetClientIdAsync(object application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        ValueTask<string?> IOpenIddictApplicationManager.GetClientIdAsync(object application, CancellationToken cancellationToken)
             => GetClientIdAsync((TApplication) application, cancellationToken);
 
-        ValueTask<string> IOpenIddictApplicationManager.GetClientTypeAsync(object application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        ValueTask<string?> IOpenIddictApplicationManager.GetClientTypeAsync(object application, CancellationToken cancellationToken)
             => GetClientTypeAsync((TApplication) application, cancellationToken);
 
-        ValueTask<string> IOpenIddictApplicationManager.GetConsentTypeAsync(object application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        ValueTask<string?> IOpenIddictApplicationManager.GetConsentTypeAsync(object application, CancellationToken cancellationToken)
             => GetConsentTypeAsync((TApplication) application, cancellationToken);
 
-        ValueTask<string> IOpenIddictApplicationManager.GetDisplayNameAsync(object application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        ValueTask<string?> IOpenIddictApplicationManager.GetDisplayNameAsync(object application, CancellationToken cancellationToken)
             => GetDisplayNameAsync((TApplication) application, cancellationToken);
 
-        ValueTask<string> IOpenIddictApplicationManager.GetIdAsync(object application, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        ValueTask<ImmutableDictionary<CultureInfo, string>> IOpenIddictApplicationManager.GetDisplayNamesAsync(object application, CancellationToken cancellationToken)
+            => GetDisplayNamesAsync((TApplication) application, cancellationToken);
+
+        /// <inheritdoc/>
+        ValueTask<string?> IOpenIddictApplicationManager.GetIdAsync(object application, CancellationToken cancellationToken)
             => GetIdAsync((TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
+        ValueTask<string?> IOpenIddictApplicationManager.GetLocalizedDisplayNameAsync(object application, CancellationToken cancellationToken)
+            => GetLocalizedDisplayNameAsync((TApplication) application, cancellationToken);
+
+        /// <inheritdoc/>
+        ValueTask<string?> IOpenIddictApplicationManager.GetLocalizedDisplayNameAsync(object application, CultureInfo culture, CancellationToken cancellationToken)
+            => GetLocalizedDisplayNameAsync((TApplication) application, culture, cancellationToken);
+
+        /// <inheritdoc/>
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetPermissionsAsync(object application, CancellationToken cancellationToken)
             => GetPermissionsAsync((TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetPostLogoutRedirectUrisAsync(object application, CancellationToken cancellationToken)
             => GetPostLogoutRedirectUrisAsync((TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
+        ValueTask<ImmutableDictionary<string, JsonElement>> IOpenIddictApplicationManager.GetPropertiesAsync(object application, CancellationToken cancellationToken)
+            => GetPropertiesAsync((TApplication) application, cancellationToken);
+
+        /// <inheritdoc/>
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRedirectUrisAsync(object application, CancellationToken cancellationToken)
             => GetRedirectUrisAsync((TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRequirementsAsync(object application, CancellationToken cancellationToken)
             => GetRequirementsAsync((TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<bool> IOpenIddictApplicationManager.HasClientTypeAsync(object application, string type, CancellationToken cancellationToken)
             => HasClientTypeAsync((TApplication) application, type, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<bool> IOpenIddictApplicationManager.HasConsentTypeAsync(object application, string type, CancellationToken cancellationToken)
             => HasConsentTypeAsync((TApplication) application, type, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<bool> IOpenIddictApplicationManager.HasPermissionAsync(object application, string permission, CancellationToken cancellationToken)
             => HasPermissionAsync((TApplication) application, permission, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<bool> IOpenIddictApplicationManager.HasRequirementAsync(object application, string requirement, CancellationToken cancellationToken)
             => HasRequirementAsync((TApplication) application, requirement, cancellationToken);
 
+        /// <inheritdoc/>
         IAsyncEnumerable<object> IOpenIddictApplicationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
-            => ListAsync(count, offset, cancellationToken).OfType<object>();
+            => ListAsync(count, offset, cancellationToken);
 
+        /// <inheritdoc/>
         IAsyncEnumerable<TResult> IOpenIddictApplicationManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => ListAsync(query, cancellationToken);
 
+        /// <inheritdoc/>
         IAsyncEnumerable<TResult> IOpenIddictApplicationManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
             => ListAsync(query, state, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask IOpenIddictApplicationManager.PopulateAsync(OpenIddictApplicationDescriptor descriptor, object application, CancellationToken cancellationToken)
             => PopulateAsync(descriptor, (TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask IOpenIddictApplicationManager.PopulateAsync(object application, OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
             => PopulateAsync((TApplication) application, descriptor, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask IOpenIddictApplicationManager.UpdateAsync(object application, CancellationToken cancellationToken)
             => UpdateAsync((TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask IOpenIddictApplicationManager.UpdateAsync(object application, OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
             => UpdateAsync((TApplication) application, descriptor, cancellationToken);
 
-        ValueTask IOpenIddictApplicationManager.UpdateAsync(object application, string secret, CancellationToken cancellationToken)
+        /// <inheritdoc/>
+        ValueTask IOpenIddictApplicationManager.UpdateAsync(object application, string? secret, CancellationToken cancellationToken)
             => UpdateAsync((TApplication) application, secret, cancellationToken);
 
+        /// <inheritdoc/>
         IAsyncEnumerable<ValidationResult> IOpenIddictApplicationManager.ValidateAsync(object application, CancellationToken cancellationToken)
             => ValidateAsync((TApplication) application, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<bool> IOpenIddictApplicationManager.ValidateClientSecretAsync(object application, string secret, CancellationToken cancellationToken)
             => ValidateClientSecretAsync((TApplication) application, secret, cancellationToken);
 
+        /// <inheritdoc/>
         ValueTask<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, string address, CancellationToken cancellationToken)
             => ValidateRedirectUriAsync((TApplication) application, address, cancellationToken);
     }

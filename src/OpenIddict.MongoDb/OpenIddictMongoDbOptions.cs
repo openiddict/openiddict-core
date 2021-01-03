@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using MongoDB.Driver;
 
 namespace OpenIddict.MongoDb
@@ -28,18 +27,7 @@ namespace OpenIddict.MongoDb
         /// Gets or sets the <see cref="IMongoDatabase"/> used by the OpenIddict stores.
         /// If no value is explicitly set, the database is resolved from the DI container.
         /// </summary>
-        public IMongoDatabase Database { get; set; }
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether automatic initialization should be disabled.
-        /// </summary>
-        public bool DisableInitialization { get; set; }
-
-        /// <summary>
-        /// Gets or sets the maximal duration given to the MongoDB client to initialize
-        /// the database and register the indexes used by the OpenIddict entities.
-        /// </summary>
-        public TimeSpan InitializationTimeout { get; set; } = TimeSpan.FromSeconds(30);
+        public IMongoDatabase? Database { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the scopes collection (by default, openiddict.scopes).

@@ -16,8 +16,9 @@ using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.FunctionalTests
+namespace OpenIddict.Server.IntegrationTests
 {
     public abstract partial class OpenIddictServerIntegrationTests
     {
@@ -31,14 +32,16 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractConfigurationRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/.well-known/openid-configuration", new OpenIddictRequest());
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Theory]
@@ -52,7 +55,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractConfigurationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -64,6 +67,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -78,7 +83,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractConfigurationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -96,18 +101,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ExtractConfigurationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -120,11 +127,13 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -138,7 +147,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateConfigurationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -150,6 +159,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -164,7 +175,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateConfigurationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -182,18 +193,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ValidateConfigurationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -206,49 +219,52 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task HandleConfigurationRequest_IssuerIsAutomaticallyInferred()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal(client.HttpClient.BaseAddress.AbsoluteUri,
-                (string) response[Metadata.Issuer]);
+            Assert.Equal(client.HttpClient.BaseAddress!.AbsoluteUri, (string?) response[Metadata.Issuer]);
         }
 
         [Fact]
         public async Task HandleConfigurationRequest_RegisteredIssuerIsAlwaysPreferred()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.SetIssuer(new Uri("https://www.fabrikam.com/"));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("https://www.fabrikam.com/",
-                (string) response[Metadata.Issuer]);
+            Assert.Equal("https://www.fabrikam.com/", (string?) response[Metadata.Issuer]);
         }
 
         [Fact]
         public async Task HandleConfigurationRequest_AbsoluteEndpointsAreCorrectlyExposed()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.SetAuthorizationEndpointUris("https://www.fabrikam.com/path/authorization_endpoint")
                        .SetCryptographyEndpointUris("https://www.fabrikam.com/path/cryptography_endpoint")
@@ -260,36 +276,38 @@ namespace OpenIddict.Server.FunctionalTests
                        .SetUserinfoEndpointUris("https://www.fabrikam.com/path/userinfo_endpoint");
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
             Assert.Equal("https://www.fabrikam.com/path/authorization_endpoint",
-                (string) response[Metadata.AuthorizationEndpoint]);
+                (string?) response[Metadata.AuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/cryptography_endpoint",
-                (string) response[Metadata.JwksUri]);
+                (string?) response[Metadata.JwksUri]);
 
             Assert.Equal("https://www.fabrikam.com/path/authorization_endpoint",
-                (string) response[Metadata.AuthorizationEndpoint]);
+                (string?) response[Metadata.AuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/device_endpoint",
-                (string) response[Metadata.DeviceAuthorizationEndpoint]);
+                (string?) response[Metadata.DeviceAuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/introspection_endpoint",
-                (string) response[Metadata.IntrospectionEndpoint]);
+                (string?) response[Metadata.IntrospectionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/logout_endpoint",
-                (string) response[Metadata.EndSessionEndpoint]);
+                (string?) response[Metadata.EndSessionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/revocation_endpoint",
-                (string) response[Metadata.RevocationEndpoint]);
+                (string?) response[Metadata.RevocationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/token_endpoint",
-                (string) response[Metadata.TokenEndpoint]);
+                (string?) response[Metadata.TokenEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/userinfo_endpoint",
-                (string) response[Metadata.UserinfoEndpoint]);
+                (string?) response[Metadata.UserinfoEndpoint]);
         }
 
         [Theory]
@@ -340,7 +358,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_RelativeEndpointsAreCorrectlyComputed(string issuer, string[] endpoints)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.SetIssuer(new Uri(issuer, UriKind.Absolute));
 
@@ -354,45 +372,52 @@ namespace OpenIddict.Server.FunctionalTests
                        .SetUserinfoEndpointUris(endpoints[7]);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
             Assert.Equal("https://www.fabrikam.com/tenant1/path/authorization_endpoint",
-                (string) response[Metadata.AuthorizationEndpoint]);
+                (string?) response[Metadata.AuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/cryptography_endpoint",
-                (string) response[Metadata.JwksUri]);
+                (string?) response[Metadata.JwksUri]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/device_endpoint",
-                (string) response[Metadata.DeviceAuthorizationEndpoint]);
+                (string?) response[Metadata.DeviceAuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/introspection_endpoint",
-                (string) response[Metadata.IntrospectionEndpoint]);
+                (string?) response[Metadata.IntrospectionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/logout_endpoint",
-                (string) response[Metadata.EndSessionEndpoint]);
+                (string?) response[Metadata.EndSessionEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/revocation_endpoint",
-                (string) response[Metadata.RevocationEndpoint]);
+                (string?) response[Metadata.RevocationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/token_endpoint",
-                (string) response[Metadata.TokenEndpoint]);
+                (string?) response[Metadata.TokenEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/tenant1/path/userinfo_endpoint",
-                (string) response[Metadata.UserinfoEndpoint]);
+                (string?) response[Metadata.UserinfoEndpoint]);
         }
 
         [Fact]
         public async Task HandleConfigurationRequest_NoClientAuthenticationMethodIsIncludedWhenTokenEndpointIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.GrantTypes.Clear());
                 options.Configure(options => options.GrantTypes.Add(GrantTypes.Implicit));
+                options.Configure(options => options.ResponseTypes.Clear());
+                options.Configure(options => options.DeviceEndpointUris.Clear());
+                options.Configure(options => options.VerificationEndpointUris.Clear());
                 options.SetTokenEndpointUris(Array.Empty<Uri>());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -405,11 +430,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenTokenEndpointIsEnabled()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.TokenEndpointAuthMethodsSupported];
+            var methods = (string[]?) response[Metadata.TokenEndpointAuthMethodsSupported];
 
             // Assert
             Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
@@ -420,10 +446,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_NoClientAuthenticationMethodIsIncludedWhenIntrospectionEndpointIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.SetIntrospectionEndpointUris(Array.Empty<Uri>());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -436,11 +464,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenIntrospectionEndpointIsEnabled()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
+            var methods = (string[]?) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
 
             // Assert
             Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
@@ -451,10 +480,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_NoClientAuthenticationMethodIsIncludedWhenRevocationEndpointIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -467,11 +498,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_SupportedClientAuthenticationMethodsAreIncludedWhenRevocationEndpointIsEnabled()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.RevocationEndpointAuthMethodsSupported];
+            var methods = (string[]?) response[Metadata.RevocationEndpointAuthMethodsSupported];
 
             // Assert
             Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
@@ -482,19 +514,21 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_ConfiguredGrantTypesAreReturned()
         {
             // Arrange
-            var client = CreateClient(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+            await using var server = await CreateServerAsync(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
             {
                 options.GrantTypes.Clear();
                 options.GrantTypes.Add(GrantTypes.AuthorizationCode);
                 options.GrantTypes.Add(GrantTypes.Password);
             }));
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var types = (string[]) response[Metadata.GrantTypesSupported];
+            var types = (string[]?) response[Metadata.GrantTypesSupported];
 
             // Assert
-            Assert.Equal(2, types.Length);
+            Assert.Equal(2, types?.Length);
             Assert.Contains(GrantTypes.AuthorizationCode, types);
             Assert.Contains(GrantTypes.Password, types);
         }
@@ -503,10 +537,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_NoSupportedCodeChallengeMethodsPropertyIsReturnedWhenNoMethodIsConfigured()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.PostConfigure<OpenIddictServerOptions>(options => options.CodeChallengeMethods.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -519,19 +555,21 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_ConfiguredCodeChallengeMethodsAreReturned()
         {
             // Arrange
-            var client = CreateClient(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+            await using var server = await CreateServerAsync(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
             {
                 options.CodeChallengeMethods.Clear();
                 options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
                 options.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
             }));
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var methods = (string[]) response[Metadata.CodeChallengeMethodsSupported];
+            var methods = (string[]?) response[Metadata.CodeChallengeMethodsSupported];
 
             // Assert
-            Assert.Equal(2, methods.Length);
+            Assert.Equal(2, methods?.Length);
             Assert.Contains(CodeChallengeMethods.Sha256, methods);
             Assert.Contains(CodeChallengeMethods.Plain, methods);
         }
@@ -540,10 +578,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_NoSupportedResponseModesPropertyIsReturnedWhenNoResponseModeIsConfigured()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.PostConfigure<OpenIddictServerOptions>(options => options.ResponseModes.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -556,19 +596,21 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_ConfiguredResponseModesAreReturned()
         {
             // Arrange
-            var client = CreateClient(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+            await using var server = await CreateServerAsync(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
             {
                 options.ResponseModes.Clear();
                 options.ResponseModes.Add(ResponseModes.FormPost);
                 options.ResponseModes.Add(ResponseModes.Fragment);
             }));
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var modes = (string[]) response[Metadata.ResponseModesSupported];
+            var modes = (string[]?) response[Metadata.ResponseModesSupported];
 
             // Assert
-            Assert.Equal(2, modes.Length);
+            Assert.Equal(2, modes?.Length);
             Assert.Contains(ResponseModes.FormPost, modes);
             Assert.Contains(ResponseModes.Fragment, modes);
         }
@@ -577,10 +619,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_NoSupportedResponseTypesPropertyIsReturnedWhenNoResponseTypeIsConfigured()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.PostConfigure<OpenIddictServerOptions>(options => options.ResponseTypes.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -593,19 +637,21 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_ConfiguredResponseTypesAreReturned()
         {
             // Arrange
-            var client = CreateClient(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+            await using var server = await CreateServerAsync(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
             {
                 options.ResponseTypes.Clear();
                 options.ResponseTypes.Add(ResponseTypes.Code);
                 options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
             }));
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var types = (string[]) response[Metadata.ResponseTypesSupported];
+            var types = (string[]?) response[Metadata.ResponseTypesSupported];
 
             // Assert
-            Assert.Equal(2, types.Length);
+            Assert.Equal(2, types?.Length);
             Assert.Contains(ResponseTypes.Code, types);
             Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, types);
         }
@@ -614,10 +660,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_NoSupportedScopesPropertyIsReturnedWhenNoScopeIsConfigured()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.PostConfigure<OpenIddictServerOptions>(options => options.Scopes.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -630,19 +678,21 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_ConfiguredScopesAreReturned()
         {
             // Arrange
-            var client = CreateClient(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+            await using var server = await CreateServerAsync(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
             {
                 options.Scopes.Clear();
                 options.Scopes.Add(Scopes.OpenId);
                 options.Scopes.Add("custom_scope");
             }));
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var scopes = (string[]) response[Metadata.ScopesSupported];
+            var scopes = (string[]?) response[Metadata.ScopesSupported];
 
             // Assert
-            Assert.Equal(2, scopes.Length);
+            Assert.Equal(2, scopes?.Length);
             Assert.Contains(Scopes.OpenId, scopes);
             Assert.Contains("custom_scope", scopes);
         }
@@ -651,10 +701,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_NoSupportedClaimsPropertyIsReturnedWhenNoClaimIsConfigured()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.PostConfigure<OpenIddictServerOptions>(options => options.Claims.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -667,19 +719,21 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_ConfiguredClaimsAreReturned()
         {
             // Arrange
-            var client = CreateClient(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+            await using var server = await CreateServerAsync(options => options.Services.PostConfigure<OpenIddictServerOptions>(options =>
             {
                 options.Claims.Clear();
                 options.Claims.Add(Claims.Profile);
                 options.Claims.Add("custom_claim");
             }));
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var claims = (string[]) response[Metadata.ClaimsSupported];
+            var claims = (string[]?) response[Metadata.ClaimsSupported];
 
             // Assert
-            Assert.Equal(2, claims.Length);
+            Assert.Equal(2, claims?.Length);
             Assert.Contains(Claims.Profile, claims);
             Assert.Contains("custom_claim", claims);
         }
@@ -688,11 +742,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_SupportedSubjectTypesAreCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var types = (string[]) response[Metadata.SubjectTypesSupported];
+            var types = (string[]?) response[Metadata.SubjectTypesSupported];
 
             // Assert
             Assert.Contains(SubjectTypes.Public, types);
@@ -712,15 +767,17 @@ namespace OpenIddict.Server.FunctionalTests
             // Arrange
             var credentials = new SigningCredentials(Mock.Of<AsymmetricSecurityKey>(), algorithm);
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.SigningCredentials.Clear());
                 options.AddSigningCredentials(credentials);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var algorithms = (string[]) response[Metadata.IdTokenSigningAlgValuesSupported];
+            var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
             // Assert
             Assert.Contains(algorithm, algorithms);
@@ -730,16 +787,18 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_SymmetricSigningKeysAreIgnored()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.SigningCredentials.Clear());
                 options.AddSigningKey(new SymmetricSecurityKey(new byte[256 / 8]));
                 options.AddSigningCredentials(new SigningCredentials(Mock.Of<AsymmetricSecurityKey>(), Algorithms.RsaSha256));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var algorithms = (string[]) response[Metadata.IdTokenSigningAlgValuesSupported];
+            var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
             // Assert
             Assert.Single(algorithms);
@@ -752,7 +811,7 @@ namespace OpenIddict.Server.FunctionalTests
             // Arrange
             var credentials = new SigningCredentials(Mock.Of<AsymmetricSecurityKey>(), SecurityAlgorithms.RsaSha256Signature);
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.SigningCredentials.Clear());
                 options.AddSigningCredentials(credentials);
@@ -760,9 +819,11 @@ namespace OpenIddict.Server.FunctionalTests
                 options.AddSigningCredentials(credentials);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
-            var algorithms = (string[]) response[Metadata.IdTokenSigningAlgValuesSupported];
+            var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
             // Assert
             Assert.Single(algorithms);
@@ -772,15 +833,16 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_SupportedParametersAreReturned()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.False((bool) response[Metadata.ClaimsParameterSupported]);
-            Assert.False((bool) response[Metadata.RequestParameterSupported]);
-            Assert.False((bool) response[Metadata.RequestUriParameterSupported]);
+            Assert.False((bool?) response[Metadata.ClaimsParameterSupported]);
+            Assert.False((bool?) response[Metadata.RequestParameterSupported]);
+            Assert.False((bool?) response[Metadata.RequestUriParameterSupported]);
         }
 
         [Theory]
@@ -794,7 +856,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -806,6 +868,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
@@ -820,7 +884,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleConfigurationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -838,18 +902,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task HandleConfigurationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -862,18 +928,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ApplyConfigurationResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -891,18 +959,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ApplyConfigurationResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -920,11 +990,13 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/openid-configuration");
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
         }
 
         [Theory]
@@ -937,14 +1009,16 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractCryptographyRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/.well-known/jwks", new OpenIddictRequest());
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Theory]
@@ -958,7 +1032,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractCryptographyRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -970,6 +1044,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
@@ -984,7 +1060,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractCryptographyRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1002,18 +1078,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ExtractCryptographyRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1026,11 +1104,13 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -1044,7 +1124,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateCryptographyRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1056,6 +1136,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
@@ -1070,7 +1152,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateCryptographyRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1088,18 +1170,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ValidateCryptographyRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1112,11 +1196,13 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -1131,13 +1217,14 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleCryptographyRequest_UnsupportedSecurityKeysAreIgnored(string algorithm)
         {
             // Arrange
-            var factory = Mock.Of<CryptoProviderFactory>(mock => !mock.IsSupportedAlgorithm(algorithm, It.IsAny<SecurityKey>()));
-            var key = Mock.Of<SecurityKey>(mock => mock.CryptoProviderFactory == factory);
+            var key = Mock.Of<SecurityKey>(mock => !mock.IsSupportedAlgorithm(algorithm));
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddSigningCredentials(new SigningCredentials(key, algorithm));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
@@ -1164,11 +1251,13 @@ namespace OpenIddict.Server.FunctionalTests
                 Q = Convert.FromBase64String("vQy5C++AzF+TRh6qwbKzOqt87ZHEHidIAh6ivRNewjzIgCWXpseVl7DimY1YdViOnw1VI7xY+EyiyTanq5caTqqB3KcDm2t40bJfrZuUcn/5puRIh1bKNDwIMLsuNCrjHmDlNbocqpYMOh0Pgw7ARNbqrnPjWsYGJPuMNFpax/U=")
             };
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.SigningCredentials.Clear());
                 options.AddSigningKey(new RsaSecurityKey(parameters));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
@@ -1181,37 +1270,33 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Null(key?[JsonWebKeyParameterNames.P]);
             Assert.Null(key?[JsonWebKeyParameterNames.Q]);
 
-            Assert.Equal(parameters.Exponent, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.E]));
-            Assert.Equal(parameters.Modulus, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.N]));
+            Assert.Equal(parameters.Exponent, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.E]));
+            Assert.Equal(parameters.Modulus, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.N]));
         }
 
 #if SUPPORTS_ECDSA
         [Theory]
         [InlineData(
-            /* oid: */ "1.2.840.10045.3.1.7",
-            /* curve: */ nameof(ECCurve.NamedCurves.nistP256),
+            /* oid: */ "1.2.840.10045.3.1.7", // P-256
             /* d: */ "C0vacBwq1FnQ1N0FHXuuwTlw7Or0neOm2r3AdIKLDKI=",
             /* x: */ "7eu+fVtuma+LVD4eH6CxrBX8366cnhPpvgeoeYL7oqw=",
             /* y: */ "4qRkITJZ4p5alm0VpLPd+I11wq8vMUHUhbJm1Crx+Zs=")]
         [InlineData(
-            /* oid: */ "1.3.132.0.34",
-            /* curve: */ nameof(ECCurve.NamedCurves.nistP384),
+            /* oid: */ "1.3.132.0.34", // P-384
             /* d: */ "B2JSdvTbRD/T5Sv7QsGBHPX9yGo2zn3Et5OWrjNauQ2kl+jFkXg5Iy2Vfak7W0ZQ",
             /* x: */ "qqsUwddWjXhCWiaUCOUORJIzvp6QDXv1vroHPR4N0C3UqSKkJ5hNiBHaYdRYCnvC",
             /* y: */ "QpbQFKBOXgeAKQQub/9QWZPvzNEjXq7aJjHlw4hiY+9QhGPn4qHUaeeI0qlaJ/t2")]
         [InlineData(
-            /* oid: */ "1.3.132.0.35",
-            /* curve: */ nameof(ECCurve.NamedCurves.nistP521),
+            /* oid: */ "1.3.132.0.35", // P-521
             /* d: */ "ALong1stsWvTLufObn3SPfM8s9VsTG73nXv4mkzGFUmB1r7rda+cpYXU99rFV/kX6zBkFl7Y9TZ2ZyZLFnyUpE4j",
             /* x: */ "AS+aCMpMbSO4ga/hUsVIIidqmcQiiT+N9o/5hJ9UVA/vHAKDvWTjuKz+JZfOiR9J+GDUcDZS56UbGG83IosMJMM6",
             /* y: */ "AcYkfsb/kTKpcPhYsRPAYV7ibwTN/CdiAM8QuCElAV6wBGfuX1LUmK6ldDVJjytpSz1EmGvzR0T7UCcZcgITqWc2")]
-        public async Task HandleCryptographyRequest_EcdsaSecurityKeysAreCorrectlyExposed(
-            string oid, string curve, string d, string x, string y)
+        public async Task HandleCryptographyRequest_EcdsaSecurityKeysAreCorrectlyExposed(string oid, string d, string x, string y)
         {
             // Arrange
             var parameters = new ECParameters
             {
-                Curve = ECCurve.CreateFromOid(new Oid(oid, curve)),
+                Curve = ECCurve.CreateFromValue(oid),
                 D = Convert.FromBase64String(d),
                 Q = new ECPoint
                 {
@@ -1220,13 +1305,15 @@ namespace OpenIddict.Server.FunctionalTests
                 }
             };
 
-            var algorithm = ECDsa.Create(parameters);
+            using var algorithm = ECDsa.Create(parameters);
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.SigningCredentials.Clear());
                 options.AddSigningKey(new ECDsaSecurityKey(algorithm));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
@@ -1235,8 +1322,8 @@ namespace OpenIddict.Server.FunctionalTests
             // Assert
             Assert.Null(key?[JsonWebKeyParameterNames.D]);
 
-            Assert.Equal(parameters.Q.X, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.X]));
-            Assert.Equal(parameters.Q.Y, Base64UrlEncoder.DecodeBytes((string) key?[JsonWebKeyParameterNames.Y]));
+            Assert.Equal(parameters.Q.X, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.X]));
+            Assert.Equal(parameters.Q.Y, Base64UrlEncoder.DecodeBytes((string?) key?[JsonWebKeyParameterNames.Y]));
         }
 #endif
 
@@ -1244,15 +1331,16 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleCryptographyRequest_X509CertificatesAreCorrectlyExposed()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
             var key = response[Parameters.Keys]?[0];
 
             // Assert
-            Assert.Equal("BSxeQhXNDB4VBeCOavOtvvv9eCI", (string) key?[JsonWebKeyParameterNames.X5t]);
-            Assert.Equal("MIIDPjCCAiqgAwIBAgIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAMC0xKzApBgNVBAMTIk93aW4uU2VjdXJpdHkuT3BlbklkQ29ubmVjdC5TZXJ2ZXIwHhcNOTkxMjMxMjIwMDAwWhcNNDkxMjMxMjIwMDAwWjAtMSswKQYDVQQDEyJPd2luLlNlY3VyaXR5Lk9wZW5JZENvbm5lY3QuU2VydmVyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwD/4uMNSIu+JlPRrtFR8Tm2LAwSOmglvJai6edFrdvDvk6xWzxYkMoIt4v13lFiIAUfI1vyZ1M0hWQfrifyweuzZu06DyWTUZkp9ervhTxK27HFN7XTuaRxHaXLR4KnhA+Nk8bBXN895OZh9g9Hf5+zsHpe17zgikwcyZtF+9OEG16oz7lKRgXGCIeeVZuSZ5Qf4yePwKMZqsx+lTOiZJ3JMs+gytvIpdZ1NWzcMX0XTcVTgvnBeU0O3NR6DQ41+SrGsojk11bd6kP6mVmDkA0K9kc2eh7q1wyJOeTNuCKRqLthwJ5m46/KRsxgY7ND6qHc1L60SqsFlYCJNEy7EdwIDAQABo2IwYDBeBgNVHQEEVzBVgBDQX+HKPiztLNvT3jQeBXqToS8wLTErMCkGA1UEAxMiT3dpbi5TZWN1cml0eS5PcGVuSWRDb25uZWN0LlNlcnZlcoIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAA4IBAQCxbCF5thB+ypGpudLAjv+l3M2VhNITJeR9j7jMlCSMVHvW7iMOL5W++zKvHMMAWuITLgPXTZ4ktsjeVQxWdnS2IcU7SwB9SeLbOMk4lLizoUevkiNaf6v+Hskm5LiH6+k8Zsl0INHyIjF9XlALTh91EqQ820cotDXaQIhHabQy892+dBmGWhSE1kP56IvOPzlLdSTkrcfcOu9gzwPVfuTDWH8Hrmo3FXz/fADmE7ea+yE1ZBeKhaN8kaFTs5zrprJ1BnmegnrjDY3RFgqcTTetahv0VBS0/jHSTIsAXflEPGW7LbHimzcgMytFU4fFtPVbek5eunakhu/JdENbbVmT", (string) key?[JsonWebKeyParameterNames.X5c]?[0]);
+            Assert.Equal("BSxeQhXNDB4VBeCOavOtvvv9eCI", (string?) key?[JsonWebKeyParameterNames.X5t]);
+            Assert.Equal("MIIDPjCCAiqgAwIBAgIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAMC0xKzApBgNVBAMTIk93aW4uU2VjdXJpdHkuT3BlbklkQ29ubmVjdC5TZXJ2ZXIwHhcNOTkxMjMxMjIwMDAwWhcNNDkxMjMxMjIwMDAwWjAtMSswKQYDVQQDEyJPd2luLlNlY3VyaXR5Lk9wZW5JZENvbm5lY3QuU2VydmVyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwD/4uMNSIu+JlPRrtFR8Tm2LAwSOmglvJai6edFrdvDvk6xWzxYkMoIt4v13lFiIAUfI1vyZ1M0hWQfrifyweuzZu06DyWTUZkp9ervhTxK27HFN7XTuaRxHaXLR4KnhA+Nk8bBXN895OZh9g9Hf5+zsHpe17zgikwcyZtF+9OEG16oz7lKRgXGCIeeVZuSZ5Qf4yePwKMZqsx+lTOiZJ3JMs+gytvIpdZ1NWzcMX0XTcVTgvnBeU0O3NR6DQ41+SrGsojk11bd6kP6mVmDkA0K9kc2eh7q1wyJOeTNuCKRqLthwJ5m46/KRsxgY7ND6qHc1L60SqsFlYCJNEy7EdwIDAQABo2IwYDBeBgNVHQEEVzBVgBDQX+HKPiztLNvT3jQeBXqToS8wLTErMCkGA1UEAxMiT3dpbi5TZWN1cml0eS5PcGVuSWRDb25uZWN0LlNlcnZlcoIQlLEp+P+WKYtEAemhSKSUTTAJBgUrDgMCHQUAA4IBAQCxbCF5thB+ypGpudLAjv+l3M2VhNITJeR9j7jMlCSMVHvW7iMOL5W++zKvHMMAWuITLgPXTZ4ktsjeVQxWdnS2IcU7SwB9SeLbOMk4lLizoUevkiNaf6v+Hskm5LiH6+k8Zsl0INHyIjF9XlALTh91EqQ820cotDXaQIhHabQy892+dBmGWhSE1kP56IvOPzlLdSTkrcfcOu9gzwPVfuTDWH8Hrmo3FXz/fADmE7ea+yE1ZBeKhaN8kaFTs5zrprJ1BnmegnrjDY3RFgqcTTetahv0VBS0/jHSTIsAXflEPGW7LbHimzcgMytFU4fFtPVbek5eunakhu/JdENbbVmT", (string?) key?[JsonWebKeyParameterNames.X5c]?[0]);
         }
 
         [Theory]
@@ -1266,7 +1354,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleCryptographyRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1278,6 +1366,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
@@ -1292,7 +1382,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleCryptographyRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1310,18 +1400,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task HandleCryptographyRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1334,18 +1426,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ApplyCryptographyResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1363,18 +1457,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ApplyCryptographyResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1392,12 +1488,14 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/.well-known/jwks");
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
-            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]) response["parameter_with_multiple_values"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
     }
 }

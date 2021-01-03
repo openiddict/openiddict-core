@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
@@ -24,9 +23,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-        public static OpenIddictEntityFrameworkBuilder UseEntityFramework([NotNull] this OpenIddictCoreBuilder builder)
+        public static OpenIddictEntityFrameworkBuilder UseEntityFramework(this OpenIddictCoreBuilder builder)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
@@ -36,25 +35,25 @@ namespace Microsoft.Extensions.DependencyInjection
             // in case case-sensitive stores were registered before this extension was called.
             builder.Configure(options => options.DisableAdditionalFiltering = false);
 
-            builder.SetDefaultApplicationEntity<OpenIddictApplication>()
-                   .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
-                   .SetDefaultScopeEntity<OpenIddictScope>()
-                   .SetDefaultTokenEntity<OpenIddictToken>();
+            builder.SetDefaultApplicationEntity<OpenIddictEntityFrameworkApplication>()
+                   .SetDefaultAuthorizationEntity<OpenIddictEntityFrameworkAuthorization>()
+                   .SetDefaultScopeEntity<OpenIddictEntityFrameworkScope>()
+                   .SetDefaultTokenEntity<OpenIddictEntityFrameworkToken>();
 
-            builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver>()
-                   .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver>()
-                   .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver>()
-                   .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver>();
+            builder.ReplaceApplicationStoreResolver<OpenIddictEntityFrameworkApplicationStoreResolver>()
+                   .ReplaceAuthorizationStoreResolver<OpenIddictEntityFrameworkAuthorizationStoreResolver>()
+                   .ReplaceScopeStoreResolver<OpenIddictEntityFrameworkScopeStoreResolver>()
+                   .ReplaceTokenStoreResolver<OpenIddictEntityFrameworkTokenStoreResolver>();
 
-            builder.Services.TryAddSingleton<OpenIddictApplicationStoreResolver.TypeResolutionCache>();
-            builder.Services.TryAddSingleton<OpenIddictAuthorizationStoreResolver.TypeResolutionCache>();
-            builder.Services.TryAddSingleton<OpenIddictScopeStoreResolver.TypeResolutionCache>();
-            builder.Services.TryAddSingleton<OpenIddictTokenStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkApplicationStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkAuthorizationStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkScopeStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkTokenStoreResolver.TypeResolutionCache>();
 
-            builder.Services.TryAddScoped(typeof(OpenIddictApplicationStore<,,,,>));
-            builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationStore<,,,,>));
-            builder.Services.TryAddScoped(typeof(OpenIddictScopeStore<,,>));
-            builder.Services.TryAddScoped(typeof(OpenIddictTokenStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkApplicationStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkAuthorizationStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkScopeStore<,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkTokenStore<,,,,>));
 
             return new OpenIddictEntityFrameworkBuilder(builder.Services);
         }
@@ -68,15 +67,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public static OpenIddictCoreBuilder UseEntityFramework(
-            [NotNull] this OpenIddictCoreBuilder builder,
-            [NotNull] Action<OpenIddictEntityFrameworkBuilder> configuration)
+            this OpenIddictCoreBuilder builder, Action<OpenIddictEntityFrameworkBuilder> configuration)
         {
-            if (builder == null)
+            if (builder is null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }

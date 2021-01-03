@@ -7,11 +7,9 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
-using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpConstants;
 
 namespace OpenIddict.Validation.SystemNetHttp
 {
@@ -22,48 +20,45 @@ namespace OpenIddict.Validation.SystemNetHttp
                                                                   IConfigureNamedOptions<HttpClientFactoryOptions>
     {
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _provider;
 
-        public OpenIddictValidationSystemNetHttpConfiguration([NotNull] IServiceProvider serviceProvider)
-            => _serviceProvider = serviceProvider;
+        public OpenIddictValidationSystemNetHttpConfiguration(IServiceProvider provider)
+            => _provider = provider;
 #endif
 
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
             // Register the built-in event handlers used by the OpenIddict System.Net.Http validation components.
-            foreach (var handler in OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers);
         }
 
-        public void Configure([NotNull] HttpClientFactoryOptions options)
+        public void Configure(HttpClientFactoryOptions options)
             => Debug.Fail("This infrastructure method shouldn't be called.");
 
-        public void Configure([CanBeNull] string name, [NotNull] HttpClientFactoryOptions options)
+        public void Configure(string name, HttpClientFactoryOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (!string.Equals(name, Clients.Discovery, StringComparison.Ordinal))
+            var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
+
+            if (!string.Equals(name, assembly.Name, StringComparison.Ordinal))
             {
                 return;
             }
 
             options.HttpClientActions.Add(client =>
             {
-                var name = typeof(OpenIddictValidationSystemNetHttpConfiguration).Assembly.GetName();
-
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(
-                    productName: name.Name,
-                    productVersion: name.Version.ToString()));
+                    productName: assembly.Name!,
+                    productVersion: assembly.Version!.ToString()));
             });
 
             options.HttpMessageHandlerBuilderActions.Add(builder =>
@@ -71,10 +66,10 @@ namespace OpenIddict.Validation.SystemNetHttp
 #if SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
                 var options = builder.Services.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
 #else
-                var options = _serviceProvider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
+                var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
 #endif
                 var policy = options.CurrentValue.HttpErrorPolicy;
-                if (policy != null)
+                if (policy is not null)
                 {
                     builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
                 }

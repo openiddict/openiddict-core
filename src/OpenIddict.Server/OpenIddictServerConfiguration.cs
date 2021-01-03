@@ -5,15 +5,15 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -26,24 +26,57 @@ namespace OpenIddict.Server
         /// Populates the default OpenIddict server options and ensures
         /// that the configuration is in a consistent and valid state.
         /// </summary>
-        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerOptions options)
+        public void PostConfigure(string name, OpenIddictServerOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.JsonWebTokenHandler == null)
+            // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
+            if (options.EnableDegradedMode)
             {
-                throw new InvalidOperationException("The security token handler cannot be null.");
+                options.DisableAuthorizationStorage = options.DisableTokenStorage = options.DisableRollingRefreshTokens = true;
+                options.IgnoreEndpointPermissions = options.IgnoreGrantTypePermissions = true;
+                options.IgnoreResponseTypePermissions = options.IgnoreScopePermissions = true;
+                options.UseReferenceAccessTokens = options.UseReferenceRefreshTokens = false;
+            }
+
+            // Explicitly disable rolling refresh tokens when token storage is disabled.
+            if (options.DisableTokenStorage)
+            {
+                options.DisableRollingRefreshTokens = true;
+            }
+
+            if (options.JsonWebTokenHandler is null)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
             }
 
             // Ensure at least one flow has been enabled.
             if (options.GrantTypes.Count == 0)
             {
-                throw new InvalidOperationException("At least one OAuth 2.0/OpenID Connect flow must be enabled.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
+            }
+
+            var addresses = options.AuthorizationEndpointUris.Distinct()
+                .Concat(options.ConfigurationEndpointUris.Distinct())
+                .Concat(options.CryptographyEndpointUris.Distinct())
+                .Concat(options.DeviceEndpointUris.Distinct())
+                .Concat(options.IntrospectionEndpointUris.Distinct())
+                .Concat(options.LogoutEndpointUris.Distinct())
+                .Concat(options.RevocationEndpointUris.Distinct())
+                .Concat(options.TokenEndpointUris.Distinct())
+                .Concat(options.UserinfoEndpointUris.Distinct())
+                .Concat(options.VerificationEndpointUris.Distinct())
+                .ToList();
+
+            // Ensure endpoint addresses are unique across endpoints.
+            if (addresses.Count != addresses.Distinct().Count())
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0285));
             }
 
             // Ensure the authorization endpoint has been enabled when
@@ -51,15 +84,13 @@ namespace OpenIddict.Server
             if (options.AuthorizationEndpointUris.Count == 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
                                                                  options.GrantTypes.Contains(GrantTypes.Implicit)))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The authorization endpoint must be enabled to use the authorization code and implicit flows.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0077));
             }
 
             // Ensure the device endpoint has been enabled when the device grant is supported.
             if (options.DeviceEndpointUris.Count == 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
-                throw new InvalidOperationException("The device endpoint must be enabled to use the device flow.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0078));
             }
 
             // Ensure the token endpoint has been enabled when the authorization code,
@@ -70,63 +101,69 @@ namespace OpenIddict.Server
                                                          options.GrantTypes.Contains(GrantTypes.Password) ||
                                                          options.GrantTypes.Contains(GrantTypes.RefreshToken)))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The token endpoint must be enabled to use the authorization code, ")
-                    .Append("client credentials, device, password and refresh token flows.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0079));
             }
 
             // Ensure the verification endpoint has been enabled when the device grant is supported.
             if (options.VerificationEndpointUris.Count == 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
-                throw new InvalidOperationException("The verification endpoint must be enabled to use the device flow.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0080));
             }
 
-            if (options.DisableTokenStorage)
+            // Ensure the device grant is allowed when the device endpoint is enabled.
+            if (options.DeviceEndpointUris.Count > 0 && !options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
-                if (options.DeviceEndpointUris.Count != 0 || options.VerificationEndpointUris.Count != 0)
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0084));
+            }
+
+            // Ensure the grant types/response types configuration is consistent.
+            foreach (var type in options.ResponseTypes)
+            {
+                var types = new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal);
+                if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The device and verification endpoints cannot be enabled when token storage is disabled.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.FormatID0281(ResponseTypes.Code));
                 }
 
-                if (options.RevocationEndpointUris.Count != 0)
+                if (types.Contains(ResponseTypes.IdToken) && !options.GrantTypes.Contains(GrantTypes.Implicit))
                 {
-                    throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
+                    throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.IdToken));
                 }
 
-                if (options.UseReferenceAccessTokens)
+                if (types.Contains(ResponseTypes.Token) && !options.GrantTypes.Contains(GrantTypes.Implicit))
                 {
-                    throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
+                    throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.Token));
                 }
+            }
 
-                if (options.UseSlidingExpiration && !options.UseRollingTokens)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.")
-                        .ToString());
-                }
+            // Ensure reference tokens support was not enabled when token storage is disabled.
+            if (options.DisableTokenStorage && (options.UseReferenceAccessTokens || options.UseReferenceRefreshTokens))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0083));
             }
 
             if (options.EncryptionCredentials.Count == 0)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("At least one encryption key must be registered in the OpenIddict server options.")
-                    .Append("Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddEncryptionCertificate()' ")
-                    .Append("or 'services.AddOpenIddict().AddServer().AddDevelopmentEncryptionCertificate()' or call ")
-                    .Append("'services.AddOpenIddict().AddServer().AddEphemeralEncryptionKey()' to use an ephemeral key.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0085));
             }
 
             if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("At least one asymmetric signing key must be registered in the OpenIddict server options.")
-                    .Append("Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddSigningCertificate()' ")
-                    .Append("or 'services.AddOpenIddict().AddServer().AddDevelopmentSigningCertificate()' or call ")
-                    .Append("'services.AddOpenIddict().AddServer().AddEphemeralSigningKey()' to use an ephemeral key.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
+            }
+
+            // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                   (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
+            }
+
+            // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.SigningCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+                   (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));
             }
 
             if (options.EnableDegradedMode)
@@ -134,81 +171,60 @@ namespace OpenIddict.Server
                 // If the degraded mode was enabled, ensure custom validation handlers
                 // have been registered for the endpoints that require manual validation.
 
-                if (options.AuthorizationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.AuthorizationEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("No custom authorization request validation handler was found. When enabling the degraded mode, ")
-                        .Append("a custom 'IOpenIddictServerHandler<ValidateAuthorizationRequestContext>' must be implemented ")
-                        .Append("to validate authorization requests (e.g to ensure the client_id and redirect_uri are valid).")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0089));
                 }
 
-                if (options.DeviceEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.DeviceEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateDeviceRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("No custom device request validation handler was found. When enabling the degraded mode, ")
-                        .Append("a custom 'IOpenIddictServerHandler<ValidateDeviceRequestContext>' must be implemented ")
-                        .Append("to validate device requests (e.g to ensure the client_id and client_secret are valid).")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0090));
                 }
 
-                if (options.IntrospectionEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.IntrospectionEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("No custom introspection request validation handler was found. When enabling the degraded mode, ")
-                        .Append("a custom 'IOpenIddictServerHandler<ValidateIntrospectionRequestContext>' must be implemented ")
-                        .Append("to validate introspection requests (e.g to ensure the client_id and client_secret are valid).")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0091));
                 }
 
-                if (options.LogoutEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.LogoutEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateLogoutRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("No custom logout request validation handler was found. When enabling the degraded mode, ")
-                        .Append("a custom 'IOpenIddictServerHandler<ValidateLogoutRequestContext>' must be implemented ")
-                        .Append("to validate logout requests (e.g to ensure the post_logout_redirect_uri is valid).")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0092));
                 }
 
-                if (options.RevocationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.RevocationEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateRevocationRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("No custom revocation request validation handler was found. When enabling the degraded mode, ")
-                        .Append("a custom 'IOpenIddictServerHandler<ValidateRevocationRequestContext>' must be implemented ")
-                        .Append("to validate revocation requests (e.g to ensure the client_id and client_secret are valid).")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0093));
                 }
 
-                if (options.TokenEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.TokenEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateTokenRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("No custom token request validation handler was found. When enabling the degraded mode, ")
-                        .Append("a custom 'IOpenIddictServerHandler<ValidateTokenRequestContext>' must be implemented ")
-                        .Append("to validate token requests (e.g to ensure the client_id and client_secret are valid).")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0094));
                 }
 
-                if (options.VerificationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.VerificationEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateVerificationRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("No custom verification request validation handler was found. When enabling the degraded mode, ")
-                        .Append("a custom 'IOpenIddictServerHandler<ValidateVerificationRequestContext>' must be implemented ")
-                        .Append("to validate verification requests (e.g to ensure the user_code is valid).")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0095));
                 }
 
                 // If the degraded mode was enabled, ensure custom authentication/sign-in handlers
@@ -216,81 +232,76 @@ namespace OpenIddict.Server
 
                 if (options.GrantTypes.Contains(GrantTypes.DeviceCode))
                 {
-                    if (!options.CustomHandlers.Any(
+                    if (!options.Handlers.Any(
                         descriptor => descriptor.ContextType == typeof(ProcessAuthenticationContext) &&
+                                      descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("No custom verification authentication handler was found. When enabling the degraded mode, ")
-                            .Append("a custom 'IOpenIddictServerHandler<ProcessAuthenticationContext>' must be implemented ")
-                            .Append("to validate device and user codes (e.g by retrieving them from a database).")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0096));
                     }
 
-                    if (!options.CustomHandlers.Any(
+                    if (!options.Handlers.Any(
                         descriptor => descriptor.ContextType == typeof(ProcessSignInContext) &&
+                                      descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("No custom verification sign-in handler was found. When enabling the degraded mode, ")
-                            .Append("a custom 'IOpenIddictServerHandler<ProcessSignInContext>' must be implemented ")
-                            .Append("to generate device and user codes and storing them in a database, if applicable.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0097));
                     }
                 }
             }
 
-            // Automatically add the offline_access scope if the refresh token grant has been enabled.
-            if (options.GrantTypes.Contains(GrantTypes.RefreshToken))
-            {
-                options.Scopes.Add(Scopes.OfflineAccess);
-            }
+            // Sort the handlers collection using the order associated with each handler.
+            options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
-            if (options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
-            {
-                options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
+            // Sort the encryption and signing credentials.
+            options.EncryptionCredentials.Sort((left, right) => Compare(left.Key, right.Key));
+            options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
 
-                options.ResponseTypes.Add(ResponseTypes.Code);
-            }
-
-            if (options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                options.ResponseTypes.Add(ResponseTypes.IdToken);
-                options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
-                options.ResponseTypes.Add(ResponseTypes.Token);
-            }
-
-            if (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) && options.GrantTypes.Contains(GrantTypes.Implicit))
-            {
-                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
-                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
-                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.Token);
-            }
-
-            if (options.ResponseTypes.Count != 0)
-            {
-                options.ResponseModes.Add(ResponseModes.FormPost);
-                options.ResponseModes.Add(ResponseModes.Fragment);
-
-                if (options.ResponseTypes.Contains(ResponseTypes.Code))
-                {
-                    options.ResponseModes.Add(ResponseModes.Query);
-                }
-            }
-
+            // Generate a key identifier for the encryption/signing keys that don't already have one.
             foreach (var key in options.EncryptionCredentials
                 .Select(credentials => credentials.Key)
-                .Concat(options.SigningCredentials.Select(credentials => credentials.Key)))
+                .Concat(options.SigningCredentials.Select(credentials => credentials.Key))
+                .Where(key => string.IsNullOrEmpty(key.KeyId)))
             {
-                if (!string.IsNullOrEmpty(key.KeyId))
-                {
-                    continue;
-                }
-
                 key.KeyId = GetKeyIdentifier(key);
             }
 
-            static string GetKeyIdentifier(SecurityKey key)
+            // Attach the signing credentials to the token validation parameters.
+            options.TokenValidationParameters.IssuerSigningKeys =
+                from credentials in options.SigningCredentials
+                select credentials.Key;
+
+            // Attach the encryption credentials to the token validation parameters.
+            options.TokenValidationParameters.TokenDecryptionKeys =
+                from credentials in options.EncryptionCredentials
+                select credentials.Key;
+
+            static int Compare(SecurityKey left, SecurityKey right) => (left, right) switch
+            {
+                // If the two keys refer to the same instances, return 0.
+                (SecurityKey first, SecurityKey second) when ReferenceEquals(first, second) => 0,
+
+                // If one of the keys is a symmetric key, prefer it to the other one.
+                (SymmetricSecurityKey, SymmetricSecurityKey) => 0,
+                (SymmetricSecurityKey, SecurityKey)          => -1,
+                (SecurityKey, SymmetricSecurityKey)          => 1,
+
+                // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
+                (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
+                (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => 1,
+
+                // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.
+                (X509SecurityKey first, X509SecurityKey second) => -first.Certificate.NotAfter.CompareTo(second.Certificate.NotAfter),
+
+                // If one of the keys is backed by a X.509 certificate, prefer the X.509 security key.
+                (X509SecurityKey, SecurityKey) => -1,
+                (SecurityKey, X509SecurityKey) => 1,
+
+                // If the two keys are not backed by a X.509 certificate, none should be preferred to the other.
+                (SecurityKey, SecurityKey) => 0
+            };
+
+            static string? GetKeyIdentifier(SecurityKey key)
             {
                 // When no key identifier can be retrieved from the security keys, a value is automatically
                 // inferred from the hexadecimal representation of the certificate thumbprint (SHA-1)
@@ -306,12 +317,11 @@ namespace OpenIddict.Server
                     // Note: if the RSA parameters are not attached to the signing key,
                     // extract them by calling ExportParameters on the RSA instance.
                     var parameters = rsaSecurityKey.Parameters;
-                    if (parameters.Modulus == null)
+                    if (parameters.Modulus is null)
                     {
                         parameters = rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false);
 
-                        Debug.Assert(parameters.Modulus != null,
-                            "A null modulus shouldn't be returned by RSA.ExportParameters().");
+                        Debug.Assert(parameters.Modulus is not null, SR.GetResourceString(SR.ID4003));
                     }
 
                     // Only use the 40 first chars of the base64url-encoded modulus.
@@ -325,8 +335,7 @@ namespace OpenIddict.Server
                     // Extract the ECDSA parameters from the signing credentials.
                     var parameters = ecsdaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false);
 
-                    Debug.Assert(parameters.Q.X != null,
-                        "Invalid coordinates shouldn't be returned by ECDsa.ExportParameters().");
+                    Debug.Assert(parameters.Q.X is not null, SR.GetResourceString(SR.ID4004));
 
                     // Only use the 40 first chars of the base64url-encoded X coordinate.
                     var identifier = Base64UrlEncoder.Encode(parameters.Q.X);

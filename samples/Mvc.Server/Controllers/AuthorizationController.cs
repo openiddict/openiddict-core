@@ -20,8 +20,6 @@ using Mvc.Server.Helpers;
 using Mvc.Server.Models;
 using Mvc.Server.ViewModels.Authorization;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
-using OpenIddict.EntityFrameworkCore.Models;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -29,16 +27,16 @@ namespace Mvc.Server
 {
     public class AuthorizationController : Controller
     {
-        private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
-        private readonly OpenIddictAuthorizationManager<OpenIddictAuthorization> _authorizationManager;
-        private readonly OpenIddictScopeManager<OpenIddictScope> _scopeManager;
+        private readonly IOpenIddictApplicationManager _applicationManager;
+        private readonly IOpenIddictAuthorizationManager _authorizationManager;
+        private readonly IOpenIddictScopeManager _scopeManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthorizationController(
-            OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
-            OpenIddictAuthorizationManager<OpenIddictAuthorization> authorizationManager,
-            OpenIddictScopeManager<OpenIddictScope> scopeManager,
+            IOpenIddictApplicationManager applicationManager,
+            IOpenIddictAuthorizationManager authorizationManager,
+            IOpenIddictScopeManager scopeManager,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager)
         {
@@ -64,7 +62,7 @@ namespace Mvc.Server
             // Retrieve the user principal stored in the authentication cookie.
             // If it can't be extracted, redirect the user to the login page.
             var result = await HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-            if (result == null || !result.Succeeded)
+            if (result is null || !result.Succeeded)
             {
                 // If the client application requested promptless authentication,
                 // return an error indicating that the user is not logged in.
@@ -112,7 +110,7 @@ namespace Mvc.Server
 
             // If a max_age parameter was provided, ensure that the cookie is not too old.
             // If it's too old, automatically redirect the user agent to the login page.
-            if (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
+            if (request.MaxAge is not null && result.Properties?.IssuedUtc is not null &&
                 DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value))
             {
                 if (request.HasPrompt(Prompts.None))
@@ -181,7 +179,7 @@ namespace Mvc.Server
                     // Automatically create a permanent authorization to avoid requiring explicit consent
                     // for future authorization or token requests containing the same scopes.
                     var authorization = authorizations.LastOrDefault();
-                    if (authorization == null)
+                    if (authorization is null)
                     {
                         authorization = await _authorizationManager.CreateAsync(
                             principal: principal,
@@ -191,7 +189,7 @@ namespace Mvc.Server
                             scopes   : principal.GetScopes());
                     }
 
-                    principal.SetInternalAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+                    principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
 
                     foreach (var claim in principal.Claims)
                     {
@@ -214,12 +212,11 @@ namespace Mvc.Server
                         }));
 
                 // In every other case, render the consent form.
-                default:
-                    return View(new AuthorizeViewModel
-                    {
-                        ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
-                        Scope = request.Scope
-                    });
+                default: return View(new AuthorizeViewModel
+                {
+                    ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
+                    Scope = request.Scope
+                });
             }
         }
 
@@ -272,7 +269,7 @@ namespace Mvc.Server
             // Automatically create a permanent authorization to avoid requiring explicit consent
             // for future authorization or token requests containing the same scopes.
             var authorization = authorizations.LastOrDefault();
-            if (authorization == null)
+            if (authorization is null)
             {
                 authorization = await _authorizationManager.CreateAsync(
                     principal: principal,
@@ -282,7 +279,7 @@ namespace Mvc.Server
                     scopes   : principal.GetScopes());
             }
 
-            principal.SetInternalAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+            principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
 
             foreach (var claim in principal.Claims)
             {
@@ -326,7 +323,7 @@ namespace Mvc.Server
                 // Render a form asking the user to confirm the authorization demand.
                 return View(new VerifyViewModel
                 {
-                    ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
+                    ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
                     Scope = string.Join(" ", result.Principal.GetScopes()),
                     UserCode = request.UserCode
                 });
@@ -335,8 +332,8 @@ namespace Mvc.Server
             // Redisplay the form when the user code is not valid.
             return View(new VerifyViewModel
             {
-                Error = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.Error),
-                ErrorDescription = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription)
+                Error = Errors.InvalidToken,
+                ErrorDescription = "The specified user code is not valid. Please make sure you typed it correctly."
             });
         }
 
@@ -378,8 +375,8 @@ namespace Mvc.Server
             // Redisplay the form when the user code is not valid.
             return View(new VerifyViewModel
             {
-                Error = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.Error),
-                ErrorDescription = result.Properties?.GetString(OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription)
+                Error = Errors.InvalidToken,
+                ErrorDescription = "The specified user code is not valid. Please make sure you typed it correctly."
             });
         }
 
@@ -436,7 +433,7 @@ namespace Mvc.Server
             if (request.IsPasswordGrantType())
             {
                 var user = await _userManager.FindByNameAsync(request.Username);
-                if (user == null)
+                if (user is null)
                 {
                     return Forbid(
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
@@ -487,7 +484,7 @@ namespace Mvc.Server
                 // when the user password/roles change, use the following line instead:
                 // var user = _signInManager.ValidateSecurityStampAsync(info.Principal);
                 var user = await _userManager.GetUserAsync(principal);
-                if (user == null)
+                if (user is null)
                 {
                     return Forbid(
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,

@@ -1,0 +1,94 @@
+name: build
+
+on:
+  push:
+    branches: [ dev, rel/* ]
+    tags: [ '*' ]
+  pull_request:
+    branches: [ dev, rel/* ]
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
+        include:
+          - os: macos-latest
+            os_name: macos
+          - os: ubuntu-latest
+            os_name: linux
+          - os: windows-latest
+            os_name: windows
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1
+
+    # Arcade only allows the revision to contain up to two characters, and GitHub Actions does not roll-over
+    # build numbers every day like Azure DevOps does. To balance these two requirements, set the official
+    # build ID to be the same format as the built-in default from Arcade, except with the revision number
+    # being the number of the quarter hour of the current time of day (24 * 4 = 96, which is less than 100).
+    # So a build between 00:00 and 00:14 would have a revision of 1, and a build between 23:45 and 23:59:59
+    # would have a revision of 97.
+    - name: Set Build ID
+      if: ${{ startsWith(github.ref, 'refs/pull/') == false }}
+      shell: pwsh
+      run: |
+        $Now = (Get-Date).ToUniversalTime()
+        $Hours = $Now.Hour * 4
+        $QuarterHours = [Math]::Floor($Now.Minute / 15.0)
+        $Revision = $Hours + $QuarterHours + 1
+        $BuildId = $Now.ToString("yyyyMMdd") + "." + $Revision
+        Write-Output "_ComputedOfficialBuildId=${BuildId}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Build, test and pack
+      if: ${{ runner.os == 'Windows' }}
+      run: eng\common\CIBuild.cmd -configuration Release -prepareMachine -integrationTest
+      env:
+        DOTNET_MULTILEVEL_LOOKUP: 0
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+        NUGET_XMLDOC_MODE: skip
+
+    - name: Build, test and pack
+      if: ${{ runner.os != 'Windows' }}
+      shell: pwsh
+      run: ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest
+      env:
+        DOTNET_MULTILEVEL_LOOKUP: 0
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+        NUGET_XMLDOC_MODE: skip
+
+    - name: Publish logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v1
+      with:
+        name: logs-${{ matrix.os_name }}
+        path: ./artifacts/log/Release
+
+    - name: Publish NuGet packages
+      uses: actions/upload-artifact@v1
+      with:
+        name: packages-${{ matrix.os_name }}
+        path: ./artifacts/packages/Release/Shipping
+
+    - name: Publish test results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v1
+      with:
+        name: testresults-${{ matrix.os_name }}
+        path: ./artifacts/TestResults/Release
+
+    - name: Push NuGet packages to MyGet.org
+      if: ${{ github.repository_owner == 'openiddict' && (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/heads/rel/') || startsWith(github.ref, 'refs/tags/')) && runner.os == 'Windows' }}
+      run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.MYGET_API_KEY }} --skip-duplicate --source https://www.myget.org/F/openiddict/api/v3/index.json
+
+    - name: Push NuGet packages to NuGet.org
+      if: ${{ github.repository_owner == 'openiddict' && startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
+      run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --source https://api.nuget.org/v3/index.json

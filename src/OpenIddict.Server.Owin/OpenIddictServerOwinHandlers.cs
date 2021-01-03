@@ -8,13 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using OpenIddict.Abstractions;
@@ -22,8 +23,10 @@ using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {
@@ -37,7 +40,7 @@ namespace OpenIddict.Server.Owin
             InferEndpointType.Descriptor,
             InferIssuerFromHost.Descriptor,
             ValidateTransportSecurityRequirement.Descriptor,
-            
+
             /*
              * Challenge processing:
              */
@@ -67,18 +70,13 @@ namespace OpenIddict.Server.Owin
                     // Note: this handler must be invoked before any other handler,
                     // including the built-in handlers defined in OpenIddict.Server.
                     .SetOrder(int.MinValue + 50_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -86,9 +84,9 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 context.EndpointType =
@@ -104,9 +102,14 @@ namespace OpenIddict.Server.Owin
                     Matches(request, context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
                                                                                   OpenIddictServerEndpointType.Unknown;
 
+                if (context.EndpointType != OpenIddictServerEndpointType.Unknown)
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6053), context.EndpointType);
+                }
+
                 return default;
 
-                static bool Matches(IOwinRequest request, IList<Uri> addresses)
+                static bool Matches(IOwinRequest request, IReadOnlyList<Uri> addresses)
                 {
                     for (var index = 0; index < addresses.Count; index++)
                     {
@@ -169,18 +172,13 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<InferIssuerFromHost>()
                     .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -188,14 +186,14 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // Don't require that the request host be present if the request is not handled
                 // by an OpenIddict endpoint or if an explicit issuer URL was already set.
-                if (context.Issuer != null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
+                if (context.Issuer is not null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
                 {
                     return default;
                 }
@@ -204,17 +202,19 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The mandatory 'Host' header is missing.");
+                        description: SR.FormatID2081(Headers.Host),
+                        uri: SR.FormatID8000(SR.ID2081));
 
                     return default;
                 }
 
-                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri issuer) ||
+                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
                     !issuer.IsWellFormedOriginalString())
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified 'Host' header is invalid.");
+                        description: SR.FormatID2082(Headers.Host),
+                        uri: SR.FormatID8000(SR.ID2082));
 
                     return default;
                 }
@@ -240,18 +240,13 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireTransportSecurityRequirementEnabled>()
                     .UseSingletonHandler<ValidateTransportSecurityRequirement>()
                     .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessRequestContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -259,9 +254,9 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // Don't require that the host be present if the request is not handled by OpenIddict.
@@ -275,7 +270,8 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "This server only accepts HTTPS requests.");
+                        description: SR.GetResourceString(SR.ID2083),
+                        uri: SR.FormatID8000(SR.ID2083));
 
                     return default;
                 }
@@ -298,36 +294,30 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachHostChallengeError>()
                     .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessChallengeContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessChallengeContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
-                if (properties != null)
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+                if (properties is not null)
                 {
                     context.Response.Error = GetProperty(properties, Properties.Error);
                     context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
                     context.Response.ErrorUri = GetProperty(properties, Properties.ErrorUri);
-                    context.Response.Realm = GetProperty(properties, Properties.Realm);
                     context.Response.Scope = GetProperty(properties, Properties.Scope);
                 }
 
                 return default;
 
-                static string GetProperty(AuthenticationProperties properties, string name)
-                    => properties.Dictionary.TryGetValue(name, out string value) ? value : null;
+                static string? GetProperty(AuthenticationProperties properties, string name)
+                    => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
             }
         }
 
@@ -345,18 +335,13 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractGetRequest<TContext>>()
                     .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -364,24 +349,24 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Request = new OpenIddictRequest(request.Query);
+                    context.Transaction.Request = new OpenIddictRequest(request.Query);
                 }
 
                 else
                 {
-                    context.Logger.LogError("The request was rejected because an invalid " +
-                                            "HTTP method was specified: {Method}.", request.Method);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID6137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified HTTP method is not valid.");
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return default;
                 }
@@ -404,18 +389,13 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractGetOrPostRequest<TContext>>()
                     .SetOrder(ExtractGetRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -423,14 +403,14 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Request = new OpenIddictRequest(request.Query);
+                    context.Transaction.Request = new OpenIddictRequest(request.Query);
                 }
 
                 else if (string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
@@ -438,11 +418,12 @@ namespace OpenIddict.Server.Owin
                     // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
                     if (string.IsNullOrEmpty(request.ContentType))
                     {
-                        context.Logger.LogError("The request was rejected because the mandatory 'Content-Type' header was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6138), Headers.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'Content-Type' header must be specified.");
+                            description: SR.FormatID2081(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2081));
 
                         return;
                     }
@@ -450,27 +431,27 @@ namespace OpenIddict.Server.Owin
                     // May have media/type; charset=utf-8, allow partial match.
                     if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Logger.LogError("The request was rejected because an invalid 'Content-Type' " +
-                                                "header was specified: {ContentType}.", request.ContentType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'Content-Type' header is not valid.");
+                            description: SR.FormatID2082(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2082));
 
                         return;
                     }
 
-                    context.Request = new OpenIddictRequest(await request.ReadFormAsync());
+                    context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync());
                 }
 
                 else
                 {
-                    context.Logger.LogError("The request was rejected because an invalid " +
-                                            "HTTP method was specified: {Method}.", request.Method);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID6137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified HTTP method is not valid.");
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return;
                 }
@@ -491,18 +472,13 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractPostRequest<TContext>>()
                     .SetOrder(ExtractGetOrPostRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -510,9 +486,9 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 if (string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
@@ -520,11 +496,12 @@ namespace OpenIddict.Server.Owin
                     // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
                     if (string.IsNullOrEmpty(request.ContentType))
                     {
-                        context.Logger.LogError("The request was rejected because the mandatory 'Content-Type' header was missing.");
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6138), Headers.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'Content-Type' header must be specified.");
+                            description: SR.FormatID2081(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2081));
 
                         return;
                     }
@@ -532,27 +509,27 @@ namespace OpenIddict.Server.Owin
                     // May have media/type; charset=utf-8, allow partial match.
                     if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Logger.LogError("The request was rejected because an invalid 'Content-Type' " +
-                                                "header was specified: {ContentType}.", request.ContentType);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'Content-Type' header is not valid.");
+                            description: SR.FormatID2082(Headers.ContentType),
+                            uri: SR.FormatID8000(SR.ID2082));
 
                         return;
                     }
 
-                    context.Request = new OpenIddictRequest(await request.ReadFormAsync());
+                    context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync());
                 }
 
                 else
                 {
-                    context.Logger.LogError("The request was rejected because an invalid " +
-                                            "HTTP method was specified: {Method}.", request.Method);
+                    context.Logger.LogError(SR.GetResourceString(SR.ID6137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified HTTP method is not valid.");
+                        description: SR.GetResourceString(SR.ID2084),
+                        uri: SR.FormatID8000(SR.ID2084));
 
                     return;
                 }
@@ -574,31 +551,28 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractBasicAuthenticationCredentials<TContext>>()
                     .SetOrder(ExtractPostRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
-                var header = request.Headers["Authorization"];
+                var header = request.Headers[Headers.Authorization];
                 if (string.IsNullOrEmpty(header) || !header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
                 {
                     return default;
@@ -606,13 +580,15 @@ namespace OpenIddict.Server.Owin
 
                 // At this point, reject requests that use multiple client authentication methods.
                 // See https://tools.ietf.org/html/rfc6749#section-2.3 for more information.
-                if (!string.IsNullOrEmpty(context.Request.ClientAssertion) || !string.IsNullOrEmpty(context.Request.ClientSecret))
+                if (!string.IsNullOrEmpty(context.Transaction.Request.ClientAssertion) ||
+                    !string.IsNullOrEmpty(context.Transaction.Request.ClientSecret))
                 {
-                    context.Logger.LogError("The request was rejected because multiple client credentials were specified.");
+                    context.Logger.LogError(SR.GetResourceString(SR.ID6140));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "Multiple client credentials cannot be specified.");
+                        description: SR.GetResourceString(SR.ID2087),
+                        uri: SR.FormatID8000(SR.ID2087));
 
                     return default;
                 }
@@ -627,14 +603,15 @@ namespace OpenIddict.Server.Owin
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified client credentials are invalid.");
+                            description: SR.GetResourceString(SR.ID2055),
+                            uri: SR.FormatID8000(SR.ID2055));
 
                         return default;
                     }
 
                     // Attach the basic authentication credentials to the request message.
-                    context.Request.ClientId = UnescapeDataString(data.Substring(0, index));
-                    context.Request.ClientSecret = UnescapeDataString(data.Substring(index + 1));
+                    context.Transaction.Request.ClientId = UnescapeDataString(data.Substring(0, index));
+                    context.Transaction.Request.ClientSecret = UnescapeDataString(data.Substring(index + 1));
 
                     return default;
                 }
@@ -643,12 +620,13 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified client credentials are invalid.");
+                        description: SR.GetResourceString(SR.ID2055),
+                        uri: SR.FormatID8000(SR.ID2055));
 
                     return default;
                 }
 
-                static string UnescapeDataString(string data)
+                static string? UnescapeDataString(string data)
                 {
                     if (string.IsNullOrEmpty(data))
                     {
@@ -675,38 +653,35 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractAccessToken<TContext>>()
                     .SetOrder(ExtractBasicAuthenticationCredentials<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                if (request is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
-                var header = request.Headers["Authorization"];
+                var header = request.Headers[Headers.Authorization];
                 if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
                     return default;
                 }
 
                 // Attach the access token to the request message.
-                context.Request.AccessToken = header.Substring("Bearer ".Length);
+                context.Transaction.Request.AccessToken = header.Substring("Bearer ".Length);
 
                 return default;
             }
@@ -729,75 +704,18 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<TFilter>()
                     .UseSingletonHandler<EnablePassthroughMode<TContext, TFilter>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
                 context.SkipRequest();
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of processing empty OpenID Connect responses that should trigger a host redirection.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-        /// </summary>
-        public class ProcessHostRedirectionResponse<TContext> : IOpenIddictServerHandler<TContext>
-            where TContext : BaseRequestContext
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
-                    .AddFilter<RequireOwinRequest>()
-                    .UseSingletonHandler<ProcessHostRedirectionResponse<TContext>>()
-                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
-                    .Build();
-
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
-                // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
-                {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
-                }
-
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
-                if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
-                {
-                    response.Redirect(properties.RedirectUri);
-
-                    context.Logger.LogInformation("The response was successfully returned as a 302 response.");
-                    context.HandleRequest();
-                }
 
                 return default;
             }
@@ -816,34 +734,26 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
-                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
-                }
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // When client authentication is made using basic authentication, the authorization server MUST return
@@ -853,16 +763,13 @@ namespace OpenIddict.Server.Owin
                 // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
                 // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
                 // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-                response.StatusCode = context.Response.Error switch
+                response.StatusCode = context.Transaction.Response.Error switch
                 {
                     null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
 
-                    Errors.InvalidClient => 401,
-                    Errors.InvalidToken  => 401,
-                    Errors.MissingToken  => 401,
+                    Errors.InvalidClient or Errors.InvalidToken or Errors.MissingToken => 401,
 
-                    Errors.InsufficientAccess => 403,
-                    Errors.InsufficientScope  => 403,
+                    Errors.InsufficientAccess or Errors.InsufficientScope => 403,
 
                     _ => 400
                 };
@@ -884,19 +791,14 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
-                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachHttpResponseCode<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
@@ -904,15 +806,15 @@ namespace OpenIddict.Server.Owin
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // Prevent the response from being cached.
-                response.Headers["Cache-Control"] = "no-store";
-                response.Headers["Pragma"] = "no-cache";
-                response.Headers["Expires"] = "Thu, 01 Jan 1970 00:00:00 GMT";
+                response.Headers[Headers.CacheControl] = "no-store";
+                response.Headers[Headers.Pragma] = "no-cache";
+                response.Headers[Headers.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
 
                 return default;
             }
@@ -924,6 +826,11 @@ namespace OpenIddict.Server.Owin
         /// </summary>
         public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
+            private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
+
+            public AttachWwwAuthenticateHeader(IOptionsMonitor<OpenIddictServerOwinOptions> options)
+                => _options = options;
+
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -931,34 +838,26 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
-                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
-                }
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
                 // When client authentication is made using basic authentication, the authorization server MUST return
@@ -968,14 +867,14 @@ namespace OpenIddict.Server.Owin
                 // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
                 // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
                 // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-                var scheme = context.Response.Error switch
+                var scheme = context.Transaction.Response.Error switch
                 {
-                    Errors.InvalidClient      => Schemes.Basic,
+                    Errors.InvalidClient => Schemes.Basic,
 
-                    Errors.InvalidToken       => Schemes.Bearer,
-                    Errors.MissingToken       => Schemes.Bearer,
-                    Errors.InsufficientAccess => Schemes.Bearer,
-                    Errors.InsufficientScope  => Schemes.Bearer,
+                    Errors.InvalidToken or
+                    Errors.MissingToken or
+                    Errors.InsufficientAccess or
+                    Errors.InsufficientScope => Schemes.Bearer,
 
                     _ => null
                 };
@@ -985,98 +884,102 @@ namespace OpenIddict.Server.Owin
                     return default;
                 }
 
-                // Optimization: avoid allocating a StringBuilder if the
-                // WWW-Authenticate header doesn't contain any parameter.
-                if (string.IsNullOrEmpty(context.Response.Realm) &&
-                    string.IsNullOrEmpty(context.Response.Error) &&
-                    string.IsNullOrEmpty(context.Response.ErrorDescription) &&
-                    string.IsNullOrEmpty(context.Response.ErrorUri) &&
-                    string.IsNullOrEmpty(context.Response.Scope))
-                {
-                    response.Headers.Append("WWW-Authenticate", scheme);
+                var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
-                    return default;
+                // If a realm was configured in the options, attach it to the parameters.
+                if (!string.IsNullOrEmpty(_options.CurrentValue.Realm))
+                {
+                    parameters[Parameters.Realm] = _options.CurrentValue.Realm;
+                }
+
+                foreach (var parameter in context.Transaction.Response.GetParameters())
+                {
+                    // Note: the error details are only included if the error was not caused by a missing token, as recommended
+                    // by the OAuth 2.0 bearer specification: https://tools.ietf.org/html/rfc6750#section-3.1.
+                    if (string.Equals(context.Transaction.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
+                       (string.Equals(parameter.Key, Parameters.Error, StringComparison.Ordinal) ||
+                        string.Equals(parameter.Key, Parameters.ErrorDescription, StringComparison.Ordinal) ||
+                        string.Equals(parameter.Key, Parameters.ErrorUri, StringComparison.Ordinal)))
+                    {
+                        continue;
+                    }
+
+                    // Ignore values that can't be represented as unique strings.
+                    var value = (string?) parameter.Value;
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    parameters[parameter.Key] = value;
                 }
 
                 var builder = new StringBuilder(scheme);
 
-                // Append the realm if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Realm))
+                foreach (var parameter in parameters)
                 {
                     builder.Append(' ');
-                    builder.Append(Parameters.Realm);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Realm.Replace("\"", "\\\""));
+                    builder.Append(parameter.Key);
+                    builder.Append('=');
                     builder.Append('"');
+                    builder.Append(parameter.Value.Replace("\"", "\\\""));
+                    builder.Append('"');
+                    builder.Append(',');
                 }
 
-                // Append the error if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Error))
+                // If the WWW-Authenticate header ends with a comma, remove it.
+                if (builder[builder.Length - 1] == ',')
                 {
-                    if (!string.IsNullOrEmpty(context.Response.Realm))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.Error);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Error.Replace("\"", "\\\""));
-                    builder.Append('"');
+                    builder.Remove(builder.Length - 1, 1);
                 }
 
-                // Append the error_description if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.ErrorDescription))
+                response.Headers.Append(Headers.WwwAuthenticate, builder.ToString());
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of processing challenge responses that contain a WWW-Authenticate header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class ProcessChallengeErrorResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
+                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
+            {
+                if (context is null)
                 {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.ErrorDescription);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.ErrorDescription.Replace("\"", "\\\""));
-                    builder.Append('"');
+                    throw new ArgumentNullException(nameof(context));
                 }
 
-                // Append the error_uri if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.ErrorUri))
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response is null)
                 {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorDescription))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.ErrorUri);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.ErrorUri.Replace("\"", "\\\""));
-                    builder.Append('"');
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
-                // Append the scope if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Scope))
+                // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
+                if (!response.Headers.ContainsKey(Headers.WwwAuthenticate))
                 {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorUri))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.Scope);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Scope.Replace("\"", "\\\""));
-                    builder.Append('"');
+                    return default;
                 }
 
-                response.Headers.Append("WWW-Authenticate", builder.ToString());
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6141), context.Transaction.Response);
+                context.HandleRequest();
 
                 return default;
             }
@@ -1095,44 +998,39 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessJsonResponse<TContext>>()
-                    .SetOrder(ProcessPassthroughErrorResponse<TContext, IOpenIddictServerHandlerFilter<TContext>>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
-                }
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6142), context.Transaction.Response);
 
                 using var stream = new MemoryStream();
-                await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
                 {
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = false
+                    Indented = true
                 });
+
+                context.Transaction.Response.WriteTo(writer);
+                writer.Flush();
 
                 response.ContentLength = stream.Length;
                 response.ContentType = "application/json;charset=UTF-8";
@@ -1162,38 +1060,35 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireErrorPassthroughEnabled>()
                     .AddFilter<TFilter>()
                     .UseSingletonHandler<ProcessPassthroughErrorResponse<TContext, TFilter>>()
-                    .SetOrder(ProcessLocalErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
+
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
                     return default;
                 }
 
                 // Don't return the state originally sent by the client application.
-                context.Response.State = null;
+                context.Transaction.Response.State = null;
 
                 context.SkipRequest();
 
@@ -1215,65 +1110,64 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessLocalErrorResponse<TContext>>()
-                    .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessPassthroughErrorResponse<TContext, IOpenIddictServerHandlerFilter<TContext>>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
+
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
+                if (response is null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                if (string.IsNullOrEmpty(context.Transaction.Response.Error))
                 {
                     return;
                 }
 
                 // Don't return the state originally sent by the client application.
-                context.Response.State = null;
+                context.Transaction.Response.State = null;
 
-                context.Logger.LogInformation("The authorization response was successfully returned " +
-                                              "as a plain-text document: {Response}.", context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6143), context.Transaction.Response);
 
-                using var buffer = new MemoryStream();
-                using var writer = new StreamWriter(buffer);
+                using var stream = new MemoryStream();
+                using var writer = new StreamWriter(stream);
 
-                foreach (var parameter in context.Response.GetParameters())
+                foreach (var parameter in context.Transaction.Response.GetParameters())
                 {
                     // Ignore null or empty parameters, including JSON
                     // objects that can't be represented as strings.
-                    var value = (string) parameter.Value;
+                    var value = (string?) parameter.Value;
                     if (string.IsNullOrEmpty(value))
                     {
                         continue;
                     }
 
-                    writer.WriteLine("{0}:{1}", parameter.Key, value);
+                    writer.Write(parameter.Key);
+                    writer.Write(':');
+                    writer.Write(value);
+                    writer.WriteLine();
                 }
 
                 writer.Flush();
 
-                response.ContentLength = buffer.Length;
+                response.ContentLength = stream.Length;
                 response.ContentType = "text/plain;charset=UTF-8";
 
-                buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                await buffer.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
+                stream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await stream.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
 
                 context.HandleRequest();
             }
@@ -1294,23 +1188,18 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessEmptyResponse<TContext>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(TContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                context.Logger.LogInformation("The response was successfully returned as an empty 200 response.");
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6145));
                 context.HandleRequest();
 
                 return default;

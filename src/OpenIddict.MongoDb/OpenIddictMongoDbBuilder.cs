@@ -6,11 +6,11 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using MongoDB.Driver;
 using OpenIddict.Core;
 using OpenIddict.MongoDb;
 using OpenIddict.MongoDb.Models;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictMongoDbBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictMongoDbBuilder([NotNull] IServiceCollection services)
+        public OpenIddictMongoDbBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -38,9 +38,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder Configure([NotNull] Action<OpenIddictMongoDbOptions> configuration)
+        public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -51,19 +51,11 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Disables initialization so that the MongoDB indexes used by OpenIddict
-        /// are not automatically created the first time the stores are invoked.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder DisableInitialization()
-            => Configure(options => options.DisableInitialization = true);
-
-        /// <summary>
         /// Configures OpenIddict to use the specified entity as the default application entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultApplicationEntity<TApplication>()
-            where TApplication : OpenIddictApplication
+            where TApplication : OpenIddictMongoDbApplication
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultApplicationType = typeof(TApplication));
 
@@ -75,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultAuthorizationEntity<TAuthorization>()
-            where TAuthorization : OpenIddictAuthorization
+            where TAuthorization : OpenIddictMongoDbAuthorization
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultAuthorizationType = typeof(TAuthorization));
 
@@ -87,7 +79,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultScopeEntity<TScope>()
-            where TScope : OpenIddictScope
+            where TScope : OpenIddictMongoDbScope
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultScopeType = typeof(TScope));
 
@@ -99,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultTokenEntity<TToken>()
-            where TToken : OpenIddictToken
+            where TToken : OpenIddictMongoDbToken
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultTokenType = typeof(TToken));
 
@@ -111,11 +103,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetApplicationsCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetApplicationsCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.ApplicationsCollectionName = name);
@@ -126,35 +118,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetAuthorizationsCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetAuthorizationsCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.AuthorizationsCollectionName = name);
         }
 
         /// <summary>
-        /// Sets the maximal duration given to the MongoDB client to initialize
-        /// the database and register the indexes used by the OpenIddict entities.
-        /// </summary>
-        /// <param name="timeout">The timeout.</param>
-        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetInitializationTimeout(TimeSpan timeout)
-            => Configure(options => options.InitializationTimeout = timeout);
-
-        /// <summary>
         /// Replaces the default scopes collection name (by default, openiddict.scopes).
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetScopesCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetScopesCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.ScopesCollectionName = name);
@@ -165,11 +148,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="name">The collection name</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder SetTokensCollectionName([NotNull] string name)
+        public OpenIddictMongoDbBuilder SetTokensCollectionName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0261), nameof(name));
             }
 
             return Configure(options => options.TokensCollectionName = name);
@@ -181,9 +164,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="database">The <see cref="IMongoDatabase"/>.</param>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder UseDatabase([NotNull] IMongoDatabase database)
+        public OpenIddictMongoDbBuilder UseDatabase(IMongoDatabase database)
         {
-            if (database == null)
+            if (database is null)
             {
                 throw new ArgumentNullException(nameof(database));
             }
@@ -191,26 +174,16 @@ namespace Microsoft.Extensions.DependencyInjection
             return Configure(options => options.Database = database);
         }
 
-        /// <summary>
-        /// Determines whether the specified object is equal to the current object.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        public override bool Equals(object? obj) => base.Equals(obj);
 
-        /// <summary>
-        /// Serves as the default hash function.
-        /// </summary>
-        /// <returns>A hash code for the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

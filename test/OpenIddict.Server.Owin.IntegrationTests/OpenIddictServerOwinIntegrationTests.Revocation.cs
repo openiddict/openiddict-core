@@ -6,13 +6,14 @@
 
 using System.Threading.Tasks;
 using OpenIddict.Abstractions;
-using OpenIddict.Server.FunctionalTests;
+using OpenIddict.Server.IntegrationTests;
 using Owin;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Owin.FunctionalTests
+namespace OpenIddict.Server.Owin.IntegrationTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
@@ -20,7 +21,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ExtractRevocationRequest_MultipleClientCredentialsCauseAnError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -28,7 +29,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                 {
                     builder.UseInlineHandler(context =>
                     {
-                        var request = context.Transaction.GetOwinRequest();
+                        var request = context.Transaction.GetOwinRequest()!;
                         request.Headers["Authorization"] = "Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW";
 
                         return default;
@@ -37,6 +38,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     builder.SetOrder(int.MinValue);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -48,7 +51,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("Multiple client credentials cannot be specified.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2087), response.ErrorDescription);
         }
     }
 }

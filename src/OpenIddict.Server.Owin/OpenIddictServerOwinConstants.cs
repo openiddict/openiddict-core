@@ -17,10 +17,24 @@ namespace OpenIddict.Server.Owin
             public const string LogoutRequest = "openiddict-logout-request:";
         }
 
+        public static class Headers
+        {
+            public const string Authorization = "Authorization";
+            public const string CacheControl = "Cache-Control";
+            public const string ContentType = "Content-Type";
+            public const string Expires = "Expires";
+            public const string Host = "Host";
+            public const string Pragma = "Pragma";
+            public const string WwwAuthenticate = "WWW-Authenticate";
+        }
+
         public static class JsonWebTokenTypes
         {
-            public const string AuthorizationRequest = "oi_auth_req";
-            public const string LogoutRequest = "oi_lgt_req";
+            public static class Private
+            {
+                public const string AuthorizationRequest = "oi_authrq+jwt";
+                public const string LogoutRequest = "oi_lgtrq+jwt";
+            }
         }
 
         public static class Properties
@@ -28,7 +42,6 @@ namespace OpenIddict.Server.Owin
             public const string Error = ".error";
             public const string ErrorDescription = ".error_description";
             public const string ErrorUri = ".error_uri";
-            public const string Realm = ".realm";
             public const string Scope = ".scope";
         }
     }

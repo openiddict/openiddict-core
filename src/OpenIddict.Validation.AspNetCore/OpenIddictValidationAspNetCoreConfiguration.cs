@@ -5,10 +5,10 @@
  */
 
 using System;
-using System.Text;
-using JetBrains.Annotations;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation.AspNetCore
 {
@@ -23,9 +23,9 @@ namespace OpenIddict.Validation.AspNetCore
         /// Registers the OpenIddict validation handler in the global authentication options.
         /// </summary>
         /// <param name="options">The options instance to initialize.</param>
-        public void Configure([NotNull] AuthenticationOptions options)
+        public void Configure(AuthenticationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -34,60 +34,51 @@ namespace OpenIddict.Validation.AspNetCore
             if (options.SchemeMap.TryGetValue(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
                 builder.HandlerType != typeof(OpenIddictValidationAspNetCoreHandler))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict ASP.NET Core validation handler cannot be registered as an authentication scheme.")
-                    .Append("This may indicate that an instance of another handler was registered with the same scheme.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0164));
             }
 
             options.AddScheme<OpenIddictValidationAspNetCoreHandler>(
                 OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, displayName: null);
         }
 
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
             // Register the built-in event handlers used by the OpenIddict ASP.NET Core validation components.
-            foreach (var handler in OpenIddictValidationAspNetCoreHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationAspNetCoreHandlers.DefaultHandlers);
         }
 
         /// <summary>
         /// Ensures that the authentication configuration is in a consistent and valid state.
         /// </summary>
-        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] AuthenticationOptions options)
+        public void PostConfigure(string name, AuthenticationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            bool TryValidate(string scheme)
+            if (!TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
+                !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0165));
+            }
+
+            static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
             {
                 // If the scheme was not set or if it cannot be found in the map, return true.
-                if (string.IsNullOrEmpty(scheme) || !options.SchemeMap.TryGetValue(scheme, out var builder))
+                if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
                 {
                     return true;
                 }
 
                 return builder.HandlerType != typeof(OpenIddictValidationAspNetCoreHandler);
-            }
-
-            if (!TryValidate(options.DefaultSignInScheme) || !TryValidate(options.DefaultSignOutScheme))
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict ASP.NET Core validation cannot be used as the default sign-in/sign-out handler.")
-                    .Append("Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme ")
-                    .Append("point to an instance of the OpenIddict ASP.NET Core validation handler.")
-                    .ToString());
             }
         }
     }

@@ -11,29 +11,13 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Xunit;
+using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
     public class OpenIddictMessageTests
     {
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void Constructor_ThrowsAnExceptionForNullOrEmptyParameterNames(string name)
-        {
-            // Arrange, act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                return new OpenIddictMessage(new[]
-                {
-                    new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
-                });
-            });
-
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
-        }
-
         [Fact]
         public void Constructor_ThrowsAnExceptionForInvalidJsonElement()
         {
@@ -44,7 +28,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("parameters", exception.ParamName);
-            Assert.StartsWith("The specified JSON element is not an object.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0189), exception.Message);
         }
 
         [Fact]
@@ -61,7 +45,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("A parameter with the same name already exists.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0191), exception.Message);
         }
 
         [Fact]
@@ -77,13 +61,28 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Equal(42, (long) message.GetParameter("parameter"));
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Constructor_IgnoresNullOrEmptyParameterNames(string name)
+        {
+            // Arrange and act
+            var message = new OpenIddictMessage(new[]
+            {
+                new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
+            });
+
+            // Assert
+            Assert.Equal(0, message.Count);
+        }
+
         [Fact]
         public void Constructor_PreservesEmptyParameters()
         {
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string) null),
+                new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string?) null),
                 new KeyValuePair<string, OpenIddictParameter>("empty-parameter", string.Empty)
             });
 
@@ -92,18 +91,18 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Constructor_AllowsDuplicateParameters()
+        public void Constructor_CombinesDuplicateParameters()
         {
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, string>("parameter", "Fabrikam"),
-                new KeyValuePair<string, string>("parameter", "Contoso")
+                new KeyValuePair<string, string?>("parameter", "Fabrikam"),
+                new KeyValuePair<string, string?>("parameter", "Contoso")
             });
 
             // Assert
             Assert.Equal(1, message.Count);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) message.GetParameter("parameter"));
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
         }
 
         [Fact]
@@ -112,12 +111,12 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, string[]>("parameter", new[] { "Fabrikam", "Contoso" })
+                new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam", "Contoso" })
             });
 
             // Assert
             Assert.Equal(1, message.Count);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) message.GetParameter("parameter"));
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
         }
 
         [Fact]
@@ -126,7 +125,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, string[]>("parameter", new[] { "Fabrikam" })
+                new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam" })
             });
 
             // Assert
@@ -149,7 +148,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -192,7 +191,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 @"{""property"":""""}").GetProperty("property").GetString());
 
             // Assert
-            Assert.Empty((string) message.GetParameter("string"));
+            Assert.Empty((string?) message.GetParameter("string"));
             Assert.NotNull((JsonElement?) message.GetParameter("array"));
             Assert.NotNull((JsonElement?) message.GetParameter("object"));
             Assert.NotNull((JsonElement?) message.GetParameter("value"));
@@ -210,7 +209,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -276,7 +275,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Theory]
@@ -306,7 +305,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -335,7 +334,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name, null));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -407,7 +406,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
         }
 
         [Fact]
@@ -419,7 +418,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act and assert
             Assert.True(message.TryGetParameter("parameter", out var parameter));
-            Assert.Equal(42, (long) parameter.Value);
+            Assert.Equal(42, (long?) parameter.Value);
         }
 
         [Fact]
@@ -447,7 +446,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
   ""logo_uri"": ""https://client.example.org/logo.png"",
   ""jwks_uri"": ""https://client.example.org/my_public_keys.jwks"",
   ""example_extension_parameter"": ""example_value""
-}");
+}")!;
 
             var options = new JsonSerializerOptions
             {
@@ -460,16 +459,16 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Theory]
-        [InlineData(OpenIddictConstants.Parameters.AccessToken)]
-        [InlineData(OpenIddictConstants.Parameters.Assertion)]
-        [InlineData(OpenIddictConstants.Parameters.ClientAssertion)]
-        [InlineData(OpenIddictConstants.Parameters.ClientSecret)]
-        [InlineData(OpenIddictConstants.Parameters.Code)]
-        [InlineData(OpenIddictConstants.Parameters.IdToken)]
-        [InlineData(OpenIddictConstants.Parameters.IdTokenHint)]
-        [InlineData(OpenIddictConstants.Parameters.Password)]
-        [InlineData(OpenIddictConstants.Parameters.RefreshToken)]
-        [InlineData(OpenIddictConstants.Parameters.Token)]
+        [InlineData(Parameters.AccessToken)]
+        [InlineData(Parameters.Assertion)]
+        [InlineData(Parameters.ClientAssertion)]
+        [InlineData(Parameters.ClientSecret)]
+        [InlineData(Parameters.Code)]
+        [InlineData(Parameters.IdToken)]
+        [InlineData(Parameters.IdTokenHint)]
+        [InlineData(Parameters.Password)]
+        [InlineData(Parameters.RefreshToken)]
+        [InlineData(Parameters.Token)]
         public void ToString_ExcludesSensitiveParameters(string parameter)
         {
             // Arrange
@@ -489,7 +488,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => message.WriteTo(writer: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => message.WriteTo(writer: null!));
             Assert.Equal("writer", exception.ParamName);
         }
 

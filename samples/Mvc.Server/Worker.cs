@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mvc.Server.Models;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
-using OpenIddict.EntityFrameworkCore.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server
@@ -15,24 +14,24 @@ namespace Mvc.Server
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public Worker(IServiceProvider serviceScopeFactory)
-            => _serviceProvider = serviceScopeFactory;
+        public Worker(IServiceProvider serviceProvider)
+            => _serviceProvider = serviceProvider;
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             using var scope = _serviceProvider.CreateScope();
 
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.EnsureCreatedAsync(cancellationToken);
 
             await RegisterApplicationsAsync(scope.ServiceProvider);
             await RegisterScopesAsync(scope.ServiceProvider);
 
             static async Task RegisterApplicationsAsync(IServiceProvider provider)
             {
-                var manager = provider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
+                var manager = provider.GetRequiredService<IOpenIddictApplicationManager>();
 
-                if (await manager.FindByClientIdAsync("mvc") == null)
+                if (await manager.FindByClientIdAsync("mvc") is null)
                 {
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
@@ -40,13 +39,17 @@ namespace Mvc.Server
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                         ConsentType = ConsentTypes.Explicit,
                         DisplayName = "MVC client application",
+                        DisplayNames =
+                        {
+                            [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente MVC"
+                        },
                         PostLogoutRedirectUris =
                         {
-                            new Uri("http://localhost:53507/signout-callback-oidc")
+                            new Uri("https://localhost:44381/signout-callback-oidc")
                         },
                         RedirectUris =
                         {
-                            new Uri("http://localhost:53507/signin-oidc")
+                            new Uri("https://localhost:44381/signin-oidc")
                         },
                         Permissions =
                         {
@@ -55,6 +58,7 @@ namespace Mvc.Server
                             Permissions.Endpoints.Token,
                             Permissions.GrantTypes.AuthorizationCode,
                             Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
                             Permissions.Scopes.Email,
                             Permissions.Scopes.Profile,
                             Permissions.Scopes.Roles,
@@ -69,14 +73,14 @@ namespace Mvc.Server
 
                 // To test this sample with Postman, use the following settings:
                 //
-                // * Authorization URL: http://localhost:54540/connect/authorize
-                // * Access token URL: http://localhost:54540/connect/token
+                // * Authorization URL: https://localhost:44395/connect/authorize
+                // * Access token URL: https://localhost:44395/connect/token
                 // * Client ID: postman
                 // * Client secret: [blank] (not used with public clients)
                 // * Scope: openid email profile roles
                 // * Grant type: authorization code
                 // * Request access token locally: yes
-                if (await manager.FindByClientIdAsync("postman") == null)
+                if (await manager.FindByClientIdAsync("postman") is null)
                 {
                     await manager.CreateAsync(new OpenIddictApplicationDescriptor
                     {
@@ -96,6 +100,7 @@ namespace Mvc.Server
                             Permissions.GrantTypes.DeviceCode,
                             Permissions.GrantTypes.Password,
                             Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
                             Permissions.Scopes.Email,
                             Permissions.Scopes.Profile,
                             Permissions.Scopes.Roles
@@ -106,13 +111,17 @@ namespace Mvc.Server
 
             static async Task RegisterScopesAsync(IServiceProvider provider)
             {
-                var manager = provider.GetRequiredService<OpenIddictScopeManager<OpenIddictScope>>();
+                var manager = provider.GetRequiredService<IOpenIddictScopeManager>();
 
-                if (await manager.FindByNameAsync("demo_api") == null)
+                if (await manager.FindByNameAsync("demo_api") is null)
                 {
                     await manager.CreateAsync(new OpenIddictScopeDescriptor
                     {
                         DisplayName = "Demo API access",
+                        DisplayNames =
+                        {
+                            [CultureInfo.GetCultureInfo("fr-FR")] = "Accès à l'API de démo"
+                        },
                         Name = "demo_api",
                         Resources =
                         {

@@ -6,14 +6,14 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Text;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -49,41 +49,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractLogoutRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<ExtractLogoutRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
-                    }
-
                     var notification = new ExtractLogoutRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -106,16 +97,12 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The logout request was not correctly extracted. To extract logout requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractLogoutRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0050));
                     }
 
-                    context.Logger.LogInformation("The logout request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6124), notification.Request);
                 }
             }
 
@@ -124,45 +111,36 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateLogoutRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<ValidateLogoutRequest>()
                         .SetOrder(ExtractLogoutRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
-                    }
-
                     var notification = new ValidateLogoutRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the redirect_uri without triggering a new validation process.
-                    context.Transaction.SetProperty(typeof(ValidateLogoutRequestContext).FullName, notification);
+                    context.Transaction.SetProperty(typeof(ValidateLogoutRequestContext).FullName!, notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -185,7 +163,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The logout request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6125));
                 }
             }
 
@@ -194,41 +172,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleLogoutRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<HandleLogoutRequest>()
                         .SetOrder(ValidateLogoutRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
-                    }
-
                     var notification = new HandleLogoutRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -251,40 +220,38 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    var @event = new ProcessSignOutContext(context.Transaction)
+                    if (notification.IsSignOutTriggered)
                     {
-                        Response = new OpenIddictResponse()
-                    };
+                        var @event = new ProcessSignOutContext(context.Transaction)
+                        {
+                            Response = new OpenIddictResponse()
+                        };
 
-                    await _provider.DispatchAsync(@event);
+                        await _dispatcher.DispatchAsync(@event);
 
-                    if (@event.IsRequestHandled)
-                    {
-                        context.HandleRequest();
-                        return;
+                        if (@event.IsRequestHandled)
+                        {
+                            context.HandleRequest();
+                            return;
+                        }
+
+                        else if (@event.IsRequestSkipped)
+                        {
+                            context.SkipRequest();
+                            return;
+                        }
+
+                        else if (@event.IsRejected)
+                        {
+                            context.Reject(
+                                error: @event.Error ?? Errors.InvalidRequest,
+                                description: @event.ErrorDescription,
+                                uri: @event.ErrorUri);
+                            return;
+                        }
                     }
 
-                    else if (@event.IsRequestSkipped)
-                    {
-                        context.SkipRequest();
-                        return;
-                    }
-
-                    else if (@event.IsRejected)
-                    {
-                        context.Reject(
-                            error: @event.Error ?? Errors.InvalidRequest,
-                            description: @event.ErrorDescription,
-                            uri: @event.ErrorUri);
-                        return;
-                    }
-
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The logout request was not handled. To handle logout requests, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<HandleLogoutRequestContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .Append("Alternatively, enable the pass-through mode to handle them at a later stage.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0051));
                 }
             }
 
@@ -293,41 +260,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyLogoutResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyLogoutResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyLogoutResponse(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireLogoutRequest>()
                         .UseScopedHandler<ApplyLogoutResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] TContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Logout)
-                    {
-                        return;
-                    }
-
                     var notification = new ApplyLogoutResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -341,11 +299,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The revocation response was not correctly applied. To apply revocation responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyRevocationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0052));
                 }
             }
 
@@ -361,18 +315,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
                         .UseSingletonHandler<ValidatePostLogoutRedirectUriParameter>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ValidateLogoutRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateLogoutRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -383,26 +332,26 @@ namespace OpenIddict.Server
                     }
 
                     // If an optional post_logout_redirect_uri was provided, validate it.
-                    if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
-                        context.Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
-                                                "was not a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6126), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.");
+                            description: SR.FormatID2030(Parameters.PostLogoutRedirectUri),
+                            uri: SR.FormatID8000(SR.ID2030));
 
                         return default;
                     }
 
                     if (!string.IsNullOrEmpty(uri.Fragment))
                     {
-                        context.Logger.LogError("The logout request was rejected because the 'post_logout_redirect_uri' contained " +
-                                                "a URL fragment: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6127), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'post_logout_redirect_uri' parameter must not include a fragment.");
+                            description: SR.FormatID2031(Parameters.PostLogoutRedirectUri),
+                            uri: SR.FormatID8000(SR.ID2031));
 
                         return default;
                     }
@@ -419,15 +368,9 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientPostLogoutRedirectUri() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientPostLogoutRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                public ValidateClientPostLogoutRedirectUri([NotNull] IOpenIddictApplicationManager applicationManager)
+                public ValidateClientPostLogoutRedirectUri(IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
 
                 /// <summary>
@@ -439,30 +382,27 @@ namespace OpenIddict.Server
                         .AddFilter<RequirePostLogoutRedirectUriParameter>()
                         .UseScopedHandler<ValidateClientPostLogoutRedirectUri>()
                         .SetOrder(ValidatePostLogoutRedirectUriParameter.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateLogoutRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    Debug.Assert(!string.IsNullOrEmpty(context.PostLogoutRedirectUri), SR.FormatID4000(Parameters.PostLogoutRedirectUri));
+
                     if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                     {
-                        context.Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
-                                                "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                        context.Logger.LogError(SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'post_logout_redirect_uri' parameter is not valid.");
+                            description: SR.FormatID2052(Parameters.PostLogoutRedirectUri),
+                            uri: SR.FormatID8000(SR.ID2052));
 
                         return;
                     }
@@ -472,23 +412,13 @@ namespace OpenIddict.Server
                         // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
                         // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
 
-                        await using var enumerator = _applicationManager.FindByPostLogoutRedirectUriAsync(address).GetAsyncEnumerator();
-                        if (await enumerator.MoveNextAsync())
+                        await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(address))
                         {
-                            if (context.Options.IgnoreEndpointPermissions)
+                            if (context.Options.IgnoreEndpointPermissions ||
+                                await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
                             {
                                 return true;
                             }
-
-                            do
-                            {
-                                if (await _applicationManager.HasPermissionAsync(enumerator.Current, Permissions.Endpoints.Logout))
-                                {
-                                    return true;
-                                }
-                            }
-
-                            while (await enumerator.MoveNextAsync());
                         }
 
                         return false;
@@ -509,33 +439,28 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .UseSingletonHandler<AttachPostLogoutRedirectUri>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Request == null)
+                    if (context.Request is null)
                     {
                         return default;
                     }
 
                     var notification = context.Transaction.GetProperty<ValidateLogoutRequestContext>(
-                        typeof(ValidateLogoutRequestContext).FullName);
+                        typeof(ValidateLogoutRequestContext).FullName!);
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if
                     // an error is returned from the ExtractLogoutRequest/ValidateLogoutRequest events).
-                    if (notification != null && !notification.IsRejected)
+                    if (notification is not null && !notification.IsRejected)
                     {
                         context.PostLogoutRedirectUri = notification.PostLogoutRedirectUri;
                     }
@@ -556,18 +481,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .UseSingletonHandler<AttachResponseState>()
                         .SetOrder(AttachPostLogoutRedirectUri.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }

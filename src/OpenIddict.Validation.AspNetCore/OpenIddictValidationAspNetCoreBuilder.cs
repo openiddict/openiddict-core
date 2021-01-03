@@ -6,8 +6,8 @@
 
 using System;
 using System.ComponentModel;
-using JetBrains.Annotations;
 using OpenIddict.Validation.AspNetCore;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Initializes a new instance of <see cref="OpenIddictValidationAspNetCoreBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictValidationAspNetCoreBuilder([NotNull] IServiceCollection services)
+        public OpenIddictValidationAspNetCoreBuilder(IServiceCollection services)
             => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
@@ -36,9 +36,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
         /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
-        public OpenIddictValidationAspNetCoreBuilder Configure([NotNull] Action<OpenIddictValidationAspNetCoreOptions> configuration)
+        public OpenIddictValidationAspNetCoreBuilder Configure(Action<OpenIddictValidationAspNetCoreOptions> configuration)
         {
-            if (configuration == null)
+            if (configuration is null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
@@ -49,25 +49,30 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Determines whether the specified object is equal to the current object.
+        /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
         /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals([CanBeNull] object obj) => base.Equals(obj);
+        /// <param name="realm">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
+        public OpenIddictValidationAspNetCoreBuilder SetRealm(string realm)
+        {
+            if (string.IsNullOrEmpty(realm))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0107), nameof(realm));
+            }
 
-        /// <summary>
-        /// Serves as the default hash function.
-        /// </summary>
-        /// <returns>A hash code for the current object.</returns>
+            return Configure(options => options.Realm = realm);
+        }
+
+        /// <inheritdoc/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override bool Equals(object? obj) => base.Equals(obj);
+
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
+        /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => base.ToString();
+        public override string? ToString() => base.ToString();
     }
 }

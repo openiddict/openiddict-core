@@ -7,10 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -23,30 +25,53 @@ namespace OpenIddict.Server
         /// Gets or sets the optional base address used to uniquely identify the authorization server.
         /// The URI must be absolute and may contain a path, but no query string or fragment part.
         /// </summary>
-        public Uri Issuer { get; set; }
+        public Uri? Issuer { get; set; }
 
         /// <summary>
-        /// Gets the list of credentials used to encrypt the tokens issued by the
-        /// OpenIddict server services. Note: only symmetric credentials are supported.
+        /// Gets the list of encryption credentials used by the OpenIddict server services.
+        /// Multiple credentials can be added to support key rollover, but if X.509 keys
+        /// are used, at least one of them must have a valid creation/expiration date.
+        /// Note: the encryption credentials are not used to protect/unprotect tokens issued
+        /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
         /// </summary>
-        public IList<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
+        /// <remarks>
+        /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
+        /// <list type="bullet">
+        ///   <item><description>Symmetric keys are always preferred when they can be used for the operation (e.g token encryption).</description></item>
+        ///   <item><description>X.509 keys are always preferred to non-X.509 asymmetric keys.</description></item>
+        ///   <item><description>X.509 keys with the furthest expiration date are preferred.</description></item>
+        ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
+        /// </list>
+        /// </remarks>
+        public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
 
         /// <summary>
-        /// Gets the list of credentials used to sign the tokens issued by the OpenIddict server services.
-        /// Both asymmetric and symmetric keys are supported, but only asymmetric keys can be used to sign identity tokens.
-        /// Note that only asymmetric RSA and ECDSA keys can be exposed by the JWKS metadata endpoint.
+        /// Gets the list of signing credentials used by the OpenIddict server services.
+        /// Multiple credentials can be added to support key rollover, but if X.509 keys
+        /// are used, at least one of them must have a valid creation/expiration date.
+        /// Note: the signing credentials are not used to protect/unprotect tokens issued
+        /// by ASP.NET Core Data Protection, that uses its own key ring, configured separately.
         /// </summary>
-        public IList<SigningCredentials> SigningCredentials { get; } = new List<SigningCredentials>();
+        /// <remarks>
+        /// Note: OpenIddict automatically sorts the credentials based on the following algorithm:
+        /// <list type="bullet">
+        ///   <item><description>Symmetric keys are always preferred when they can be used for the operation (e.g token signing).</description></item>
+        ///   <item><description>X.509 keys are always preferred to non-X.509 asymmetric keys.</description></item>
+        ///   <item><description>X.509 keys with the furthest expiration date are preferred.</description></item>
+        ///   <item><description>X.509 keys whose backing certificate is not yet valid are never preferred.</description></item>
+        /// </list>
+        /// </remarks>
+        public List<SigningCredentials> SigningCredentials { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the authorization endpoint.
         /// </summary>
-        public IList<Uri> AuthorizationEndpointUris { get; } = new List<Uri>();
+        public List<Uri> AuthorizationEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the configuration endpoint.
         /// </summary>
-        public IList<Uri> ConfigurationEndpointUris { get; } = new List<Uri>
+        public List<Uri> ConfigurationEndpointUris { get; } = new()
         {
             new Uri("/.well-known/openid-configuration", UriKind.Relative),
             new Uri("/.well-known/oauth-authorization-server", UriKind.Relative)
@@ -55,7 +80,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the absolute and relative URIs associated to the cryptography endpoint.
         /// </summary>
-        public IList<Uri> CryptographyEndpointUris { get; } = new List<Uri>
+        public List<Uri> CryptographyEndpointUris { get; } = new()
         {
             new Uri("/.well-known/jwks", UriKind.Relative)
         };
@@ -63,42 +88,42 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the absolute and relative URIs associated to the device endpoint.
         /// </summary>
-        public IList<Uri> DeviceEndpointUris { get; } = new List<Uri>();
+        public List<Uri> DeviceEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the introspection endpoint.
         /// </summary>
-        public IList<Uri> IntrospectionEndpointUris { get; } = new List<Uri>();
+        public List<Uri> IntrospectionEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the logout endpoint.
         /// </summary>
-        public IList<Uri> LogoutEndpointUris { get; } = new List<Uri>();
+        public List<Uri> LogoutEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the revocation endpoint.
         /// </summary>
-        public IList<Uri> RevocationEndpointUris { get; } = new List<Uri>();
+        public List<Uri> RevocationEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the token endpoint.
         /// </summary>
-        public IList<Uri> TokenEndpointUris { get; } = new List<Uri>();
+        public List<Uri> TokenEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the userinfo endpoint.
         /// </summary>
-        public IList<Uri> UserinfoEndpointUris { get; } = new List<Uri>();
+        public List<Uri> UserinfoEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets the absolute and relative URIs associated to the verification endpoint.
         /// </summary>
-        public IList<Uri> VerificationEndpointUris { get; } = new List<Uri>();
+        public List<Uri> VerificationEndpointUris { get; } = new();
 
         /// <summary>
         /// Gets or sets the JWT handler used to protect and unprotect tokens.
         /// </summary>
-        public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new JsonWebTokenHandler
+        public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new()
         {
             SetDefaultTimesOnTokenCreation = false
         };
@@ -106,24 +131,52 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the token validation parameters used by the OpenIddict server services.
         /// </summary>
-        public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
+        public TokenValidationParameters TokenValidationParameters { get; } = new()
         {
+            AuthenticationType = TokenValidationParameters.DefaultAuthenticationType,
             ClockSkew = TimeSpan.Zero,
             NameClaimType = OpenIddictConstants.Claims.Name,
             RoleClaimType = OpenIddictConstants.Claims.Role,
+            // In previous versions of OpenIddict (1.x and 2.x), all the JWT tokens (access and identity tokens)
+            // were issued with the generic "typ": "JWT" header. To prevent confused deputy and token substitution
+            // attacks, a special "token_usage" claim was added to the JWT payload to convey the actual token type.
+            // This validator overrides the default logic used by IdentityModel to resolve the type from this claim.
+            TypeValidator = (type, token, parameters) =>
+            {
+                // If available, try to resolve the actual type from the "token_usage" claim.
+                if (((JsonWebToken) token).TryGetPayloadValue(OpenIddictConstants.Claims.TokenUsage, out string usage))
+                {
+                    type = usage switch
+                    {
+                        TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
+                        TokenTypeHints.IdToken     => JsonWebTokenTypes.IdentityToken,
+
+                        _ => throw new NotSupportedException(SR.GetResourceString(SR.ID0269))
+                    };
+                }
+
+                // At this point, throw an exception if the type cannot be resolved from the "typ" header
+                // (provided via the type delegate parameter) or inferred from the token_usage claim.
+                if (string.IsNullOrEmpty(type))
+                {
+                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID0270));
+                }
+
+                // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
+                if (parameters.ValidTypes is not null && parameters.ValidTypes.Any() &&
+                   !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
+                {
+                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID0271))
+                    {
+                        InvalidType = type
+                    };
+                }
+
+                return type;
+            },
             // Note: audience and lifetime are manually validated by OpenIddict itself.
             ValidateAudience = false,
-            ValidateLifetime = false,
-            // Note: valid types can be overriden by OpenIddict depending on the received request.
-            ValidTypes = new[]
-            {
-                JsonWebTokenTypes.AccessToken,
-                JsonWebTokenTypes.IdentityToken,
-                JsonWebTokenTypes.Private.AuthorizationCode,
-                JsonWebTokenTypes.Private.DeviceCode,
-                JsonWebTokenTypes.Private.RefreshToken,
-                JsonWebTokenTypes.Private.UserCode
-            }
+            ValidateLifetime = false
         };
 
         /// <summary>
@@ -162,6 +215,12 @@ namespace OpenIddict.Server
         public TimeSpan? RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(14);
 
         /// <summary>
+        /// Gets or sets the period of time rolling refresh tokens marked as redeemed can still be
+        /// used to make concurrent refresh token requests. The default value is 30 seconds.
+        /// </summary>
+        public TimeSpan? RefreshTokenReuseLeeway { get; set; } = TimeSpan.FromSeconds(30);
+
+        /// <summary>
         /// Gets or sets the period of time user codes remain valid after being issued. The default value is 10 minutes.
         /// The client application is expected to start a whole new authentication flow after the user code has expired.
         /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
@@ -179,24 +238,11 @@ namespace OpenIddict.Server
         public bool EnableDegradedMode { get; set; }
 
         /// <summary>
-        /// Gets the list of the user-defined/custom handlers responsible of processing the OpenIddict server requests.
-        /// Note: the handlers added to this list must be also registered in the DI container using an appropriate lifetime.
+        /// Gets the list of the handlers responsible of processing the OpenIddict server operations.
+        /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
+        /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
         /// </summary>
-        public IList<OpenIddictServerHandlerDescriptor> CustomHandlers { get; } =
-            new List<OpenIddictServerHandlerDescriptor>();
-
-        /// <summary>
-        /// Gets the list of the built-in handlers responsible of processing the OpenIddict server requests
-        /// </summary>
-        public IList<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
-            new List<OpenIddictServerHandlerDescriptor>(OpenIddictServerHandlers.DefaultHandlers);
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether new refresh tokens should be issued during a refresh token request.
-        /// Set this property to <c>true</c> to issue a new refresh token, <c>false</c> to prevent OpenIddict
-        /// from issuing new refresh tokens when receiving a grant_type=refresh_token request.
-        /// </summary>
-        public bool UseSlidingExpiration { get; set; } = true;
+        public List<OpenIddictServerHandlerDescriptor> Handlers { get; } = new(OpenIddictServerHandlers.DefaultHandlers);
 
         /// <summary>
         /// Gets or sets a boolean determining whether client identification is optional.
@@ -208,13 +254,12 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect claims supported by this application.
         /// </summary>
-        public ISet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal)
+        public HashSet<string> Claims { get; } = new(StringComparer.Ordinal)
         {
             OpenIddictConstants.Claims.Audience,
             OpenIddictConstants.Claims.ExpiresAt,
             OpenIddictConstants.Claims.IssuedAt,
             OpenIddictConstants.Claims.Issuer,
-            OpenIddictConstants.Claims.JwtId,
             OpenIddictConstants.Claims.Subject
         };
 
@@ -222,6 +267,7 @@ namespace OpenIddict.Server
         /// Gets or sets a boolean indicating whether access token encryption should be disabled.
         /// Disabling encryption is NOT recommended and SHOULD only be done when issuing tokens
         /// to third-party resource servers/APIs you don't control and don't fully trust.
+        /// Note: disabling encryption has no effect when using ASP.NET Core Data Protection.
         /// </summary>
         public bool DisableAccessTokenEncryption { get; set; }
 
@@ -233,9 +279,26 @@ namespace OpenIddict.Server
         public bool DisableAuthorizationStorage { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether rolling tokens are disabled.
+        /// When disabled, refresh tokens used in a token request are not marked
+        /// as redeemed and can still be used until they expire. Disabling
+        /// rolling refresh tokens is NOT recommended, for security reasons.
+        /// </summary>
+        public bool DisableRollingRefreshTokens { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether sliding expiration is disabled
+        /// for refresh tokens. When this option is set to <see langword="true"/>,
+        /// refresh tokens are issued with a fixed expiration date: when they expire,
+        /// a complete authorization flow must be started to retrieve a new refresh token.
+        /// </summary>
+        public bool DisableSlidingRefreshTokenExpiration { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether token storage should be disabled.
-        /// When disabled, authorization code and refresh tokens are not stored
-        /// and cannot be revoked. Using this option is generally not recommended.
+        /// When disabled, no database entry is created for the tokens and codes
+        /// returned by OpenIddict. Using this option is generally NOT recommended
+        /// as it prevents the tokens and codes from being revoked (if needed).
         /// </summary>
         public bool DisableTokenStorage { get; set; }
 
@@ -248,82 +311,85 @@ namespace OpenIddict.Server
         /// Gets the OAuth 2.0 code challenge methods enabled for this application.
         /// By default, only the S256 method is allowed (if the code flow is enabled).
         /// </summary>
-        public ISet<string> CodeChallengeMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect flows enabled for this application.
         /// </summary>
-        public ISet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> GrantTypes { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether PKCE must be used by client applications
+        /// when requesting an authorization code (e.g when using the code or hybrid flows).
+        /// If this property is set to <see langword="true"/>, authorization requests that
+        /// lack the code_challenge will be automatically rejected by OpenIddict.
+        /// </summary>
+        public bool RequireProofKeyForCodeExchange { get; set; }
 
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
-        /// Response types are automatically inferred from the supported standard grant types,
-        /// but additional values can be added for advanced scenarios (e.g custom type support).
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public ISet<string> ResponseTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect response modes enabled for this application.
-        /// Response modes are automatically inferred from the supported standard grant types,
-        /// but additional values can be added for advanced scenarios (e.g custom mode support).
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public ISet<string> ResponseModes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
-        /// Setting this property to <c>true</c> is NOT recommended, unless all
-        /// the clients are first-party applications you own, control and fully trust.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
         /// </summary>
         public bool IgnoreEndpointPermissions { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether grant type permissions should be ignored.
-        /// Setting this property to <c>true</c> is NOT recommended, unless all
-        /// the clients are first-party applications you own, control and fully trust.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
         /// </summary>
         public bool IgnoreGrantTypePermissions { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether response type permissions should be ignored.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
+        /// </summary>
+        public bool IgnoreResponseTypePermissions { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether scope permissions should be ignored.
-        /// Setting this property to <c>true</c> is NOT recommended, unless all
-        /// the clients are first-party applications you own, control and fully trust.
+        /// Setting this property to <see langword="true"/> is NOT recommended.
         /// </summary>
         public bool IgnoreScopePermissions { get; set; }
 
         /// <summary>
-        /// Gets or sets the optional "realm" value returned to
-        /// the caller as part of the WWW-Authenticate header.
-        /// </summary>
-        public string Realm { get; set; }
-
-        /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect scopes enabled for this application.
         /// </summary>
-        public ISet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)
+        public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal)
         {
             OpenIddictConstants.Scopes.OpenId
         };
 
         /// <summary>
         /// Gets or sets a boolean indicating whether reference access tokens should be used.
-        /// When set to <c>true</c>, access tokens and are stored as ciphertext in the database
+        /// When set to <see langword="true"/>, the token payload is stored in the database
         /// and a crypto-secure random identifier is returned to the client application.
-        /// Enabling this option is useful to keep track of all the issued access tokens,
-        /// when storing a very large number of claims in the access tokens
-        /// or when immediate revocation of reference access tokens is desired.
+        /// Enabling this option is useful when storing a very large number of claims
+        /// in the tokens, but it is RECOMMENDED to enable column encryption
+        /// in the database or use the ASP.NET Core Data Protection integration,
+        /// that provides additional protection against token leakage.
         /// </summary>
         public bool UseReferenceAccessTokens { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether rolling tokens should be used.
-        /// When disabled, no new token is issued and the refresh token lifetime is
-        /// dynamically managed by updating the token entry in the database.
-        /// When this option is enabled, a new refresh token is issued for each
-        /// refresh token request (and the previous one is automatically revoked
-        /// unless token revocation was explicitly disabled in the options).
+        /// Gets or sets a boolean indicating whether reference refresh tokens should be used.
+        /// When set to <see langword="true"/>, the token payload is stored in the database
+        /// and a crypto-secure random identifier is returned to the client application.
+        /// Enabling this option is useful when storing a very large number of claims
+        /// in the tokens, but it is RECOMMENDED to enable column encryption
+        /// in the database or use the ASP.NET Core Data Protection integration,
+        /// that provides additional protection against token leakage.
         /// </summary>
-        public bool UseRollingTokens { get; set; }
+        public bool UseReferenceRefreshTokens { get; set; }
     }
 }

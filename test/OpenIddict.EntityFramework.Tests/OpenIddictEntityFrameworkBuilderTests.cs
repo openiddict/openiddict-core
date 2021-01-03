@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework.Tests
 {
@@ -20,7 +21,7 @@ namespace OpenIddict.EntityFramework.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection) null;
+            var services = (IServiceCollection) null!;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictEntityFrameworkBuilder(services));
@@ -58,7 +59,7 @@ namespace OpenIddict.EntityFramework.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(delegate
             {
-                return builder.UseDbContext(type: null);
+                return builder.UseDbContext(type: null!);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -78,7 +79,7 @@ namespace OpenIddict.EntityFramework.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID0232), exception.Message);
         }
 
         [Fact]
@@ -125,10 +126,10 @@ namespace OpenIddict.EntityFramework.Tests
             return services;
         }
 
-        public class CustomApplication : OpenIddictApplication<long, CustomAuthorization, CustomToken> { }
-        public class CustomAuthorization : OpenIddictAuthorization<long, CustomApplication, CustomToken> { }
-        public class CustomScope : OpenIddictScope<long> { }
-        public class CustomToken : OpenIddictToken<long, CustomApplication, CustomAuthorization> { }
+        public class CustomApplication : OpenIddictEntityFrameworkApplication<long, CustomAuthorization, CustomToken> { }
+        public class CustomAuthorization : OpenIddictEntityFrameworkAuthorization<long, CustomApplication, CustomToken> { }
+        public class CustomScope : OpenIddictEntityFrameworkScope<long> { }
+        public class CustomToken : OpenIddictEntityFrameworkToken<long, CustomApplication, CustomAuthorization> { }
 
         public class CustomDbContext : DbContext
         {

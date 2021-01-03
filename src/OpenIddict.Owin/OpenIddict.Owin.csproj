@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;net472</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Easy-to-use OpenID Connect stack for ASP.NET 4.x/OWIN.</Description>
+    <Description>Versatile OpenID Connect stack for OWIN/Katana 4.1 (compatible with ASP.NET 4.6.1 and newer).</Description>
     <PackageTags>$(PackageTags);aspnet;katana;owin;server;validation</PackageTags>
   </PropertyGroup>
 
@@ -15,6 +15,10 @@
     <ProjectReference Include="..\OpenIddict\OpenIddict.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.Owin\OpenIddict.Server.Owin.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation.Owin\OpenIddict.Validation.Owin.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="_._" Pack="true" PackagePath="lib\net461\_._" />
   </ItemGroup>
 
 </Project>

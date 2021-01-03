@@ -16,6 +16,8 @@ namespace OpenIddict.Server.DataProtection
             public const string CodeChallenge = ".code_challenge";
             public const string CodeChallengeMethod = ".code_challenge_method";
             public const string DataProtector = ".data_protector";
+            public const string DeviceCodeId = ".device_code_id";
+            public const string DeviceCodeLifetime = ".device_code_lifetime";
             public const string Expires = ".expires";
             public const string IdentityTokenLifetime = ".identity_token_lifetime";
             public const string InternalAuthorizationId = ".internal_authorization_id";
@@ -27,6 +29,7 @@ namespace OpenIddict.Server.DataProtection
             public const string RefreshTokenLifetime = ".refresh_token_lifetime";
             public const string Resources = ".resources";
             public const string Scopes = ".scopes";
+            public const string UserCodeLifetime = ".user_code_lifetime";
         }
 
         public static class Purposes

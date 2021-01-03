@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
@@ -20,23 +19,112 @@ namespace OpenIddict.Server.DataProtection
     public static class OpenIddictServerDataProtectionHandlerFilters
     {
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if OpenIddict was not configured to issue Data Protection tokens.
+        /// Represents a filter that excludes the associated handlers if OpenIddict
+        /// was not configured to issue ASP.NET Core Data Protection access tokens.
         /// </summary>
-        public class RequirePreferDataProtectionFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        public class RequireDataProtectionAccessTokenFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public RequirePreferDataProtectionFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public RequireDataProtectionAccessTokenFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
             {
-                if (context == null)
+                if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(_options.CurrentValue.PreferDataProtectionFormat);
+                return new ValueTask<bool>(!_options.CurrentValue.PreferDefaultAccessTokenFormat);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if OpenIddict
+        /// was not configured to issue ASP.NET Core Data Protection authorization codes.
+        /// </summary>
+        public class RequireDataProtectionAuthorizationCodeFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
+
+            public RequireDataProtectionAuthorizationCodeFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!_options.CurrentValue.PreferDefaultAuthorizationCodeFormat);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if OpenIddict
+        /// was not configured to issue ASP.NET Core Data Protection device codes.
+        /// </summary>
+        public class RequireDataProtectionDeviceCodeFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
+
+            public RequireDataProtectionDeviceCodeFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!_options.CurrentValue.PreferDefaultDeviceCodeFormat);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if OpenIddict
+        /// was not configured to issue ASP.NET Core Data Protection refresh tokens.
+        /// </summary>
+        public class RequireDataProtectionRefreshTokenFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
+
+            public RequireDataProtectionRefreshTokenFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!_options.CurrentValue.PreferDefaultRefreshTokenFormat);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if OpenIddict
+        /// was not configured to issue ASP.NET Core Data Protection user codes.
+        /// </summary>
+        public class RequireDataProtectionUserCodeFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
+
+            public RequireDataProtectionUserCodeFormatEnabled(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!_options.CurrentValue.PreferDefaultUserCodeFormat);
             }
         }
     }

@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -17,33 +16,33 @@ namespace OpenIddict.EntityFrameworkCore
     /// required by the OpenIddict stack in an Entity Framework Core context.
     /// </summary>
     public class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : RelationalModelCustomizer
-        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-        where TScope : OpenIddictScope<TKey>
-        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
+        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
+        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictEntityFrameworkCoreCustomizer([NotNull] ModelCustomizerDependencies dependencies)
+        public OpenIddictEntityFrameworkCoreCustomizer(ModelCustomizerDependencies dependencies)
             : base(dependencies)
         {
         }
 
-        public override void Customize([NotNull] ModelBuilder builder, [NotNull] DbContext context)
+        public override void Customize(ModelBuilder modelBuilder, DbContext context)
         {
-            if (builder == null)
+            if (modelBuilder is null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(modelBuilder));
             }
 
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
             // Register the OpenIddict entity sets.
-            builder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
+            modelBuilder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
 
-            base.Customize(builder, context);
+            base.Customize(modelBuilder, context);
         }
     }
 }

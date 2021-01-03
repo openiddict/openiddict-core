@@ -5,12 +5,11 @@
  */
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {
@@ -24,7 +23,7 @@ namespace OpenIddict.Server.Owin
         /// Creates a new instance of the <see cref="OpenIddictServerOwinMiddlewareFactory"/> class.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline, if applicable.</param>
-        public OpenIddictServerOwinMiddlewareFactory([CanBeNull] OwinMiddleware next)
+        public OpenIddictServerOwinMiddlewareFactory(OwinMiddleware? next)
             : base(next)
         {
         }
@@ -38,23 +37,17 @@ namespace OpenIddict.Server.Owin
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task Invoke([NotNull] IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
             var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName);
-            if (provider == null)
+            if (provider is null)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("No service provider was found in the OWIN context. For the OpenIddict server ")
-                    .Append("services to work correctly, a per-request 'IServiceProvider' must be attached ")
-                    .AppendLine("to the OWIN environment with the dictionary key 'System.IServiceProvider'.")
-                    .Append("Note: when using a dependency injection container supporting middleware resolution ")
-                    .Append("(like Autofac), the 'app.UseOpenIddictServer()' extension MUST NOT be called.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0121));
             }
 
             // Note: the Microsoft.Extensions.DependencyInjection container doesn't support resolving services
@@ -64,15 +57,13 @@ namespace OpenIddict.Server.Owin
             var middleware = new OpenIddictServerOwinMiddleware(
                 next: Next,
                 options: GetRequiredService<IOptionsMonitor<OpenIddictServerOwinOptions>>(provider),
-                provider: GetRequiredService<IOpenIddictServerProvider>(provider));
+                dispatcher: GetRequiredService<IOpenIddictServerDispatcher>(provider),
+                factory: GetRequiredService<IOpenIddictServerFactory>(provider));
 
             return middleware.Invoke(context);
 
-            static T GetRequiredService<T>(IServiceProvider provider)
-                => provider.GetService<T>() ?? throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict server authentication services cannot be resolved from the DI container.")
-                    .Append("To register the OWIN services, use 'services.AddOpenIddict().AddServer().UseOwin()'.")
-                    .ToString());
+            static T GetRequiredService<T>(IServiceProvider provider) => provider.GetService<T>() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0122));
         }
     }
 }

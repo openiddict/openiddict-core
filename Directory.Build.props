@@ -4,14 +4,20 @@
 
   <PropertyGroup>
     <LangVersion>preview</LangVersion>
-    <NoWarn>$(NoWarn);CS1591;NU5128</NoWarn>
+    <AnalysisLevel>preview</AnalysisLevel>
+    <NoWarn>$(NoWarn);CS1591;NU5118;NU5128</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)eng\CodeAnalysis.ruleset</CodeAnalysisRuleset>
+    <EnableXlfLocalization>false</EnableXlfLocalization>
   </PropertyGroup>
 
   <PropertyGroup>
     <StrongNameKeyId>OpenIddict</StrongNameKeyId>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\eng\key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <PublicSign>false</PublicSign>
@@ -37,35 +43,31 @@
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
   </PropertyGroup>
 
+  <!--
+    These are set per-project so versioning is applied correctly, but are not set globally otherwise
+    the Arcade SDK will attempt to publish artifacts such as symbols to Microsoft's servers.
+  -->
+  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' And '$(GITHUB_REF.StartsWith(`refs/pull/`))' == 'false' ">
+    <OfficialBuild>true</OfficialBuild>
+    <OfficialBuildId>$(_ComputedOfficialBuildId)</OfficialBuildId>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" $(RepoRelativeProjectDir.Contains('src')) ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeSource>true</IncludeSource>
     <IncludeSymbols>true</IncludeSymbols>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <Serviceable>false</Serviceable>
   </PropertyGroup>
 
-  <!--
-    Arcade only allows the revision to contain up to two characters, and AppVeyor does not roll-over
-    build numbers every day like Azure DevOps does. To balance these two requirements, set the official
-    build ID to be the same format as the built-in default from Arcade, except with the revision number
-    being the number of the quarter hour of the current time of day (24 * 4 = 96, which is less than 100).
-    So a build between 00:00 and 00:14 would have a revision of 1, and a build between 23:45 and 23:59:59
-    would have a revision of 97.
-  -->
-  <PropertyGroup Condition=" '$(APPVEYOR)' == 'True' AND '$(APPVEYOR_PULL_REQUEST_NUMBER)' == '' ">
-    <_Hours>$([MSBuild]::Multiply($([System.DateTime]::Now.ToString(HH)), 4))</_Hours>
-    <_QuarterHours>$([MSBuild]::Divide($([System.DateTime]::Now.ToString(mm)), 15))</_QuarterHours>
-    <_QuarterHours>$([System.Math]::Floor($(_QuarterHours)))</_QuarterHours>
-    <_AppVeyorBuildRevision>$([MSBuild]::Add($(_Hours), $(_QuarterHours)))</_AppVeyorBuildRevision>
-    <_AppVeyorBuildRevision>$([MSBuild]::Add($(_AppVeyorBuildRevision), 1))</_AppVeyorBuildRevision>
-    <OfficialBuild>true</OfficialBuild>
-    <OfficialBuildId>$([System.DateTime]::Now.ToString(yyyyMMdd)).$(_AppVeyorBuildRevision)</OfficialBuildId>
-  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" />
+    <PackageReference Include="TunnelVisionLabs.ReferenceAssemblyAnnotator" PrivateAssets="All" />
+  </ItemGroup>
 
-  <ItemGroup Condition=" '$(OS)' != 'Windows_NT' ">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0" />
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[3.1.0]" />
   </ItemGroup>
 
   <ItemGroup>

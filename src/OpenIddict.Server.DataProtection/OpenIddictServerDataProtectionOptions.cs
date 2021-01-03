@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.DataProtection;
 namespace OpenIddict.Server.DataProtection
 {
     /// <summary>
-    /// Provides various settings needed to configure the OpenIddict server handler.
+    /// Provides various settings needed to configure the OpenIddict
+    /// ASP.NET Core Data Protection server integration.
     /// </summary>
     public class OpenIddictServerDataProtectionOptions
     {
@@ -19,20 +20,42 @@ namespace OpenIddict.Server.DataProtection
         /// When this property is set to <c>null</c>, the data protection provider
         /// is directly retrieved from the dependency injection container.
         /// </summary>
-        public IDataProtectionProvider DataProtectionProvider { get; set; }
+        public IDataProtectionProvider DataProtectionProvider { get; set; } = default!;
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether the Data Protection format
-        /// should be preferred when issuing new access tokens, refresh tokens
-        /// and authorization codes. This property is set to <c>false</c> by default.
-        /// </summary>
-        public bool PreferDataProtectionFormat { get; set; }
-
-        /// <summary>
-        /// Gets or sets the formatter used to read and write Data Protection tokens,
-        /// serialized using the same format as the ASP.NET Core authentication tickets.
+        /// Gets or sets the formatter used to read and write Data Protection tokens.
         /// </summary>
         public IOpenIddictServerDataProtectionFormatter Formatter { get; set; }
             = new OpenIddictServerDataProtectionFormatter();
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default access token format should be
+        /// used when issuing new access tokens. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultAccessTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default authorization code format should be
+        /// used when issuing new authorization codes. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultAuthorizationCodeFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default device code format should be
+        /// used when issuing new device codes. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultDeviceCodeFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default refresh token format should be
+        /// used when issuing new refresh tokens. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultRefreshTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the default user code format should be
+        /// used when issuing new user codes. This property is set to <c>false</c> by default.
+        /// </summary>
+        public bool PreferDefaultUserCodeFormat { get; set; }
     }
 }

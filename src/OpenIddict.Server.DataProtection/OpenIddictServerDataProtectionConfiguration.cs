@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
@@ -23,32 +22,29 @@ namespace OpenIddict.Server.DataProtection
         /// Creates a new instance of the <see cref="OpenIddictServerDataProtectionConfiguration"/> class.
         /// </summary>
         /// <param name="dataProtectionProvider">The ASP.NET Core Data Protection provider.</param>
-        public OpenIddictServerDataProtectionConfiguration([NotNull] IDataProtectionProvider dataProtectionProvider)
+        public OpenIddictServerDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
             => _dataProtectionProvider = dataProtectionProvider;
 
-        public void Configure([NotNull] OpenIddictServerOptions options)
+        public void Configure(OpenIddictServerOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
             // Register the built-in event handlers used by the OpenIddict Data Protection server components.
-            foreach (var handler in OpenIddictServerDataProtectionHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictServerDataProtectionHandlers.DefaultHandlers);
         }
 
         /// <summary>
         /// Populates the default OpenIddict ASP.NET Core Data Protection server options
         /// and ensures that the configuration is in a consistent and valid state.
         /// </summary>
-        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
-        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerDataProtectionOptions options)
+        public void PostConfigure(string name, OpenIddictServerDataProtectionOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }

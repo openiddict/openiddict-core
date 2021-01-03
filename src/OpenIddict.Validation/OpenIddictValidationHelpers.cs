@@ -5,7 +5,7 @@
  */
 
 using System;
-using JetBrains.Annotations;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -21,17 +21,17 @@ namespace OpenIddict.Validation
         /// <param name="transaction">The validation transaction.</param>
         /// <param name="name">The property name.</param>
         /// <returns>The property value or <c>null</c> if it couldn't be found.</returns>
-        public static TProperty GetProperty<TProperty>(
-            [NotNull] this OpenIddictValidationTransaction transaction, [NotNull] string name) where TProperty : class
+        public static TProperty? GetProperty<TProperty>(
+            this OpenIddictValidationTransaction transaction, string name) where TProperty : class
         {
-            if (transaction == null)
+            if (transaction is null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The property name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));
             }
 
             if (transaction.Properties.TryGetValue(name, out var property) && property is TProperty result)
@@ -51,20 +51,20 @@ namespace OpenIddict.Validation
         /// <param name="value">The property value.</param>
         /// <returns>The validation transaction, so that calls can be easily chained.</returns>
         public static OpenIddictValidationTransaction SetProperty<TProperty>(
-            [NotNull] this OpenIddictValidationTransaction transaction,
-            [NotNull] string name, [CanBeNull] TProperty value) where TProperty : class
+            this OpenIddictValidationTransaction transaction,
+            string name, TProperty? value) where TProperty : class
         {
-            if (transaction == null)
+            if (transaction is null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The property name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));
             }
 
-            if (value == null)
+            if (value is null)
             {
                 transaction.Properties.Remove(name);
             }

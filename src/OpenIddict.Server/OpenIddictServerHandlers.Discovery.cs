@@ -11,15 +11,15 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -71,41 +71,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractConfigurationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractConfigurationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<ExtractConfigurationRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
-                    }
-
                     var notification = new ExtractConfigurationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -128,16 +119,12 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The configuration request was not correctly extracted. To extract configuration requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractConfigurationRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0037));
                     }
 
-                    context.Logger.LogInformation("The configuration request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6066), notification.Request);
                 }
             }
 
@@ -146,41 +133,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateConfigurationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateConfigurationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<ValidateConfigurationRequest>()
                         .SetOrder(ExtractConfigurationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
-                    }
-
                     var notification = new ValidateConfigurationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -203,7 +181,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The configuration request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6067));
                 }
             }
 
@@ -212,41 +190,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleConfigurationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleConfigurationRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<HandleConfigurationRequest>()
                         .SetOrder(ValidateConfigurationRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
-                    }
-
                     var notification = new HandleConfigurationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -298,7 +267,7 @@ namespace OpenIddict.Server
                         response.SetParameter(metadata.Key, metadata.Value);
                     }
 
-                    context.Response = response;
+                    context.Transaction.Response = response;
                 }
             }
 
@@ -307,41 +276,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyConfigurationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyConfigurationResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyConfigurationResponse(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireConfigurationRequest>()
                         .UseScopedHandler<ApplyConfigurationResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] TContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Configuration)
-                    {
-                        return;
-                    }
-
                     var notification = new ApplyConfigurationResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -355,11 +315,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The configuration response was not correctly applied. To apply configuration responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyConfigurationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0272));
                 }
             }
 
@@ -375,18 +331,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachEndpoints>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -394,36 +345,36 @@ namespace OpenIddict.Server
                     // Note: while OpenIddict allows specifying multiple endpoint addresses, the OAuth 2.0
                     // and OpenID Connect discovery specifications only allow a single address per endpoint.
 
-                    context.AuthorizationEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.AuthorizationEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.AuthorizationEndpointUris.FirstOrDefault());
 
-                    context.CryptographyEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.CryptographyEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.CryptographyEndpointUris.FirstOrDefault());
 
-                    context.DeviceEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.DeviceEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.DeviceEndpointUris.FirstOrDefault());
 
-                    context.IntrospectionEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.IntrospectionEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.IntrospectionEndpointUris.FirstOrDefault());
 
-                    context.LogoutEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.LogoutEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.LogoutEndpointUris.FirstOrDefault());
 
-                    context.RevocationEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.RevocationEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.RevocationEndpointUris.FirstOrDefault());
 
-                    context.TokenEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.TokenEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.TokenEndpointUris.FirstOrDefault());
 
-                    context.UserinfoEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.UserinfoEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.UserinfoEndpointUris.FirstOrDefault());
 
                     return default;
 
-                    static Uri GetEndpointAbsoluteUrl(Uri issuer, Uri endpoint)
+                    static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri? endpoint)
                     {
                         // If the endpoint is disabled (i.e a null address is specified), return null.
-                        if (endpoint == null)
+                        if (endpoint is null)
                         {
                             return null;
                         }
@@ -435,21 +386,21 @@ namespace OpenIddict.Server
                         }
 
                         // At this stage, throw an exception if the issuer cannot be retrieved.
-                        if (issuer == null || !issuer.IsAbsoluteUri)
+                        if (issuer is null || !issuer.IsAbsoluteUri)
                         {
-                            throw new InvalidOperationException("The issuer must be a non-null, non-empty absolute URL.");
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
                         }
 
                         // Ensure the issuer ends with a trailing slash, as it is necessary
                         // for Uri's constructor to correctly compute correct absolute URLs.
-                        if (!issuer.OriginalString.EndsWith("/"))
+                        if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
                         {
                             issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
                         }
 
                         // Ensure the endpoint does not start with a leading slash, as it is necessary
                         // for Uri's constructor to correctly compute correct absolute URLs.
-                        if (endpoint.OriginalString.StartsWith("/"))
+                        if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
                         {
                             endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
                         }
@@ -471,18 +422,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachGrantTypes>()
                         .SetOrder(AttachEndpoints.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -505,18 +451,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachResponseModes>()
                         .SetOrder(AttachGrantTypes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -539,18 +480,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachResponseTypes>()
                         .SetOrder(AttachResponseModes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -574,35 +510,30 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachClientAuthenticationMethods>()
                         .SetOrder(AttachResponseTypes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.IntrospectionEndpoint != null)
+                    if (context.IntrospectionEndpoint is not null)
                     {
                         context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                         context.IntrospectionEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
                     }
 
-                    if (context.RevocationEndpoint != null)
+                    if (context.RevocationEndpoint is not null)
                     {
                         context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                         context.RevocationEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
                     }
 
-                    if (context.TokenEndpoint != null)
+                    if (context.TokenEndpoint is not null)
                     {
                         context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretBasic);
                         context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
@@ -625,18 +556,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachCodeChallengeMethods>()
                         .SetOrder(AttachClientAuthenticationMethods.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -659,18 +585,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachScopes>()
                         .SetOrder(AttachCodeChallengeMethods.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -693,18 +614,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachClaims>()
                         .SetOrder(AttachScopes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -727,18 +643,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachSubjectTypes>()
                         .SetOrder(AttachClaims.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -761,18 +672,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachSigningAlgorithms>()
                         .SetOrder(AttachSubjectTypes.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -783,26 +689,26 @@ namespace OpenIddict.Server
                         var algorithm = credentials.Algorithm switch
                         {
 #if SUPPORTS_ECDSA
-                            SecurityAlgorithms.EcdsaSha256 => SecurityAlgorithms.EcdsaSha256,
-                            SecurityAlgorithms.EcdsaSha384 => SecurityAlgorithms.EcdsaSha384,
-                            SecurityAlgorithms.EcdsaSha512 => SecurityAlgorithms.EcdsaSha512,
-                            SecurityAlgorithms.EcdsaSha256Signature => SecurityAlgorithms.EcdsaSha256,
-                            SecurityAlgorithms.EcdsaSha384Signature => SecurityAlgorithms.EcdsaSha384,
-                            SecurityAlgorithms.EcdsaSha512Signature => SecurityAlgorithms.EcdsaSha512,
+                            SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
+                                => SecurityAlgorithms.EcdsaSha256,
+                            SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
+                                => SecurityAlgorithms.EcdsaSha384,
+                            SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
+                                => SecurityAlgorithms.EcdsaSha512,
 #endif
-                            SecurityAlgorithms.RsaSha256 => SecurityAlgorithms.RsaSha256,
-                            SecurityAlgorithms.RsaSha384 => SecurityAlgorithms.RsaSha384,
-                            SecurityAlgorithms.RsaSha512 => SecurityAlgorithms.RsaSha512,
-                            SecurityAlgorithms.RsaSha256Signature => SecurityAlgorithms.RsaSha256,
-                            SecurityAlgorithms.RsaSha384Signature => SecurityAlgorithms.RsaSha384,
-                            SecurityAlgorithms.RsaSha512Signature => SecurityAlgorithms.RsaSha512,
+                            SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
+                                => SecurityAlgorithms.RsaSha256,
+                            SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
+                                => SecurityAlgorithms.RsaSha384,
+                            SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature
+                                => SecurityAlgorithms.RsaSha512,
 
-                            SecurityAlgorithms.RsaSsaPssSha256 => SecurityAlgorithms.RsaSsaPssSha256,
-                            SecurityAlgorithms.RsaSsaPssSha384 => SecurityAlgorithms.RsaSsaPssSha384,
-                            SecurityAlgorithms.RsaSsaPssSha512 => SecurityAlgorithms.RsaSsaPssSha512,
-                            SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
-                            SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
-                            SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+                            SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature
+                                => SecurityAlgorithms.RsaSsaPssSha256,
+                            SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature
+                                => SecurityAlgorithms.RsaSsaPssSha384,
+                            SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
+                                => SecurityAlgorithms.RsaSsaPssSha512,
 
                             _ => null
                         };
@@ -832,18 +738,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachAdditionalMetadata>()
                         .SetOrder(AttachSigningAlgorithms.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleConfigurationRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -863,41 +764,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractCryptographyRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractCryptographyRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<ExtractCryptographyRequest>()
                         .SetOrder(100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
-                    }
-
                     var notification = new ExtractCryptographyRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -920,16 +812,12 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.Request == null)
+                    if (notification.Request is null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The cryptography request was not correctly extracted. To extract configuration requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractCryptographyRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0038));
                     }
 
-                    context.Logger.LogInformation("The cryptography request was successfully extracted: {Request}.", notification.Request);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6068), notification.Request);
                 }
             }
 
@@ -938,41 +826,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateCryptographyRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateCryptographyRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<ValidateCryptographyRequest>()
                         .SetOrder(ExtractCryptographyRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
-                    }
-
                     var notification = new ValidateCryptographyRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -995,7 +874,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    context.Logger.LogInformation("The cryptography request was successfully validated.");
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6069));
                 }
             }
 
@@ -1004,41 +883,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleCryptographyRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleCryptographyRequest(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<HandleCryptographyRequest>()
                         .SetOrder(ValidateCryptographyRequest.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(ProcessRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
-                    }
-
                     var notification = new HandleCryptographyRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1072,8 +942,7 @@ namespace OpenIddict.Server
                         // See https://tools.ietf.org/html/rfc7517#section-4.1
                         if (string.IsNullOrEmpty(key.Kty))
                         {
-                            context.Logger.LogError("A JSON Web Key was excluded from the key set because " +
-                                                    "it didn't contain the mandatory 'kid' parameter.");
+                            context.Logger.LogError(SR.GetResourceString(SR.ID6070), JsonWebKeyParameterNames.Kty);
 
                             continue;
                         }
@@ -1133,7 +1002,7 @@ namespace OpenIddict.Server
                     var response = new OpenIddictResponse();
                     response.AddParameter(Parameters.Keys, document.RootElement.Clone());
 
-                    context.Response = response;
+                    context.Transaction.Response = response;
                 }
             }
 
@@ -1142,41 +1011,32 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyCryptographyResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyCryptographyResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyCryptographyResponse(IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                        .AddFilter<RequireCryptographyRequest>()
                         .UseScopedHandler<ApplyCryptographyResponse<TContext>>()
                         .SetOrder(int.MaxValue - 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] TContext context)
+                /// <inheritdoc/>
+                public async ValueTask HandleAsync(TContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.EndpointType != OpenIddictServerEndpointType.Cryptography)
-                    {
-                        return;
-                    }
-
                     var notification = new ApplyCryptographyResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1190,11 +1050,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The cryptography response was not correctly applied. To apply cryptography responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyCryptographyResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0039));
                 }
             }
 
@@ -1210,18 +1066,13 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleCryptographyRequestContext>()
                         .UseSingletonHandler<AttachSigningKeys>()
                         .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleCryptographyRequestContext context)
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(HandleCryptographyRequestContext context)
                 {
-                    if (context == null)
+                    if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
                     }
@@ -1229,25 +1080,21 @@ namespace OpenIddict.Server
                     foreach (var credentials in context.Options.SigningCredentials)
                     {
 #if SUPPORTS_ECDSA
-                        if (!IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha384) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha512))
+                        if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
                         {
-                            context.Logger.LogInformation("An unsupported signing key of type '{Type}' was ignored and excluded " +
-                                                          "from the key set. Only RSA and ECDSA asymmetric security keys can be " +
-                                                          "exposed via the JWKS endpoint.", credentials.Key.GetType().Name);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6071), credentials.Key.GetType().Name);
 
                             continue;
                         }
 #else
-                        if (!IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) &&
-                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256))
+                        if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) &&
+                            !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
                         {
-                            context.Logger.LogInformation("An unsupported signing key of type '{Type}' was ignored and excluded " +
-                                                          "from the key set. Only RSA asymmetric security keys can be exposed " +
-                                                          "via the JWKS endpoint.", credentials.Key.GetType().Name);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6072), credentials.Key.GetType().Name);
 
                             continue;
                         }
@@ -1261,26 +1108,26 @@ namespace OpenIddict.Server
                             Alg = credentials.Algorithm switch
                             {
 #if SUPPORTS_ECDSA
-                                SecurityAlgorithms.EcdsaSha256 => SecurityAlgorithms.EcdsaSha256,
-                                SecurityAlgorithms.EcdsaSha384 => SecurityAlgorithms.EcdsaSha384,
-                                SecurityAlgorithms.EcdsaSha512 => SecurityAlgorithms.EcdsaSha512,
-                                SecurityAlgorithms.EcdsaSha256Signature => SecurityAlgorithms.EcdsaSha256,
-                                SecurityAlgorithms.EcdsaSha384Signature => SecurityAlgorithms.EcdsaSha384,
-                                SecurityAlgorithms.EcdsaSha512Signature => SecurityAlgorithms.EcdsaSha512,
+                                SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
+                                    => SecurityAlgorithms.EcdsaSha256,
+                                SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
+                                    => SecurityAlgorithms.EcdsaSha384,
+                                SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
+                                    => SecurityAlgorithms.EcdsaSha512,
 #endif
-                                SecurityAlgorithms.RsaSha256 => SecurityAlgorithms.RsaSha256,
-                                SecurityAlgorithms.RsaSha384 => SecurityAlgorithms.RsaSha384,
-                                SecurityAlgorithms.RsaSha512 => SecurityAlgorithms.RsaSha512,
-                                SecurityAlgorithms.RsaSha256Signature => SecurityAlgorithms.RsaSha256,
-                                SecurityAlgorithms.RsaSha384Signature => SecurityAlgorithms.RsaSha384,
-                                SecurityAlgorithms.RsaSha512Signature => SecurityAlgorithms.RsaSha512,
+                                SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
+                                    => SecurityAlgorithms.RsaSha256,
+                                SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
+                                    => SecurityAlgorithms.RsaSha384,
+                                SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature
+                                    => SecurityAlgorithms.RsaSha512,
 
-                                SecurityAlgorithms.RsaSsaPssSha256 => SecurityAlgorithms.RsaSsaPssSha256,
-                                SecurityAlgorithms.RsaSsaPssSha384 => SecurityAlgorithms.RsaSsaPssSha384,
-                                SecurityAlgorithms.RsaSsaPssSha512 => SecurityAlgorithms.RsaSsaPssSha512,
-                                SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
-                                SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
-                                SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+                                SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature
+                                    => SecurityAlgorithms.RsaSsaPssSha256,
+                                SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature
+                                    => SecurityAlgorithms.RsaSsaPssSha384,
+                                SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
+                                    => SecurityAlgorithms.RsaSsaPssSha512,
 
                                 _ => null
                             },
@@ -1289,8 +1136,8 @@ namespace OpenIddict.Server
                             Kid = credentials.Kid
                         };
 
-                        if (IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) ||
-                            IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256))
+                        if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256) ||
+                            credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSsaPssSha256))
                         {
                             // Note: IdentityModel 5 doesn't expose a method allowing to retrieve the underlying algorithm
                             // from a generic asymmetric security key. To work around this limitation, try to cast
@@ -1299,28 +1146,23 @@ namespace OpenIddict.Server
 
                             var parameters = credentials.Key switch
                             {
-                                X509SecurityKey x509SecurityKey when x509SecurityKey.PublicKey is RSA algorithm =>
-                                    algorithm.ExportParameters(includePrivateParameters: false),
+                                X509SecurityKey { PublicKey: RSA algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
 
-                                RsaSecurityKey rsaSecurityKey when rsaSecurityKey.Rsa != null =>
-                                    rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false),
-
-                                RsaSecurityKey rsaSecurityKey => rsaSecurityKey.Parameters,
+                                RsaSecurityKey { Rsa:        RSA algorithm       } => algorithm.ExportParameters(includePrivateParameters: false),
+                                RsaSecurityKey { Parameters: RSAParameters value } => value,
 
                                 _ => (RSAParameters?) null
                             };
 
-                            if (parameters == null)
+                            if (parameters is null)
                             {
-                                context.Logger.LogWarning("A signing key of type '{Type}' was ignored because its RSA public " +
-                                                          "parameters couldn't be extracted.", credentials.Key.GetType().Name);
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6073), credentials.Key.GetType().Name);
 
                                 continue;
                             }
 
-                            Debug.Assert(parameters.Value.Exponent != null &&
-                                         parameters.Value.Modulus != null,
-                                "RSA.ExportParameters() shouldn't return a null exponent/modulus.");
+                            Debug.Assert(parameters.Value.Exponent is not null &&
+                                         parameters.Value.Modulus is not null, SR.GetResourceString(SR.ID4003));
 
                             key.Kty = JsonWebAlgorithmsKeyTypes.RSA;
 
@@ -1331,40 +1173,45 @@ namespace OpenIddict.Server
                         }
 
 #if SUPPORTS_ECDSA
-                        else if (IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha256) ||
-                                 IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha384) ||
-                                 IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha512))
+                        else if (credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) ||
+                                 credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
+                                 credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
                         {
                             var parameters = credentials.Key switch
                             {
-                                X509SecurityKey x509SecurityKey when x509SecurityKey.PublicKey is ECDsa algorithm =>
-                                    algorithm.ExportParameters(includePrivateParameters: false),
+                                X509SecurityKey { PublicKey: ECDsa algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
 
-                                ECDsaSecurityKey ecdsaSecurityKey when ecdsaSecurityKey.ECDsa != null =>
-                                    ecdsaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false),
+                                ECDsaSecurityKey { ECDsa: ECDsa algorithm } => algorithm.ExportParameters(includePrivateParameters: false),
 
                                 _ => (ECParameters?) null
                             };
 
-                            if (parameters == null)
+                            if (parameters is null)
                             {
-                                context.Logger.LogWarning("A signing key of type '{Type}' was ignored because its EC public " +
-                                                          "parameters couldn't be extracted.", credentials.Key.GetType().Name);
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6074), credentials.Key.GetType().Name);
 
                                 continue;
                             }
 
-                            Debug.Assert(parameters.Value.Q.X != null &&
-                                         parameters.Value.Q.Y != null,
-                                "ECDsa.ExportParameters() shouldn't return null coordinates.");
+                            var curve = IsCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
+                                        IsCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
+                                        IsCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
 
-                            Debug.Assert(parameters.Value.Curve.IsNamed,
-                                "ECDsa.ExportParameters() shouldn't return an unnamed curve.");
+                            if (string.IsNullOrEmpty(curve))
+                            {
+                                context.Logger.LogWarning(SR.GetResourceString(SR.ID6167), credentials.Key.GetType().Name);
+
+                                continue;
+                            }
+
+                            Debug.Assert(parameters.Value.Q.X is not null &&
+                                         parameters.Value.Q.Y is not null, SR.GetResourceString(SR.ID4004));
+
+                            Debug.Assert(parameters.Value.Curve.Oid is not null, SR.GetResourceString(SR.ID4011));
+                            Debug.Assert(parameters.Value.Curve.IsNamed, SR.GetResourceString(SR.ID4005));
 
                             key.Kty = JsonWebAlgorithmsKeyTypes.EllipticCurve;
-                            key.Crv = IsCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
-                                      IsCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
-                                      IsCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
+                            key.Crv = curve;
 
                             // Note: both X and Y must be base64url-encoded.
                             // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2
@@ -1376,7 +1223,7 @@ namespace OpenIddict.Server
                         // If the signing key is embedded in a X.509 certificate, set
                         // the x5t and x5c parameters using the certificate details.
                         var certificate = (credentials.Key as X509SecurityKey)?.Certificate;
-                        if (certificate != null)
+                        if (certificate is not null)
                         {
                             // x5t must be base64url-encoded.
                             // See https://tools.ietf.org/html/rfc7517#section-4.8
@@ -1397,12 +1244,28 @@ namespace OpenIddict.Server
 
                     return default;
 
-                    static bool IsAlgorithmSupported(SecurityKey key, string algorithm) =>
-                        key.CryptoProviderFactory.IsSupportedAlgorithm(algorithm, key);
-
 #if SUPPORTS_ECDSA
-                    static bool IsCurve(ECParameters parameters, ECCurve curve) =>
-                        string.Equals(parameters.Curve.Oid.FriendlyName, curve.Oid.FriendlyName, StringComparison.Ordinal);
+                    static bool IsCurve(ECParameters parameters, ECCurve curve)
+                    {
+                        Debug.Assert(parameters.Curve.Oid is not null, SR.GetResourceString(SR.ID4011));
+                        Debug.Assert(curve.Oid is not null, SR.GetResourceString(SR.ID4011));
+
+                        // Warning: on .NET Framework 4.x and .NET Core 2.1, exported ECParameters generally have
+                        // a null OID value attached. To work around this limitation, both the raw OID values and
+                        // the friendly names are compared to determine whether the curve is of the specified type.
+                        if (!string.IsNullOrEmpty(parameters.Curve.Oid.Value) && !string.IsNullOrEmpty(curve.Oid.Value))
+                        {
+                            return string.Equals(parameters.Curve.Oid.Value, curve.Oid.Value, StringComparison.Ordinal);
+                        }
+
+                        if (!string.IsNullOrEmpty(parameters.Curve.Oid.FriendlyName) && !string.IsNullOrEmpty(curve.Oid.FriendlyName))
+                        {
+                            return string.Equals(parameters.Curve.Oid.FriendlyName, curve.Oid.FriendlyName, StringComparison.Ordinal);
+                        }
+
+                        Debug.Fail(SR.GetResourceString(SR.ID4012));
+                        return false;
+                    }
 #endif
 
                     static byte[] GetCertificateHash(X509Certificate2 certificate, HashAlgorithmName algorithm)
@@ -1410,10 +1273,10 @@ namespace OpenIddict.Server
 #if SUPPORTS_CERTIFICATE_HASHING_WITH_SPECIFIED_ALGORITHM
                         return certificate.GetCertHash(algorithm);
 #else
-                        using var hash = CryptoConfig.CreateFromName(algorithm.Name) as HashAlgorithm;
-                        if (hash == null || hash is KeyedHashAlgorithm)
+                        using var hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
+                        if (hash is null || hash is KeyedHashAlgorithm)
                         {
-                            throw new InvalidOperationException("The specified hash algorithm is not valid.");
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0217));
                         }
 
                         return hash.ComputeHash(certificate.RawData);

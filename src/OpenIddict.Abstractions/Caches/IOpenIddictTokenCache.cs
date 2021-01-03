@@ -5,10 +5,8 @@
  */
 
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace OpenIddict.Abstractions
 {
@@ -24,7 +22,7 @@ namespace OpenIddict.Abstractions
         /// <param name="token">The token to add to the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask AddAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask AddAsync(TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the tokens corresponding to the specified
@@ -34,8 +32,7 @@ namespace OpenIddict.Abstractions
         /// <param name="client">The client associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the subject/client.</returns>
-        IAsyncEnumerable<TToken> FindAsync([NotNull] string subject,
-            [NotNull] string client, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindAsync(string subject, string client, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the tokens matching the specified parameters.
@@ -45,9 +42,7 @@ namespace OpenIddict.Abstractions
         /// <param name="status">The token status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the criteria.</returns>
-        IAsyncEnumerable<TToken> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindAsync(string subject, string client, string status, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the tokens matching the specified parameters.
@@ -59,8 +54,8 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the criteria.</returns>
         IAsyncEnumerable<TToken> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken);
+            string subject, string client,
+            string status, string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified application identifier.
@@ -68,7 +63,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The application identifier associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the specified application.</returns>
-        IAsyncEnumerable<TToken> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified authorization identifier.
@@ -76,7 +71,7 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The authorization identifier associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the specified authorization.</returns>
-        IAsyncEnumerable<TToken> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a token using its unique identifier.
@@ -87,7 +82,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        ValueTask<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified reference identifier.
@@ -99,7 +94,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified reference identifier.
         /// </returns>
-        ValueTask<TToken> FindByReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TToken?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified subject.
@@ -107,7 +102,7 @@ namespace OpenIddict.Abstractions
         /// <param name="subject">The subject associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The tokens corresponding to the specified subject.</returns>
-        IAsyncEnumerable<TToken> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
+        IAsyncEnumerable<TToken> FindBySubjectAsync(string subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the specified token from the cache.
@@ -115,6 +110,6 @@ namespace OpenIddict.Abstractions
         /// <param name="token">The token to remove from the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask RemoveAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask RemoveAsync(TToken token, CancellationToken cancellationToken);
     }
 }

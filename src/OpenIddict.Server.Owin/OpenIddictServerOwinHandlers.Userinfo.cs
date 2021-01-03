@@ -31,6 +31,7 @@ namespace OpenIddict.Server.Owin
                  */
                 AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
                 AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
+                ProcessChallengeErrorResponse<ApplyUserinfoResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor);
         }
     }

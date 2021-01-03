@@ -5,7 +5,6 @@
  */
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation.Owin
@@ -15,18 +14,15 @@ namespace OpenIddict.Validation.Owin
     /// </summary>
     public class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
     {
-        public void Configure([NotNull] OpenIddictValidationOptions options)
+        public void Configure(OpenIddictValidationOptions options)
         {
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
             // Register the built-in event handlers used by the OpenIddict OWIN validation components.
-            foreach (var handler in OpenIddictValidationOwinHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationOwinHandlers.DefaultHandlers);
         }
     }
 }

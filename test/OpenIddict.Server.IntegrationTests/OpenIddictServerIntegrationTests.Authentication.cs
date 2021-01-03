@@ -9,7 +9,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +17,9 @@ using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.FunctionalTests
+namespace OpenIddict.Server.IntegrationTests
 {
     public abstract partial class OpenIddictServerIntegrationTests
     {
@@ -32,21 +32,24 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/connect/authorize", new OpenIddictRequest());
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2084), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2084), response.ErrorUri);
         }
 
         [Fact]
         public async Task ExtractAuthorizationRequest_UnsupportedRequestParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -62,14 +65,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.RequestNotSupported, response.Error);
-            Assert.Equal("The 'request' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2028(Parameters.Request), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2028), response.ErrorUri);
         }
 
         [Fact]
         public async Task ExtractAuthorizationRequest_UnsupportedRequestUriParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -83,7 +88,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.RequestUriNotSupported, response.Error);
-            Assert.Equal("The 'request_uri' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2028(Parameters.RequestUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2028), response.ErrorUri);
         }
 
         [Theory]
@@ -97,7 +103,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -109,6 +115,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/connect/authorize");
@@ -123,7 +131,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -141,18 +149,20 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/authorize");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ExtractAuthorizationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -165,18 +175,21 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/authorize");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_MissingClientIdCausesAnError()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -186,14 +199,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_MissingRedirectUriCausesAnErrorForOpenIdRequests()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -205,18 +220,20 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Theory]
-        [InlineData("/path", "The 'redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("/tmp/file.xml", "The 'redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("C:\\tmp\\file.xml", "The 'redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("http://www.fabrikam.com/path#param=value", "The 'redirect_uri' parameter must not include a fragment.")]
+        [InlineData("/path", SR.ID2030)]
+        [InlineData("/tmp/file.xml", SR.ID2030)]
+        [InlineData("C:\\tmp\\file.xml", SR.ID2030)]
+        [InlineData("http://www.fabrikam.com/path#param=value", SR.ID2031)]
         public async Task ValidateAuthorizationRequest_InvalidRedirectUriCausesAnError(string address, string message)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -228,14 +245,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(message, response.ErrorDescription);
+            Assert.Equal(string.Format(SR.GetResourceString(message), Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(message), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_MissingResponseTypeCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -248,7 +267,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'response_type' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Theory]
@@ -261,7 +281,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_UnsafeResponseModeCausesAnError(string type, string mode)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -275,7 +296,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_type'/'response_mode' combination is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2033(Parameters.ResponseType, Parameters.ResponseMode), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2033), response.ErrorUri);
         }
 
         [Theory]
@@ -288,7 +310,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingNonceCausesAnErrorForOpenIdRequests(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -301,7 +324,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'nonce' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.Nonce), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Theory]
@@ -312,7 +336,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingOpenIdScopeCausesAnErrorForOpenIdRequests(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -324,7 +349,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'openid' scope is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2034(Scopes.OpenId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2034), response.ErrorUri);
         }
 
         [Theory]
@@ -334,7 +360,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_InvalidPromptCausesAnError(string prompt)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -349,7 +376,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'prompt' parameter is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.Prompt), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
         }
 
         [Theory]
@@ -364,7 +392,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_ValidPromptDoesNotCauseAnError(string prompt)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -377,6 +405,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -392,9 +422,73 @@ namespace OpenIddict.Server.FunctionalTests
             // Assert
             Assert.Null(response.Error);
             Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
             Assert.NotNull(response.AccessToken);
             Assert.NotNull(response.Code);
             Assert.NotNull(response.IdToken);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenPkceIsRequiredAndCodeChallengeIsMissing()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+                options.RequireProofKeyForCodeExchange();
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = null,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(SR.FormatID2029(Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsValidateWhenPkceIsNotRequiredAndCodeChallengeIsMissing()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = null,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.Code);
         }
 
         [Theory]
@@ -404,7 +498,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingCodeResponseTypeCausesAnErrorWhenCodeChallengeIsUsed(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -420,15 +515,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'code_challenge' and 'code_challenge_method' parameters " +
-                         "can only be used with a response type containing 'code'.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2040(Parameters.CodeChallenge, Parameters.CodeChallengeMethod, ResponseTypes.Code), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2040), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_MissingCodeChallengeCausesAnErrorWhenCodeChallengeMethodIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -442,14 +538,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'code_challenge_method' parameter cannot be used without 'code_challenge'.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2037(Parameters.CodeChallengeMethod, Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2037), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_InvalidCodeChallengeMethodCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -464,33 +562,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
-        }
-
-        [Fact]
-        public async Task ValidateAuthorizationRequest_NoneFlowIsRejected()
-        {
-            // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.None
-            });
-
-            // Assert
-            Assert.Equal(Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2032(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_UnknownResponseTypeParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -502,7 +583,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Theory]
@@ -516,13 +598,16 @@ namespace OpenIddict.Server.FunctionalTests
         [InlineData(GrantTypes.Implicit, "id_token")]
         [InlineData(GrantTypes.Implicit, "id_token token")]
         [InlineData(GrantTypes.Implicit, "token")]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCorrespondingFlowIsDisabled(string flow, string type)
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenGrantTypeIsDisabled(string flow, string type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.GrantTypes.Remove(flow));
+                options.Configure(options => options.ResponseTypes.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -536,14 +621,73 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+        }
+
+        [Theory]
+        [InlineData("code")]
+        [InlineData("code id_token")]
+        [InlineData("code id_token token")]
+        [InlineData("code token")]
+        [InlineData("id_token")]
+        [InlineData("id_token token")]
+        [InlineData("none")]
+        [InlineData("token")]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenResponseTypeIsDisabled(string type)
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.Configure(options => options.ResponseTypes.Remove(type));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(Errors.UnsupportedResponseType, response.Error);
+            Assert.Equal(SR.FormatID2032(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_UnsupportedResponseModeCausesAnError()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseMode = "unsupported_response_mode",
+                ResponseType = ResponseTypes.Code,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(SR.FormatID2032(Parameters.ResponseMode), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenUnregisteredScopeIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -568,6 +712,8 @@ namespace OpenIddict.Server.FunctionalTests
                 }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -579,44 +725,18 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidScope, response.Error);
-            Assert.Equal("The specified 'scope' parameter is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.Scope), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenScopeRegisteredInOptionsIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
+                options.EnableDegradedMode();
                 options.RegisterScopes("registered_scope");
-
-                options.Services.AddSingleton(CreateApplicationManager(mock =>
-                {
-                    var application = new OpenIddictApplication();
-
-                    mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(application);
-
-                    mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-                }));
-
-                options.Services.AddSingleton(CreateApplicationManager(mock =>
-                {
-                    var application = new OpenIddictApplication();
-
-                    mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(application);
-
-                    mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-                }));
 
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
                     builder.UseInlineHandler(context =>
@@ -627,6 +747,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -649,11 +771,14 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenRegisteredScopeIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 var scope = new OpenIddictScope();
 
                 options.RegisterScopes("scope_registered_in_options");
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableTokenStorage();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -690,6 +815,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -711,10 +838,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestWithOfflineAccessScopeIsRejectedWhenRefreshTokenFlowIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.GrantTypes.Remove(GrantTypes.RefreshToken));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -727,14 +856,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'offline_access' scope is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2035(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2035), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_UnknownResponseModeParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -747,14 +878,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_mode' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2032(Parameters.ResponseMode), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissing()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -768,19 +901,22 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'code_challenge_method' parameter must be specified.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsNotEnabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.Services.PostConfigure<OpenIddictServerOptions>(options =>
                     options.CodeChallengeMethods.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -794,14 +930,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2032(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenPlainCodeChallengeMethodIsNotExplicitlyEnabled()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -815,7 +953,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2032(Parameters.CodeChallengeMethod), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
         }
 
         [Theory]
@@ -825,7 +964,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenCodeChallengeMethodIsRegistered(string method)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.Configure(options => options.CodeChallengeMethods.Clear());
@@ -840,6 +979,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -864,7 +1005,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_PkceRequestWithForbiddenResponseTypeIsRejected(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -880,14 +1022,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed when using PKCE.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2041(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2041), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsMissing()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -900,14 +1044,16 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2029(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_MissingRedirectUriCausesAnException()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
@@ -921,14 +1067,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("The request cannot be validated because no redirect_uri was specified.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0028), exception.Message);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_InvalidRedirectUriCausesAnException()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -940,6 +1086,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
@@ -953,8 +1101,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("The authorization request cannot be validated because a different " +
-                         "redirect_uri was specified by the client application.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0101), exception.Message);
         }
 
         [Fact]
@@ -967,10 +1114,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -982,7 +1131,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -992,7 +1142,7 @@ namespace OpenIddict.Server.FunctionalTests
         [InlineData("code token")]
         [InlineData("id_token token")]
         [InlineData("token")]
-        public async Task ValidateAuthorizationRequest_AnAccessTokenCannotBeReturnedWhenClientIsConfidential(string type)
+        public async Task ValidateAuthorizationRequest_AnAccessTokenIsNotReturnedWhenClientIsConfidential(string type)
         {
             // Arrange
             var application = new OpenIddictApplication();
@@ -1004,12 +1154,17 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create<string>());
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1023,7 +1178,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not valid for this client application.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2043(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2043), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()), Times.Once());
@@ -1048,12 +1204,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreEndpointPermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1065,7 +1223,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("This client application is not allowed to use the authorization endpoint.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2046), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2046), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -1076,31 +1235,31 @@ namespace OpenIddict.Server.FunctionalTests
         [InlineData(
             "code",
             new[] { Permissions.GrantTypes.AuthorizationCode },
-            "The client application is not allowed to use the authorization code flow.")]
+            SR.ID2047)]
         [InlineData(
             "code id_token",
             new[] { Permissions.GrantTypes.AuthorizationCode, Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the hybrid flow.")]
+            SR.ID2049)]
         [InlineData(
             "code id_token token",
             new[] { Permissions.GrantTypes.AuthorizationCode, Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the hybrid flow.")]
+            SR.ID2049)]
         [InlineData(
             "code token",
             new[] { Permissions.GrantTypes.AuthorizationCode, Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the hybrid flow.")]
+            SR.ID2049)]
         [InlineData(
             "id_token",
             new[] { Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the implicit flow.")]
+            SR.ID2048)]
         [InlineData(
             "id_token token",
             new[] { Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the implicit flow.")]
+            SR.ID2048)]
         [InlineData(
             "token",
             new[] { Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the implicit flow.")]
+            SR.ID2048)]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenGrantTypePermissionIsNotGranted(
             string type, string[] permissions, string description)
         {
@@ -1122,12 +1281,14 @@ namespace OpenIddict.Server.FunctionalTests
                 }
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreGrantTypePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1141,10 +1302,129 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal(description, response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(description), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(description), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, permissions[0], It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData("code")]
+        [InlineData("code id_token")]
+        [InlineData("code id_token token")]
+        [InlineData("code token")]
+        [InlineData("id_token")]
+        [InlineData("id_token token")]
+        [InlineData("none")]
+        [InlineData("token")]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenResponseTypePermissionIsNotGranted(string type)
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create<string>());
+            });
+
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.Configure(options => options.IgnoreResponseTypePermissions = false);
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(SR.FormatID2043(Parameters.ResponseType), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2043), response.ErrorUri);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData("code id_token token")]
+        [InlineData("code token")]
+        [InlineData("id_token token")]
+        [InlineData("token")]
+        public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenExplicitPermissionIsGranted(string type)
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create("rst:" + type));
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingRefreshTokenExpiration();
+
+                options.Configure(options => options.IgnoreResponseTypePermissions = false);
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.AccessToken);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.GetPermissionsAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -1170,12 +1450,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreGrantTypePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1188,7 +1470,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The client application is not allowed to use the 'offline_access' scope.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2065(Scopes.OfflineAccess), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2065), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
@@ -1209,10 +1492,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1224,7 +1509,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'redirect_uri' parameter is not valid for this client application.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2043(Parameters.RedirectUri), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2043), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
@@ -1253,12 +1539,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
                 options.RegisterScopes(Scopes.Email, Scopes.Profile);
                 options.Configure(options => options.IgnoreScopePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1271,7 +1559,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2051), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2051), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
@@ -1302,10 +1591,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1319,7 +1610,8 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'code_challenge' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID2054(Parameters.CodeChallenge), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2054), response.ErrorUri);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
@@ -1345,8 +1637,13 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingRefreshTokenExpiration();
+
                 options.Services.AddSingleton(manager);
 
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
@@ -1358,6 +1655,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1396,8 +1695,13 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingRefreshTokenExpiration();
+
                 options.Services.AddSingleton(manager);
 
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
@@ -1409,6 +1713,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1439,7 +1745,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1451,6 +1757,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1471,7 +1779,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1489,6 +1797,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1499,14 +1809,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1519,6 +1829,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1529,7 +1841,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -1543,7 +1855,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1555,6 +1867,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1575,7 +1889,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleAuthorizationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1593,6 +1907,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1603,14 +1919,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task HandleAuthorizationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1623,6 +1939,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1633,7 +1951,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
         [Theory]
@@ -1647,7 +1965,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_ResponseModeIsAutomaticallyInferred(string type, string mode)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1669,6 +1987,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1680,14 +2000,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(mode, (string) response["inferred_response_mode"]);
+            Assert.Equal(mode, (string?) response["inferred_response_mode"]);
         }
 
         [Fact]
         public async Task ApplyAuthorizationResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1714,6 +2034,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1724,14 +2046,14 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
         }
 
         [Fact]
         public async Task ApplyAuthorizationResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1758,6 +2080,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1768,8 +2092,8 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("custom_value", (string) response["custom_parameter"]);
-            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]) response["parameter_with_multiple_values"]);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
 
         [Fact]
@@ -1780,7 +2104,7 @@ namespace OpenIddict.Server.FunctionalTests
             // To emulate this behavior, the error property is manually set to null.
 
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1793,24 +2117,22 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
             {
                 return client.SendAsync(HttpMethod.Put, "/connect/authorize", new OpenIddictRequest());
             });
 
-            Assert.Equal(new StringBuilder()
-                .Append("The authorization response was not correctly applied. To apply authorization responses, ")
-                .Append("create a class implementing 'IOpenIddictServerHandler<ApplyAuthorizationResponseContext>' ")
-                .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID0030), exception.Message);
         }
 
         [Fact]
         public async Task ApplyAuthorizationResponse_DoesNotSetStateWhenUserIsNotRedirected()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1832,6 +2154,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1848,7 +2172,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_FlowsStateWhenRedirectUriIsUsed()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1861,6 +2185,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1879,7 +2205,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_DoesNotOverrideStateSetByApplicationCode()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1901,6 +2227,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1912,44 +2240,6 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal("custom_state", response.State);
-        }
-
-        [Fact]
-        public async Task ApplyAuthorizationResponse_UnsupportedResponseModeCausesAnError()
-        {
-            // Note: response_mode validation is deliberately delayed until an authorization response
-            // is returned to allow implementers to override the ApplyAuthorizationResponse event
-            // to support custom response modes. To test this scenario, the request is marked
-            // as validated and a signin grant is applied to return an authorization response.
-
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetClaim(Claims.Subject, "Bob le Magnifique");
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseMode = "unsupported_response_mode",
-                ResponseType = ResponseTypes.Code,
-                Scope = Scopes.OpenId
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_mode' parameter is not supported.", response.ErrorDescription);
         }
     }
 }

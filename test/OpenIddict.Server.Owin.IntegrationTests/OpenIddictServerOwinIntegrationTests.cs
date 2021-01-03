@@ -6,31 +6,40 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using OpenIddict.Abstractions;
-using OpenIddict.Server.FunctionalTests;
+using OpenIddict.Server.IntegrationTests;
 using Owin;
 using Xunit;
+using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlers;
+using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Owin.FunctionalTests
+namespace OpenIddict.Server.Owin.IntegrationTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
+        public OpenIddictServerOwinIntegrationTests(ITestOutputHelper outputHelper)
+            : base(outputHelper)
+        {
+        }
+
         [Fact]
         public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetTokenEndpointUris("/challenge/custom");
@@ -43,6 +52,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
@@ -128,12 +139,20 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         [InlineData("/.WELL-KNOWN/JWKS/SUBPATH", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/.well-known/jwks/subpath/", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/.WELL-KNOWN/JWKS/SUBPATH/", OpenIddictServerEndpointType.Unknown)]
-        public Task ProcessRequest_MatchesCorrespondingEndpoint(string path, OpenIddictServerEndpointType type)
+        public async Task ProcessRequest_MatchesCorrespondingEndpoint(string path, OpenIddictServerEndpointType type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SignOut();
+
+                        return default;
+                    }));
 
                 options.AddEventHandler<ProcessRequestContext>(builder =>
                     builder.UseInlineHandler(context =>
@@ -145,8 +164,10 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
-            return client.PostAsync(path, new OpenIddictRequest());
+            await client.PostAsync(path, new OpenIddictRequest());
         }
 
         [Theory]
@@ -159,12 +180,20 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         [InlineData("/custom/connect/userinfo", OpenIddictServerEndpointType.Userinfo)]
         [InlineData("/custom/.well-known/openid-configuration", OpenIddictServerEndpointType.Configuration)]
         [InlineData("/custom/.well-known/jwks", OpenIddictServerEndpointType.Cryptography)]
-        public Task ProcessRequest_AllowsOverridingEndpoint(string address, OpenIddictServerEndpointType type)
+        public async Task ProcessRequest_AllowsOverridingEndpoint(string address, OpenIddictServerEndpointType type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SignOut();
+
+                        return default;
+                    }));
 
                 options.AddEventHandler<ProcessRequestContext>(builder =>
                 {
@@ -183,8 +212,10 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
-            return client.PostAsync(address, new OpenIddictRequest());
+            await client.PostAsync(address, new OpenIddictRequest());
         }
 
         [Theory]
@@ -199,7 +230,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ProcessRequest_RejectsInsecureHttpRequests(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -207,12 +238,15 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                        .Configure(options => options.DisableTransportSecurityRequirement = false);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("This server only accepts HTTPS requests.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID2083), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2083), response.ErrorUri);
         }
 
         [Theory]
@@ -228,7 +262,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ProcessRequest_AllowsHandlingResponse(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -246,11 +280,13 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]!);
         }
 
         [Theory]
@@ -266,7 +302,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ProcessRequest_AllowsSkippingHandler(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -279,17 +315,23 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Magnifique", (string) response["name"]!);
         }
 
-        protected override OpenIddictServerIntegrationTestClient CreateClient(Action<OpenIddictServerBuilder> configuration = null)
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The caller is responsible of disposing the test server.")]
+        protected override ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
         {
             var services = new ServiceCollection();
             ConfigureServices(services);
+
+            services.AddLogging(options => options.AddXUnit(OutputHelper));
 
             services.AddOpenIddict()
                 .AddServer(options =>
@@ -328,7 +370,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
                     var transaction = context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
                     var response = transaction?.GetProperty<object>("custom_response");
-                    if (response != null)
+                    if (response is not null)
                     {
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
@@ -376,7 +418,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     else if (context.Request.Path == new PathString("/authenticate"))
                     {
                         var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
-                        if (result?.Identity == null)
+                        if (result?.Identity is null)
                         {
                             return;
                         }
@@ -385,7 +427,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                         await context.Response.WriteAsync(JsonSerializer.Serialize(
                             new OpenIddictResponse(result.Identity.Claims.GroupBy(claim => claim.Type)
                                 .Select(group => new KeyValuePair<string, string[]>(
-                                    group.Key, group.Select(claim => claim.Value).ToArray())))));
+                                    group.Key, group.Select(claim => claim.Value).ToArray()))!)));
                         return;
                     }
 
@@ -402,7 +444,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                 });
             });
 
-            return new OpenIddictServerIntegrationTestClient(server.HttpClient);
+            return new ValueTask<OpenIddictServerIntegrationTestServer>(
+                new OpenIddictServerOwinIntegrationTestServer(server));
         }
     }
 }
