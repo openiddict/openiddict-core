@@ -72,7 +72,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
         }
 
         [Fact]
-        public async Task HandleAuthorizationRequest_RequestIsPersistedInDistributedCache()
+        public async Task CacheAuthorizationRequest_RequestIsPersistedInDistributedCache()
         {
             // Arrange
             var cache = new Mock<IDistributedCache>();
@@ -102,7 +102,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests
                 ResponseType = ResponseTypes.Token
             });
 
-            var identifier = response[Parameters.RequestId]?.Value as string;
+            var identifier = (string?)response[Parameters.RequestId];
 
             // Assert
             Assert.Single(response.GetParameters());
