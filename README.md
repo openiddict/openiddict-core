@@ -20,11 +20,7 @@ which is based on OpenIddict, comes with sensible defaults and offers a built-in
 
 ## Getting started
 
-**To implement a custom OpenID Connect server using OpenIddict, the simplest option is to clone one of the official samples** from the [openiddict-samples repository](https://github.com/openiddict/openiddict-samples).
-
-## Documentation
-
-**The documentation – still a work in progress – can be found in the [dedicated repository](https://openiddict.github.io/openiddict-documentation)**.
+To implement a custom OpenID Connect server using OpenIddict, read **[Getting started](https://openiddict.github.io/openiddict-documentation/guide/getting-started.html)**.
 
 ## Compatibility matrix
 
