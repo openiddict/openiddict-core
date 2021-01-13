@@ -101,10 +101,18 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 
 **OpenIddict** is actively maintained by **[Kévin Chalet](https://github.com/kevinchalet)**. Contributions are welcome and can be submitted using pull requests.
 
-**Special thanks to the following sponsors for their incredible support**:
+**Special thanks to our sponsors for their incredible support**:
 
-- [David Hamilton](https://github.com/daveh101) from [DAM Good Media](https://www.damgoodmedia.com/)
-- [Christopher McCrum](https://github.com/chrisjmccrum) from [Data Citadel](http://www.datacitadel.com/)
+- [Sébastien Ros](https://github.com/sebastienros)
+- [mridentity](https://github.com/mridentity)
+- [Andrew](https://github.com/GDreyV)
+- [gustavdw](https://github.com/gustavdw)
+- [Gillardo](https://github.com/Gillardo)
+- [Dovydas Navickas](https://github.com/DovydasNavickas)
+- [Christian Schmitt](https://github.com/schmitch)
+- [Thomas W](https://github.com/ThreeScreenStudios)
+- [torfikarl](https://github.com/torfikarl)
+- [Leposava](https://github.com/CyberSquirrelSlo)
 
 ## License
 
