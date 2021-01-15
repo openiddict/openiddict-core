@@ -7,7 +7,7 @@
 ## What's OpenIddict?
 
 OpenIddict aims at providing a **versatile solution** to implement an **OpenID Connect server and token validation in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
-and starting in OpenIddict 3.0, **any ASP.NET 4.x or OWIN application too**.
+and starting in OpenIddict 3.0, **any ASP.NET 4.x application using Microsoft.Owin too**.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
 
@@ -35,9 +35,9 @@ To implement a custom OpenID Connect server using OpenIddict, read **[Getting st
 |                       |                      |                                         |                                         |                                         |
 | ASP.NET Core 5.0      | .NET 5.0             | :warning:                               | :heavy_check_mark:                      | :heavy_check_mark:                      |
 |                       |                      |                                         |                                         |                                         |
-| OWIN/Katana 4.1       | .NET Framework 4.6.1 | :x:                                     | :x:                                     | :heavy_check_mark: :information_source: |
-| OWIN/Katana 4.1       | .NET Framework 4.7.2 | :x:                                     | :x:                                     | :heavy_check_mark:                      |
-| OWIN/Katana 4.1       | .NET Framework 4.8   | :x:                                     | :x:                                     | :heavy_check_mark:                      |
+| Microsoft.Owin 4.1    | .NET Framework 4.6.1 | :x:                                     | :x:                                     | :heavy_check_mark: :information_source: |
+| Microsoft.Owin 4.1    | .NET Framework 4.7.2 | :x:                                     | :x:                                     | :heavy_check_mark:                      |
+| Microsoft.Owin 4.1    | .NET Framework 4.8   | :x:                                     | :x:                                     | :heavy_check_mark:                      |
 
 :exclamation: **Note: OpenIddict 2.x is no longer supported. Users are strongly encouraged to migrate to OpenIddict 3.0**.
 
