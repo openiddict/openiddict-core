@@ -963,9 +963,8 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    // Only the specified audience (i.e the resource server for an access token
-                    // and the client application for an identity token) can access the sensitive
-                    // application-specific claims contained in the introspected access/identity token.
+                    // Only specified audiences (that were explicitly defined as allowed resources) can access
+                    // the sensitive application-specific claims contained in the introspected access token.
                     if (!context.Principal.HasAudience(context.Request.ClientId))
                     {
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6105), context.Request.ClientId);
