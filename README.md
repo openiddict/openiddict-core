@@ -1,4 +1,4 @@
-﻿# OpenIddict :christmas_tree:
+﻿# OpenIddict
 
 ### The OpenID Connect stack you'll be addicted to.
 
