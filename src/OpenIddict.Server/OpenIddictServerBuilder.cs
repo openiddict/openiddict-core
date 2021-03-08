@@ -217,29 +217,21 @@ namespace Microsoft.Extensions.DependencyInjection
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
 
-            // Try to retrieve the development certificate from the specified store.
-            // If a certificate was found but is not yet or no longer valid, remove it
-            // from the store before creating and persisting a new encryption certificate.
-            var certificate = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
+            // Try to retrieve the existing development certificates from the specified store.
+            // If no valid existing certificate was found, create a new encryption certificate.
+            var certificates = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
                 .OfType<X509Certificate2>()
-                .SingleOrDefault();
+                .ToList();
 
-            if (certificate is not null && (certificate.NotBefore > DateTime.Now || certificate.NotAfter < DateTime.Now))
+            if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
             {
-                store.Remove(certificate);
-                certificate = null;
-            }
-
 #if SUPPORTS_CERTIFICATE_GENERATION
-            // If no appropriate certificate can be found, generate and persist a new certificate in the specified store.
-            if (certificate is null)
-            {
                 using var algorithm = RSA.Create(keySizeInBits: 2048);
 
                 var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
 
-                certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(2));
+                var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(2));
 
                 // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
                 // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
@@ -265,7 +257,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         flags |= X509KeyStorageFlags.Exportable;
                     }
 
-                    certificate = new X509Certificate2(data, string.Empty, flags);
+                    certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
                 }
 
                 finally
@@ -274,12 +266,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
 
                 store.Add(certificate);
+#else
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
+#endif
             }
 
-            return AddEncryptionCertificate(certificate);
-#else
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
-#endif
+            return Configure(options => options.EncryptionCredentials.AddRange(
+                from certificate in certificates
+                let key = new X509SecurityKey(certificate)
+                select new EncryptingCredentials(key, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)));
         }
 
         /// <summary>
@@ -654,29 +649,21 @@ namespace Microsoft.Extensions.DependencyInjection
             using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
 
-            // Try to retrieve the development certificate from the specified store.
-            // If a certificate was found but is not yet or no longer valid, remove it
-            // from the store before creating and persisting a new signing certificate.
-            var certificate = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
+            // Try to retrieve the existing development certificates from the specified store.
+            // If no valid existing certificate was found, create a new signing certificate.
+            var certificates = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, subject.Name, validOnly: false)
                 .OfType<X509Certificate2>()
-                .SingleOrDefault();
+                .ToList();
 
-            if (certificate is not null && (certificate.NotBefore > DateTime.Now || certificate.NotAfter < DateTime.Now))
+            if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
             {
-                store.Remove(certificate);
-                certificate = null;
-            }
-
 #if SUPPORTS_CERTIFICATE_GENERATION
-            // If no appropriate certificate can be found, generate and persist a new certificate in the specified store.
-            if (certificate is null)
-            {
                 using var algorithm = RSA.Create(keySizeInBits: 2048);
 
                 var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
 
-                certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(2));
+                var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(2));
 
                 // Note: setting the friendly name is not supported on Unix machines (including Linux and macOS).
                 // To ensure an exception is not thrown by the property setter, an OS runtime check is used here.
@@ -702,7 +689,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         flags |= X509KeyStorageFlags.Exportable;
                     }
 
-                    certificate = new X509Certificate2(data, string.Empty, flags);
+                    certificates.Insert(0, certificate = new X509Certificate2(data, string.Empty, flags));
                 }
 
                 finally
@@ -711,12 +698,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
 
                 store.Add(certificate);
+#else
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
+#endif
             }
 
-            return AddSigningCertificate(certificate);
-#else
-            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0264));
-#endif
+            return Configure(options => options.SigningCredentials.AddRange(
+                from certificate in certificates
+                let key = new X509SecurityKey(certificate)
+                select new SigningCredentials(key, SecurityAlgorithms.RsaSha256)));
         }
 
         /// <summary>
