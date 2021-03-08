@@ -670,8 +670,8 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             // Note: to avoid sending too many queries, the maximum number of elements
-            // that can be removed by a single call to PruneAsync() is limited to 50000.
-            for (var offset = 0; offset < 50_000; offset += 1_000)
+            // that can be removed by a single call to PruneAsync() is deliberately limited.
+            for (var index = 0; index < 1_000; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -688,7 +688,7 @@ namespace OpenIddict.EntityFrameworkCore
                            (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
                             token.ExpirationDate < DateTime.UtcNow
                      orderby token.Id
-                     select token).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
+                     select token).Take(1_000).ToListAsync(cancellationToken);
 
                 if (tokens.Count == 0)
                 {

@@ -585,8 +585,8 @@ namespace OpenIddict.MongoDb
                        select token.Id).ToListAsync(cancellationToken);
 
             // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
-            // maximum number of elements that can be removed by a single call to PruneAsync() is limited to 50000.
-            foreach (var buffer in Buffer(identifiers.Take(50_000), 1_000))
+            // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
+            foreach (var buffer in Buffer(identifiers.Take(1_000_000), 1_000))
             {
                 await collection.DeleteManyAsync(token => buffer.Contains(token.Id), cancellationToken);
             }

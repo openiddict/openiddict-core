@@ -701,7 +701,9 @@ namespace OpenIddict.EntityFrameworkCore
                 return null;
             }
 
-            for (var offset = 0; offset < 100_000; offset += 1_000)
+            // Note: to avoid sending too many queries, the maximum number of elements
+            // that can be removed by a single call to PruneAsync() is deliberately limited.
+            for (var index = 0; index < 1_000; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -717,7 +719,7 @@ namespace OpenIddict.EntityFrameworkCore
                            where authorization.Status != Statuses.Valid ||
                                 (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
                            orderby authorization.Id
-                           select authorization).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
+                           select authorization).Take(1_000).ToListAsync(cancellationToken);
 
                 if (authorizations.Count == 0)
                 {
