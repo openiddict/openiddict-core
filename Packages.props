@@ -45,6 +45,7 @@
     <PackageReference Update="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Update="System.Linq.Async" Version="4.1.1" />
     <PackageReference Update="System.Net.Http.Json" Version="3.2.1" />
+    <PackageReference Update="System.Text.Encodings.Web" Version="4.7.2" />
     <PackageReference Update="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
 
@@ -70,6 +71,7 @@
     <PackageReference Update="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Update="System.Linq.Async" Version="4.1.1" />
     <PackageReference Update="System.Net.Http.Json" Version="3.2.1" />
+    <PackageReference Update="System.Text.Encodings.Web" Version="4.7.2" />
     <PackageReference Update="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
 
@@ -94,6 +96,7 @@
     <PackageReference Update="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Update="System.Linq.Async" Version="5.0.0" />
     <PackageReference Update="System.Net.Http.Json" Version="5.0.0" />
+    <PackageReference Update="System.Text.Encodings.Web" Version="5.0.1" />
     <PackageReference Update="System.Text.Json" Version="5.0.1" />
   </ItemGroup>
 
