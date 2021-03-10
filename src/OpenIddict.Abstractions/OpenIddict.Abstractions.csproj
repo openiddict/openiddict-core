@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Primitives" />
     <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Text.Encodings.Web" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
