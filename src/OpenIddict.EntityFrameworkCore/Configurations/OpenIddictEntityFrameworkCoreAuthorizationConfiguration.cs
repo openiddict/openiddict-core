@@ -37,7 +37,7 @@ namespace OpenIddict.EntityFrameworkCore
             // Entity Framework would throw an exception due to the TKey generic parameter
             // being non-nullable when using value types like short, int, long or Guid.
 
-            builder.HasKey(authorization => authorization.Id);
+            builder.HasKey(authorization => authorization.Id!);
 
             builder.HasIndex(
                 nameof(OpenIddictEntityFrameworkCoreAuthorization.Application) + nameof(OpenIddictEntityFrameworkCoreApplication.Id),

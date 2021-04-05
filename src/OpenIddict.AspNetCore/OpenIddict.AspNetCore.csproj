@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Versatile OpenID Connect stack for ASP.NET Core 2.1, 3.1 and 5.0.</Description>
+    <Description>Versatile OpenID Connect stack for ASP.NET Core 2.1 and higher.</Description>
     <PackageTags>$(PackageTags);aspnetcore;server;validation</PackageTags>
   </PropertyGroup>
 
@@ -24,6 +24,7 @@
     <None Include="_._" Pack="true" PackagePath="lib\netcoreapp2.1\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\netcoreapp3.1\_._" />
     <None Include="_._" Pack="true" PackagePath="lib\net5.0\_._" />
+    <None Include="_._" Pack="true" PackagePath="lib\net6.0\_._" />
   </ItemGroup>
 
 </Project>
