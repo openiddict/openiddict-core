@@ -1,5 +1,8 @@
 using System;
+using System.Globalization;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -268,6 +271,53 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void AddDevelopmentEncryptionCertificate_ThrowsAnExceptionForNullSubject()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddDevelopmentEncryptionCertificate(subject: null!));
+            Assert.Equal("subject", exception.ParamName);
+        }
+
+#if SUPPORTS_CERTIFICATE_GENERATION
+        [Fact]
+        public void AddDevelopmentEncryptionCertificate_CanGenerateCertificate()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AddDevelopmentEncryptionCertificate();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Single(options.EncryptionCredentials);
+            Assert.Equal(SecurityAlgorithms.RsaOAEP, options.EncryptionCredentials[0].Alg);
+            Assert.Equal(SecurityAlgorithms.Aes256CbcHmacSha512, options.EncryptionCredentials[0].Enc);
+            Assert.NotNull(options.EncryptionCredentials[0].Key.KeyId);
+        }
+#else
+        [Fact]
+        public void AddDevelopmentEncryptionCertificate_ThrowsAnExceptionOnUnsupportedPlatforms()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<PlatformNotSupportedException>(() => builder.AddDevelopmentEncryptionCertificate(
+                subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))));
+
+            Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
+        }
+#endif
+
+        [Fact]
         public void AddDevelopmentSigningCertificate_ThrowsAnExceptionForNullSubject()
         {
             // Arrange
@@ -280,18 +330,6 @@ namespace OpenIddict.Server.Tests
                 builder.AddDevelopmentSigningCertificate(subject: null!);
             });
 
-            Assert.Equal("subject", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddDevelopmentEncryptionCertificate_ThrowsAnExceptionForNullSubject()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddDevelopmentEncryptionCertificate(subject: null!));
             Assert.Equal("subject", exception.ParamName);
         }
 
@@ -322,11 +360,8 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<PlatformNotSupportedException>(delegate
-            {
-                builder.AddDevelopmentSigningCertificate();
-                return GetOptions(services);
-            });
+            var exception = Assert.Throws<PlatformNotSupportedException>(() => builder.AddDevelopmentSigningCertificate(
+                subject: new X500DistinguishedName("CN=" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))));
 
             Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
         }
