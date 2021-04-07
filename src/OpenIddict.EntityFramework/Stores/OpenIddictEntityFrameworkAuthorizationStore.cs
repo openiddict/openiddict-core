@@ -633,9 +633,15 @@ namespace OpenIddict.EntityFramework
                 // and thus prevent them from being concurrently modified outside this block.
                 using var transaction = CreateTransaction();
 
+                // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
+                // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
+                // To work around this limitation, the threshold represented as a DateTimeOffset
+                // instance is manually converted to a UTC DateTime instance outside the query.
+                var date = threshold.UtcDateTime;
+
                 var authorizations =
                     await (from authorization in Authorizations.Include(authorization => authorization.Tokens)
-                           where authorization.CreationDate < threshold.UtcDateTime
+                           where authorization.CreationDate < date
                            where authorization.Status != Statuses.Valid ||
                                 (authorization.Type == AuthorizationTypes.AdHoc && !authorization.Tokens.Any())
                            orderby authorization.Id
