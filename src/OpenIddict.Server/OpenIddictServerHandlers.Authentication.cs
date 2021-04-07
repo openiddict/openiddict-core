@@ -1588,9 +1588,9 @@ namespace OpenIddict.Server
 
                     Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                    // If a code_challenge was provided, the request is always considered valid,
-                    // whether the proof key for code exchange requirement is enforced or not.
-                    if (!string.IsNullOrEmpty(context.Request.CodeChallenge))
+                    // If a code_challenge was provided or if no authorization code is requested, the request is always
+                    // considered valid, whether the proof key for code exchange requirement is enforced or not.
+                    if (!string.IsNullOrEmpty(context.Request.CodeChallenge) || !context.Request.HasResponseType(ResponseTypes.Code))
                     {
                         return;
                     }

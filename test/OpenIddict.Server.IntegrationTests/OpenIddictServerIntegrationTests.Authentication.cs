@@ -1734,6 +1734,63 @@ namespace OpenIddict.Server.IntegrationTests
                 Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Never());
         }
 
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenCodeIsNotRequestedWithPkceFeatureEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingRefreshTokenExpiration();
+
+                options.Services.AddSingleton(manager);
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Token
+            });
+
+            // Assert
+            Assert.Null(response.Code);
+            Assert.NotNull(response.AccessToken);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Never());
+        }
+
         [Theory]
         [InlineData("custom_error", null, null)]
         [InlineData("custom_error", "custom_description", null)]
