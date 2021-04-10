@@ -142,7 +142,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        ValueTask<TResult> GetAsync<TResult>(
+        ValueTask<TResult?> GetAsync<TResult>(
             Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        ValueTask<TResult> GetAsync<TState, TResult>(
+        ValueTask<TResult?> GetAsync<TState, TResult>(
             Func<IQueryable<object>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default);
 

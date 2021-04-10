@@ -355,7 +355,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <inheritdoc/>
-        public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
             Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {

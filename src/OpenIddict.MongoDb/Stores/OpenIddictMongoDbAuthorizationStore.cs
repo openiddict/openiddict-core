@@ -349,7 +349,7 @@ namespace OpenIddict.MongoDb
         }
 
         /// <inheritdoc/>
-        public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
