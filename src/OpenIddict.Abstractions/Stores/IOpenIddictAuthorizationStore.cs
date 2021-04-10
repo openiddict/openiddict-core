@@ -158,7 +158,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        ValueTask<TResult> GetAsync<TState, TResult>(
+        ValueTask<TResult?> GetAsync<TState, TResult>(
             Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken);
 

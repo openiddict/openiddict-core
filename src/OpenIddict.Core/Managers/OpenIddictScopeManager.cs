@@ -368,7 +368,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual ValueTask<TResult> GetAsync<TResult>(
+        public virtual ValueTask<TResult?> GetAsync<TResult>(
             Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
             if (query is null)
@@ -391,7 +391,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual ValueTask<TResult> GetAsync<TState, TResult>(
+        public virtual ValueTask<TResult?> GetAsync<TState, TResult>(
             Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken = default)
         {
@@ -1000,11 +1000,11 @@ namespace OpenIddict.Core
             => FindByResourceAsync(resource, cancellationToken);
 
         /// <inheritdoc/>
-        ValueTask<TResult> IOpenIddictScopeManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        ValueTask<TResult?> IOpenIddictScopeManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken) where TResult : default
             => GetAsync(query, cancellationToken);
 
         /// <inheritdoc/>
-        ValueTask<TResult> IOpenIddictScopeManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+        ValueTask<TResult?> IOpenIddictScopeManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken) where TResult : default
             => GetAsync(query, state, cancellationToken);
 
         /// <inheritdoc/>

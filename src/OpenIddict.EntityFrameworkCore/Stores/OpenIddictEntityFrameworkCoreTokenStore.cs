@@ -390,7 +390,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <inheritdoc/>
-        public virtual ValueTask<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
             Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
             TState state, CancellationToken cancellationToken)
         {
@@ -399,10 +399,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return new ValueTask<TResult>(query(
-                Tokens.Include(token => token.Application)
-                      .Include(token => token.Authorization)
-                      .AsTracking(), state).FirstOrDefaultAsync(cancellationToken));
+            return await query(Tokens.Include(token => token.Application)
+                .Include(token => token.Authorization)
+                .AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
