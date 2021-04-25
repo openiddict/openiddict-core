@@ -361,7 +361,7 @@ namespace OpenIddict.Server.Owin
 
                 else
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6137), request.Method);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -418,7 +418,7 @@ namespace OpenIddict.Server.Owin
                     // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
                     if (string.IsNullOrEmpty(request.ContentType))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6138), Headers.ContentType);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6138), Headers.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -431,7 +431,7 @@ namespace OpenIddict.Server.Owin
                     // May have media/type; charset=utf-8, allow partial match.
                     if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -446,7 +446,7 @@ namespace OpenIddict.Server.Owin
 
                 else
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6137), request.Method);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -496,7 +496,7 @@ namespace OpenIddict.Server.Owin
                     // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
                     if (string.IsNullOrEmpty(request.ContentType))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6138), Headers.ContentType);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6138), Headers.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -509,7 +509,7 @@ namespace OpenIddict.Server.Owin
                     // May have media/type; charset=utf-8, allow partial match.
                     if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6139), Headers.ContentType, request.ContentType);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -524,7 +524,7 @@ namespace OpenIddict.Server.Owin
 
                 else
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6137), request.Method);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.Method);
 
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -583,7 +583,7 @@ namespace OpenIddict.Server.Owin
                 if (!string.IsNullOrEmpty(context.Transaction.Request.ClientAssertion) ||
                     !string.IsNullOrEmpty(context.Transaction.Request.ClientSecret))
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6140));
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6140));
 
                     context.Reject(
                         error: Errors.InvalidRequest,
