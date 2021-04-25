@@ -335,7 +335,7 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(context.Request.AccessToken))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6131), Parameters.AccessToken);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6131), Parameters.AccessToken);
 
                         context.Reject(
                             error: Errors.MissingToken,

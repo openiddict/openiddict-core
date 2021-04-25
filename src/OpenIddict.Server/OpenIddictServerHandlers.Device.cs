@@ -353,7 +353,7 @@ namespace OpenIddict.Server
                     // See https://tools.ietf.org/html/rfc8628#section-3.1 for more information.
                     if (string.IsNullOrEmpty(context.ClientId))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6056));
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6056));
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -472,7 +472,7 @@ namespace OpenIddict.Server
                     // If at least one scope was not recognized, return an error.
                     if (scopes.Count != 0)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6057), scopes);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6057), scopes);
 
                         context.Reject(
                             error: Errors.InvalidScope,
@@ -524,7 +524,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application is null)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6058), context.ClientId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6058), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -583,7 +583,7 @@ namespace OpenIddict.Server
                         // Reject device requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID6059), context.ClientId);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6059), context.ClientId);
 
                             context.Reject(
                                 error: Errors.InvalidClient,
@@ -599,7 +599,7 @@ namespace OpenIddict.Server
                     // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
                     if (string.IsNullOrEmpty(context.ClientSecret))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6060), context.ClientId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6060), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -662,7 +662,7 @@ namespace OpenIddict.Server
 
                     if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6061), context.ClientId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6061), context.ClientId);
 
                         context.Reject(
                             error: Errors.InvalidClient,
@@ -720,7 +720,7 @@ namespace OpenIddict.Server
                     // Reject the request if the application is not allowed to use the device endpoint.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Device))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6062), context.ClientId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6062), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -776,7 +776,7 @@ namespace OpenIddict.Server
                     // Reject the request if the application is not allowed to use the device code grant.
                     if (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.DeviceCode))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6118), context.ClientId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6118), context.ClientId);
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
@@ -791,7 +791,7 @@ namespace OpenIddict.Server
                     if (context.Request.HasScope(Scopes.OfflineAccess) &&
                        !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6120), context.ClientId, Scopes.OfflineAccess);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6120), context.ClientId, Scopes.OfflineAccess);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -858,7 +858,7 @@ namespace OpenIddict.Server
                         // Reject the request if the application is not allowed to use the iterated scope.
                         if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID6063), context.ClientId, scope);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6063), context.ClientId, scope);
 
                             context.Reject(
                                 error: Errors.InvalidRequest,

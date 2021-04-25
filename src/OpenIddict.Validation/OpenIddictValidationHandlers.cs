@@ -660,7 +660,7 @@ namespace OpenIddict.Validation
                 var date = context.Principal.GetExpirationDate();
                 if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6156));
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6156));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -711,7 +711,7 @@ namespace OpenIddict.Validation
                 var audiences = context.Principal.GetAudiences();
                 if (audiences.IsDefaultOrEmpty)
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6157));
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6157));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -724,7 +724,7 @@ namespace OpenIddict.Validation
                 // If the access token doesn't include any registered audience, return an error.
                 if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6158));
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6158));
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -783,7 +783,7 @@ namespace OpenIddict.Validation
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token is null || !await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6005), identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), identifier);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -847,7 +847,7 @@ namespace OpenIddict.Validation
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
                 if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6006), identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), identifier);
 
                     context.Reject(
                         error: Errors.InvalidToken,

@@ -110,7 +110,7 @@ namespace OpenIddict.Server.AspNetCore
                     var token = await _cache.GetStringAsync(Cache.AuthorizationRequest + context.Request.RequestId);
                     if (token is null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6146), Parameters.RequestId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6146), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -128,7 +128,7 @@ namespace OpenIddict.Server.AspNetCore
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6146), Parameters.RequestId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6146), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,

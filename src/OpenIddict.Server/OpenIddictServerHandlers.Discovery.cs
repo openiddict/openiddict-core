@@ -942,7 +942,7 @@ namespace OpenIddict.Server
                         // See https://tools.ietf.org/html/rfc7517#section-4.1
                         if (string.IsNullOrEmpty(key.Kty))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID6070), JsonWebKeyParameterNames.Kty);
+                            context.Logger.LogWarning(SR.GetResourceString(SR.ID6070), JsonWebKeyParameterNames.Kty);
 
                             continue;
                         }

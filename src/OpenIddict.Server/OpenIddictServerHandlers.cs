@@ -942,7 +942,7 @@ namespace OpenIddict.Server
                     {
                         if (!context.Request.IsRefreshTokenGrantType() || !await IsReusableAsync(token))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID6002), identifier);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), identifier);
 
                             context.Reject(
                                 error: context.EndpointType switch
@@ -988,7 +988,7 @@ namespace OpenIddict.Server
                         // If the device code is not marked as valid yet, return an authorization_pending error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Inactive))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID6003), identifier);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6003), identifier);
 
                             context.Reject(
                                 error: Errors.AuthorizationPending,
@@ -1001,7 +1001,7 @@ namespace OpenIddict.Server
                         // If the device code is marked as rejected, return an access_denied error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Rejected))
                         {
-                            context.Logger.LogError(SR.GetResourceString(SR.ID6004), identifier);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6004), identifier);
 
                             context.Reject(
                                 error: Errors.AccessDenied,
@@ -1015,7 +1015,7 @@ namespace OpenIddict.Server
 
                 if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6005), identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), identifier);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -1135,7 +1135,7 @@ namespace OpenIddict.Server
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
                 if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogError(SR.GetResourceString(SR.ID6006), identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), identifier);
 
                     context.Reject(
                         error: context.EndpointType switch
