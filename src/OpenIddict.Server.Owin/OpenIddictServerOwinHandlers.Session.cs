@@ -107,7 +107,7 @@ namespace OpenIddict.Server.Owin
                     var token = await _cache.GetStringAsync(Cache.LogoutRequest + context.Request.RequestId);
                     if (token is null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -125,7 +125,7 @@ namespace OpenIddict.Server.Owin
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
 
                         context.Reject(
                             error: Errors.InvalidRequest,

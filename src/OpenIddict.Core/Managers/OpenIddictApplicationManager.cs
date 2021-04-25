@@ -1277,7 +1277,7 @@ namespace OpenIddict.Core
 
             if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
             {
-                Logger.LogWarning(SR.GetResourceString(SR.ID6161), await GetClientIdAsync(application, cancellationToken));
+                Logger.LogInformation(SR.GetResourceString(SR.ID6161), await GetClientIdAsync(application, cancellationToken));
 
                 return false;
             }
@@ -1318,7 +1318,7 @@ namespace OpenIddict.Core
                 }
             }
 
-            Logger.LogWarning(SR.GetResourceString(SR.ID6162), address, await GetClientIdAsync(application, cancellationToken));
+            Logger.LogInformation(SR.GetResourceString(SR.ID6162), address, await GetClientIdAsync(application, cancellationToken));
 
             return false;
         }

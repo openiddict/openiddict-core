@@ -334,7 +334,7 @@ namespace OpenIddict.Server
                     // If an optional post_logout_redirect_uri was provided, validate it.
                     if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6126), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6126), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -346,7 +346,7 @@ namespace OpenIddict.Server
 
                     if (!string.IsNullOrEmpty(uri.Fragment))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6127), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6127), Parameters.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
@@ -397,7 +397,7 @@ namespace OpenIddict.Server
 
                     if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                     {
-                        context.Logger.LogError(SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
 
                         context.Reject(
                             error: Errors.InvalidRequest,
