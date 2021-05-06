@@ -223,6 +223,7 @@ namespace OpenIddict.Core
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
                 ApplicationId = client,
+                CreationDate = DateTimeOffset.UtcNow,
                 Principal = principal,
                 Status = Statuses.Valid,
                 Subject = subject,
