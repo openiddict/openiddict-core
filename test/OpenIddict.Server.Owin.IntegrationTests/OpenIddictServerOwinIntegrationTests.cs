@@ -23,6 +23,7 @@ using Xunit;
 using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlers;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -33,6 +34,107 @@ namespace OpenIddict.Server.Owin.IntegrationTests
         public OpenIddictServerOwinIntegrationTests(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_CreationDateIsMappedToIssuedUtc()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate/properties");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetCreationDate(new DateTimeOffset(2020, 01, 01, 00, 00, 00, TimeSpan.Zero));
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.GetAsync("/authenticate/properties", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            var properties = new AuthenticationProperties(response.GetParameters()
+                .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+
+            Assert.Equal(new DateTimeOffset(2020, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.IssuedUtc);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_ExpirationDateIsMappedToIssuedUtc()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate/properties");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetExpirationDate(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero));
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.GetAsync("/authenticate/properties", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            var properties = new AuthenticationProperties(response.GetParameters()
+                .ToDictionary(parameter => parameter.Key, parameter => (string?) parameter.Value));
+
+            Assert.Equal(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.ExpiresUtc);
         }
 
         [Fact]
@@ -423,11 +525,25 @@ namespace OpenIddict.Server.Owin.IntegrationTests
                             return;
                         }
 
+                        var claims = result.Identity.Claims.GroupBy(claim => claim.Type)
+                            .Select(group => new KeyValuePair<string, string?[]?>(
+                                group.Key, group.Select(claim => claim.Value).ToArray()));
+
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsync(JsonSerializer.Serialize(
-                            new OpenIddictResponse(result.Identity.Claims.GroupBy(claim => claim.Type)
-                                .Select(group => new KeyValuePair<string, string[]>(
-                                    group.Key, group.Select(claim => claim.Value).ToArray()))!)));
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));
+                        return;
+                    }
+
+                    else if (context.Request.Path == new PathString("/authenticate/properties"))
+                    {
+                        var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
+                        if (result?.Properties is null)
+                        {
+                            return;
+                        }
+
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(result.Properties.Dictionary)));
                         return;
                     }
 

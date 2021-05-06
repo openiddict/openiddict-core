@@ -159,7 +159,12 @@ namespace OpenIddict.Validation.AspNetCore
 
                 // Store the token to allow any ASP.NET Core component (e.g a controller)
                 // to retrieve it (e.g to make an API request to another application).
-                var properties = new AuthenticationProperties();
+                var properties = new AuthenticationProperties
+                {
+                    ExpiresUtc = context.Principal.GetExpirationDate(),
+                    IssuedUtc = context.Principal.GetCreationDate()
+                };
+
                 properties.StoreTokens(new[]
                 {
                     new AuthenticationToken
