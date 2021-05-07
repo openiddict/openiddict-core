@@ -29,7 +29,8 @@ namespace Mvc.Server.Helpers
                 return false;
             }
 
-            if (!routeContext.HttpContext.Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+            if (!routeContext.HttpContext.Request.ContentType.StartsWith("application/xwwwformurlencoded", StringComparison.OrdinalIgnoreCase) &&
+                !routeContext.HttpContext.Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
