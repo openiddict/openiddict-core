@@ -249,7 +249,7 @@ namespace OpenIddict.Server.AspNetCore
 
                     // Create a new GET authorization request containing only the request_id parameter.
                     var address = QueryHelpers.AddQueryString(
-                        uri: request.Scheme + "://" + request.Host + request.PathBase + request.Path,
+                        uri: request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase + request.Path,
                         name: Parameters.RequestId,
                         value: context.Request.RequestId);
 
