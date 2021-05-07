@@ -115,7 +115,7 @@ namespace OpenIddict.Validation.AspNetCore
                     return default;
                 }
 
-                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
+                if (!Uri.TryCreate(request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
                     !issuer.IsWellFormedOriginalString())
                 {
                     context.Reject(

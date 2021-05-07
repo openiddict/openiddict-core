@@ -176,7 +176,11 @@ namespace OpenIddict.Server.Owin
                 var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [context.Principal.GetTokenType()!] = context.Token
-                });
+                })
+                {
+                    ExpiresUtc = context.Principal.GetExpirationDate(),
+                    IssuedUtc = context.Principal.GetCreationDate()
+                };
 
                 return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, properties);
             }

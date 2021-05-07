@@ -127,13 +127,17 @@ namespace OpenIddict.Server.AspNetCore
                         var address = addresses[index];
                         if (address.IsAbsoluteUri)
                         {
-                            if (!string.Equals(address.Scheme, request.Scheme, StringComparison.OrdinalIgnoreCase))
+                            // If the request host is not available (e.g because HTTP/1.0 was used), ignore absolute URLs.
+                            if (!request.Host.HasValue)
                             {
                                 continue;
                             }
 
-                            var host = HostString.FromUriComponent(address);
-                            if (host != request.Host)
+                            // Create a Uri instance using the request scheme and raw host and compare the two base addresses.
+                            if (!Uri.TryCreate(request.Scheme + Uri.SchemeDelimiter + request.Host, UriKind.Absolute, out Uri? uri) ||
+                                !uri.IsWellFormedOriginalString() || uri.Port != address.Port ||
+                                !string.Equals(uri.Scheme, address.Scheme, StringComparison.OrdinalIgnoreCase) ||
+                                !string.Equals(uri.Host, address.Host, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
@@ -219,7 +223,7 @@ namespace OpenIddict.Server.AspNetCore
                     return default;
                 }
 
-                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
+                if (!Uri.TryCreate(request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
                     !issuer.IsWellFormedOriginalString())
                 {
                     context.Reject(
