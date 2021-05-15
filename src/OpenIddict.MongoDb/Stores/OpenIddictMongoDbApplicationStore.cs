@@ -105,6 +105,8 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(application));
             }
 
+            application.Id = keyGenerator.Generate();
+
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
