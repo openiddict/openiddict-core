@@ -21,6 +21,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
+using OpenIddict.MongoDb.KeyGenerators;
 using OpenIddict.MongoDb.Models;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -30,13 +31,34 @@ namespace OpenIddict.MongoDb
     /// Provides methods allowing to manage the applications stored in a database.
     /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplicationStore<TApplication>
+    public class OpenIddictMongoDbApplicationStore<TApplication> : OpenIddictMongoDbApplicationStore<TApplication, ObjectId>, IOpenIddictApplicationStore<TApplication>
         where TApplication : OpenIddictMongoDbApplication
     {
         public OpenIddictMongoDbApplicationStore(
             IOpenIddictMongoDbContext context,
             IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            : base(ObjectIdKeyGenerator.Default, context, options)
         {
+        }
+    }
+
+    /// <summary>
+    /// Provides methods allowing to manage the applications stored in a database.
+    /// </summary>
+    /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+    /// <typeparam name="TKey">The type that is used to store keys.</typeparam>
+    public class OpenIddictMongoDbApplicationStore<TApplication, TKey> : IOpenIddictApplicationStore<TApplication>
+        where TApplication : OpenIddictMongoDbApplication<TKey>
+        where TKey : notnull
+    {
+        private readonly IKeyGenerator<TKey> keyGenerator;
+
+        public OpenIddictMongoDbApplicationStore(
+            IKeyGenerator<TKey> keyGenerator,
+            IOpenIddictMongoDbContext context,
+            IOptionsMonitor<OpenIddictMongoDbOptions> options)
+        {
+            this.keyGenerator = keyGenerator;
             Context = context;
             Options = options;
         }
@@ -101,19 +123,19 @@ namespace OpenIddict.MongoDb
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             if ((await collection.DeleteOneAsync(entity =>
-                entity.Id == application.Id &&
+                Equals(entity.Id, application.Id) &&
                 entity.ConcurrencyToken == application.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0239));
             }
 
             // Delete the authorizations associated with the application.
-            await database.GetCollection<OpenIddictMongoDbAuthorization>(Options.CurrentValue.AuthorizationsCollectionName)
-                .DeleteManyAsync(authorization => authorization.ApplicationId == application.Id, cancellationToken);
+            await database.GetCollection<OpenIddictMongoDbAuthorization<TKey>>(Options.CurrentValue.AuthorizationsCollectionName)
+                .DeleteManyAsync(authorization => Equals(authorization.ApplicationId, application.Id), cancellationToken);
 
             // Delete the tokens associated with the application.
-            await database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName)
-                .DeleteManyAsync(token => token.ApplicationId == application.Id, cancellationToken);
+            await database.GetCollection<OpenIddictMongoDbToken<TKey>>(Options.CurrentValue.TokensCollectionName)
+                .DeleteManyAsync(token => Equals(token.ApplicationId, application.Id), cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -141,8 +163,9 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
-            return await collection.Find(application => application.Id ==
-                ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
+            var parsedId = keyGenerator.Parse(identifier);
+
+            return await collection.Find(application => Equals(application.Id, parsedId)).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -669,7 +692,7 @@ namespace OpenIddict.MongoDb
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             if ((await collection.ReplaceOneAsync(entity =>
-                entity.Id == application.Id &&
+                Equals(entity.Id, application.Id) &&
                 entity.ConcurrencyToken == timestamp, application, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0239));

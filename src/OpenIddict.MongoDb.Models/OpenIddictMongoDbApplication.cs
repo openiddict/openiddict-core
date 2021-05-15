@@ -12,13 +12,22 @@ using System.Globalization;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 namespace OpenIddict.MongoDb.Models
 {
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
     [DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; Type = {Type,nq}")]
-    public class OpenIddictMongoDbApplication
+    public class OpenIddictMongoDbApplication : OpenIddictMongoDbApplication<ObjectId>
+    {
+    }
+    /// <summary>
+    /// Represents an OpenIddict application.
+    /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; Type = {Type,nq}")]
+    public class OpenIddictMongoDbApplication<TKey> where TKey : notnull
     {
         /// <summary>
         /// Gets or sets the client identifier associated with the current application.
@@ -63,7 +72,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the unique identifier associated with the current application.
         /// </summary>
         [BsonId, BsonRequired]
-        public virtual ObjectId Id { get; set; }
+        public virtual TKey Id { get; set; }
 
         /// <summary>
         /// Gets or sets the permissions associated with the current application.

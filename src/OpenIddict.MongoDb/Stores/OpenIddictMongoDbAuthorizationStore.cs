@@ -20,6 +20,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
+using OpenIddict.MongoDb.KeyGenerators;
 using OpenIddict.MongoDb.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -30,13 +31,34 @@ namespace OpenIddict.MongoDb
     /// Provides methods allowing to manage the authorizations stored in a database.
     /// </summary>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAuthorizationStore<TAuthorization>
+    public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : OpenIddictMongoDbAuthorizationStore<TAuthorization, ObjectId>, IOpenIddictAuthorizationStore<TAuthorization>
         where TAuthorization : OpenIddictMongoDbAuthorization
     {
         public OpenIddictMongoDbAuthorizationStore(
             IOpenIddictMongoDbContext context,
             IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            : base(ObjectIdKeyGenerator.Default, context, options)
         {
+        }
+    }
+
+    /// <summary>
+    /// Provides methods allowing to manage the authorizations stored in a database.
+    /// </summary>
+    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+    /// <typeparam name="TKey">The type that is used to store keys.</typeparam>
+    public class OpenIddictMongoDbAuthorizationStore<TAuthorization, TKey> : IOpenIddictAuthorizationStore<TAuthorization>
+        where TAuthorization : OpenIddictMongoDbAuthorization<TKey>
+        where TKey : notnull
+    {
+        private readonly IKeyGenerator<TKey> keyGenerator;
+
+        public OpenIddictMongoDbAuthorizationStore(
+            IKeyGenerator<TKey> keyGenerator,
+            IOpenIddictMongoDbContext context,
+            IOptionsMonitor<OpenIddictMongoDbOptions> options)
+        {
+            this.keyGenerator = keyGenerator;
             Context = context;
             Options = options;
         }
@@ -101,15 +123,15 @@ namespace OpenIddict.MongoDb
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
             if ((await collection.DeleteOneAsync(entity =>
-                entity.Id == authorization.Id &&
+                Equals(entity.Id, authorization.Id) &&
                 entity.ConcurrencyToken == authorization.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0241));
             }
 
             // Delete the tokens associated with the authorization.
-            await database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName)
-                .DeleteManyAsync(token => token.AuthorizationId == authorization.Id, cancellationToken);
+            await database.GetCollection<OpenIddictMongoDbToken<TKey>>(Options.CurrentValue.TokensCollectionName)
+                .DeleteManyAsync(token => Equals(token.AuthorizationId, authorization.Id), cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -133,9 +155,11 @@ namespace OpenIddict.MongoDb
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
+                var parsedApplicationId = keyGenerator.Parse(client);
+
                 await foreach (var authorization in collection.Find(authorization =>
                     authorization.Subject == subject &&
-                    authorization.ApplicationId == ObjectId.Parse(client)).ToAsyncEnumerable(cancellationToken))
+                    Equals(authorization.ApplicationId, parsedApplicationId)).ToAsyncEnumerable(cancellationToken))
                 {
                     yield return authorization;
                 }
@@ -169,9 +193,11 @@ namespace OpenIddict.MongoDb
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
+                var parsedApplicationId = keyGenerator.Parse(client);
+
                 await foreach (var authorization in collection.Find(authorization =>
                     authorization.Subject == subject &&
-                    authorization.ApplicationId == ObjectId.Parse(client) &&
+                    Equals(authorization.ApplicationId, parsedApplicationId) &&
                     authorization.Status == status).ToAsyncEnumerable(cancellationToken))
                 {
                     yield return authorization;
@@ -211,9 +237,11 @@ namespace OpenIddict.MongoDb
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
+                var parsedApplicationId = keyGenerator.Parse(client);
+
                 await foreach (var authorization in collection.Find(authorization =>
                     authorization.Subject == subject &&
-                    authorization.ApplicationId == ObjectId.Parse(client) &&
+                    Equals(authorization.ApplicationId, parsedApplicationId) &&
                     authorization.Status == status &&
                     authorization.Type == type).ToAsyncEnumerable(cancellationToken))
                 {
@@ -255,11 +283,13 @@ namespace OpenIddict.MongoDb
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
+                var parsedApplicationId = keyGenerator.Parse(client);
+
                 // Note: Enumerable.All() is deliberately used without the extension method syntax to ensure
                 // ImmutableArrayExtensions.All() (which is not supported by MongoDB) is not used instead.
                 await foreach (var authorization in collection.Find(authorization =>
                     authorization.Subject == subject &&
-                    authorization.ApplicationId == ObjectId.Parse(client) &&
+                    Equals(authorization.ApplicationId, parsedApplicationId) &&
                     authorization.Status == status &&
                     authorization.Type == type &&
                     Enumerable.All(scopes, scope => authorization.Scopes.Contains(scope))).ToAsyncEnumerable(cancellationToken))
@@ -285,8 +315,10 @@ namespace OpenIddict.MongoDb
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
+                var parsedApplicationId = keyGenerator.Parse(identifier);
+
                 await foreach (var authorization in collection.Find(authorization =>
-                    authorization.ApplicationId == ObjectId.Parse(identifier)).ToAsyncEnumerable(cancellationToken))
+                    Equals(authorization.ApplicationId, parsedApplicationId)).ToAsyncEnumerable(cancellationToken))
                 {
                     yield return authorization;
                 }
@@ -304,7 +336,9 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-            return await collection.Find(authorization => authorization.Id == ObjectId.Parse(identifier))
+            var parsedId = keyGenerator.Parse(identifier);
+
+            return await collection.Find(authorization => Equals(authorization.Id, parsedId))
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
@@ -340,7 +374,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (authorization.ApplicationId == ObjectId.Empty)
+            if (keyGenerator.IsUndefined(authorization.ApplicationId))
             {
                 return new ValueTask<string?>(result: null);
             }
@@ -540,7 +574,7 @@ namespace OpenIddict.MongoDb
 
             var identifiers =
                 await (from authorization in collection.AsQueryable()
-                       join token in database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName).AsQueryable()
+                       join token in database.GetCollection<OpenIddictMongoDbToken<TKey>>(Options.CurrentValue.TokensCollectionName).AsQueryable()
                                   on authorization.Id equals token.AuthorizationId into tokens
                        where authorization.CreationDate < threshold.UtcDateTime
                        where authorization.Status != Statuses.Valid ||
@@ -589,12 +623,12 @@ namespace OpenIddict.MongoDb
 
             if (!string.IsNullOrEmpty(identifier))
             {
-                authorization.ApplicationId = ObjectId.Parse(identifier);
+                authorization.ApplicationId = keyGenerator.Parse(identifier);
             }
 
             else
             {
-                authorization.ApplicationId = ObjectId.Empty;
+                authorization.ApplicationId = keyGenerator.GenerateEmpty();
             }
 
             return default;
@@ -730,7 +764,7 @@ namespace OpenIddict.MongoDb
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
             if ((await collection.ReplaceOneAsync(entity =>
-                entity.Id == authorization.Id &&
+                Equals(entity.Id, authorization.Id) &&
                 entity.ConcurrencyToken == timestamp, authorization, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0241));

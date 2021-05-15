@@ -21,6 +21,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
+using OpenIddict.MongoDb.KeyGenerators;
 using OpenIddict.MongoDb.Models;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -30,13 +31,34 @@ namespace OpenIddict.MongoDb
     /// Provides methods allowing to manage the scopes stored in a database.
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-    public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
+    public class OpenIddictMongoDbScopeStore<TScope> : OpenIddictMongoDbScopeStore<TScope, ObjectId>, IOpenIddictScopeStore<TScope>
         where TScope : OpenIddictMongoDbScope
     {
         public OpenIddictMongoDbScopeStore(
             IOpenIddictMongoDbContext context,
             IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            : base(ObjectIdKeyGenerator.Default, context, options)
         {
+        }
+    }
+
+    /// <summary>
+    /// Provides methods allowing to manage the scopes stored in a database.
+    /// </summary>
+    /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+    /// <typeparam name="TKey">The type that is used to store keys.</typeparam>
+    public class OpenIddictMongoDbScopeStore<TScope, TKey> : IOpenIddictScopeStore<TScope>
+        where TScope : OpenIddictMongoDbScope<TKey>
+        where TKey : notnull
+    {
+        private readonly IKeyGenerator<TKey> keyGenerator;
+
+        public OpenIddictMongoDbScopeStore(
+            IKeyGenerator<TKey> keyGenerator,
+            IOpenIddictMongoDbContext context,
+            IOptionsMonitor<OpenIddictMongoDbOptions> options)
+        {
+            this.keyGenerator = keyGenerator;
             Context = context;
             Options = options;
         }
@@ -83,6 +105,8 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(scope));
             }
 
+            scope.Id = keyGenerator.Generate();
+
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
@@ -101,7 +125,7 @@ namespace OpenIddict.MongoDb
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
             if ((await collection.DeleteOneAsync(entity =>
-                entity.Id == scope.Id &&
+                Equals(entity.Id, scope.Id) &&
                 entity.ConcurrencyToken == scope.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245));
@@ -119,7 +143,9 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            return await collection.Find(scope => scope.Id == ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
+            var parsed = keyGenerator.Parse(identifier);
+
+            return await collection.Find(scope => Equals(scope.Id, parsed)).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -260,7 +286,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return new ValueTask<string?>(scope.Id.ToString());
+            return new ValueTask<string?>(scope.Id?.ToString());
         }
 
         /// <inheritdoc/>
@@ -521,7 +547,7 @@ namespace OpenIddict.MongoDb
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
             if ((await collection.ReplaceOneAsync(entity =>
-                entity.Id == scope.Id &&
+                Equals(entity.Id, scope.Id) &&
                 entity.ConcurrencyToken == timestamp, scope, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245));
