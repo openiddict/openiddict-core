@@ -51,6 +51,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped<IOpenIddictScopeStoreResolver, OpenIddictScopeStoreResolver>();
             builder.Services.TryAddScoped<IOpenIddictTokenStoreResolver, OpenIddictTokenStoreResolver>();
 
+            builder.Services.TryAddSingleton<IOpenIddictClientSecretHasher, OpenIddictClientSecretHasher>();
+
             builder.Services.TryAddScoped(provider =>
             {
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;

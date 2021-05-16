@@ -682,8 +682,9 @@ namespace OpenIddict.Core.Tests
                 IOpenIddictApplicationCache<CustomApplication> cache,
                 ILogger<OpenIddictApplicationManager<CustomApplication>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options,
-                IOpenIddictApplicationStoreResolver resolver)
-                : base(cache, logger, options, resolver)
+                IOpenIddictApplicationStoreResolver resolver,
+                IOpenIddictClientSecretHasher clientSecretHasher)
+                : base(cache, logger, options, resolver, clientSecretHasher)
             {
             }
         }
@@ -695,8 +696,9 @@ namespace OpenIddict.Core.Tests
                 IOpenIddictApplicationCache<TApplication> cache,
                 ILogger<OpenIddictApplicationManager<TApplication>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options,
-                IOpenIddictApplicationStoreResolver resolver)
-                : base(cache, logger, options, resolver)
+                IOpenIddictApplicationStoreResolver resolver,
+                IOpenIddictClientSecretHasher clientSecretHasher)
+                : base(cache, logger, options, resolver, clientSecretHasher)
             {
             }
         }
