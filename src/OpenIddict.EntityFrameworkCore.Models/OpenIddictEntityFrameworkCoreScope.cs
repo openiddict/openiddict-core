@@ -25,7 +25,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
     /// Represents an OpenIddict scope.
     /// </summary>
     [DebuggerDisplay("Id = {Id.ToString(),nq} ; Name = {Name,nq}")]
-    public class OpenIddictEntityFrameworkCoreScope<TKey> where TKey : IEquatable<TKey>
+    public class OpenIddictEntityFrameworkCoreScope<TKey> where TKey : notnull, IEquatable<TKey>
     {
         /// <summary>
         /// Gets or sets the concurrency token.

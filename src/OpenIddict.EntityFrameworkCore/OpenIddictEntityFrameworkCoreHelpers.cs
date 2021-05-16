@@ -45,7 +45,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static DbContextOptionsBuilder UseOpenIddict<TKey>(this DbContextOptionsBuilder builder)
-            where TKey : IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
             => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication<TKey>,
                                      OpenIddictEntityFrameworkCoreAuthorization<TKey>,
                                      OpenIddictEntityFrameworkCoreScope<TKey>,
@@ -67,7 +67,7 @@ namespace Microsoft.EntityFrameworkCore
             where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
             where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
-            where TKey : IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
         {
             if (builder is null)
             {
@@ -100,7 +100,7 @@ namespace Microsoft.EntityFrameworkCore
         /// </remarks>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict<TKey>(this ModelBuilder builder) where TKey : IEquatable<TKey>
+        public static ModelBuilder UseOpenIddict<TKey>(this ModelBuilder builder) where TKey : notnull, IEquatable<TKey>
             => builder.UseOpenIddict<OpenIddictEntityFrameworkCoreApplication<TKey>,
                                      OpenIddictEntityFrameworkCoreAuthorization<TKey>,
                                      OpenIddictEntityFrameworkCoreScope<TKey>,
@@ -121,7 +121,7 @@ namespace Microsoft.EntityFrameworkCore
             where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
             where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
-            where TKey : IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
         {
             if (builder is null)
             {

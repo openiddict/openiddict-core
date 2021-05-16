@@ -25,7 +25,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
     /// Represents an OpenIddict token.
     /// </summary>
     public class OpenIddictEntityFrameworkCoreToken<TKey> : OpenIddictEntityFrameworkCoreToken<TKey, OpenIddictEntityFrameworkCoreApplication<TKey>, OpenIddictEntityFrameworkCoreAuthorization<TKey>>
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
     }
 
@@ -34,7 +34,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
     /// </summary>
     [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
     public class OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
         where TApplication : class
         where TAuthorization : class
     {

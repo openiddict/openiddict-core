@@ -46,7 +46,7 @@ namespace System.Data.Entity
             where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkScope<TKey>
             where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
-            where TKey : IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
         {
             if (builder is null)
             {

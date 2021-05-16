@@ -23,7 +23,7 @@ namespace OpenIddict.EntityFramework
         where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
         where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
         where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkAuthorizationConfiguration()
         {

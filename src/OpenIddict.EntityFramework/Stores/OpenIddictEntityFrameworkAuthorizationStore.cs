@@ -60,7 +60,7 @@ namespace OpenIddict.EntityFramework
         where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
         where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
         where TContext : DbContext
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkAuthorizationStore(
             IMemoryCache cache,

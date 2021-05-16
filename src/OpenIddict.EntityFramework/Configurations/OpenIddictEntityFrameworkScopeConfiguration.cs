@@ -21,7 +21,7 @@ namespace OpenIddict.EntityFramework
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class OpenIddictEntityFrameworkScopeConfiguration<TScope, TKey> : EntityTypeConfiguration<TScope>
         where TScope : OpenIddictEntityFrameworkScope<TKey>
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkScopeConfiguration()
         {
