@@ -178,7 +178,7 @@ namespace OpenIddict.Core
 
             await Store.CreateAsync(application, cancellationToken);
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableApplicationCaching)
             {
                 await Cache.AddAsync(application, cancellationToken);
             }
@@ -253,7 +253,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableApplicationCaching)
             {
                 await Cache.RemoveAsync(application, cancellationToken);
             }
@@ -278,7 +278,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var application = Options.CurrentValue.DisableEntityCaching ?
+            var application = Options.CurrentValue.DisableApplicationCaching ?
                 await Store.FindByClientIdAsync(identifier, cancellationToken) :
                 await Cache.FindByClientIdAsync(identifier, cancellationToken);
 
@@ -315,7 +315,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var application = Options.CurrentValue.DisableEntityCaching ?
+            var application = Options.CurrentValue.DisableApplicationCaching ?
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
@@ -350,7 +350,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
-            var applications = Options.CurrentValue.DisableEntityCaching ?
+            var applications = Options.CurrentValue.DisableApplicationCaching ?
                 Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken) :
                 Cache.FindByPostLogoutRedirectUriAsync(address, cancellationToken);
 
@@ -392,7 +392,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
-            var applications = Options.CurrentValue.DisableEntityCaching ?
+            var applications = Options.CurrentValue.DisableApplicationCaching ?
                 Store.FindByRedirectUriAsync(address, cancellationToken) :
                 Cache.FindByRedirectUriAsync(address, cancellationToken);
 
@@ -1050,7 +1050,7 @@ namespace OpenIddict.Core
 
             await Store.UpdateAsync(application, cancellationToken);
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableApplicationCaching)
             {
                 await Cache.RemoveAsync(application, cancellationToken);
                 await Cache.AddAsync(application, cancellationToken);

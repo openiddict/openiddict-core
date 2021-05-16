@@ -423,7 +423,78 @@ namespace OpenIddict.Core.Tests
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
-            Assert.True(options.DisableEntityCaching);
+            Assert.True(options.DisableApplicationCaching);
+            Assert.True(options.DisableAuthorizationCaching);
+            Assert.True(options.DisableScopeCaching);
+            Assert.True(options.DisableTokenCaching);
+        }
+
+        [Fact]
+        public void DisableApplicationCaching_CachingIsCorrectlyDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableApplicationCaching();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.True(options.DisableApplicationCaching);
+        }
+
+        [Fact]
+        public void DisableAuthorizationCaching_CachingIsCorrectlyDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableAuthorizationCaching();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.True(options.DisableAuthorizationCaching);
+        }
+
+        [Fact]
+        public void DisableScopeCaching_CachingIsCorrectlyDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableScopeCaching();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.True(options.DisableScopeCaching);
+        }
+
+        [Fact]
+        public void DisableTokenCaching_CachingIsCorrectlyDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableTokenCaching();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.True(options.DisableTokenCaching);
         }
 
         [Fact]

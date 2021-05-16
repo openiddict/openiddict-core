@@ -52,7 +52,52 @@ namespace OpenIddict.Core
         /// Disabling entity caching may have a noticeable impact on the performance
         /// of your application and result in multiple queries being sent by the stores.
         /// </summary>
-        public bool DisableEntityCaching { get; set; }
+        [Obsolete("Use DisableApplicationCaching, DisableAuthorizationCaching, DisableScopeCaching and/or DisableTokenCaching")]
+        public bool DisableEntityCaching
+        {
+            get
+            {
+                return DisableApplicationCaching 
+                    && DisableAuthorizationCaching 
+                    && DisableScopeCaching 
+                    && DisableTokenCaching;
+            }
+            set
+            {
+                DisableApplicationCaching = value;
+                DisableAuthorizationCaching = value;
+                DisableScopeCaching = value;
+                DisableTokenCaching = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether appliction caching should be disabled.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        public bool DisableApplicationCaching { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether authorization caching should be disabled.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        public bool DisableAuthorizationCaching { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether authorization caching should be disabled.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        public bool DisableScopeCaching { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether authorization caching should be disabled.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        public bool DisableTokenCaching { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of cached entries allowed. When the threshold

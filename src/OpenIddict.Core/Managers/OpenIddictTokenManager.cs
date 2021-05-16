@@ -145,7 +145,7 @@ namespace OpenIddict.Core
 
             await Store.CreateAsync(token, cancellationToken);
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableTokenCaching)
             {
                 await Cache.AddAsync(token, cancellationToken);
             }
@@ -207,7 +207,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableTokenCaching)
             {
                 await Cache.RemoveAsync(token, cancellationToken);
             }
@@ -236,7 +236,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(client));
             }
 
-            var tokens = Options.CurrentValue.DisableEntityCaching ?
+            var tokens = Options.CurrentValue.DisableTokenCaching ?
                 Store.FindAsync(subject, client, cancellationToken) :
                 Cache.FindAsync(subject, client, cancellationToken);
 
@@ -290,7 +290,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
             }
 
-            var tokens = Options.CurrentValue.DisableEntityCaching ?
+            var tokens = Options.CurrentValue.DisableTokenCaching ?
                 Store.FindAsync(subject, client, status, cancellationToken) :
                 Cache.FindAsync(subject, client, status, cancellationToken);
 
@@ -350,7 +350,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
             }
 
-            var tokens = Options.CurrentValue.DisableEntityCaching ?
+            var tokens = Options.CurrentValue.DisableTokenCaching ?
                 Store.FindAsync(subject, client, status, type, cancellationToken) :
                 Cache.FindAsync(subject, client, status, type, cancellationToken);
 
@@ -391,7 +391,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var tokens = Options.CurrentValue.DisableEntityCaching ?
+            var tokens = Options.CurrentValue.DisableTokenCaching ?
                 Store.FindByApplicationIdAsync(identifier, cancellationToken) :
                 Cache.FindByApplicationIdAsync(identifier, cancellationToken);
 
@@ -432,7 +432,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var tokens = Options.CurrentValue.DisableEntityCaching ?
+            var tokens = Options.CurrentValue.DisableTokenCaching ?
                 Store.FindByAuthorizationIdAsync(identifier, cancellationToken) :
                 Cache.FindByAuthorizationIdAsync(identifier, cancellationToken);
 
@@ -475,7 +475,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var token = Options.CurrentValue.DisableEntityCaching ?
+            var token = Options.CurrentValue.DisableTokenCaching ?
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
@@ -515,7 +515,7 @@ namespace OpenIddict.Core
 
             identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
 
-            var token = Options.CurrentValue.DisableEntityCaching ?
+            var token = Options.CurrentValue.DisableTokenCaching ?
                 await Store.FindByReferenceIdAsync(identifier, cancellationToken) :
                 await Cache.FindByReferenceIdAsync(identifier, cancellationToken);
 
@@ -551,7 +551,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
             }
 
-            var tokens = Options.CurrentValue.DisableEntityCaching ?
+            var tokens = Options.CurrentValue.DisableTokenCaching ?
                 Store.FindBySubjectAsync(subject, cancellationToken) :
                 Cache.FindBySubjectAsync(subject, cancellationToken);
 
@@ -1191,7 +1191,7 @@ namespace OpenIddict.Core
 
             await Store.UpdateAsync(token, cancellationToken);
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableTokenCaching)
             {
                 await Cache.RemoveAsync(token, cancellationToken);
                 await Cache.AddAsync(token, cancellationToken);

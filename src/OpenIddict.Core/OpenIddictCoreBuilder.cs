@@ -668,7 +668,46 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
         public OpenIddictCoreBuilder DisableEntityCaching()
-            => Configure(options => options.DisableEntityCaching = true);
+            => DisableApplicationCaching()
+              .DisableAuthorizationCaching()
+              .DisableScopeCaching()
+              .DisableTokenCaching();
+
+        /// <summary>
+        /// Disables the scoped caching applied by the OpenIddict application manager.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder DisableApplicationCaching()
+            => Configure(options => options.DisableApplicationCaching = true);
+
+        /// <summary>
+        /// Disables the scoped caching applied by the OpenIddict authorization manager.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder DisableAuthorizationCaching()
+            => Configure(options => options.DisableAuthorizationCaching = true);
+
+        /// <summary>
+        /// Disables the scoped caching applied by the OpenIddict scope manager.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder DisableScopeCaching()
+            => Configure(options => options.DisableScopeCaching = true);
+
+        /// <summary>
+        /// Disables the scoped caching applied by the OpenIddict token manager.
+        /// Disabling entity caching may have a noticeable impact on the performance
+        /// of your application and result in multiple queries being sent by the stores.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder DisableTokenCaching()
+            => Configure(options => options.DisableTokenCaching = true);
 
         /// <summary>
         /// Configures OpenIddict to use the specified entity as the default application entity.

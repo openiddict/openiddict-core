@@ -130,7 +130,7 @@ namespace OpenIddict.Core
 
             await Store.CreateAsync(scope, cancellationToken);
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableScopeCaching)
             {
                 await Cache.AddAsync(scope, cancellationToken);
             }
@@ -192,7 +192,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableScopeCaching)
             {
                 await Cache.RemoveAsync(scope, cancellationToken);
             }
@@ -216,7 +216,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
             }
 
-            var scope = Options.CurrentValue.DisableEntityCaching ?
+            var scope = Options.CurrentValue.DisableScopeCaching ?
                 await Store.FindByIdAsync(identifier, cancellationToken) :
                 await Cache.FindByIdAsync(identifier, cancellationToken);
 
@@ -253,7 +253,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
             }
 
-            var scope = Options.CurrentValue.DisableEntityCaching ?
+            var scope = Options.CurrentValue.DisableScopeCaching ?
                 await Store.FindByNameAsync(name, cancellationToken) :
                 await Cache.FindByNameAsync(name, cancellationToken);
 
@@ -289,7 +289,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
             }
 
-            var scopes = Options.CurrentValue.DisableEntityCaching ?
+            var scopes = Options.CurrentValue.DisableScopeCaching ?
                 Store.FindByNamesAsync(names, cancellationToken) :
                 Cache.FindByNamesAsync(names, cancellationToken);
 
@@ -330,7 +330,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
             }
 
-            var scopes = Options.CurrentValue.DisableEntityCaching ?
+            var scopes = Options.CurrentValue.DisableScopeCaching ?
                 Store.FindByResourceAsync(resource, cancellationToken) :
                 Cache.FindByResourceAsync(resource, cancellationToken);
 
@@ -874,7 +874,7 @@ namespace OpenIddict.Core
 
             await Store.UpdateAsync(scope, cancellationToken);
 
-            if (!Options.CurrentValue.DisableEntityCaching)
+            if (!Options.CurrentValue.DisableScopeCaching)
             {
                 await Cache.RemoveAsync(scope, cancellationToken);
                 await Cache.AddAsync(scope, cancellationToken);
