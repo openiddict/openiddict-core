@@ -105,8 +105,6 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(token));
             }
 
-            token.Id = keyGenerator.Generate();
-
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
@@ -541,7 +539,11 @@ namespace OpenIddict.MongoDb
         {
             try
             {
-                return new ValueTask<TToken>(Activator.CreateInstance<TToken>());
+                var token = Activator.CreateInstance<TToken>();
+
+                token.Id = keyGenerator.Generate();
+
+                return new ValueTask<TToken>(token);
             }
 
             catch (MemberAccessException exception)

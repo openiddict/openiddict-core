@@ -105,8 +105,6 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            authorization.Id = keyGenerator.Generate();
-
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
@@ -505,7 +503,11 @@ namespace OpenIddict.MongoDb
         {
             try
             {
-                return new ValueTask<TAuthorization>(Activator.CreateInstance<TAuthorization>());
+                var authorization = Activator.CreateInstance<TAuthorization>();
+
+                authorization.Id = keyGenerator.Generate();
+
+                return new ValueTask<TAuthorization>(authorization);
             }
 
             catch (MemberAccessException exception)
