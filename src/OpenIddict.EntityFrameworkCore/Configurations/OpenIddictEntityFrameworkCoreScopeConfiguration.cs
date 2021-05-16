@@ -20,7 +20,7 @@ namespace OpenIddict.EntityFrameworkCore
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey> : IEntityTypeConfiguration<TScope>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public void Configure(EntityTypeBuilder<TScope> builder)
         {

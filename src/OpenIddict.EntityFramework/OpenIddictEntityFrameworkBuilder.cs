@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
             where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkScope<TKey>
             where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
-            where TKey : IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
         {
             // Note: unlike Entity Framework Core 1.x/2.x/3.x, Entity Framework 6.x
             // always throws an exception when using generic types as entity types.

@@ -49,7 +49,7 @@ namespace OpenIddict.EntityFrameworkCore
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictEntityFrameworkCoreScopeStore<TContext, TKey> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope<TKey>, TContext, TKey>
         where TContext : DbContext
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkCoreScopeStore(
             IMemoryCache cache,
@@ -69,7 +69,7 @@ namespace OpenIddict.EntityFrameworkCore
     public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TContext : DbContext
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkCoreScopeStore(
             IMemoryCache cache,

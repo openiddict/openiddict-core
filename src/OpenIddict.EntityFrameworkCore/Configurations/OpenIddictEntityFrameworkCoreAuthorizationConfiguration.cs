@@ -24,7 +24,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public void Configure(EntityTypeBuilder<TAuthorization> builder)
         {

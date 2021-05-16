@@ -57,7 +57,7 @@ namespace OpenIddict.EntityFrameworkCore
                                                 OpenIddictEntityFrameworkCoreApplication<TKey>,
                                                 OpenIddictEntityFrameworkCoreAuthorization<TKey>, TContext, TKey>
         where TContext : DbContext
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkCoreTokenStore(
             IMemoryCache cache,
@@ -81,7 +81,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
         where TContext : DbContext
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkCoreTokenStore(
             IMemoryCache cache,

@@ -53,7 +53,7 @@ namespace OpenIddict.EntityFramework
     public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
         where TScope : OpenIddictEntityFrameworkScope<TKey>
         where TContext : DbContext
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkScopeStore(
             IMemoryCache cache,

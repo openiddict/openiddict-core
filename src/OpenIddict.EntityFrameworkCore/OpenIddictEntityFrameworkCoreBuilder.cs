@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
         public OpenIddictEntityFrameworkCoreBuilder ReplaceDefaultEntities<TKey>()
-            where TKey : IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
             => ReplaceDefaultEntities<OpenIddictEntityFrameworkCoreApplication<TKey>,
                                       OpenIddictEntityFrameworkCoreAuthorization<TKey>,
                                       OpenIddictEntityFrameworkCoreScope<TKey>,
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
             where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
             where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
             where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
-            where TKey : IEquatable<TKey>
+            where TKey : notnull, IEquatable<TKey>
         {
             Services.Configure<OpenIddictCoreOptions>(options =>
             {

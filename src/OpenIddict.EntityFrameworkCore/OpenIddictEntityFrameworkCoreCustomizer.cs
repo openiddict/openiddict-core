@@ -20,7 +20,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
-        where TKey : IEquatable<TKey>
+        where TKey : notnull, IEquatable<TKey>
     {
         public OpenIddictEntityFrameworkCoreCustomizer(ModelCustomizerDependencies dependencies)
             : base(dependencies)
