@@ -393,7 +393,7 @@ namespace OpenIddict.MongoDb
                 return new ValueTask<string?>(result: null);
             }
 
-            return new ValueTask<string?>(token.AuthorizationId.ToString());
+            return new ValueTask<string?>(token.AuthorizationId?.ToString());
         }
 
         /// <inheritdoc/>

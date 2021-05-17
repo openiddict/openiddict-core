@@ -284,7 +284,7 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return new ValueTask<string?>(scope.Id?.ToString());
+            return new ValueTask<string?>(scope.Id.ToString());
         }
 
         /// <inheritdoc/>

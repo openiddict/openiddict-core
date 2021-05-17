@@ -690,7 +690,7 @@ namespace OpenIddict.MongoDb
             // Generate a new concurrency token and attach it
             // to the application before persisting the changes.
             var timestamp = application.ConcurrencyToken;
-            application.ConcurrencyToken = Guid.NewGuid().ToString();
+            application.ConcurrencyToken = Guid.NewGuid()?.ToString();
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
