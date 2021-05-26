@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -21,6 +21,8 @@ namespace Mvc.Client
             .AddCookie(options =>
             {
                 options.LoginPath = "/login";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(50);
+                options.SlidingExpiration = false;
             })
 
             .AddOpenIdConnect(options =>
