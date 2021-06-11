@@ -45,7 +45,7 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Logout request handling:
                  */
-                EnablePassthroughMode<HandleUserinfoRequestContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
+                EnablePassthroughMode<HandleLogoutRequestContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
 
                 /*
                  * Logout response processing:
