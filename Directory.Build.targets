@@ -16,6 +16,19 @@
     <PublicSign>false</PublicSign>
   </PropertyGroup>
 
+  <!--
+    Note: .NET Framework and .NET Core <3.0/.NET Standard assemblies are not annotated
+    with nullable references annotations. To avoid errors on these target frameworks,
+    related warnings are disabled by using Nullable = "annotations" instead of "enable".
+  -->
+
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+    <Nullable>annotations</Nullable>
+  </PropertyGroup>
+
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
                 ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '4.7'))) Or
