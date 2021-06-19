@@ -113,11 +113,15 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 - [Christian Schmitt](https://github.com/schmitch)
 - [Thomas W](https://github.com/ThreeScreenStudios)
 - [torfikarl](https://github.com/torfikarl)
-- [Leposava](https://github.com/CyberSquirrelSlo)
 - [cryo75](https://github.com/cryo75)
 - [Lewis Cianci](https://github.com/lewcianci)
 - [Florian Wachs](https://github.com/florianwachs)
 - [Vasko Poposki](https://github.com/vaspop)
+- [Sebastian Stehle](https://github.com/SebastianStehle)
+- [Michael Hochriegl](https://github.com/MichaelHochriegl)
+- [sunielreddy](https://github.com/sunielreddy)
+- [Communicatie Cockpit](https://github.com/communicatie-cockpit)
+- [Keith Turner](https://github.com/KeithT)
 
 ## License
 
