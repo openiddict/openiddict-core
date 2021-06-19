@@ -19,7 +19,9 @@
   </ItemGroup>
 
   <ItemGroup
-    Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' Or $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0')) ">
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
   </ItemGroup>
 
