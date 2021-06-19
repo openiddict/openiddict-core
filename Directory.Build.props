@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <LangVersion>preview</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>preview</AnalysisLevel>
     <NoWarn>$(NoWarn);CS1591;NU5118;NU5128</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -59,10 +60,6 @@
     <IsShipping>true</IsShipping>
     <Serviceable>false</Serviceable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="All" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectCapability Include="DynamicDependentFile" />
