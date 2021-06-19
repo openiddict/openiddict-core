@@ -17,7 +17,6 @@
     <PackageReference Update="Portable.BouncyCastle" Version="1.8.10" />
     <PackageReference Update="Quartz.Extensions.DependencyInjection" Version="3.2.4" />
     <PackageReference Update="Quartz.Extensions.Hosting" Version="3.2.4" />
-    <PackageReference Update="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="1.0.0-alpha.160" />
   </ItemGroup>
 
   <ItemGroup
