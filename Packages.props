@@ -9,8 +9,8 @@
     <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.8.0" />
     <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.8.0" />
     <PackageReference Update="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
-    <PackageReference Update="Microsoft.Owin.Security" Version="4.1.1" />
-    <PackageReference Update="Microsoft.Owin.Testing" Version="4.1.1" />
+    <PackageReference Update="Microsoft.Owin.Security" Version="4.2.0" />
+    <PackageReference Update="Microsoft.Owin.Testing" Version="4.2.0" />
     <PackageReference Update="MongoDB.Bson" Version="2.10.4" />
     <PackageReference Update="MongoDB.Driver" Version="2.10.4" />
     <PackageReference Update="Moq" Version="4.16.1" />
@@ -51,21 +51,21 @@
   <ItemGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '3.1'))) Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '2.1'))) ">
-    <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.13" />
-    <PackageReference Update="Microsoft.AspNetCore.DataProtection" Version="3.1.13" />
-    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.13" />
-    <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="3.1.13" />
-    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="3.1.13" />
-    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.Http.Polly" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.Logging" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.Options" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.Primitives" Version="3.1.13" />
-    <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="3.1.13" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.16" />
+    <PackageReference Update="Microsoft.AspNetCore.DataProtection" Version="3.1.16" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.16" />
+    <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="3.1.16" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="3.1.16" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.Http.Polly" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.Logging" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.Options" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.Primitives" Version="3.1.16" />
+    <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="3.1.16" />
     <PackageReference Update="System.Collections.Immutable" Version="1.7.1" />
     <PackageReference Update="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Update="System.Linq.Async" Version="4.1.1" />
@@ -76,12 +76,12 @@
 
   <ItemGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '5.0'))) ">
-    <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.4" />
-    <PackageReference Update="Microsoft.AspNetCore.DataProtection" Version="5.0.4" />
-    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.4" />
-    <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="5.0.4" />
-    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="5.0.4" />
-    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.4" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.7" />
+    <PackageReference Update="Microsoft.AspNetCore.DataProtection" Version="5.0.7" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.7" />
+    <PackageReference Update="Microsoft.AspNetCore.TestHost" Version="5.0.7" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="5.0.7" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.7" />
     <PackageReference Update="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
@@ -90,7 +90,7 @@
     <PackageReference Update="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Update="Microsoft.Extensions.Primitives" Version="5.0.0" />
-    <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="5.0.4" />
+    <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="5.0.7" />
     <PackageReference Update="System.Collections.Immutable" Version="5.0.0" />
     <PackageReference Update="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Update="System.Linq.Async" Version="5.0.0" />
