@@ -988,7 +988,7 @@ namespace OpenIddict.Server
                         // If the device code is not marked as valid yet, return an authorization_pending error.
                         if (await _tokenManager.HasStatusAsync(token, Statuses.Inactive))
                         {
-                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6003), identifier);
+                            context.Logger.LogDebug(SR.GetResourceString(SR.ID6003), identifier);
 
                             context.Reject(
                                 error: Errors.AuthorizationPending,
