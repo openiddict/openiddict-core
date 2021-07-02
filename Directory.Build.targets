@@ -108,5 +108,19 @@
         Overwrite="true"
         Encoding="Unicode" />
   </Target>
+  
+  <!--
+    Note: a bug in NuGet/the .NET SDK prevents generators/analyzers from working properly
+    when previous versions of a package don't include them. This is the case for the logging
+    and JSON packages, that started including a generator in .NET 6.0. To work around this bug,
+    these generators are removed from the analyzers list as it's not used in OpenIddict.
+  -->
+
+  <Target Name="RemoveAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition=" %(FileName) == 'Microsoft.Extensions.Logging.Generators' " />
+      <Analyzer Remove="@(Analyzer)" Condition=" %(FileName) == 'System.Text.Json.SourceGeneration' " />
+    </ItemGroup>
+  </Target>
 
 </Project>

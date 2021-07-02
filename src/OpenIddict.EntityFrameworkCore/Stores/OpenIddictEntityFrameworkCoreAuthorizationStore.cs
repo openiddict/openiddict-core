@@ -448,7 +448,7 @@ namespace OpenIddict.EntityFrameworkCore
             // If the application is not attached to the authorization, try to load it manually.
             if (authorization.Application is null)
             {
-                var reference = Context.Entry(authorization).Reference(entry => entry.Application);
+                var reference = Context.Entry(authorization).Reference(entry => entry.Application!);
                 if (reference.EntityEntry.State == EntityState.Detached)
                 {
                     return null;
@@ -790,7 +790,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // If the application is not attached to the authorization, try to load it manually.
                 if (authorization.Application is null)
                 {
-                    var reference = Context.Entry(authorization).Reference(entry => entry.Application);
+                    var reference = Context.Entry(authorization).Reference(entry => entry.Application!);
                     if (reference.EntityEntry.State == EntityState.Detached)
                     {
                         return;

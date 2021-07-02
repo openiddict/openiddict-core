@@ -372,7 +372,7 @@ namespace OpenIddict.EntityFrameworkCore
             // If the application is not attached to the token, try to load it manually.
             if (token.Application is null)
             {
-                var reference = Context.Entry(token).Reference(entry => entry.Application);
+                var reference = Context.Entry(token).Reference(entry => entry.Application!);
                 if (reference.EntityEntry.State == EntityState.Detached)
                 {
                     return null;
@@ -415,7 +415,7 @@ namespace OpenIddict.EntityFrameworkCore
             // If the authorization is not attached to the token, try to load it manually.
             if (token.Authorization is null)
             {
-                var reference = Context.Entry(token).Reference(entry => entry.Authorization);
+                var reference = Context.Entry(token).Reference(entry => entry.Authorization!);
                 if (reference.EntityEntry.State == EntityState.Detached)
                 {
                     return null;
@@ -753,7 +753,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // If the application is not attached to the token, try to load it manually.
                 if (token.Application is null)
                 {
-                    var reference = Context.Entry(token).Reference(entry => entry.Application);
+                    var reference = Context.Entry(token).Reference(entry => entry.Application!);
                     if (reference.EntityEntry.State == EntityState.Detached)
                     {
                         return;
@@ -798,7 +798,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // If the authorization is not attached to the token, try to load it manually.
                 if (token.Authorization is null)
                 {
-                    var reference = Context.Entry(token).Reference(entry => entry.Authorization);
+                    var reference = Context.Entry(token).Reference(entry => entry.Authorization!);
                     if (reference.EntityEntry.State == EntityState.Detached)
                     {
                         return;

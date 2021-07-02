@@ -37,7 +37,7 @@ namespace OpenIddict.EntityFrameworkCore
             // Entity Framework would throw an exception due to the TKey generic parameter
             // being non-nullable when using value types like short, int, long or Guid.
 
-            builder.HasKey(token => token.Id);
+            builder.HasKey(token => token.Id!);
 
             // Warning: the non-generic overlord is deliberately used to work around
             // a breaking change introduced in Entity Framework Core 3.x (where a

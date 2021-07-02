@@ -87,7 +87,7 @@ namespace OpenIddict.Abstractions
         public int Count => Value switch
         {
             // If the parameter is a primitive array of strings, return its length.
-            string?[] value => value.Length,
+            string[] value => value.Length,
 
             // If the parameter is a JSON array, return its length.
             JsonElement { ValueKind: JsonValueKind.Array } value => value.GetArrayLength(),
@@ -424,7 +424,7 @@ namespace OpenIddict.Abstractions
             long value => value.ToString(CultureInfo.InvariantCulture),
 
             string    value => value,
-            string?[] value => string.Join(", ", value),
+            string[]  value => string.Join(", ", value),
 
             JsonElement value => value.ToString(),
 
@@ -771,7 +771,7 @@ namespace OpenIddict.Abstractions
                 null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
                 // When the parameter is already an array of strings, return it as-is.
-                string?[] value => value,
+                string[] value => value,
 
                 // When the parameter is a string value, return an array with a single entry.
                 string value => new string?[] { value },
@@ -881,7 +881,7 @@ namespace OpenIddict.Abstractions
                 null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => true,
 
                 string value    => string.IsNullOrEmpty(value),
-                string?[] value => value.Length == 0,
+                string[] value  => value.Length == 0,
 
                 JsonElement { ValueKind: JsonValueKind.String } value => string.IsNullOrEmpty(value.GetString()),
                 JsonElement { ValueKind: JsonValueKind.Array  } value => value.GetArrayLength() == 0,
