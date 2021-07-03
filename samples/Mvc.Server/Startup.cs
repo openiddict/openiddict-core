@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using Quartz;
+using System;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server
@@ -64,15 +66,35 @@ namespace Mvc.Server
                 // Register the OpenIddict core components.
                 .AddCore(options =>
                 {
-                    // Configure OpenIddict to use the Entity Framework Core stores and models.
-                    // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
-                    options.UseEntityFrameworkCore()
-                           .UseDbContext<ApplicationDbContext>();
+                    var storeType = Configuration.GetValue<string>("store:type");
 
-                    // Developers who prefer using MongoDB can remove the previous lines
-                    // and configure OpenIddict to use the specified MongoDB database:
-                    // options.UseMongoDb()
-                    //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
+                    // Test different store options.
+                    // Use STORE__TYPE environment variable.
+                    if (string.Equals(storeType, "MongoDefault"))
+                    {
+                        // Default store implementation.
+                        options.UseMongoDb()
+                            .UseDatabase(new MongoClient().GetDatabase("openiddict"));
+                    }
+                    else if (string.Equals(storeType, "MongoString"))
+                    {
+                        // MongoImplementation with string keys.
+                        options.UseMongoDb<string>()
+                            .UseDatabase(new MongoClient().GetDatabase("openiddict_string"));
+                    }
+                    else if (string.Equals(storeType, "MongoGuid"))
+                    {
+                        // MongoImplementation with guid keys.
+                        options.UseMongoDb<Guid>()
+                            .UseDatabase(new MongoClient().GetDatabase("openiddict_guid"));
+                    }
+                    else
+                    {
+                        // Configure OpenIddict to use the Entity Framework Core stores and models.
+                        // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
+                        options.UseEntityFrameworkCore()
+                               .UseDbContext<ApplicationDbContext>();
+                    }
 
                     // Enable Quartz.NET integration.
                     options.UseQuartz();

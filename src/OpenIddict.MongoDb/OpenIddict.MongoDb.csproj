@@ -20,4 +20,9 @@
     <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
+  </ItemGroup>
+
+
 </Project>

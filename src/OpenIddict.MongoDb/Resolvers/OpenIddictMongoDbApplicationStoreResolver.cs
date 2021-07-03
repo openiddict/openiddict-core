@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
+using OpenIddict.Extensions;
 using OpenIddict.MongoDb.Models;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -40,12 +41,20 @@ namespace OpenIddict.MongoDb
 
             var type = _cache.GetOrAdd(typeof(TApplication), key =>
             {
-                if (!typeof(OpenIddictMongoDbApplication).IsAssignableFrom(key))
+                if (typeof(OpenIddictMongoDbApplication).IsAssignableFrom(key))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0257));
+                    return typeof(OpenIddictMongoDbApplicationStore<>).MakeGenericType(key);
                 }
+                else
+                {
+                    var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictMongoDbApplication<>));
+                    if (root is null)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.@ID0257));
+                    }
 
-                return typeof(OpenIddictMongoDbApplicationStore<>).MakeGenericType(key);
+                    return typeof(OpenIddictMongoDbApplicationStore<,>).MakeGenericType(key, root.GenericTypeArguments[0]);
+                }
             });
 
             return (IOpenIddictApplicationStore<TApplication>) _provider.GetRequiredService(type);

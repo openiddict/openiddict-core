@@ -6,7 +6,9 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MongoDB.Bson;
 using OpenIddict.MongoDb;
+using OpenIddict.MongoDb.KeyGenerators;
 using OpenIddict.MongoDb.Models;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -50,6 +52,50 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbAuthorizationStore<>));
             builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbScopeStore<>));
             builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbTokenStore<>));
+
+            builder.Services.TryAddSingleton<IOpenIddictMongoDbContext, OpenIddictMongoDbContext>();
+
+            return new OpenIddictMongoDbBuilder(builder.Services);
+        }
+
+        /// <summary>
+        /// Registers the MongoDB stores services in the DI container and
+        /// configures OpenIddict to use the MongoDB entities by default.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <remarks>This extension can be safely called multiple times.</remarks>
+        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+        public static OpenIddictMongoDbBuilder UseMongoDb<TKey>(this OpenIddictCoreBuilder builder) where TKey : notnull
+        {
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Note: Mongo uses simple binary comparison checks by default so the additional
+            // query filtering applied by the default OpenIddict managers can be safely disabled.
+            builder.DisableAdditionalFiltering();
+
+            builder.SetDefaultApplicationEntity<OpenIddictMongoDbApplication<TKey>>()
+                   .SetDefaultAuthorizationEntity<OpenIddictMongoDbAuthorization<TKey>>()
+                   .SetDefaultScopeEntity<OpenIddictMongoDbScope<TKey>>()
+                   .SetDefaultTokenEntity<OpenIddictMongoDbToken<TKey>>();
+
+            // Note: the Mongo stores/resolvers don't depend on scoped/transient services and thus
+            // can be safely registered as singleton services and shared/reused across requests.
+            builder.ReplaceApplicationStoreResolver<OpenIddictMongoDbApplicationStoreResolver>(ServiceLifetime.Singleton)
+                   .ReplaceAuthorizationStoreResolver<OpenIddictMongoDbAuthorizationStoreResolver>(ServiceLifetime.Singleton)
+                   .ReplaceScopeStoreResolver<OpenIddictMongoDbScopeStoreResolver>(ServiceLifetime.Singleton)
+                   .ReplaceTokenStoreResolver<OpenIddictMongoDbTokenStoreResolver>(ServiceLifetime.Singleton);
+
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbApplicationStore<,>));
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbAuthorizationStore<,>));
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbScopeStore<,>));
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbTokenStore<,>));
+
+            builder.Services.TryAddSingleton(GuidKeyGenerator.Default);
+            builder.Services.TryAddSingleton(ObjectIdKeyGenerator.Default);
+            builder.Services.TryAddSingleton(StringKeyGenerator.Default);
 
             builder.Services.TryAddSingleton<IOpenIddictMongoDbContext, OpenIddictMongoDbContext>();
 

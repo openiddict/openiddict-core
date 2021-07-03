@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
+using OpenIddict.MongoDb.KeyGenerators;
 using OpenIddict.MongoDb.Models;
 using Xunit;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -61,13 +62,36 @@ namespace OpenIddict.MongoDb.Tests
             Assert.NotNull(resolver.Get<MyApplication>());
         }
 
+        [Fact]
+        public void Get_StringKey_ReturnsDefaultStoreCorrespondingToTheSpecifiedTypeWhenAvailable()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton(Mock.Of<IOpenIddictApplicationStore<CustomApplication>>());
+            services.AddSingleton(CreateStoreWithStringKey());
+
+            var provider = services.BuildServiceProvider();
+            var resolver = new OpenIddictMongoDbApplicationStoreResolver(provider);
+
+            // Act and assert
+            Assert.NotNull(resolver.Get<MyApplicationWithStringKey>());
+        }
+
         private static OpenIddictMongoDbApplicationStore<MyApplication> CreateStore()
             => new Mock<OpenIddictMongoDbApplicationStore<MyApplication>>(
+                Mock.Of<IOpenIddictMongoDbContext>(),
+                Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;
+
+        private static OpenIddictMongoDbApplicationStore<MyApplicationWithStringKey, string> CreateStoreWithStringKey()
+            => new Mock<OpenIddictMongoDbApplicationStore<MyApplicationWithStringKey, string>>(
+                StringKeyGenerator.Default,
                 Mock.Of<IOpenIddictMongoDbContext>(),
                 Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;
 
         public class CustomApplication { }
 
         public class MyApplication : OpenIddictMongoDbApplication { }
+
+        public class MyApplicationWithStringKey : OpenIddictMongoDbApplication<string> { }
     }
 }

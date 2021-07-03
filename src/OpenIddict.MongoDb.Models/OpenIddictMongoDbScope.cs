@@ -12,13 +12,23 @@ using System.Globalization;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 namespace OpenIddict.MongoDb.Models
 {
     /// <summary>
     /// Represents an OpenIddict scope.
     /// </summary>
     [DebuggerDisplay("Id = {Id.ToString(),nq} ; Name = {Name,nq}")]
-    public class OpenIddictMongoDbScope
+    public class OpenIddictMongoDbScope : OpenIddictMongoDbScope<ObjectId>
+    {
+    }
+
+    /// <summary>
+    /// Represents an OpenIddict scope.
+    /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; Name = {Name,nq}")]
+    public class OpenIddictMongoDbScope<TKey>
     {
         /// <summary>
         /// Gets or sets the concurrency token.
@@ -56,7 +66,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the unique identifier associated with the current scope.
         /// </summary>
         [BsonId, BsonRequired]
-        public virtual ObjectId Id { get; set; }
+        public virtual TKey Id { get; set; }
 
         /// <summary>
         /// Gets or sets the unique name associated with the current scope.

@@ -11,19 +11,29 @@ using System.Diagnostics;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 namespace OpenIddict.MongoDb.Models
 {
     /// <summary>
     /// Represents an OpenIddict authorization.
     /// </summary>
     [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
-    public class OpenIddictMongoDbAuthorization
+    public class OpenIddictMongoDbAuthorization : OpenIddictMongoDbAuthorization<ObjectId>
+    {
+    }
+
+    /// <summary>
+    /// Represents an OpenIddict authorization.
+    /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
+    public class OpenIddictMongoDbAuthorization<TKey> where TKey : notnull
     {
         /// <summary>
         /// Gets or sets the identifier of the application associated with the current authorization.
         /// </summary>
         [BsonElement("application_id"), BsonIgnoreIfDefault]
-        public virtual ObjectId ApplicationId { get; set; }
+        public virtual TKey ApplicationId { get; set; }
 
         /// <summary>
         /// Gets or sets the concurrency token.
@@ -40,7 +50,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the unique identifier associated with the current authorization.
         /// </summary>
         [BsonId, BsonRequired]
-        public virtual ObjectId Id { get; set; }
+        public virtual TKey Id { get; set; }
 
         /// <summary>
         /// Gets or sets the additional properties associated with the current authorization.

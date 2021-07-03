@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
+using OpenIddict.MongoDb.KeyGenerators;
 using OpenIddict.MongoDb.Models;
 using Xunit;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
@@ -61,13 +62,36 @@ namespace OpenIddict.MongoDb.Tests
             Assert.NotNull(resolver.Get<MyAuthorization>());
         }
 
+        [Fact]
+        public void Get_StringKey_ReturnsDefaultStoreCorrespondingToTheSpecifiedTypeWhenAvailable()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton(Mock.Of<IOpenIddictAuthorizationStore<CustomAuthorization>>());
+            services.AddSingleton(CreateStoreWithStringKey());
+
+            var provider = services.BuildServiceProvider();
+            var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
+
+            // Act and assert
+            Assert.NotNull(resolver.Get<MyAuthorizationWithStringKey>());
+        }
+
         private static OpenIddictMongoDbAuthorizationStore<MyAuthorization> CreateStore()
             => new Mock<OpenIddictMongoDbAuthorizationStore<MyAuthorization>>(
+                Mock.Of<IOpenIddictMongoDbContext>(),
+                Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;
+
+        private static OpenIddictMongoDbAuthorizationStore<MyAuthorizationWithStringKey, string> CreateStoreWithStringKey()
+            => new Mock<OpenIddictMongoDbAuthorizationStore<MyAuthorizationWithStringKey, string>>(
+                StringKeyGenerator.Default,
                 Mock.Of<IOpenIddictMongoDbContext>(),
                 Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;
 
         public class CustomAuthorization { }
 
         public class MyAuthorization : OpenIddictMongoDbAuthorization { }
+
+        public class MyAuthorizationWithStringKey : OpenIddictMongoDbAuthorization<string> { }
     }
 }
