@@ -85,7 +85,7 @@ namespace OpenIddict.Server.AspNetCore
 
         /// <summary>
         /// Gets or sets a boolean indicating whether requests received by the logout endpoint should be cached.
-        /// When enabled, authorization requests are automatically stored in the distributed cache.
+        /// When enabled, logout requests are automatically stored in the distributed cache.
         /// </summary>
         public bool EnableLogoutRequestCaching { get; set; }
 
