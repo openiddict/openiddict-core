@@ -6,8 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -17,6 +15,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using Properties = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants.Properties;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation.AspNetCore
@@ -143,9 +142,9 @@ namespace OpenIddict.Validation.AspNetCore
 
                 var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
-                    [OpenIddictValidationAspNetCoreConstants.Properties.Error] = context.Error,
-                    [OpenIddictValidationAspNetCoreConstants.Properties.ErrorDescription] = context.ErrorDescription,
-                    [OpenIddictValidationAspNetCoreConstants.Properties.ErrorUri] = context.ErrorUri
+                    [Properties.Error] = context.Error,
+                    [Properties.ErrorDescription] = context.ErrorDescription,
+                    [Properties.ErrorUri] = context.ErrorUri
                 });
 
                 return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
@@ -153,29 +152,51 @@ namespace OpenIddict.Validation.AspNetCore
 
             else
             {
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID4009));
-                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
-
-                // Store the token to allow any ASP.NET Core component (e.g a controller)
-                // to retrieve it (e.g to make an API request to another application).
-                var properties = new AuthenticationProperties
+                // A single main claims-based principal instance can be attached to an authentication ticket.
+                // To return the most appropriate one, the principal is selected based on the endpoint type.
+                // Independently of the selected main principal, all principals resolved from validated tokens
+                // are attached to the authentication properties bag so they can be accessed from user code.
+                var principal = context.EndpointType switch
                 {
-                    ExpiresUtc = context.Principal.GetExpirationDate(),
-                    IssuedUtc = context.Principal.GetCreationDate()
+                    OpenIddictValidationEndpointType.Unknown => context.AccessTokenPrincipal,
+
+                    _ => null
                 };
 
-                properties.StoreTokens(new[]
+                if (principal is null)
                 {
-                    new AuthenticationToken
-                    {
-                        Name = context.Principal.GetTokenType()!,
-                        Value = context.Token
-                    }
-                });
+                    return AuthenticateResult.NoResult();
+                }
 
-                return AuthenticateResult.Success(new AuthenticationTicket(
-                    context.Principal, properties,
+                var properties = new AuthenticationProperties
+                {
+                    ExpiresUtc = principal.GetExpirationDate(),
+                    IssuedUtc = principal.GetCreationDate()
+                };
+
+                List<AuthenticationToken>? tokens = null;
+
+                // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
+                // to retrieve them (e.g to make an API request to another application).
+
+                if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
+                {
+                    tokens ??= new(capacity: 1);
+                    tokens.Add(new AuthenticationToken
+                    {
+                        Name = TokenTypeHints.AccessToken,
+                        Value = context.AccessToken
+                    });
+
+                    properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
+                }
+
+                if (tokens is { Count: > 0 })
+                {
+                    properties.StoreTokens(tokens);
+                }
+
+                return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
                     OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme));
             }
         }

@@ -643,6 +643,10 @@ namespace OpenIddict.Server
                     var notification = new ProcessAuthenticationContext(context.Transaction);
                     await _dispatcher.DispatchAsync(notification);
 
+                    // Store the context object in the transaction so it can be later retrieved by handlers
+                    // that want to access the authentication result without triggering a new authentication flow.
+                    context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, notification);
+
                     if (notification.IsRequestHandled)
                     {
                         context.HandleRequest();
@@ -665,7 +669,7 @@ namespace OpenIddict.Server
                     }
 
                     // Attach the security principal extracted from the token to the validation context.
-                    context.Principal = notification.Principal;
+                    context.Principal = notification.GenericTokenPrincipal;
                 }
             }
 

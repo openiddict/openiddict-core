@@ -31,6 +31,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if no access token is validated.
+        /// </summary>
+        public class RequireAccessTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+        {
+            public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.ValidateAccessToken);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if no authorization code is generated.
         /// </summary>
         public class RequireAuthorizationCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
@@ -43,6 +59,22 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.GenerateAuthorizationCode);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if no authorization code is validated.
+        /// </summary>
+        public class RequireAuthorizationCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+        {
+            public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.ValidateAuthorizationCode);
             }
         }
 
@@ -159,6 +191,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if no device code is validated.
+        /// </summary>
+        public class RequireDeviceCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+        {
+            public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.ValidateDeviceCode);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if the request is not a device request.
         /// </summary>
         public class RequireDeviceRequest : IOpenIddictServerHandlerFilter<BaseContext>
@@ -191,6 +239,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if no generic token is validated.
+        /// </summary>
+        public class RequireGenericTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+        {
+            public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.ValidateGenericToken);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if grant type permissions were disabled.
         /// </summary>
         public class RequireGrantTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -219,6 +283,22 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.GenerateIdentityToken);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if no identity token is validated.
+        /// </summary>
+        public class RequireIdentityTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+        {
+            public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.ValidateIdentityToken);
             }
         }
 
@@ -315,6 +395,22 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.GenerateRefreshToken);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if no refresh token is validated.
+        /// </summary>
+        public class RequireRefreshTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+        {
+            public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.ValidateRefreshToken);
             }
         }
 
@@ -443,6 +539,22 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.GenerateUserCode);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if no user code is validated.
+        /// </summary>
+        public class RequireUserCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+        {
+            public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.ValidateUserCode);
             }
         }
 

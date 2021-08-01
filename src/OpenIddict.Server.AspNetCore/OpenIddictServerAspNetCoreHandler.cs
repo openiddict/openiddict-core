@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -17,6 +16,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using Properties = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore
@@ -145,9 +145,9 @@ namespace OpenIddict.Server.AspNetCore
 
                 var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
-                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = context.Error,
-                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = context.ErrorDescription,
-                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorUri] = context.ErrorUri
+                    [Properties.Error] = context.Error,
+                    [Properties.ErrorDescription] = context.ErrorDescription,
+                    [Properties.ErrorUri] = context.ErrorUri
                 });
 
                 return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
@@ -155,29 +155,131 @@ namespace OpenIddict.Server.AspNetCore
 
             else
             {
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID4009));
-                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
-
-                // Store the token to allow any OWIN/Katana component (e.g a controller)
-                // to retrieve it (e.g to make an API request to another application).
-                var properties = new AuthenticationProperties
+                // A single main claims-based principal instance can be attached to an authentication ticket.
+                // To return the most appropriate one, the principal is selected based on the endpoint type.
+                // Independently of the selected main principal, all principals resolved from validated tokens
+                // are attached to the authentication properties bag so they can be accessed from user code.
+                var principal = context.EndpointType switch
                 {
-                    ExpiresUtc = context.Principal.GetExpirationDate(),
-                    IssuedUtc = context.Principal.GetCreationDate()
+                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                        => context.IdentityTokenPrincipal,
+
+                    OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
+                        => context.AccessTokenPrincipal       ??
+                           context.RefreshTokenPrincipal      ??
+                           context.IdentityTokenPrincipal     ??
+                           context.AuthorizationCodePrincipal ??
+                           context.DeviceCodePrincipal        ??
+                           context.UserCodePrincipal,
+
+                    OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                        => context.AuthorizationCodePrincipal,
+                    OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                        => context.DeviceCodePrincipal,
+                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                        => context.RefreshTokenPrincipal,
+
+                    OpenIddictServerEndpointType.Userinfo => context.AccessTokenPrincipal,
+
+                    OpenIddictServerEndpointType.Verification => context.UserCodePrincipal,
+
+                    _ => null
                 };
 
-                properties.StoreTokens(new[]
+                if (principal is null)
                 {
-                    new AuthenticationToken
-                    {
-                        Name = context.Principal.GetTokenType()!,
-                        Value = context.Token
-                    }
-                });
+                    return AuthenticateResult.NoResult();
+                }
 
-                return AuthenticateResult.Success(new AuthenticationTicket(
-                    context.Principal, properties,
+                var properties = new AuthenticationProperties
+                {
+                    ExpiresUtc = principal.GetExpirationDate(),
+                    IssuedUtc = principal.GetCreationDate()
+                };
+
+                List<AuthenticationToken>? tokens = null;
+
+                // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
+                // to retrieve them (e.g to make an API request to another application).
+
+                if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
+                {
+                    tokens ??= new(capacity: 1);
+                    tokens.Add(new AuthenticationToken
+                    {
+                        Name = TokenTypeHints.AccessToken,
+                        Value = context.AccessToken
+                    });
+
+                    properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
+                }
+
+                if (context.AuthorizationCodePrincipal is not null && !string.IsNullOrEmpty(context.AuthorizationCode))
+                {
+                    tokens ??= new(capacity: 1);
+                    tokens.Add(new AuthenticationToken
+                    {
+                        Name = TokenTypeHints.AuthorizationCode,
+                        Value = context.AuthorizationCode
+                    });
+
+                    properties.SetParameter(Properties.AuthorizationCodePrincipal, context.AuthorizationCodePrincipal);
+                }
+
+                if (context.DeviceCodePrincipal is not null && !string.IsNullOrEmpty(context.DeviceCode))
+                {
+                    tokens ??= new(capacity: 1);
+                    tokens.Add(new AuthenticationToken
+                    {
+                        Name = TokenTypeHints.DeviceCode,
+                        Value = context.DeviceCode
+                    });
+
+                    properties.SetParameter(Properties.DeviceCodePrincipal, context.DeviceCodePrincipal);
+                }
+
+                if (context.IdentityTokenPrincipal is not null && !string.IsNullOrEmpty(context.IdentityToken))
+                {
+                    tokens ??= new(capacity: 1);
+                    tokens.Add(new AuthenticationToken
+                    {
+                        Name = TokenTypeHints.IdToken,
+                        Value = context.IdentityToken
+                    });
+
+                    properties.SetParameter(Properties.IdentityTokenPrincipal, context.IdentityTokenPrincipal);
+                }
+
+                if (context.RefreshTokenPrincipal is not null && !string.IsNullOrEmpty(context.RefreshToken))
+                {
+                    tokens ??= new(capacity: 1);
+                    tokens.Add(new AuthenticationToken
+                    {
+                        Name = TokenTypeHints.RefreshToken,
+                        Value = context.RefreshToken
+                    });
+
+                    properties.SetParameter(Properties.RefreshTokenPrincipal, context.RefreshTokenPrincipal);
+                }
+
+                if (context.UserCodePrincipal is not null && !string.IsNullOrEmpty(context.UserCode))
+                {
+                    tokens ??= new(capacity: 1);
+                    tokens.Add(new AuthenticationToken
+                    {
+                        Name = TokenTypeHints.UserCode,
+                        Value = context.UserCode
+                    });
+
+                    properties.SetParameter(Properties.UserCodePrincipal, context.UserCodePrincipal);
+                }
+
+                if (tokens is { Count: > 0 })
+                {
+                    properties.StoreTokens(tokens);
+                }
+
+                return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
                     OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
             }
         }

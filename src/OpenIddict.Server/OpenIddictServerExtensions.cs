@@ -45,7 +45,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Register the built-in filters used by the default OpenIddict server event handlers.
             builder.Services.TryAddSingleton<RequireAccessTokenGenerated>();
+            builder.Services.TryAddSingleton<RequireAccessTokenValidated>();
             builder.Services.TryAddSingleton<RequireAuthorizationCodeGenerated>();
+            builder.Services.TryAddSingleton<RequireAuthorizationCodeValidated>();
             builder.Services.TryAddSingleton<RequireAuthorizationStorageEnabled>();
             builder.Services.TryAddSingleton<RequireAuthorizationRequest>();
             builder.Services.TryAddSingleton<RequireClientIdParameter>();
@@ -53,16 +55,20 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireCryptographyRequest>();
             builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();
             builder.Services.TryAddSingleton<RequireDeviceCodeGenerated>();
+            builder.Services.TryAddSingleton<RequireDeviceCodeValidated>();
             builder.Services.TryAddSingleton<RequireDeviceRequest>();
             builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();
+            builder.Services.TryAddSingleton<RequireGenericTokenValidated>();
             builder.Services.TryAddSingleton<RequireGrantTypePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireIdentityTokenGenerated>();
+            builder.Services.TryAddSingleton<RequireIdentityTokenValidated>();
             builder.Services.TryAddSingleton<RequireIntrospectionRequest>();
             builder.Services.TryAddSingleton<RequireLogoutRequest>();
             builder.Services.TryAddSingleton<RequirePostLogoutRedirectUriParameter>();
             builder.Services.TryAddSingleton<RequireReferenceAccessTokensEnabled>();
             builder.Services.TryAddSingleton<RequireReferenceRefreshTokensEnabled>();
             builder.Services.TryAddSingleton<RequireRefreshTokenGenerated>();
+            builder.Services.TryAddSingleton<RequireRefreshTokenValidated>();
             builder.Services.TryAddSingleton<RequireResponseTypePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireRevocationRequest>();
             builder.Services.TryAddSingleton<RequireSlidingRefreshTokenExpirationEnabled>();
@@ -71,6 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
             builder.Services.TryAddSingleton<RequireTokenRequest>();
             builder.Services.TryAddSingleton<RequireUserCodeGenerated>();
+            builder.Services.TryAddSingleton<RequireUserCodeValidated>();
             builder.Services.TryAddSingleton<RequireUserinfoRequest>();
             builder.Services.TryAddSingleton<RequireVerificationRequest>();
 

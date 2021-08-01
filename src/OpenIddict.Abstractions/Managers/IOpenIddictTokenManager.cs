@@ -342,6 +342,15 @@ namespace OpenIddict.Abstractions
         ValueTask<bool> HasTypeAsync(object token, string type, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Determines whether a given token has any of the specified types.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="types">The expected types.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token has any of the specified types, <c>false</c> otherwise.</returns>
+        ValueTask<bool> HasTypeAsync(object token, ImmutableArray<string> types, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>

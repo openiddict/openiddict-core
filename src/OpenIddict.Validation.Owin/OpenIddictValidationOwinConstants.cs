@@ -30,6 +30,7 @@ namespace OpenIddict.Validation.Owin
 
         public static class Properties
         {
+            public const string AccessTokenPrincipal = ".access_token_principal";
             public const string Error = ".error";
             public const string ErrorDescription = ".error_description";
             public const string ErrorUri = ".error_uri";

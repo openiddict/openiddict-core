@@ -36,7 +36,7 @@ namespace OpenIddict.Validation
                 HandleInactiveResponse.Descriptor,
                 ValidateWellKnownClaims.Descriptor,
                 ValidateIssuer.Descriptor,
-                ValidateTokenType.Descriptor,
+                ValidateTokenUsage.Descriptor,
                 PopulateClaims.Descriptor);
 
             /// <summary>
@@ -93,7 +93,7 @@ namespace OpenIddict.Validation
                     }
 
                     context.Request.Token = context.Token;
-                    context.Request.TokenTypeHint = context.TokenType;
+                    context.Request.TokenTypeHint = context.TokenTypeHint;
 
                     return default;
                 }
@@ -283,16 +283,16 @@ namespace OpenIddict.Validation
             }
 
             /// <summary>
-            /// Contains the logic responsible of extracting and validating the token type from the introspection response.
+            /// Contains the logic responsible of extracting and validating the token usage from the introspection response.
             /// </summary>
-            public class ValidateTokenType : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+            public class ValidateTokenUsage : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
-                        .UseSingletonHandler<ValidateTokenType>()
+                        .UseSingletonHandler<ValidateTokenUsage>()
                         .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
@@ -308,19 +308,33 @@ namespace OpenIddict.Validation
                     // OpenIddict-based authorization servers always return the actual token type using
                     // the special "token_usage" claim, that helps resource servers determine whether the
                     // introspected token is of the expected type and prevent token substitution attacks.
-                    if (!string.IsNullOrEmpty(context.TokenType))
+                    // In this handler, the "token_usage" is verified to ensure it corresponds to a supported
+                    // value so that the component that triggered the introspection request can determine
+                    // whether the returned token has an acceptable type depending on the context.
+                    var usage = (string?) context.Response[Claims.TokenUsage];
+                    if (string.IsNullOrEmpty(usage))
                     {
-                        var usage = (string?) context.Response[Claims.TokenUsage];
-                        if (!string.IsNullOrEmpty(usage) &&
-                            !string.Equals(usage, context.TokenType, StringComparison.OrdinalIgnoreCase))
-                        {
-                            context.Reject(
-                                error: Errors.InvalidToken,
-                                description: SR.GetResourceString(SR.ID2110),
-                                uri: SR.FormatID8000(SR.ID2110));
+                        return default;
+                    }
 
-                            return default;
-                        }
+                    if (!(usage switch
+                    {
+                        // Note: by default, OpenIddict only allows access/refresh tokens to be
+                        // introspected but additional types can be added using the events model.
+                        TokenTypeHints.AccessToken or TokenTypeHints.AuthorizationCode or
+                        TokenTypeHints.IdToken or TokenTypeHints.RefreshToken or
+                        TokenTypeHints.UserCode
+                            => true,
+
+                        _ => false // Other token usages are not supported.
+                    }))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2118),
+                            uri: SR.FormatID8000(SR.ID2118));
+
+                        return default;
                     }
 
                     return default;
@@ -338,7 +352,7 @@ namespace OpenIddict.Validation
                 public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                         .UseSingletonHandler<PopulateClaims>()
-                        .SetOrder(ValidateTokenType.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateTokenUsage.Descriptor.Order + 1_000)
                         .SetType(OpenIddictValidationHandlerType.BuiltIn)
                         .Build();
 
@@ -378,8 +392,7 @@ namespace OpenIddict.Validation
                         }
 
                         // Ignore all protocol claims that shouldn't be mapped to CLR claims.
-                        if (parameter.Key is Claims.Active or Claims.Issuer or Claims.NotBefore or
-                                             Claims.TokenType or Claims.TokenUsage)
+                        if (parameter.Key is Claims.Active or Claims.Issuer or Claims.NotBefore or Claims.TokenType)
                         {
                             continue;
                         }

@@ -45,6 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
             // Register the built-in filters used by the default OpenIddict validation event handlers.
+            builder.Services.TryAddSingleton<RequireAccessTokenValidated>();
             builder.Services.TryAddSingleton<RequireAuthorizationEntryValidationEnabled>();
             builder.Services.TryAddSingleton<RequireLocalValidation>();
             builder.Services.TryAddSingleton<RequireTokenEntryValidationEnabled>();

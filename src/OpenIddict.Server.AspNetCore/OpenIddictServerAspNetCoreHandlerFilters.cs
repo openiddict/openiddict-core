@@ -143,27 +143,6 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if the HTTPS requirement was disabled.
-        /// </summary>
-        public class RequireTransportSecurityRequirementEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-        {
-            private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
-
-            public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
-                => _options = options;
-
-            public ValueTask<bool> IsActiveAsync(BaseContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(!_options.CurrentValue.DisableTransportSecurityRequirement);
-            }
-        }
-
-        /// <summary>
         /// Represents a filter that excludes the associated handlers if status code pages support was not enabled.
         /// </summary>
         public class RequireStatusCodePagesIntegrationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -181,6 +160,27 @@ namespace OpenIddict.Server.AspNetCore
                 }
 
                 return new ValueTask<bool>(_options.CurrentValue.EnableStatusCodePagesIntegration);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the HTTPS requirement was disabled.
+        /// </summary>
+        public class RequireTransportSecurityRequirementEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
+
+            public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!_options.CurrentValue.DisableTransportSecurityRequirement);
             }
         }
 

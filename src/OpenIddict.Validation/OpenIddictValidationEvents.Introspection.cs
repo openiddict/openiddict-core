@@ -42,7 +42,7 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Gets or sets the token type sent to the introspection endpoint.
             /// </summary>
-            public string? TokenType { get; set; }
+            public string? TokenTypeHint { get; set; }
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace OpenIddict.Validation
         }
 
         /// <summary>
-        /// Represents an event called for each validated introspection response.
+        /// Represents an event called for each introspection response.
         /// </summary>
         public class HandleIntrospectionResponseContext : BaseExternalContext
         {
@@ -137,11 +137,6 @@ namespace OpenIddict.Validation
             /// Gets or sets the token sent to the introspection endpoint.
             /// </summary>
             public string? Token { get; set; }
-
-            /// <summary>
-            /// Gets or sets the token type sent to the introspection endpoint.
-            /// </summary>
-            public string? TokenType { get; set; }
 
             /// <summary>
             /// Gets or sets the principal containing the claims resolved from the introspection response.

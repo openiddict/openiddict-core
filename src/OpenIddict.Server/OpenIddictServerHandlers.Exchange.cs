@@ -1318,7 +1318,9 @@ namespace OpenIddict.Server
                     }
 
                     // Attach the security principal extracted from the token to the validation context.
-                    context.Principal = notification.Principal;
+                    context.Principal = context.Request.IsAuthorizationCodeGrantType() ? notification.AuthorizationCodePrincipal :
+                                        context.Request.IsDeviceCodeGrantType()        ? notification.DeviceCodePrincipal :
+                                        context.Request.IsRefreshTokenGrantType()      ? notification.RefreshTokenPrincipal : null;
                 }
             }
 

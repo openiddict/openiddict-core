@@ -24,6 +24,7 @@ using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlers;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -53,12 +54,12 @@ namespace OpenIddict.Server.Owin.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -104,12 +105,12 @@ namespace OpenIddict.Server.Owin.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)

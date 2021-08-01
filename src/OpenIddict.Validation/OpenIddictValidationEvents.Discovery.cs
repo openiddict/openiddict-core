@@ -94,7 +94,7 @@ namespace OpenIddict.Validation
         }
 
         /// <summary>
-        /// Represents an event called for each validated configuration response.
+        /// Represents an event called for each configuration response.
         /// </summary>
         public class HandleConfigurationResponseContext : BaseExternalContext
         {
@@ -212,7 +212,7 @@ namespace OpenIddict.Validation
         }
 
         /// <summary>
-        /// Represents an event called for each validated cryptography response.
+        /// Represents an event called for each cryptography response.
         /// </summary>
         public class HandleCryptographyResponseContext : BaseExternalContext
         {
