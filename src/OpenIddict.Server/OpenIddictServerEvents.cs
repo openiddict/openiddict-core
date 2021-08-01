@@ -272,19 +272,191 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets or sets the security principal.
+            /// Gets or sets a boolean indicating whether an access token
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
             /// </summary>
-            public ClaimsPrincipal? Principal { get; set; }
+            public bool RequireAccessToken { get; set; }
 
             /// <summary>
-            /// Gets or sets the token to validate.
+            /// Gets or sets a boolean indicating whether an authorization code
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
             /// </summary>
-            public string? Token { get; set; }
+            public bool RequireAuthorizationCode { get; set; }
 
             /// <summary>
-            /// Gets or sets the expected type of the token.
+            /// Gets or sets a boolean indicating whether a device code
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
             /// </summary>
-            public string? TokenType { get; set; }
+            public bool RequireDeviceCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a generic token
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool RequireGenericToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether an identity token
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool RequireIdentityToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a refresh token
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool RequireRefreshToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a user code
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool RequireUserCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether an access token
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateAccessToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether an authorization code
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateAuthorizationCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a device code
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateDeviceCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a generic token
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateGenericToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether an identity token
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateIdentityToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a refresh token
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateRefreshToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a user code
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateUserCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the access token to validate, if applicable.
+            /// </summary>
+            public string? AccessToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal extracted from the access token, if applicable.
+            /// </summary>
+            public ClaimsPrincipal? AccessTokenPrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the authorization code to validate, if applicable.
+            /// </summary>
+            public string? AuthorizationCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal extracted from the authorization code, if applicable.
+            /// </summary>
+            public ClaimsPrincipal? AuthorizationCodePrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the device code to validate, if applicable.
+            /// </summary>
+            public string? DeviceCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal extracted from the device code, if applicable.
+            /// </summary>
+            public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the generic token to validate, if applicable.
+            /// </summary>
+            public string? GenericToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets the optional hint indicating the type of the generic token, if applicable.
+            /// </summary>
+            public string? GenericTokenTypeHint { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal extracted from the generic token, if applicable.
+            /// </summary>
+            public ClaimsPrincipal? GenericTokenPrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identity token to validate, if applicable.
+            /// </summary>
+            public string? IdentityToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal extracted from the identity token, if applicable.
+            /// </summary>
+            public ClaimsPrincipal? IdentityTokenPrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the refresh token to validate, if applicable.
+            /// </summary>
+            public string? RefreshToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal extracted from the refresh token, if applicable.
+            /// </summary>
+            public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the user code to validate, if applicable.
+            /// </summary>
+            public string? UserCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal extracted from the user code, if applicable.
+            /// </summary>
+            public ClaimsPrincipal? UserCodePrincipal { get; set; }
         }
 
         /// <summary>

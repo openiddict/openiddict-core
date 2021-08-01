@@ -1190,7 +1190,7 @@ namespace OpenIddict.Server
                     }
 
                     // Attach the security principal extracted from the token to the validation context.
-                    context.Principal = notification.Principal;
+                    context.Principal = notification.UserCodePrincipal;
                 }
             }
         }

@@ -227,13 +227,13 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0095));
                 }
 
-                // If the degraded mode was enabled, ensure custom authentication/sign-in handlers
+                // If the degraded mode was enabled, ensure custom validation/generation handlers
                 // have been registered to deal with device/user codes validation and generation.
 
                 if (options.GrantTypes.Contains(GrantTypes.DeviceCode))
                 {
                     if (!options.Handlers.Any(
-                        descriptor => descriptor.ContextType == typeof(ProcessAuthenticationContext) &&
+                        descriptor => descriptor.ContextType == typeof(ValidateTokenContext) &&
                                       descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
@@ -241,7 +241,7 @@ namespace OpenIddict.Server
                     }
 
                     if (!options.Handlers.Any(
-                        descriptor => descriptor.ContextType == typeof(ProcessSignInContext) &&
+                        descriptor => descriptor.ContextType == typeof(GenerateTokenContext) &&
                                       descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
@@ -258,8 +258,7 @@ namespace OpenIddict.Server
             options.SigningCredentials.Sort((left, right) => Compare(left.Key, right.Key));
 
             // Generate a key identifier for the encryption/signing keys that don't already have one.
-            foreach (var key in options.EncryptionCredentials
-                .Select(credentials => credentials.Key)
+            foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key)
                 .Concat(options.SigningCredentials.Select(credentials => credentials.Key))
                 .Where(key => string.IsNullOrEmpty(key.KeyId)))
             {

@@ -321,18 +321,18 @@ namespace OpenIddict.Validation
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The claims principal created from the claim retrieved from the remote server.</returns>
         public ValueTask<ClaimsPrincipal> IntrospectTokenAsync(Uri address, string token, CancellationToken cancellationToken = default)
-            => IntrospectTokenAsync(address, token, type: null, cancellationToken);
+            => IntrospectTokenAsync(address, token, hint: null, cancellationToken);
 
         /// <summary>
         /// Sends an introspection request to the specified address and returns the corresponding principal.
         /// </summary>
         /// <param name="address">The address of the remote metadata endpoint.</param>
         /// <param name="token">The token to introspect.</param>
-        /// <param name="type">The token type to introspect.</param>
+        /// <param name="hint">The token type to introspect, used as a hint by the authorization server.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>The claims principal created from the claim retrieved from the remote server.</returns>
         public async ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
-            Uri address, string token, string? type, CancellationToken cancellationToken = default)
+            Uri address, string token, string? hint, CancellationToken cancellationToken = default)
         {
             if (address is null)
             {
@@ -384,7 +384,7 @@ namespace OpenIddict.Validation
                         Address = address,
                         Request = request,
                         Token = token,
-                        TokenType = type
+                        TokenTypeHint = hint
                     };
 
                     await dispatcher.DispatchAsync(context);
@@ -445,8 +445,7 @@ namespace OpenIddict.Validation
                     {
                         Request = request,
                         Response = response,
-                        Token = token,
-                        TokenType = type
+                        Token = token
                     };
 
                     await dispatcher.DispatchAsync(context);
@@ -506,10 +505,10 @@ namespace OpenIddict.Validation
                 var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
                 var transaction = await factory.CreateTransactionAsync();
 
-                var context = new ProcessAuthenticationContext(transaction)
+                var context = new ValidateTokenContext(transaction)
                 {
                     Token = token,
-                    TokenType = TokenTypeHints.AccessToken
+                    ValidTokenTypes = { TokenTypeHints.AccessToken }
                 };
 
                 await dispatcher.DispatchAsync(context);

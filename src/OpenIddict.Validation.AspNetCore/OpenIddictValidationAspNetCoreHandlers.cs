@@ -24,6 +24,8 @@ using Microsoft.Net.Http.Headers;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlerFilters;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using static OpenIddict.Validation.OpenIddictValidationHandlerFilters;
+using static OpenIddict.Validation.OpenIddictValidationHandlers;
 using Properties = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants.Properties;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -144,8 +146,9 @@ namespace OpenIddict.Validation.AspNetCore
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireHttpRequest>()
+                    .AddFilter<RequireAccessTokenValidated>()
                     .UseSingletonHandler<ExtractAccessTokenFromAuthorizationHeader>()
-                    .SetOrder(int.MinValue + 50_000)
+                    .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 500)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -158,7 +161,7 @@ namespace OpenIddict.Validation.AspNetCore
                 }
 
                 // If a token was already resolved, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Token))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
                     return default;
                 }
@@ -176,8 +179,7 @@ namespace OpenIddict.Validation.AspNetCore
                 string header = request.Headers[HeaderNames.Authorization];
                 if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Token = header.Substring("Bearer ".Length);
-                    context.TokenType = TokenTypeHints.AccessToken;
+                    context.AccessToken = header.Substring("Bearer ".Length);
 
                     return default;
                 }
@@ -198,6 +200,7 @@ namespace OpenIddict.Validation.AspNetCore
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireHttpRequest>()
+                    .AddFilter<RequireAccessTokenValidated>()
                     .UseSingletonHandler<ExtractAccessTokenFromBodyForm>()
                     .SetOrder(ExtractAccessTokenFromAuthorizationHeader.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -212,7 +215,7 @@ namespace OpenIddict.Validation.AspNetCore
                 }
 
                 // If a token was already resolved, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Token))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
                     return;
                 }
@@ -236,8 +239,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var form = await request.ReadFormAsync(request.HttpContext.RequestAborted);
                 if (form.TryGetValue(Parameters.AccessToken, out StringValues token))
                 {
-                    context.Token = token;
-                    context.TokenType = TokenTypeHints.AccessToken;
+                    context.AccessToken = token;
 
                     return;
                 }
@@ -256,6 +258,7 @@ namespace OpenIddict.Validation.AspNetCore
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireHttpRequest>()
+                    .AddFilter<RequireAccessTokenValidated>()
                     .UseSingletonHandler<ExtractAccessTokenFromQueryString>()
                     .SetOrder(ExtractAccessTokenFromBodyForm.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -270,7 +273,7 @@ namespace OpenIddict.Validation.AspNetCore
                 }
 
                 // If a token was already resolved, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Token))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
                     return default;
                 }
@@ -287,8 +290,7 @@ namespace OpenIddict.Validation.AspNetCore
                 // See https://tools.ietf.org/html/rfc6750#section-2.3 for more information.
                 if (request.Query.TryGetValue(Parameters.AccessToken, out StringValues token))
                 {
-                    context.Token = token;
-                    context.TokenType = TokenTypeHints.AccessToken;
+                    context.AccessToken = token;
 
                     return default;
                 }

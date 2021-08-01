@@ -238,19 +238,30 @@ namespace OpenIddict.Validation
             }
 
             /// <summary>
-            /// Gets or sets the security principal.
+            /// Gets or sets the principal extracted from the access token, if applicable.
             /// </summary>
-            public ClaimsPrincipal? Principal { get; set; }
+            public ClaimsPrincipal? AccessTokenPrincipal { get; set; }
 
             /// <summary>
-            /// Gets or sets the token to validate.
+            /// Gets or sets the access token to validate, if applicable.
             /// </summary>
-            public string? Token { get; set; }
+            public string? AccessToken { get; set; }
 
             /// <summary>
-            /// Gets or sets the expected type of the token.
+            /// Gets or sets a boolean indicating whether an access token
+            /// must be resolved for the authentication to considered valid.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
             /// </summary>
-            public string? TokenType { get; set; }
+            public bool RequireAccessToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether an access token
+            /// should be extracted from the current context and validated.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool ValidateAccessToken { get; set; }
         }
 
         /// <summary>

@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Owin;
@@ -15,6 +14,7 @@ using Microsoft.Owin.Security.Infrastructure;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation.Owin
@@ -152,11 +152,11 @@ namespace OpenIddict.Validation.Owin
                     return null;
                 }
 
-                var properties = new AuthenticationProperties(new Dictionary<string, string?>
+                var properties = new OpenIddictValidationOwinProperties(new Dictionary<string, string?>
                 {
-                    [OpenIddictValidationOwinConstants.Properties.Error] = context.Error,
-                    [OpenIddictValidationOwinConstants.Properties.ErrorDescription] = context.ErrorDescription,
-                    [OpenIddictValidationOwinConstants.Properties.ErrorUri] = context.ErrorUri
+                    [Properties.Error] = context.Error,
+                    [Properties.ErrorDescription] = context.ErrorDescription,
+                    [Properties.ErrorUri] = context.ErrorUri
                 });
 
                 return new AuthenticationTicket(null, properties);
@@ -164,22 +164,38 @@ namespace OpenIddict.Validation.Owin
 
             else
             {
-                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-                Debug.Assert(!string.IsNullOrEmpty(context.Principal.GetTokenType()), SR.GetResourceString(SR.ID4009));
-                Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
+                // A single main claims-based principal instance can be attached to an authentication ticket.
+                // To return the most appropriate one, the principal is selected based on the endpoint type.
+                // Independently of the selected main principal, all principals resolved from validated tokens
+                // are attached to the authentication properties bag so they can be accessed from user code.
+                var principal = context.EndpointType switch
+                {
+                    OpenIddictValidationEndpointType.Unknown => context.AccessTokenPrincipal,
 
-                // Store the token to allow any OWIN/Katana component (e.g a controller)
-                // to retrieve it (e.g to make an API request to another application).
-                var properties = new AuthenticationProperties(new Dictionary<string, string?>
-                {
-                    [context.Principal.GetTokenType()!] = context.Token
-                })
-                {
-                    ExpiresUtc = context.Principal.GetExpirationDate(),
-                    IssuedUtc = context.Principal.GetCreationDate()
+                    _ => null
                 };
 
-                return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, properties);
+                if (principal is null)
+                {
+                    return null;
+                }
+
+                var properties = new OpenIddictValidationOwinProperties
+                {
+                    ExpiresUtc = principal.GetExpirationDate(),
+                    IssuedUtc = principal.GetCreationDate()
+                };
+
+                // Attach the tokens to allow any OWIN/Katana component (e.g a controller)
+                // to retrieve them (e.g to make an API request to another application).
+
+                if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
+                {
+                    properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
+                    properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
+                }
+
+                return new AuthenticationTicket((ClaimsIdentity) principal.Identity, properties);
             }
         }
 
@@ -202,7 +218,7 @@ namespace OpenIddict.Validation.Owin
             // corresponds to a challenge response, as LookupChallenge() will always return a non-null
             // value when active authentication is used, even if no challenge was actually triggered.
             var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode);
-            if (challenge is not null && (Response.StatusCode == 401 || Response.StatusCode == 403))
+            if (challenge is not null && Response.StatusCode is 401 or 403)
             {
                 var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0166));

@@ -899,6 +899,37 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Determines whether a given token has any of the specified types.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="types">The expected types.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token has any of the specified types, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasTypeAsync(TToken token, ImmutableArray<string> types, CancellationToken cancellationToken = default)
+        {
+            if (token is null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            var type = await Store.GetTypeAsync(token, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                return false;
+            }
+
+            for (var index = 0; index < types.Length; index++)
+            {
+                if (string.Equals(type, types[index], StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
@@ -1429,6 +1460,10 @@ namespace OpenIddict.Core
         /// <inheritdoc/>
         ValueTask<bool> IOpenIddictTokenManager.HasTypeAsync(object token, string type, CancellationToken cancellationToken)
             => HasTypeAsync((TToken) token, type, cancellationToken);
+
+        /// <inheritdoc/>
+        ValueTask<bool> IOpenIddictTokenManager.HasTypeAsync(object token, ImmutableArray<string> types, CancellationToken cancellationToken)
+            => HasTypeAsync((TToken) token, types, cancellationToken);
 
         /// <inheritdoc/>
         IAsyncEnumerable<object> IOpenIddictTokenManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)

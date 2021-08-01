@@ -14,6 +14,7 @@ using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.IntegrationTests
@@ -177,7 +178,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -223,7 +224,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -269,7 +270,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -318,7 +319,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -362,7 +363,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -403,7 +404,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -452,7 +453,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -499,7 +500,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -539,7 +540,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -586,7 +587,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -632,7 +633,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -681,7 +682,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -725,7 +726,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -774,7 +775,7 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {

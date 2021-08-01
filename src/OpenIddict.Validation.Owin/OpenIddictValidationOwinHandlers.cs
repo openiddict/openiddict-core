@@ -20,6 +20,8 @@ using Microsoft.Owin.Security;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using static OpenIddict.Validation.OpenIddictValidationHandlerFilters;
+using static OpenIddict.Validation.OpenIddictValidationHandlers;
 using static OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants;
 using static OpenIddict.Validation.Owin.OpenIddictValidationOwinHandlerFilters;
 using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
@@ -142,8 +144,9 @@ namespace OpenIddict.Validation.Owin
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireOwinRequest>()
+                    .AddFilter<RequireAccessTokenValidated>()
                     .UseSingletonHandler<ExtractAccessTokenFromAuthorizationHeader>()
-                    .SetOrder(int.MinValue + 50_000)
+                    .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 500)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -156,7 +159,7 @@ namespace OpenIddict.Validation.Owin
                 }
 
                 // If a token was already resolved, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Token))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
                     return default;
                 }
@@ -174,8 +177,7 @@ namespace OpenIddict.Validation.Owin
                 string header = request.Headers[Headers.Authorization];
                 if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Token = header.Substring("Bearer ".Length);
-                    context.TokenType = TokenTypeHints.AccessToken;
+                    context.AccessToken = header.Substring("Bearer ".Length);
 
                     return default;
                 }
@@ -196,6 +198,7 @@ namespace OpenIddict.Validation.Owin
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireOwinRequest>()
+                    .AddFilter<RequireAccessTokenValidated>()
                     .UseSingletonHandler<ExtractAccessTokenFromBodyForm>()
                     .SetOrder(ExtractAccessTokenFromAuthorizationHeader.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -210,7 +213,7 @@ namespace OpenIddict.Validation.Owin
                 }
 
                 // If a token was already resolved, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Token))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
                     return;
                 }
@@ -235,8 +238,7 @@ namespace OpenIddict.Validation.Owin
                 string token = form[Parameters.AccessToken];
                 if (!string.IsNullOrEmpty(token))
                 {
-                    context.Token = token;
-                    context.TokenType = TokenTypeHints.AccessToken;
+                    context.AccessToken = token;
 
                     return;
                 }
@@ -255,6 +257,7 @@ namespace OpenIddict.Validation.Owin
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireOwinRequest>()
+                    .AddFilter<RequireAccessTokenValidated>()
                     .UseSingletonHandler<ExtractAccessTokenFromQueryString>()
                     .SetOrder(ExtractAccessTokenFromBodyForm.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -269,7 +272,7 @@ namespace OpenIddict.Validation.Owin
                 }
 
                 // If a token was already resolved, don't overwrite it.
-                if (!string.IsNullOrEmpty(context.Token))
+                if (!string.IsNullOrEmpty(context.AccessToken))
                 {
                     return default;
                 }
@@ -287,8 +290,7 @@ namespace OpenIddict.Validation.Owin
                 string token = request.Query[Parameters.AccessToken];
                 if (!string.IsNullOrEmpty(token))
                 {
-                    context.Token = token;
-                    context.TokenType = TokenTypeHints.AccessToken;
+                    context.AccessToken = token;
 
                     return default;
                 }

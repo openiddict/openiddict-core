@@ -134,7 +134,7 @@ To validate tokens received by custom API endpoints, the OpenIddict validation h
 When implementing custom token deserialization, a 'oi_tkn_typ' claim containing the type of the token being processed must be added to the security principal.</value>
   </data>
   <data name="ID0005" xml:space="preserve">
-    <value>The type of token associated with the deserialized principal ({0}) doesn't match the expected token type ({1}).</value>
+    <value>The type of token associated with the deserialized principal ({0}) doesn't match one of the expected token types ({1}).</value>
   </data>
   <data name="ID0006" xml:space="preserve">
     <value>A challenge response cannot be returned from this endpoint.</value>
@@ -447,10 +447,10 @@ To use key rollover, register both the new certificate and the old one in the cr
     <value>No custom verification request validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateVerificationRequestContext&gt;' must be implemented to validate verification requests (e.g to ensure the user_code is valid).</value>
   </data>
   <data name="ID0096" xml:space="preserve">
-    <value>No custom verification authentication handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessAuthenticationContext&gt;' must be implemented to handle device and user codes (e.g by retrieving them from a database).</value>
+    <value>No custom token validation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ValidateTokenContext&gt;' must be implemented to handle device and user codes (e.g by retrieving them from a database).</value>
   </data>
   <data name="ID0097" xml:space="preserve">
-    <value>No custom verification sign-in handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;ProcessSignInContext&gt;' must be implemented to handle device and user codes and store them in a database, if applicable.</value>
+    <value>No custom token generation handler was found. When enabling the degraded mode, a custom 'IOpenIddictServerHandler&lt;GenerateTokenContext&gt;' must be implemented to handle device and user codes (e.g by storing them in a database).</value>
   </data>
   <data name="ID0098" xml:space="preserve">
     <value>The event handler of type '{0}' couldn't be resolved.
@@ -1476,6 +1476,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID2117" xml:space="preserve">
     <value>The specified authorization type is not supported by the default token manager.</value>
   </data>
+  <data name="ID2118" xml:space="preserve">
+    <value>The token usage returned by the authorization server is not supported.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -1552,64 +1555,17 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>'{Claim}' was excluded from the identity token claims.</value>
   </data>
   <data name="ID6012" xml:space="preserve">
-    <value>The token entry for access token '{Identifier}' was successfully created.</value>
+    <value>The token entry for '{Type}' token '{Identifier}' was successfully created.</value>
   </data>
   <data name="ID6013" xml:space="preserve">
-    <value>A new access token was successfully created: {Payload}.
+    <value>A new '{Type}' token was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
   </data>
   <data name="ID6014" xml:space="preserve">
-    <value>The token entry for access token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
-  </data>
-  <data name="ID6015" xml:space="preserve">
-    <value>The token entry for authorization code '{Identifier}' was successfully created.</value>
-  </data>
-  <data name="ID6016" xml:space="preserve">
-    <value>A new authorization code was successfully created: {Payload}.
-The principal used to create the token contained the following claims: {Claims}.</value>
-  </data>
-  <data name="ID6017" xml:space="preserve">
-    <value>The token entry for authorization code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
-  </data>
-  <data name="ID6018" xml:space="preserve">
-    <value>The token entry for device code '{Identifier}' was successfully created.</value>
-  </data>
-  <data name="ID6019" xml:space="preserve">
-    <value>A new device code was successfully created: {Payload}.
-The principal used to create the token contained the following claims: {Claims}.</value>
-  </data>
-  <data name="ID6020" xml:space="preserve">
-    <value>The token entry for device code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
+    <value>The token entry for '{Type}' token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
   </data>
   <data name="ID6021" xml:space="preserve">
     <value>The reference token entry for device code '{Identifier}' was successfully updated'.</value>
-  </data>
-  <data name="ID6022" xml:space="preserve">
-    <value>The token entry for refresh token '{Identifier}' was successfully created.</value>
-  </data>
-  <data name="ID6023" xml:space="preserve">
-    <value>A new refresh token was successfully created: {Payload}.
-The principal used to create the token contained the following claims: {Claims}.</value>
-  </data>
-  <data name="ID6024" xml:space="preserve">
-    <value>The token entry for refresh token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
-  </data>
-  <data name="ID6025" xml:space="preserve">
-    <value>The token entry for user code '{Identifier}' was successfully created.</value>
-  </data>
-  <data name="ID6026" xml:space="preserve">
-    <value>A new user code was successfully created: {Payload}.
-The principal used to create the token contained the following claims: {Claims}.</value>
-  </data>
-  <data name="ID6027" xml:space="preserve">
-    <value>The token entry for user code '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
-  </data>
-  <data name="ID6028" xml:space="preserve">
-    <value>The token entry for identity token '{Identifier}' was successfully created.</value>
-  </data>
-  <data name="ID6029" xml:space="preserve">
-    <value>A new identity token was successfully created: {Payload}.
-The principal used to create the token contained the following claims: {Claims}.</value>
   </data>
   <data name="ID6030" xml:space="preserve">
     <value>The authorization request was successfully extracted: {Request}.</value>

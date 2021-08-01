@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server;
 using OpenIddict.Server.DataProtection;
-using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlerFilters;
 using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -39,13 +38,6 @@ namespace Microsoft.Extensions.DependencyInjection
             // Register the built-in server event handlers used by the OpenIddict Data Protection components.
             // Note: the order used here is not important, as the actual order is set in the options.
             builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
-
-            // Register the built-in filter used by the default OpenIddict Data Protection event handlers.
-            builder.Services.TryAddSingleton<RequireDataProtectionAccessTokenFormatEnabled>();
-            builder.Services.TryAddSingleton<RequireDataProtectionAuthorizationCodeFormatEnabled>();
-            builder.Services.TryAddSingleton<RequireDataProtectionDeviceCodeFormatEnabled>();
-            builder.Services.TryAddSingleton<RequireDataProtectionRefreshTokenFormatEnabled>();
-            builder.Services.TryAddSingleton<RequireDataProtectionUserCodeFormatEnabled>();
 
             // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
             builder.Services.TryAddEnumerable(new[]

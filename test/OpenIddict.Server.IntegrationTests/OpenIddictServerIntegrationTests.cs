@@ -21,6 +21,7 @@ using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.IntegrationTests
@@ -190,12 +191,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -237,12 +238,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         var identity = new ClaimsIdentity("Bearer");
                         identity.AddClaim(new Claim(Claims.IssuedAt, "1577836800", ClaimValueTypes.Integer64));
@@ -289,12 +290,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         var identity = new ClaimsIdentity("Bearer");
                         identity.AddClaim(new Claim(Claims.ExpiresAt, "2524608000", ClaimValueTypes.Integer64));
@@ -341,12 +342,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -391,12 +392,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -441,12 +442,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -491,12 +492,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -541,12 +542,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -590,12 +591,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -639,12 +640,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AccessToken)
@@ -688,12 +689,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(null)
@@ -738,12 +739,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("access_token", context.Token);
-                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AccessToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -848,12 +849,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("id_token", context.Token);
-                        Assert.Equal(TokenTypeHints.IdToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.IdToken)
@@ -959,12 +960,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("authorization_code", context.Token);
-                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -1071,12 +1072,12 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     }));
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("refresh_token", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -1226,7 +1227,7 @@ namespace OpenIddict.Server.IntegrationTests
                 options.EnableDegradedMode();
                 options.SetUserinfoEndpointUris("/challenge");
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
@@ -1681,7 +1682,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -1741,7 +1742,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -1792,7 +1793,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -1820,12 +1821,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -1848,7 +1849,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -1874,12 +1875,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
-                        Assert.Equal(TokenTypeHints.DeviceCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.DeviceCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                             .SetTokenType(TokenTypeHints.DeviceCode)
@@ -1914,7 +1915,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -1940,12 +1941,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -1967,7 +1968,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2011,7 +2012,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2056,7 +2057,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2102,7 +2103,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2149,7 +2150,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2195,7 +2196,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2220,12 +2221,12 @@ namespace OpenIddict.Server.IntegrationTests
                 options.EnableDegradedMode();
                 options.RegisterScopes(Scopes.Profile);
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2292,7 +2293,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2318,12 +2319,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -2347,7 +2348,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2373,12 +2374,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
-                        Assert.Equal(TokenTypeHints.DeviceCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.DeviceCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                             .SetTokenType(TokenTypeHints.DeviceCode)
@@ -2414,7 +2415,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2440,12 +2441,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2468,7 +2469,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2503,7 +2504,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2549,7 +2550,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2596,7 +2597,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2649,7 +2650,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2698,7 +2699,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2726,12 +2727,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -2755,7 +2756,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2781,12 +2782,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
-                        Assert.Equal(TokenTypeHints.DeviceCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.DeviceCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
                             .SetTokenType(TokenTypeHints.DeviceCode)
@@ -2822,7 +2823,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2848,12 +2849,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -2876,7 +2877,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -2911,7 +2912,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
 
                 options.AddEventHandler<HandleTokenRequestContext>(builder =>
@@ -2966,7 +2967,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -3013,7 +3014,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -3056,7 +3057,7 @@ namespace OpenIddict.Server.IntegrationTests
                         return default;
                     });
 
-                    builder.SetOrder(EvaluateTokenTypes.Descriptor.Order + 500);
+                    builder.SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 500);
                 });
             });
 
@@ -3080,12 +3081,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.EnableDegradedMode();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -3149,12 +3150,12 @@ namespace OpenIddict.Server.IntegrationTests
 
             await using var server = await CreateServerAsync(options =>
             {
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
@@ -3229,12 +3230,12 @@ namespace OpenIddict.Server.IntegrationTests
             {
                 options.DisableAuthorizationStorage();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -3293,12 +3294,12 @@ namespace OpenIddict.Server.IntegrationTests
                 options.DisableAuthorizationStorage();
                 options.DisableRollingRefreshTokens();
 
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                options.AddEventHandler<ValidateTokenContext>(builder =>
                 {
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
+                        Assert.Equal(new[] { TokenTypeHints.RefreshToken }, context.ValidTokenTypes);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
@@ -3852,10 +3853,10 @@ namespace OpenIddict.Server.IntegrationTests
                     options.AddEventHandler<ValidateVerificationRequestContext>(builder =>
                         builder.UseInlineHandler(context => default));
 
-                    options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                    options.AddEventHandler<ValidateTokenContext>(builder =>
                         builder.UseInlineHandler(context => default));
 
-                    options.AddEventHandler<ProcessSignInContext>(builder =>
+                    options.AddEventHandler<GenerateTokenContext>(builder =>
                         builder.UseInlineHandler(context => default));
                 });
         }
