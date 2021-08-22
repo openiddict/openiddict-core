@@ -217,7 +217,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCertificate(
-            Assembly assembly, string resource, string password)
+            Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddEncryptionCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder AddEncryptionCertificate(
             Assembly assembly, string resource,
-            string password, X509KeyStorageFlags flags)
+            string? password, X509KeyStorageFlags flags)
         {
             if (assembly is null)
             {
@@ -247,11 +247,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (string.IsNullOrEmpty(resource))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0063), nameof(password));
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
@@ -269,7 +264,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder AddEncryptionCertificate(Stream stream, string password)
+        public OpenIddictValidationBuilder AddEncryptionCertificate(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
             // Note: ephemeral key sets are currently not supported on macOS.
             => AddEncryptionCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -292,16 +287,11 @@ namespace Microsoft.Extensions.DependencyInjection
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictValidationBuilder AddEncryptionCertificate(
-            Stream stream, string password, X509KeyStorageFlags flags)
+            Stream stream, string? password, X509KeyStorageFlags flags)
         {
             if (stream is null)
             {
                 throw new ArgumentNullException(nameof(stream));
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0063), nameof(password));
             }
 
             using var buffer = new MemoryStream();
