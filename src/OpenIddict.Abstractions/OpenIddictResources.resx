@@ -341,9 +341,6 @@ Consider using 'options.AddEncryptionCredentials(EncryptingCredentials)' instead
   <data name="ID0062" xml:space="preserve">
     <value>The resource cannot be null or empty.</value>
   </data>
-  <data name="ID0063" xml:space="preserve">
-    <value>The password cannot be null or empty.</value>
-  </data>
   <data name="ID0064" xml:space="preserve">
     <value>The certificate was not found in the specified assembly.</value>
   </data>
