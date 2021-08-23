@@ -615,18 +615,15 @@ namespace OpenIddict.Validation
                     // (using the "typ" header) or by ASP.NET Core Data Protection (using per-token-type purposes strings).
                     // To ensure tokens deserialized using a custom routine are of the expected type, a manual check is used,
                     // which requires that a special claim containing the token type be present in the security principal.
-                    if (context.ValidTokenTypes.Count > 0)
+                    var type = context.Principal.GetTokenType();
+                    if (string.IsNullOrEmpty(type))
                     {
-                        var type = context.Principal.GetTokenType();
-                        if (string.IsNullOrEmpty(type))
-                        {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0004));
-                        }
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0004));
+                    }
 
-                        if (!context.ValidTokenTypes.Contains(type))
-                        {
-                            throw new InvalidOperationException(SR.FormatID0005(type, string.Join(", ", context.ValidTokenTypes)));
-                        }
+                    if (context.ValidTokenTypes.Count > 0 && !context.ValidTokenTypes.Contains(type))
+                    {
+                        throw new InvalidOperationException(SR.FormatID0005(type, string.Join(", ", context.ValidTokenTypes)));
                     }
 
                     return default;
