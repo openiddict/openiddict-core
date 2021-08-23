@@ -72,7 +72,12 @@ namespace OpenIddict.Server
                 /*
                  * Token request handling:
                  */
-                AttachPrincipal.Descriptor);
+                AttachPrincipal.Descriptor,
+                
+                /*
+                 * Token response handling:
+                 */
+                NormalizeErrorResponse.Descriptor);
 
             /// <summary>
             /// Contains the logic responsible of extracting token requests and invoking the corresponding event handlers.
@@ -1712,6 +1717,56 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                     context.Principal ??= notification.Principal;
+
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of converting token errors to standard invalid_grant responses.
+            /// </summary>
+            public class NormalizeErrorResponse : IOpenIddictServerHandler<ApplyTokenResponseContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyTokenResponseContext>()
+                        .UseSingletonHandler<NormalizeErrorResponse>()
+                        .SetOrder(int.MinValue + 100_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ApplyTokenResponseContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (string.IsNullOrEmpty(context.Error))
+                    {
+                        return default;
+                    }
+
+                    // If the error indicates an invalid token caused by an invalid authorization,
+                    // device code or refresh token, return a standard invalid_grant.
+
+                    if (context.Request is null || !(context.Request.IsAuthorizationCodeGrantType() ||
+                                                     context.Request.IsDeviceCodeGrantType() ||
+                                                     context.Request.IsRefreshTokenGrantType()))
+                    {
+                        return default;
+                    }
+
+
+                    context.Response.Error = context.Error switch
+                    {
+                        Errors.InvalidToken or Errors.ExpiredToken => Errors.InvalidGrant,
+
+                        _ => context.Error // Otherwise, keep the error as-is.
+                    };
 
                     return default;
                 }

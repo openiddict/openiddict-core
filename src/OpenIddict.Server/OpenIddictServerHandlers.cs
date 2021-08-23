@@ -695,6 +695,9 @@ namespace OpenIddict.Server
 
                 var notification = new ValidateTokenContext(context.Transaction)
                 {
+                    // Don't validate the lifetime of id_tokens used as id_token_hints.
+                    DisableLifetimeValidation = context.EndpointType is OpenIddictServerEndpointType.Authorization or
+                                                                        OpenIddictServerEndpointType.Logout,
                     Token = context.IdentityToken,
                     ValidTokenTypes = { TokenTypeHints.IdToken }
                 };
@@ -2218,6 +2221,11 @@ namespace OpenIddict.Server
 
                 var notification = new GenerateTokenContext(context.Transaction)
                 {
+                    ClientId = context.ClientId,
+                    CreateTokenEntry = !context.Options.DisableTokenStorage,
+                    // Access tokens can be converted to reference tokens if the
+                    // corresponding option was enabled in the server options.
+                    PersistTokenPayload = context.Options.UseReferenceAccessTokens,
                     Principal = context.AccessTokenPrincipal!,
                     TokenType = TokenTypeHints.AccessToken
                 };
@@ -2280,6 +2288,9 @@ namespace OpenIddict.Server
 
                 var notification = new GenerateTokenContext(context.Transaction)
                 {
+                    ClientId = context.ClientId,
+                    CreateTokenEntry = !context.Options.DisableTokenStorage,
+                    PersistTokenPayload = !context.Options.DisableTokenStorage,
                     Principal = context.AuthorizationCodePrincipal!,
                     TokenType = TokenTypeHints.AuthorizationCode
                 };
@@ -2342,6 +2353,16 @@ namespace OpenIddict.Server
 
                 var notification = new GenerateTokenContext(context.Transaction)
                 {
+                    ClientId = context.ClientId,
+                    CreateTokenEntry = !context.Options.DisableTokenStorage,
+                    // Device codes can be converted to reference tokens if they are not generated
+                    // as part of a device code swap made by the user code verification endpoint.
+                    PersistTokenPayload = context.EndpointType switch
+                    {
+                        OpenIddictServerEndpointType.Verification => false,
+
+                        _ => !context.Options.DisableTokenStorage
+                    },
                     Principal = context.DeviceCodePrincipal!,
                     TokenType = TokenTypeHints.DeviceCode
                 };
@@ -2404,6 +2425,11 @@ namespace OpenIddict.Server
 
                 var notification = new GenerateTokenContext(context.Transaction)
                 {
+                    ClientId = context.ClientId,
+                    CreateTokenEntry = !context.Options.DisableTokenStorage,
+                    // Refresh tokens can be converted to reference tokens if the
+                    // corresponding option was enabled in the server options.
+                    PersistTokenPayload = context.Options.UseReferenceRefreshTokens,
                     Principal = context.RefreshTokenPrincipal!,
                     TokenType = TokenTypeHints.RefreshToken
                 };
@@ -2711,6 +2737,9 @@ namespace OpenIddict.Server
 
                 var notification = new GenerateTokenContext(context.Transaction)
                 {
+                    ClientId = context.ClientId,
+                    CreateTokenEntry = !context.Options.DisableTokenStorage,
+                    PersistTokenPayload = !context.Options.DisableTokenStorage,
                     Principal = context.UserCodePrincipal!,
                     TokenType = TokenTypeHints.UserCode
                 };
@@ -2773,6 +2802,10 @@ namespace OpenIddict.Server
 
                 var notification = new GenerateTokenContext(context.Transaction)
                 {
+                    ClientId = context.ClientId,
+                    CreateTokenEntry = !context.Options.DisableTokenStorage,
+                    // Identity tokens cannot never be reference tokens.
+                    PersistTokenPayload = false,
                     Principal = context.IdentityTokenPrincipal!,
                     TokenType = TokenTypeHints.IdToken
                 };

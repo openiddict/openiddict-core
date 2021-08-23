@@ -3436,6 +3436,9 @@ namespace OpenIddict.Server.IntegrationTests
                     mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
+                    mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(TokenTypeHints.AuthorizationCode);
+
                     mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(false);
 
@@ -3535,6 +3538,9 @@ namespace OpenIddict.Server.IntegrationTests
                     mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
+                    mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(TokenTypeHints.AuthorizationCode);
+
                     mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(false);
 
@@ -3617,6 +3623,9 @@ namespace OpenIddict.Server.IntegrationTests
 
                     mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                    mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(TokenTypeHints.RefreshToken);
 
                     mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(false);
@@ -3703,6 +3712,9 @@ namespace OpenIddict.Server.IntegrationTests
                     mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
 
+                    mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(TokenTypeHints.RefreshToken);
+
                     mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(false);
 
@@ -3775,17 +3787,12 @@ namespace OpenIddict.Server.IntegrationTests
                     builder.UseInlineHandler(context =>
                     {
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(context.Request.IsAuthorizationCodeGrantType() ?
+                            .SetTokenType(context.Request!.IsAuthorizationCodeGrantType() ?
                                 TokenTypeHints.AuthorizationCode :
                                 TokenTypeHints.RefreshToken)
                             .SetPresenters("Fabrikam")
                             .SetTokenId("0270F515-C5B1-4FBF-B673-D7CAF7CCDABC")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                        if (context.Request.IsAuthorizationCodeGrantType())
-                        {
-                            context.Principal.SetPresenters("Fabrikam");
-                        }
 
                         return default;
                     });

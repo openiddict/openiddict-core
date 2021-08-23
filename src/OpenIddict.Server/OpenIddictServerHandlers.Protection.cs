@@ -184,29 +184,25 @@ namespace OpenIddict.Server
                         !await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ToImmutableArray()))
                     {
                         context.Reject(
-                            error: context.EndpointType switch
+                            error: Errors.InvalidToken,
+                            description: context.ValidTokenTypes.Count switch
                             {
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                                _                                  => Errors.InvalidToken
-                            },
-                            description: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
                                     => SR.GetResourceString(SR.ID2001),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
                                     => SR.GetResourceString(SR.ID2002),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
                                     => SR.GetResourceString(SR.ID2003),
 
                                 _ => SR.GetResourceString(SR.ID2004)
                             },
-                            uri: context.EndpointType switch
+                            uri: context.ValidTokenTypes.Count switch
                             {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
                                     => SR.FormatID8000(SR.ID2001),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
                                     => SR.FormatID8000(SR.ID2002),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
                                     => SR.FormatID8000(SR.ID2003),
 
                                 _ => SR.FormatID8000(SR.ID2004),
@@ -305,25 +301,22 @@ namespace OpenIddict.Server
                         context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
 
                         context.Reject(
-                            error: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                                _                                  => Errors.InvalidToken
-                            },
+                            error: Errors.InvalidToken,
                             description: result.Exception switch
                             {
-                                SecurityTokenInvalidTypeException => context.EndpointType switch
+                                SecurityTokenInvalidTypeException => context.ValidTokenTypes.Count switch
                                 {
-                                    OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
                                         => SR.GetResourceString(SR.ID2005),
 
-                                    OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
                                         => SR.GetResourceString(SR.ID2006),
 
-                                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
                                         => SR.GetResourceString(SR.ID2007),
 
-                                    OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2008),
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.AccessToken)
+                                        => SR.GetResourceString(SR.ID2008),
 
                                     _ => SR.GetResourceString(SR.ID2089)
                                 },
@@ -336,18 +329,19 @@ namespace OpenIddict.Server
                             },
                             uri: result.Exception switch
                             {
-                                SecurityTokenInvalidTypeException => context.EndpointType switch
+                                SecurityTokenInvalidTypeException => context.ValidTokenTypes.Count switch
                                 {
-                                    OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
                                         => SR.FormatID8000(SR.ID2005),
 
-                                    OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
                                         => SR.FormatID8000(SR.ID2006),
 
-                                    OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
                                         => SR.FormatID8000(SR.ID2007),
 
-                                    OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2008),
+                                    1 when context.ValidTokenTypes.Contains(TokenTypeHints.AccessToken)
+                                        => SR.FormatID8000(SR.ID2008),
 
                                     _ => SR.FormatID8000(SR.ID2089)
                                 },
@@ -629,36 +623,30 @@ namespace OpenIddict.Server
                     if (context.Principal is null)
                     {
                         context.Reject(
-                            error: context.EndpointType switch
+                            error: Errors.InvalidToken,
+                            description: context.ValidTokenTypes.Count switch
                             {
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                                _                                  => Errors.InvalidToken
-                            },
-                            description: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
-                                    => SR.GetResourceString(SR.ID2009),
-
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
                                     => SR.GetResourceString(SR.ID2001),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
                                     => SR.GetResourceString(SR.ID2002),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
                                     => SR.GetResourceString(SR.ID2003),
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.IdToken)
+                                    => SR.GetResourceString(SR.ID2009),
 
                                 _ => SR.GetResourceString(SR.ID2004)
                             },
-                            uri: context.EndpointType switch
+                            uri: context.ValidTokenTypes.Count switch
                             {
-                                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
-                                    => SR.FormatID8000(SR.ID2009),
-
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.AuthorizationCode)
                                     => SR.FormatID8000(SR.ID2001),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.DeviceCode)
                                     => SR.FormatID8000(SR.ID2002),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.RefreshToken)
                                     => SR.FormatID8000(SR.ID2003),
+                                1 when context.ValidTokenTypes.Contains(TokenTypeHints.IdToken)
+                                    => SR.FormatID8000(SR.ID2009),
 
                                 _ => SR.FormatID8000(SR.ID2004)
                             });
@@ -735,30 +723,20 @@ namespace OpenIddict.Server
                     if (token is null)
                     {
                         context.Reject(
-                            error: context.EndpointType switch
+                            error: Errors.InvalidToken,
+                            description: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                                _                                  => Errors.InvalidToken
-                            },
-                            description: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2001),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2002),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.GetResourceString(SR.ID2003),
+                                TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2001),
+                                TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2002),
+                                TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2003),
 
                                 _ => SR.GetResourceString(SR.ID2004)
                             },
-                            uri: context.EndpointType switch
+                            uri: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2001),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2002),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.FormatID8000(SR.ID2003),
+                                TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2001),
+                                TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2002),
+                                TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2003),
 
                                 _ => SR.FormatID8000(SR.ID2004)
                             });
@@ -766,88 +744,69 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (context.EndpointType == OpenIddictServerEndpointType.Token && (context.Request.IsAuthorizationCodeGrantType() ||
-                                                                                       context.Request.IsDeviceCodeGrantType() ||
-                                                                                       context.Request.IsRefreshTokenGrantType()))
+                    // If the token is already marked as redeemed, this may indicate that it was compromised.
+                    // In this case, revoke the entire chain of tokens associated with the authorization.
+                    // Special logic is used to avoid revoking refresh tokens already marked as redeemed to allow for a small leeway.
+                    // Note: the authorization itself is not revoked to allow the legitimate client to start a new flow.
+                    // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
+                    if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
                     {
-                        // If the authorization code/device code/refresh token is already marked as redeemed, this may indicate
-                        // that it was compromised. In this case, revoke the entire chain of tokens associated with the authorization.
-                        // Special logic is used to avoid revoking refresh tokens already marked as redeemed to allow for a small leeway.
-                        // Note: the authorization itself is not revoked to allow the legitimate client to start a new flow.
-                        // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
-                        if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
+                        if (!context.Principal.HasTokenType(TokenTypeHints.RefreshToken) || !await IsReusableAsync(token))
                         {
-                            if (!context.Request.IsRefreshTokenGrantType() || !await IsReusableAsync(token))
-                            {
-                                context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), identifier);
+                            context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), identifier);
 
-                                context.Reject(
-                                    error: context.EndpointType switch
-                                    {
-                                        OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
+                            context.Reject(
+                                error: Errors.InvalidToken,
+                                description: context.Principal.GetTokenType() switch
+                                {
+                                    TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2010),
+                                    TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2011),
+                                    TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2012),
 
-                                        _ => Errors.InvalidToken
-                                    },
-                                    description: context.EndpointType switch
-                                    {
-                                        OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                            => SR.GetResourceString(SR.ID2010),
-                                        OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                            => SR.GetResourceString(SR.ID2011),
-                                        OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                            => SR.GetResourceString(SR.ID2012),
+                                    _ => SR.GetResourceString(SR.ID2013)
+                                },
+                                uri: context.Principal.GetTokenType() switch
+                                {
+                                    TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2010),
+                                    TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2011),
+                                    TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2012),
 
-                                        _ => SR.GetResourceString(SR.ID2013)
-                                    },
-                                    uri: context.EndpointType switch
-                                    {
-                                        OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                            => SR.FormatID8000(SR.ID2010),
-                                        OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                            => SR.FormatID8000(SR.ID2011),
-                                        OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                            => SR.FormatID8000(SR.ID2012),
+                                    _ => SR.FormatID8000(SR.ID2013)
+                                });
 
-                                        _ => SR.FormatID8000(SR.ID2013)
-                                    });
-
-                                // Revoke all the token entries associated with the authorization.
-                                await TryRevokeChainAsync(await _tokenManager.GetAuthorizationIdAsync(token));
-
-                                return;
-                            }
+                            // Revoke all the token entries associated with the authorization.
+                            await TryRevokeChainAsync(await _tokenManager.GetAuthorizationIdAsync(token));
 
                             return;
                         }
 
-                        if (context.Request.IsDeviceCodeGrantType())
-                        {
-                            // If the device code is not marked as valid yet, return an authorization_pending error.
-                            if (await _tokenManager.HasStatusAsync(token, Statuses.Inactive))
-                            {
-                                context.Logger.LogInformation(SR.GetResourceString(SR.ID6003), identifier);
+                        return;
+                    }
 
-                                context.Reject(
-                                    error: Errors.AuthorizationPending,
-                                    description: SR.GetResourceString(SR.ID2014),
-                                    uri: SR.FormatID8000(SR.ID2014));
+                    // If the token is not marked as valid yet, return an authorization_pending error.
+                    if (await _tokenManager.HasStatusAsync(token, Statuses.Inactive))
+                    {
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6003), identifier);
 
-                                return;
-                            }
+                        context.Reject(
+                            error: Errors.AuthorizationPending,
+                            description: SR.GetResourceString(SR.ID2014),
+                            uri: SR.FormatID8000(SR.ID2014));
 
-                            // If the device code is marked as rejected, return an access_denied error.
-                            if (await _tokenManager.HasStatusAsync(token, Statuses.Rejected))
-                            {
-                                context.Logger.LogInformation(SR.GetResourceString(SR.ID6004), identifier);
+                        return;
+                    }
 
-                                context.Reject(
-                                    error: Errors.AccessDenied,
-                                    description: SR.GetResourceString(SR.ID2015),
-                                    uri: SR.FormatID8000(SR.ID2015));
+                    // If the token is marked as rejected, return an access_denied error.
+                    if (await _tokenManager.HasStatusAsync(token, Statuses.Rejected))
+                    {
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6004), identifier);
 
-                                return;
-                            }
-                        }
+                        context.Reject(
+                            error: Errors.AccessDenied,
+                            description: SR.GetResourceString(SR.ID2015),
+                            uri: SR.FormatID8000(SR.ID2015));
+
+                        return;
                     }
 
                     if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
@@ -855,30 +814,20 @@ namespace OpenIddict.Server
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), identifier);
 
                         context.Reject(
-                            error: context.EndpointType switch
+                            error: Errors.InvalidToken,
+                            description: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                                _                                  => Errors.InvalidToken
-                            },
-                            description: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2016),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2017),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.GetResourceString(SR.ID2018),
+                                TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2016),
+                                TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2017),
+                                TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2018),
 
                                 _ => SR.GetResourceString(SR.ID2019)
                             },
-                            uri: context.EndpointType switch
+                            uri: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2016),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2017),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.FormatID8000(SR.ID2018),
+                                TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2016),
+                                TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2017),
+                                TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2018),
 
                                 _ => SR.FormatID8000(SR.ID2019)
                             });
@@ -975,30 +924,20 @@ namespace OpenIddict.Server
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), identifier);
 
                         context.Reject(
-                            error: context.EndpointType switch
+                            error: Errors.InvalidToken,
+                            description: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                                _                                  => Errors.InvalidToken
-                            },
-                            description: context.EndpointType switch
-                            {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2020),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2021),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.GetResourceString(SR.ID2022),
+                                TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2020),
+                                TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2021),
+                                TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2022),
 
                                 _ => SR.GetResourceString(SR.ID2023)
                             },
-                            uri: context.EndpointType switch
+                            uri: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2020),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2021),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.FormatID8000(SR.ID2022),
+                                TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2020),
+                                TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2021),
+                                TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2022),
 
                                 _ => SR.FormatID8000(SR.ID2023)
                             });
@@ -1033,9 +972,7 @@ namespace OpenIddict.Server
 
                     Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                    // Don't validate the lifetime of id_tokens used as id_token_hints.
-                    if (context.ValidTokenTypes.Count is 1 && context.ValidTokenTypes.ElementAt(0) is TokenTypeHints.IdToken &&
-                        context.EndpointType is OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout)
+                    if (context.DisableLifetimeValidation)
                     {
                         return default;
                     }
@@ -1044,34 +981,24 @@ namespace OpenIddict.Server
                     if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
                     {
                         context.Reject(
-                            error: context.EndpointType switch
+                            error: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => Errors.ExpiredToken,
-
-                                OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-
-                                _ => Errors.InvalidToken
+                                TokenTypeHints.DeviceCode => Errors.ExpiredToken,
+                                _                         => Errors.InvalidToken
                             },
-                            description: context.EndpointType switch
+                            description: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2016),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.GetResourceString(SR.ID2017),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.GetResourceString(SR.ID2018),
+                                TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2016),
+                                TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2017),
+                                TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2018),
 
                                 _ => SR.GetResourceString(SR.ID2019)
                             },
-                            uri: context.EndpointType switch
+                            uri: context.Principal.GetTokenType() switch
                             {
-                                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2016),
-                                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => SR.FormatID8000(SR.ID2017),
-                                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => SR.FormatID8000(SR.ID2018),
+                                TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2016),
+                                TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2017),
+                                TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2018),
 
                                 _ => SR.FormatID8000(SR.ID2019)
                             });
@@ -1170,6 +1097,11 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
+                    if (!context.CreateTokenEntry)
+                    {
+                        return;
+                    }
+
                     var descriptor = new OpenIddictTokenDescriptor
                     {
                         AuthorizationId = context.Principal.GetAuthorizationId(),
@@ -1201,9 +1133,9 @@ namespace OpenIddict.Server
                     };
 
                     // If the client application is known, associate it with the token.
-                    if (!string.IsNullOrEmpty(context.Request.ClientId))
+                    if (!string.IsNullOrEmpty(context.ClientId))
                     {
-                        var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
+                        var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                         if (application is null)
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
@@ -1386,25 +1318,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!(context.TokenType switch
-                    {
-                        // Access and refresh tokens can be converted to reference tokens
-                        // if the corresponding option was enabled in the server options.
-                        TokenTypeHints.AccessToken  => context.Options.UseReferenceAccessTokens,
-                        TokenTypeHints.RefreshToken => context.Options.UseReferenceRefreshTokens,
-
-                        // By default, authorization/user codes are always converted to reference tokens.
-                        TokenTypeHints.AuthorizationCode or TokenTypeHints.UserCode => true,
-
-                        // Device codes are only converted to reference tokens if they are not generated
-                        // as part of a device code swap made by the user code verification endpoint.
-                        TokenTypeHints.DeviceCode => context.EndpointType is not OpenIddictServerEndpointType.Verification,
-
-                        // Identity tokens cannot be converted to reference tokens.
-                        TokenTypeHints.IdToken => false,
-
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                    }))
+                    if (!context.PersistTokenPayload)
                     {
                         return;
                     }

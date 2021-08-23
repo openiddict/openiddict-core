@@ -221,8 +221,8 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal(SR.GetResourceString(SR.ID2019), response.ErrorDescription);
-            Assert.Equal(SR.FormatID8000(SR.ID2019), response.ErrorUri);
+            Assert.Equal(SR.GetResourceString(SR.ID2018), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2018), response.ErrorUri);
         }
 
         [Theory]
