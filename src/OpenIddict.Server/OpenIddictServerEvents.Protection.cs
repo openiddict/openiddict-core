@@ -29,13 +29,31 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets or sets the request.
+            /// Gets or sets the request, or <c>null</c> if it is not available.
             /// </summary>
-            public OpenIddictRequest Request
+            public OpenIddictRequest? Request
             {
-                get => Transaction.Request!;
+                get => Transaction.Request;
                 set => Transaction.Request = value;
             }
+
+            /// <summary>
+            /// Gets or sets the client identifier of the application
+            /// the resulting token will be issued to, if applicable.
+            /// </summary>
+            public string? ClientId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether a token entry
+            /// should be created to persist token metadata in a database.
+            /// </summary>
+            public bool CreateTokenEntry { get; set; }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether the token payload
+            /// should be persisted alongside the token metadata in the database.
+            /// </summary>
+            public bool PersistTokenPayload { get; set; }
 
             /// <summary>
             /// Gets or sets the security principal used to create the token.
@@ -82,13 +100,18 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets or sets the request.
+            /// Gets or sets the request, or <c>null</c> if it is not available.
             /// </summary>
-            public OpenIddictRequest Request
+            public OpenIddictRequest? Request
             {
-                get => Transaction.Request!;
+                get => Transaction.Request;
                 set => Transaction.Request = value;
             }
+
+            /// <summary>
+            /// Gets or sets a boolean indicating whether lifetime validation is disabled.
+            /// </summary>
+            public bool DisableLifetimeValidation { get; set; }
 
             /// <summary>
             /// Gets or sets the security token handler used to validate the token.
