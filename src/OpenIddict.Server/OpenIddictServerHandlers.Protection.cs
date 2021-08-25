@@ -1084,6 +1084,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .AddFilter<RequireTokenStorageEnabled>()
+                        .AddFilter<RequireTokenEntryCreated>()
                         .UseScopedHandler<CreateTokenEntry>()
                         .SetOrder(AttachSecurityCredentials.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1095,11 +1096,6 @@ namespace OpenIddict.Server
                     if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (!context.CreateTokenEntry)
-                    {
-                        return;
                     }
 
                     var descriptor = new OpenIddictTokenDescriptor
@@ -1305,6 +1301,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .AddFilter<RequireTokenStorageEnabled>()
+                        .AddFilter<RequireTokenPayloadPersisted>()
                         .UseScopedHandler<ConvertReferenceToken>()
                         .SetOrder(GenerateIdentityModelToken.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1316,11 +1313,6 @@ namespace OpenIddict.Server
                     if (context is null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (!context.PersistTokenPayload)
-                    {
-                        return;
                     }
 
                     var identifier = context.Principal.GetTokenId();

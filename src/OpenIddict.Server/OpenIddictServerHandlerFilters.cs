@@ -495,6 +495,38 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if no token entry is created in the database.
+        /// </summary>
+        public class RequireTokenEntryCreated : IOpenIddictServerHandlerFilter<GenerateTokenContext>
+        {
+            public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.CreateTokenEntry);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the token payload is not persisted in the database.
+        /// </summary>
+        public class RequireTokenPayloadPersisted : IOpenIddictServerHandlerFilter<GenerateTokenContext>
+        {
+            public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.PersistTokenPayload);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if the request is not a token request.
         /// </summary>
         public class RequireTokenRequest : IOpenIddictServerHandlerFilter<BaseContext>
