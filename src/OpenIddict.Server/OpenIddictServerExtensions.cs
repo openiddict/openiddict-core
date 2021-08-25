@@ -74,8 +74,10 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireSlidingRefreshTokenExpirationEnabled>();
             builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();
-            builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
+            builder.Services.TryAddSingleton<RequireTokenEntryCreated>();
+            builder.Services.TryAddSingleton<RequireTokenPayloadPersisted>();
             builder.Services.TryAddSingleton<RequireTokenRequest>();
+            builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
             builder.Services.TryAddSingleton<RequireUserCodeGenerated>();
             builder.Services.TryAddSingleton<RequireUserCodeValidated>();
             builder.Services.TryAddSingleton<RequireUserinfoRequest>();
