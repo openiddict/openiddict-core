@@ -181,36 +181,40 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets the period of time authorization codes remain valid after being issued. The default value is 5 minutes.
-        /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
+        /// While not recommended, this property can be set to <see langword="null"/> to issue authorization codes that never expire.
         /// </summary>
         public TimeSpan? AuthorizationCodeLifetime { get; set; } = TimeSpan.FromMinutes(5);
 
         /// <summary>
         /// Gets or sets the period of time access tokens remain valid after being issued. The default value is 1 hour.
         /// The client application is expected to refresh or acquire a new access token after the token has expired.
-        /// While not recommended, this property can be set to <c>null</c> to issue access tokens that never expire.
+        /// While not recommended, this property can be set to <see langword="null"/> to issue access tokens that never expire.
         /// </summary>
         public TimeSpan? AccessTokenLifetime { get; set; } = TimeSpan.FromHours(1);
 
         /// <summary>
         /// Gets or sets the period of time device codes remain valid after being issued. The default value is 10 minutes.
         /// The client application is expected to start a whole new authentication flow after the device code has expired.
-        /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
+        /// While not recommended, this property can be set to <see langword="null"/> to issue device codes that never expire.
         /// Note: the same value should be chosen for both <see cref="UserCodeLifetime"/> and this property.
         /// </summary>
+        /// <remarks>
+        /// The expiration date of a device code is automatically extended when the user approves the
+        /// authorization demand to give the client application enough time to redeem the device code.
+        /// </remarks>
         public TimeSpan? DeviceCodeLifetime { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
         /// Gets or sets the period of time identity tokens remain valid after being issued. The default value is 20 minutes.
         /// The client application is expected to refresh or acquire a new identity token after the token has expired.
-        /// While not recommended, this property can be set to <c>null</c> to issue identity tokens that never expire.
+        /// While not recommended, this property can be set to <see langword="null"/> to issue identity tokens that never expire.
         /// </summary>
         public TimeSpan? IdentityTokenLifetime { get; set; } = TimeSpan.FromMinutes(20);
 
         /// <summary>
         /// Gets or sets the period of time refresh tokens remain valid after being issued. The default value is 14 days.
         /// The client application is expected to start a whole new authentication flow after the refresh token has expired.
-        /// While not recommended, this property can be set to <c>null</c> to issue refresh tokens that never expire.
+        /// While not recommended, this property can be set to <see langword="null"/> to issue refresh tokens that never expire.
         /// </summary>
         public TimeSpan? RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(14);
 
@@ -223,7 +227,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets or sets the period of time user codes remain valid after being issued. The default value is 10 minutes.
         /// The client application is expected to start a whole new authentication flow after the user code has expired.
-        /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
+        /// While not recommended, this property can be set to <see langword="null"/> to issue user codes that never expire.
         /// Note: the same value should be chosen for both <see cref="DeviceCodeLifetime"/> and this property.
         /// </summary>
         public TimeSpan? UserCodeLifetime { get; set; } = TimeSpan.FromMinutes(10);

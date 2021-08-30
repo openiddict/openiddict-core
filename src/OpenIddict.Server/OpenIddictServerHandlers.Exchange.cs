@@ -1760,10 +1760,13 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-
                     context.Response.Error = context.Error switch
                     {
-                        Errors.InvalidToken or Errors.ExpiredToken => Errors.InvalidGrant,
+                        // Keep "expired_token" errors as-is if the request is a device code token request.
+                        Errors.ExpiredToken when context.Request.IsDeviceCodeGrantType() => Errors.ExpiredToken,
+
+                        // Convert "invalid_token" errors to "invalid_grant".
+                        Errors.InvalidToken => Errors.InvalidGrant,
 
                         _ => context.Error // Otherwise, keep the error as-is.
                     };

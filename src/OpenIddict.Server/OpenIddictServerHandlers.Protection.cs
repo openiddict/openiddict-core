@@ -40,9 +40,9 @@ namespace OpenIddict.Server
                 MapInternalClaims.Descriptor,
                 RestoreReferenceTokenProperties.Descriptor,
                 ValidatePrincipal.Descriptor,
+                ValidateExpirationDate.Descriptor,
                 ValidateTokenEntry.Descriptor,
                 ValidateAuthorizationEntry.Descriptor,
-                ValidateExpirationDate.Descriptor,
 
                 /*
                 * Token generation:
@@ -180,8 +180,12 @@ namespace OpenIddict.Server
                     }
 
                     // If the type associated with the token entry doesn't match one of the expected types, return an error.
-                    if (context.ValidTokenTypes.Count > 0 &&
-                        !await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ToImmutableArray()))
+                    if (!(context.ValidTokenTypes.Count switch
+                    {
+                        0 => true, // If no specific token type is expected, accept all token types at this stage.
+                        1 => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ElementAt(0)),
+                        _ => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ToImmutableArray())
+                    }))
                     {
                         context.Reject(
                             error: Errors.InvalidToken,
@@ -675,6 +679,69 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting authentication demands that use an expired token.
+            /// </summary>
+            public class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                        .UseSingletonHandler<ValidateExpirationDate>()
+                        .SetOrder(ValidatePrincipal.Descriptor.Order + 1_000)
+                        .SetType(OpenIddictServerHandlerType.BuiltIn)
+                        .Build();
+
+                /// <inheritdoc/>
+                public ValueTask HandleAsync(ValidateTokenContext context)
+                {
+                    if (context is null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                    if (context.DisableLifetimeValidation)
+                    {
+                        return default;
+                    }
+
+                    var date = context.Principal.GetExpirationDate();
+                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
+                    {
+                        context.Reject(
+                            error: context.Principal.GetTokenType() switch
+                            {
+                                TokenTypeHints.DeviceCode => Errors.ExpiredToken,
+                                _                         => Errors.InvalidToken
+                            },
+                            description: context.Principal.GetTokenType() switch
+                            {
+                                TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2016),
+                                TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2017),
+                                TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2018),
+
+                                _ => SR.GetResourceString(SR.ID2019)
+                            },
+                            uri: context.Principal.GetTokenType() switch
+                            {
+                                TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2016),
+                                TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2017),
+                                TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2018),
+
+                                _ => SR.FormatID8000(SR.ID2019)
+                            });
+
+                        return default;
+                    }
+
+                    return default;
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting authentication demands that
             /// use a token whose entry is no longer valid (e.g was revoked).
             /// Note: this handler is not used when the degraded mode is enabled.
@@ -696,7 +763,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .AddFilter<RequireTokenStorageEnabled>()
                         .UseScopedHandler<ValidateTokenEntry>()
-                        .SetOrder(ValidatePrincipal.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateExpirationDate.Descriptor.Order + 1_000)
                         .SetType(OpenIddictServerHandlerType.BuiltIn)
                         .Build();
 
@@ -944,69 +1011,6 @@ namespace OpenIddict.Server
 
                         return;
                     }
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of rejecting authentication demands that use an expired token.
-            /// </summary>
-            public class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
-                        .UseSingletonHandler<ValidateExpirationDate>()
-                        .SetOrder(ValidateTokenEntry.Descriptor.Order + 1_000)
-                        .SetType(OpenIddictServerHandlerType.BuiltIn)
-                        .Build();
-
-                /// <inheritdoc/>
-                public ValueTask HandleAsync(ValidateTokenContext context)
-                {
-                    if (context is null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                    if (context.DisableLifetimeValidation)
-                    {
-                        return default;
-                    }
-
-                    var date = context.Principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
-                    {
-                        context.Reject(
-                            error: context.Principal.GetTokenType() switch
-                            {
-                                TokenTypeHints.DeviceCode => Errors.ExpiredToken,
-                                _                         => Errors.InvalidToken
-                            },
-                            description: context.Principal.GetTokenType() switch
-                            {
-                                TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2016),
-                                TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2017),
-                                TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2018),
-
-                                _ => SR.GetResourceString(SR.ID2019)
-                            },
-                            uri: context.Principal.GetTokenType() switch
-                            {
-                                TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2016),
-                                TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2017),
-                                TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2018),
-
-                                _ => SR.FormatID8000(SR.ID2019)
-                            });
-
-                        return default;
-                    }
-
-                    return default;
                 }
             }
 
