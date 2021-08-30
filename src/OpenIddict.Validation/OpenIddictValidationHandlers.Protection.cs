@@ -153,8 +153,12 @@ namespace OpenIddict.Validation
                     }
 
                     // If the type associated with the token entry doesn't match one of the expected types, return an error.
-                    if (context.ValidTokenTypes.Count > 0 &&
-                        !await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ToImmutableArray()))
+                    if (!(context.ValidTokenTypes.Count switch
+                    {
+                        0 => true, // If no specific token type is expected, accept all token types at this stage.
+                        1 => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ElementAt(0)),
+                        _ => await _tokenManager.HasTypeAsync(token, context.ValidTokenTypes.ToImmutableArray())
+                    }))
                     {
                         context.Reject(
                             error: Errors.InvalidToken,

@@ -475,6 +475,75 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_ExpiredDeviceCodeCausesAnError()
+        {
+            // Arrange
+            var token = new OpenIddictToken();
+
+            var manager = CreateTokenManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByReferenceIdAsync("g43LaWCUrz2RaLILz2L1bg1bOpMSv1hGrH12IIkB9H4", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                mock.Setup(manager => manager.HasTypeAsync(token, TokenTypeHints.DeviceCode, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                mock.Setup(manager => manager.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS");
+
+                mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                mock.Setup(manager => manager.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(DateTimeOffset.UtcNow - TimeSpan.FromDays(1));
+
+                mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(TokenTypeHints.DeviceCode);
+            });
+
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.AddEventHandler<ValidateTokenContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS", context.Token);
+                        Assert.Equal(new[] { TokenTypeHints.DeviceCode }, context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.Services.AddSingleton(manager);
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.DeviceCode,
+                DeviceCode = "g43LaWCUrz2RaLILz2L1bg1bOpMSv1hGrH12IIkB9H4"
+            });
+
+            // Assert
+            Assert.Equal(Errors.ExpiredToken, response.Error);
+            Assert.Equal(SR.GetResourceString(SR.ID2017), response.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2017), response.ErrorUri);
+
+            Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Inactive, It.IsAny<CancellationToken>()), Times.Never());
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenPresentersAreMissing()
         {
             // Arrange

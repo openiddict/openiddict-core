@@ -1790,6 +1790,7 @@ namespace OpenIddict.Server
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDeviceCodeGenerated>()
                     .UseSingletonHandler<PrepareDeviceCodePrincipal>()
                     .SetOrder(PrepareAuthorizationCodePrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -1804,13 +1805,6 @@ namespace OpenIddict.Server
                 }
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                // Note: a device code principal is produced when a device code is included in the response or when a
-                // device code entry is replaced when processing a sign-in response sent to the verification endpoint.
-                if (context.EndpointType != OpenIddictServerEndpointType.Verification && !context.GenerateDeviceCode)
-                {
-                    return default;
-                }
 
                 // Create a new principal containing only the filtered claims.
                 // Actors identities are also filtered (delegation scenarios).
@@ -2044,7 +2038,7 @@ namespace OpenIddict.Server
                 principal.SetClaim(Claims.Nonce, context.EndpointType switch
                 {
                     OpenIddictServerEndpointType.Authorization => context.Request.Nonce,
-                    OpenIddictServerEndpointType.Token => context.Principal.GetClaim(Claims.Private.Nonce),
+                    OpenIddictServerEndpointType.Token         => context.Principal.GetClaim(Claims.Private.Nonce),
 
                     _ => null
                 });
