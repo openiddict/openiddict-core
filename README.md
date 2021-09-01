@@ -47,6 +47,19 @@ will result in a `PlatformNotSupportedException` being thrown at runtime if no v
  - X.509 ECDSA signing certificates/keys: calling `AddSigningCertificate()` or `AddSigningKey()`
 with an ECDSA certificate/key will always result in a `PlatformNotSupportedException` being thrown at runtime.
 
+## Certification
+
+Unlike many other identity providers, **OpenIddict is not a turnkey solution but a framework that requires writing custom code**
+to be operational (typically, at least an authorization controller), making it a poor candidate for the certification program.
+
+While a reference implementation could be submitted as-is, **this wouldn't guarantee that implementations deployed by OpenIddict users would be standard-compliant.**
+
+Instead, **developers are encouraged to execute the conformance tests against their own deployment** once they've implemented their own logic.
+
+> The samples repository contains [a dedicated sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/Contruum/Contruum.Server) specially designed to be used
+> with the OpenID Connect Provider Certification tool and demonstrate that OpenIddict can be easily used in a certified implementation. To allow executing the certification tests
+> as fast as possible, that sample doesn't include any membership or consent feature (two hardcoded identities are proposed for tests that require switching between identities).
+
 --------------
 
 ## Resources
