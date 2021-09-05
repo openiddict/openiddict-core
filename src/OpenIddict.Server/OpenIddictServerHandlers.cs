@@ -1030,7 +1030,7 @@ namespace OpenIddict.Server
                     typeof(ProcessAuthenticationContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                Debug.Assert(notification.UserCodePrincipal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(notification.UserCodePrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Extract the device code identifier from the user code principal.
                 var identifier = notification.UserCodePrincipal.GetClaim(Claims.Private.DeviceCodeId);
@@ -1089,7 +1089,7 @@ namespace OpenIddict.Server
                     typeof(ProcessAuthenticationContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                Debug.Assert(notification.UserCodePrincipal is not null, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(notification.UserCodePrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // Extract the device code identifier from the authentication principal.
                 var identifier = notification.UserCodePrincipal.GetTokenId();
@@ -1916,7 +1916,7 @@ namespace OpenIddict.Server
                         typeof(ProcessAuthenticationContext).FullName!) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
-                    Debug.Assert(notification.RefreshTokenPrincipal is not null, SR.GetResourceString(SR.ID4006));
+                    Debug.Assert(notification.RefreshTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                     principal.SetExpirationDate(notification.RefreshTokenPrincipal.GetExpirationDate());
                 }

@@ -813,6 +813,8 @@ namespace OpenIddict.Server
                         typeof(ValidateRevocationRequestContext).FullName!) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
+                    Debug.Assert(notification.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
                     context.Principal ??= notification.Principal;
 
                     return default;

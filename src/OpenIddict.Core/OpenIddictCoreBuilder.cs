@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictApplicationStore<OpenIddictApplication>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
@@ -145,7 +145,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictAuthorizationStore<OpenIddictAuthorization>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
@@ -201,7 +201,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictScopeStore<OpenIddictScope>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
@@ -257,7 +257,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictTokenStore<OpenIddictToken>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
@@ -311,7 +311,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictApplicationManager<OpenIddictApplication>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
@@ -405,7 +405,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictAuthorizationManager<OpenIddictAuthorization>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
@@ -499,7 +499,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictScopeManager<OpenIddictScope>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
@@ -593,7 +593,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // or closed generics (e.g OpenIddictTokenManager<OpenIddictToken>).
             if (type.IsGenericTypeDefinition)
             {
-                if (type.GetGenericArguments().Length != 1)
+                if (type.GetGenericArguments() is not { Length: 1 })
                 {
                     throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
                 }
