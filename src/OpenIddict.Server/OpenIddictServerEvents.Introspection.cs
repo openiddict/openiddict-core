@@ -98,7 +98,7 @@ namespace OpenIddict.Server
             /// <summary>
             /// Gets or sets the security principal extracted from the introspected token.
             /// </summary>
-            public ClaimsPrincipal? Principal { get; set; }
+            public ClaimsPrincipal Principal { get; set; } = default!;
 
             /// <summary>
             /// Gets the additional claims returned to the caller.

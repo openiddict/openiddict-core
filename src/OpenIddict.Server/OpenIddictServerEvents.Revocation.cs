@@ -98,7 +98,7 @@ namespace OpenIddict.Server
             /// <summary>
             /// Gets or sets the security principal extracted from the revoked token.
             /// </summary>
-            public ClaimsPrincipal? Principal { get; set; }
+            public ClaimsPrincipal Principal { get; set; } = default!;
 
             /// <summary>
             /// Gets the authentication ticket.
