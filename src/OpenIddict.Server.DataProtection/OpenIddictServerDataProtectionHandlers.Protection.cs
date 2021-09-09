@@ -98,49 +98,49 @@ namespace OpenIddict.Server.DataProtection
                         0 => context.TokenTypeHint switch
                         {
                             TokenTypeHints.AuthorizationCode =>
-                                ValidateToken(context.Token, TokenTypeHints.AuthorizationCode) ??
-                                ValidateToken(context.Token, TokenTypeHints.AccessToken)       ??
-                                ValidateToken(context.Token, TokenTypeHints.RefreshToken)      ??
-                                ValidateToken(context.Token, TokenTypeHints.DeviceCode)        ??
-                                ValidateToken(context.Token, TokenTypeHints.UserCode),
+                                ValidateToken(TokenTypeHints.AuthorizationCode) ??
+                                ValidateToken(TokenTypeHints.AccessToken)       ??
+                                ValidateToken(TokenTypeHints.RefreshToken)      ??
+                                ValidateToken(TokenTypeHints.DeviceCode)        ??
+                                ValidateToken(TokenTypeHints.UserCode),
 
                             TokenTypeHints.DeviceCode =>
-                                ValidateToken(context.Token, TokenTypeHints.DeviceCode)        ??
-                                ValidateToken(context.Token, TokenTypeHints.AccessToken)       ??
-                                ValidateToken(context.Token, TokenTypeHints.RefreshToken)      ??
-                                ValidateToken(context.Token, TokenTypeHints.AuthorizationCode) ??
-                                ValidateToken(context.Token, TokenTypeHints.UserCode),
+                                ValidateToken(TokenTypeHints.DeviceCode)        ??
+                                ValidateToken(TokenTypeHints.AccessToken)       ??
+                                ValidateToken(TokenTypeHints.RefreshToken)      ??
+                                ValidateToken(TokenTypeHints.AuthorizationCode) ??
+                                ValidateToken(TokenTypeHints.UserCode),
 
                             TokenTypeHints.RefreshToken =>
-                                ValidateToken(context.Token, TokenTypeHints.RefreshToken)      ??
-                                ValidateToken(context.Token, TokenTypeHints.AccessToken)       ??
-                                ValidateToken(context.Token, TokenTypeHints.AuthorizationCode) ??
-                                ValidateToken(context.Token, TokenTypeHints.DeviceCode)        ??
-                                ValidateToken(context.Token, TokenTypeHints.UserCode),
+                                ValidateToken(TokenTypeHints.RefreshToken)      ??
+                                ValidateToken(TokenTypeHints.AccessToken)       ??
+                                ValidateToken(TokenTypeHints.AuthorizationCode) ??
+                                ValidateToken(TokenTypeHints.DeviceCode)        ??
+                                ValidateToken(TokenTypeHints.UserCode),
 
                             TokenTypeHints.UserCode =>
-                                ValidateToken(context.Token, TokenTypeHints.UserCode)          ??
-                                ValidateToken(context.Token, TokenTypeHints.AccessToken)       ??
-                                ValidateToken(context.Token, TokenTypeHints.RefreshToken)      ??
-                                ValidateToken(context.Token, TokenTypeHints.AuthorizationCode) ??
-                                ValidateToken(context.Token, TokenTypeHints.DeviceCode),
+                                ValidateToken(TokenTypeHints.UserCode)          ??
+                                ValidateToken(TokenTypeHints.AccessToken)       ??
+                                ValidateToken(TokenTypeHints.RefreshToken)      ??
+                                ValidateToken(TokenTypeHints.AuthorizationCode) ??
+                                ValidateToken(TokenTypeHints.DeviceCode),
 
                             _ =>
-                                ValidateToken(context.Token, TokenTypeHints.AccessToken)       ??
-                                ValidateToken(context.Token, TokenTypeHints.RefreshToken)      ??
-                                ValidateToken(context.Token, TokenTypeHints.AuthorizationCode) ??
-                                ValidateToken(context.Token, TokenTypeHints.DeviceCode)        ??
-                                ValidateToken(context.Token, TokenTypeHints.UserCode),
+                                ValidateToken(TokenTypeHints.AccessToken)       ??
+                                ValidateToken(TokenTypeHints.RefreshToken)      ??
+                                ValidateToken(TokenTypeHints.AuthorizationCode) ??
+                                ValidateToken(TokenTypeHints.DeviceCode)        ??
+                                ValidateToken(TokenTypeHints.UserCode),
                         },
 
                         // If a single valid token type was set, ignore the specified token type hint.
                         1 => context.ValidTokenTypes.ElementAt(0) switch
                         {
-                            TokenTypeHints.AccessToken       => ValidateToken(context.Token, TokenTypeHints.AccessToken),
-                            TokenTypeHints.RefreshToken      => ValidateToken(context.Token, TokenTypeHints.RefreshToken),
-                            TokenTypeHints.AuthorizationCode => ValidateToken(context.Token, TokenTypeHints.AuthorizationCode),
-                            TokenTypeHints.DeviceCode        => ValidateToken(context.Token, TokenTypeHints.DeviceCode),
-                            TokenTypeHints.UserCode          => ValidateToken(context.Token, TokenTypeHints.UserCode),
+                            TokenTypeHints.AccessToken       => ValidateToken(TokenTypeHints.AccessToken),
+                            TokenTypeHints.RefreshToken      => ValidateToken(TokenTypeHints.RefreshToken),
+                            TokenTypeHints.AuthorizationCode => ValidateToken(TokenTypeHints.AuthorizationCode),
+                            TokenTypeHints.DeviceCode        => ValidateToken(TokenTypeHints.DeviceCode),
+                            TokenTypeHints.UserCode          => ValidateToken(TokenTypeHints.UserCode),
 
                             _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
                         },
@@ -162,11 +162,11 @@ namespace OpenIddict.Server.DataProtection
                         })
                         .Select(type => type switch
                         {
-                            TokenTypeHints.AccessToken       => ValidateToken(context.Token, TokenTypeHints.AccessToken),
-                            TokenTypeHints.RefreshToken      => ValidateToken(context.Token, TokenTypeHints.RefreshToken),
-                            TokenTypeHints.AuthorizationCode => ValidateToken(context.Token, TokenTypeHints.AuthorizationCode),
-                            TokenTypeHints.DeviceCode        => ValidateToken(context.Token, TokenTypeHints.DeviceCode),
-                            TokenTypeHints.UserCode          => ValidateToken(context.Token, TokenTypeHints.UserCode),
+                            TokenTypeHints.AccessToken       => ValidateToken(TokenTypeHints.AccessToken),
+                            TokenTypeHints.RefreshToken      => ValidateToken(TokenTypeHints.RefreshToken),
+                            TokenTypeHints.AuthorizationCode => ValidateToken(TokenTypeHints.AuthorizationCode),
+                            TokenTypeHints.DeviceCode        => ValidateToken(TokenTypeHints.DeviceCode),
+                            TokenTypeHints.UserCode          => ValidateToken(TokenTypeHints.UserCode),
 
                             _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
                         })
@@ -190,7 +190,7 @@ namespace OpenIddict.Server.DataProtection
 
                     return default;
 
-                    ClaimsPrincipal? ValidateToken(string token, string type)
+                    ClaimsPrincipal? ValidateToken(string type)
                     {
                         // Create a Data Protection protector using the provider registered in the options.
                         var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
@@ -221,7 +221,7 @@ namespace OpenIddict.Server.DataProtection
 
                         try
                         {
-                            using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(token)));
+                            using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(context.Token)));
                             using var reader = new BinaryReader(buffer);
 
                             // Note: since the data format relies on a data protector using different "purposes" strings
@@ -231,7 +231,7 @@ namespace OpenIddict.Server.DataProtection
 
                         catch (Exception exception)
                         {
-                            context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), token);
+                            context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), context.Token);
 
                             return null;
                         }
