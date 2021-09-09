@@ -73,9 +73,16 @@ namespace OpenIddict.Validation.DataProtection
 
                     // Note: unlike the equivalent handler in the server stack, the logic used here is
                     // simpler as only access tokens are currently supported by the validation stack.
-                    var principal = context.ValidTokenTypes.Count is 0 || context.ValidTokenTypes.Contains(TokenTypeHints.AccessToken) ?
-                        ValidateToken(context.Token, TokenTypeHints.AccessToken) :
-                        null;
+                    var principal = context.ValidTokenTypes.Count switch
+                    {
+                        // If no valid token type was set, all supported token types are allowed.
+                        0 => ValidateToken(TokenTypeHints.AccessToken),
+
+                        _ when context.ValidTokenTypes.Contains(TokenTypeHints.AccessToken)
+                            => ValidateToken(TokenTypeHints.AccessToken),
+
+                        _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
+                    };
 
                     if (principal is null)
                     {
@@ -93,7 +100,7 @@ namespace OpenIddict.Validation.DataProtection
 
                     return default;
 
-                    ClaimsPrincipal? ValidateToken(string token, string type)
+                    ClaimsPrincipal? ValidateToken(string type)
                     {
                         // Create a Data Protection protector using the provider registered in the options.
                         var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
@@ -108,7 +115,7 @@ namespace OpenIddict.Validation.DataProtection
 
                         try
                         {
-                            using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(token)));
+                            using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(context.Token)));
                             using var reader = new BinaryReader(buffer);
 
                             // Note: since the data format relies on a data protector using different "purposes" strings
@@ -118,7 +125,7 @@ namespace OpenIddict.Validation.DataProtection
 
                         catch (Exception exception)
                         {
-                            context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), token);
+                            context.Logger.LogTrace(exception, SR.GetResourceString(SR.ID6153), context.Token);
 
                             return null;
                         }
