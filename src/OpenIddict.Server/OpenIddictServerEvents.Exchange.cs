@@ -127,11 +127,6 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets or sets the security principal used to forge the token response.
-            /// </summary>
-            public ClaimsPrincipal? Principal { get; set; }
-
-            /// <summary>
             /// Gets the error code returned to the client application.
             /// When the response indicates a successful response,
             /// this property returns <c>null</c>.
