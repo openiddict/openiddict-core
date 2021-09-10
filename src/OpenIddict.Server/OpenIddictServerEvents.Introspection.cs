@@ -101,10 +101,9 @@ namespace OpenIddict.Server
             public ClaimsPrincipal Principal { get; set; } = default!;
 
             /// <summary>
-            /// Gets the additional claims returned to the caller.
+            /// Gets the additional claims returned to the client application.
             /// </summary>
-            public IDictionary<string, OpenIddictParameter> Claims { get; } =
-                new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
+            public Dictionary<string, OpenIddictParameter> Claims { get; } = new(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets the list of audiences returned to the caller

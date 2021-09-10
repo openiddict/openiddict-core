@@ -35,7 +35,9 @@ namespace OpenIddict.Server.Owin
             IDictionary<string, string?>? items,
             IDictionary<string, object?>? parameters)
             : base(items)
-            => Parameters = parameters ?? new Dictionary<string, object?>(StringComparer.Ordinal);
+            => Parameters = parameters is not null ?
+                new(parameters, StringComparer.Ordinal) :
+                new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the collection of parameters passed to the authentication handler.
@@ -44,7 +46,7 @@ namespace OpenIddict.Server.Owin
         /// Note: these properties are not intended for serialization or persistence,
         /// only for flowing data between call sites.
         /// </remarks>
-        public IDictionary<string, object?> Parameters { get; }
+        public Dictionary<string, object?> Parameters { get; }
 
         /// <summary>
         /// Gets a parameter from the <see cref="Parameters"/> collection.

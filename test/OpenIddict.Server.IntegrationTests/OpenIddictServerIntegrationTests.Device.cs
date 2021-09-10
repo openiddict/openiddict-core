@@ -17,6 +17,7 @@ using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.IntegrationTests
@@ -173,8 +174,6 @@ namespace OpenIddict.Server.IntegrationTests
                         .ReturnsAsync(true);
                 }));
 
-                options.EnableDegradedMode();
-
                 options.Configure(options => options.GrantTypes.Remove(GrantTypes.RefreshToken));
             });
 
@@ -251,8 +250,11 @@ namespace OpenIddict.Server.IntegrationTests
                         .ReturnsAsync(true);
                 }));
 
-                options.EnableDegradedMode();
                 options.RegisterScopes("registered_scope");
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingRefreshTokenExpiration();
 
                 options.AddEventHandler<HandleDeviceRequestContext>(builder =>
                     builder.UseInlineHandler(context =>
@@ -886,6 +888,58 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
+        public async Task HandleDeviceRequest_ResponseContainsCustomParameters()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.Services.AddSingleton(CreateApplicationManager(mock =>
+                {
+                    mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+                }));
+
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleDeviceRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+                        context.Parameters["custom_parameter"] = "custom_value";
+                        context.Parameters["parameter_with_multiple_values"] = new[]
+                        {
+                            "custom_value_1",
+                            "custom_value_2"
+                        };
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/device", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam"
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.DeviceCode);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        }
+
+        [Fact]
         public async Task ApplyDeviceResponse_AllowsHandlingResponse()
         {
             // Arrange
@@ -1265,6 +1319,69 @@ namespace OpenIddict.Server.IntegrationTests
 
             // Assert
             Assert.Equal("Bob le Magnifique", (string?) response["name"]);
+        }
+
+        [Fact]
+        public async Task HandleVerificationRequest_ResponseContainsCustomParameters()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ValidateTokenContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("WDJB-MJHT", context.Token);
+                        Assert.Equal(new[] { TokenTypeHints.UserCode }, context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity())
+                            .SetTokenType(TokenTypeHints.UserCode);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleVerificationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        context.Parameters["custom_parameter"] = "custom_value";
+                        context.Parameters["parameter_with_multiple_values"] = new[]
+                        {
+                            "custom_value_1",
+                            "custom_value_2"
+                        };
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ApplyVerificationResponseContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Transaction.SetProperty("custom_response", context.Response);
+                        context.HandleRequest();
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/verification", new OpenIddictRequest
+            {
+                UserCode = "WDJB-MJHT"
+            });
+
+            // Assert
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
         }
 
         [Fact]

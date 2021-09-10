@@ -39,8 +39,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Gets the additional properties associated with the current request.
         /// </summary>
-        public IDictionary<string, object?> Properties { get; }
-            = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, object?> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets the current OpenID Connect request.

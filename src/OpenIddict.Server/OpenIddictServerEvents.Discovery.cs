@@ -87,8 +87,7 @@ namespace OpenIddict.Server
             /// <summary>
             /// Gets the additional parameters returned to the client application.
             /// </summary>
-            public IDictionary<string, OpenIddictParameter> Metadata { get; } =
-                new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
+            public Dictionary<string, OpenIddictParameter> Metadata { get; } = new(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets or sets the authorization endpoint address.

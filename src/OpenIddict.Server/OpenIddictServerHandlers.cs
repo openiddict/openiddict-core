@@ -2928,6 +2928,14 @@ namespace OpenIddict.Server
                     }
                 }
 
+                if (context.Parameters.Count > 0)
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        context.Response.SetParameter(parameter.Key, parameter.Value);
+                    }
+                }
+
                 return default;
 
                 static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri? endpoint)

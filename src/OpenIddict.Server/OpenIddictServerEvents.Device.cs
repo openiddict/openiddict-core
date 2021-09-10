@@ -4,6 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using OpenIddict.Abstractions;
 
@@ -80,6 +82,29 @@ namespace OpenIddict.Server
             {
                 get => Transaction.Request!;
                 set => Transaction.Request = value;
+            }
+
+            /// <summary>
+            /// Gets the additional parameters returned to the client application.
+            /// </summary>
+            public Dictionary<string, OpenIddictParameter> Parameters { get; private set; }
+                = new(StringComparer.Ordinal);
+
+            /// <summary>
+            /// Allows OpenIddict to return a sign-in response using the specified principal.
+            /// </summary>
+            /// <param name="principal">The claims principal.</param>
+            public void SignIn(ClaimsPrincipal principal) => Principal = principal;
+
+            /// <summary>
+            /// Allows OpenIddict to return a sign-in response using the specified principal.
+            /// </summary>
+            /// <param name="principal">The claims principal.</param>
+            /// <param name="parameters">The additional parameters returned to the client application.</param>
+            public void SignIn(ClaimsPrincipal principal, IDictionary<string, OpenIddictParameter> parameters)
+            {
+                Principal = principal;
+                Parameters = new(parameters, StringComparer.Ordinal);
             }
         }
 
@@ -199,10 +224,32 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Gets the additional parameters returned to the caller.
+            /// </summary>
+            /// <remarks>
+            /// Note: by default, this property is not used as empty responses are typically
+            /// returned for user verification requests. To return a different response, a
+            /// custom event handler must be registered to handle user verification responses.
+            /// </remarks>
+            public Dictionary<string, OpenIddictParameter> Parameters { get; private set; }
+                = new(StringComparer.Ordinal);
+
+            /// <summary>
             /// Allows OpenIddict to return a sign-in response using the specified principal.
             /// </summary>
             /// <param name="principal">The claims principal.</param>
             public void SignIn(ClaimsPrincipal principal) => Principal = principal;
+
+            /// <summary>
+            /// Allows OpenIddict to return a sign-in response using the specified principal.
+            /// </summary>
+            /// <param name="principal">The claims principal.</param>
+            /// <param name="parameters">The additional parameters returned to the client application.</param>
+            public void SignIn(ClaimsPrincipal principal, IDictionary<string, OpenIddictParameter> parameters)
+            {
+                Principal = principal;
+                Parameters = new(parameters, StringComparer.Ordinal);
+            }
         }
 
         /// <summary>

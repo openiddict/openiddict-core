@@ -4025,6 +4025,50 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
+        public async Task HandleTokenRequest_ResponseContainsCustomParameters()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        context.Parameters["custom_parameter"] = "custom_value";
+                        context.Parameters["parameter_with_multiple_values"] = new[]
+                        {
+                            "custom_value_1",
+                            "custom_value_2"
+                        };
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.AccessToken);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        }
+
+        [Fact]
         public async Task ApplyTokenResponse_AllowsHandlingResponse()
         {
             // Arrange

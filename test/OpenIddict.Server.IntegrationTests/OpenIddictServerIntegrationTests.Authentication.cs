@@ -2011,6 +2011,51 @@ namespace OpenIddict.Server.IntegrationTests
             Assert.Equal("Bob le Magnifique", (string?) response["name"]);
         }
 
+        [Fact]
+        public async Task HandleAuthorizationRequest_ResponseContainsCustomParameters()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        context.Parameters["custom_parameter"] = "custom_value";
+                        context.Parameters["parameter_with_multiple_values"] = new[]
+                        {
+                            "custom_value_1",
+                            "custom_value_2"
+                        };
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Token
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.AccessToken);
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        }
+
         [Theory]
         [InlineData("code", ResponseModes.Query)]
         [InlineData("code id_token", ResponseModes.Fragment)]
