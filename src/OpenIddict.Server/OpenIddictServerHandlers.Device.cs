@@ -253,6 +253,14 @@ namespace OpenIddict.Server
                         Response = new OpenIddictResponse()
                     };
 
+                    if (notification.Parameters.Count > 0)
+                    {
+                        foreach (var parameter in notification.Parameters)
+                        {
+                            @event.Parameters.Add(parameter.Key, parameter.Value);
+                        }
+                    }
+
                     await _dispatcher.DispatchAsync(@event);
 
                     if (@event.IsRequestHandled)
@@ -1050,6 +1058,14 @@ namespace OpenIddict.Server
                             Principal = notification.Principal,
                             Response = new OpenIddictResponse()
                         };
+
+                        if (notification.Parameters.Count > 0)
+                        {
+                            foreach (var parameter in notification.Parameters)
+                            {
+                                @event.Parameters.Add(parameter.Key, parameter.Value);
+                            }
+                        }
 
                         await _dispatcher.DispatchAsync(@event);
 
