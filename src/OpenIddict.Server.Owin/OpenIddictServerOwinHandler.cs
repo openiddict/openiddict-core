@@ -155,7 +155,7 @@ namespace OpenIddict.Server.Owin
                     return null;
                 }
 
-                var properties = new OpenIddictServerOwinProperties(new Dictionary<string, string?>
+                var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [Properties.Error] = context.Error,
                     [Properties.ErrorDescription] = context.ErrorDescription,
@@ -168,9 +168,6 @@ namespace OpenIddict.Server.Owin
             else
             {
                 // A single main claims-based principal instance can be attached to an authentication ticket.
-                // To return the most appropriate one, the principal is selected based on the endpoint type.
-                // Independently of the selected main principal, all principals resolved from validated tokens
-                // are attached to the authentication properties bag so they can be accessed from user code.
                 var principal = context.EndpointType switch
                 {
                     OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
@@ -203,7 +200,7 @@ namespace OpenIddict.Server.Owin
                     return null;
                 }
 
-                var properties = new OpenIddictServerOwinProperties
+                var properties = new AuthenticationProperties
                 {
                     ExpiresUtc = principal.GetExpirationDate(),
                     IssuedUtc = principal.GetCreationDate()
@@ -215,37 +212,31 @@ namespace OpenIddict.Server.Owin
                 if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
                 {
                     properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
-                    properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
                 }
 
                 if (context.AuthorizationCodePrincipal is not null && !string.IsNullOrEmpty(context.AuthorizationCode))
                 {
                     properties.Dictionary[TokenTypeHints.AuthorizationCode] = context.AuthorizationCode;
-                    properties.SetParameter(Properties.AuthorizationCodePrincipal, context.AuthorizationCodePrincipal);
                 }
 
                 if (context.DeviceCodePrincipal is not null && !string.IsNullOrEmpty(context.DeviceCode))
                 {
                     properties.Dictionary[TokenTypeHints.DeviceCode] = context.DeviceCode;
-                    properties.SetParameter(Properties.DeviceCodePrincipal, context.DeviceCodePrincipal);
                 }
 
                 if (context.IdentityTokenPrincipal is not null && !string.IsNullOrEmpty(context.IdentityToken))
                 {
                     properties.Dictionary[TokenTypeHints.IdToken] = context.IdentityToken;
-                    properties.SetParameter(Properties.IdentityTokenPrincipal, context.IdentityTokenPrincipal);
                 }
 
                 if (context.RefreshTokenPrincipal is not null && !string.IsNullOrEmpty(context.RefreshToken))
                 {
                     properties.Dictionary[TokenTypeHints.RefreshToken] = context.RefreshToken;
-                    properties.SetParameter(Properties.RefreshTokenPrincipal, context.RefreshTokenPrincipal);
                 }
 
                 if (context.UserCodePrincipal is not null && !string.IsNullOrEmpty(context.UserCode))
                 {
                     properties.Dictionary[TokenTypeHints.UserCode] = context.UserCode;
-                    properties.SetParameter(Properties.UserCodePrincipal, context.UserCodePrincipal);
                 }
 
                 return new AuthenticationTicket((ClaimsIdentity) principal.Identity, properties);

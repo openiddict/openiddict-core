@@ -152,7 +152,7 @@ namespace OpenIddict.Validation.Owin
                     return null;
                 }
 
-                var properties = new OpenIddictValidationOwinProperties(new Dictionary<string, string?>
+                var properties = new AuthenticationProperties(new Dictionary<string, string?>
                 {
                     [Properties.Error] = context.Error,
                     [Properties.ErrorDescription] = context.ErrorDescription,
@@ -165,9 +165,6 @@ namespace OpenIddict.Validation.Owin
             else
             {
                 // A single main claims-based principal instance can be attached to an authentication ticket.
-                // To return the most appropriate one, the principal is selected based on the endpoint type.
-                // Independently of the selected main principal, all principals resolved from validated tokens
-                // are attached to the authentication properties bag so they can be accessed from user code.
                 var principal = context.EndpointType switch
                 {
                     OpenIddictValidationEndpointType.Unknown => context.AccessTokenPrincipal,
@@ -180,7 +177,7 @@ namespace OpenIddict.Validation.Owin
                     return null;
                 }
 
-                var properties = new OpenIddictValidationOwinProperties
+                var properties = new AuthenticationProperties
                 {
                     ExpiresUtc = principal.GetExpirationDate(),
                     IssuedUtc = principal.GetCreationDate()
@@ -192,7 +189,6 @@ namespace OpenIddict.Validation.Owin
                 if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
                 {
                     properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
-                    properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
                 }
 
                 return new AuthenticationTicket((ClaimsIdentity) principal.Identity, properties);
