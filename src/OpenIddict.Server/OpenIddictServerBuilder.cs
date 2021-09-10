@@ -1017,6 +1017,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="type">The grant type associated with the flow.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictServerBuilder AllowCustomFlow(string type)
         {
             if (string.IsNullOrEmpty(type))
@@ -1063,6 +1064,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// https://tools.ietf.org/html/rfc6749#section-4.2 and
         /// http://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth.
         /// </summary>
+        /// <remarks>
+        /// The implicit flow is not recommended for new applications and should
+        /// only be enabled when maintaining backward compatibility is important.
+        /// </remarks>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowImplicitFlow()
             => Configure(options =>
@@ -1089,6 +1094,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Enables password flow support. For more information about this specific
         /// OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc6749#section-4.3.
         /// </summary>
+        /// <remarks>
+        /// The password flow is not recommended for new applications and should
+        /// only be enabled when maintaining backward compatibility is important.
+        /// </remarks>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowPasswordFlow()
             => Configure(options => options.GrantTypes.Add(GrantTypes.Password));
