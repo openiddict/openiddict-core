@@ -157,11 +157,6 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets or sets the security principal.
-            /// </summary>
-            public ClaimsPrincipal? Principal { get; set; }
-
-            /// <summary>
             /// Gets the access code expected to
             /// be returned to the client application.
             /// Depending on the flow, it may be null.
