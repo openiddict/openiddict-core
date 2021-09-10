@@ -197,6 +197,12 @@ namespace OpenIddict.Server
                 get => Transaction.Request!;
                 set => Transaction.Request = value;
             }
+
+            /// <summary>
+            /// Allows OpenIddict to return a sign-in response using the specified principal.
+            /// </summary>
+            /// <param name="principal">The claims principal.</param>
+            public void SignIn(ClaimsPrincipal principal) => Principal = principal;
         }
 
         /// <summary>
