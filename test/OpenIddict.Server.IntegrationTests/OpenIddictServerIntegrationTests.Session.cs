@@ -479,6 +479,43 @@ namespace OpenIddict.Server.IntegrationTests
         }
 
         [Fact]
+        public async Task HandleLogoutResponse_ResponseContainsCustomParameters()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SignOut();
+
+                        context.Parameters["custom_parameter"] = "custom_value";
+                        context.Parameters["parameter_with_multiple_values"] = new[]
+                        {
+                            "custom_value_1",
+                            "custom_value_2"
+                        };
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+            {
+                PostLogoutRedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+            Assert.Equal(new[] { "custom_value_1", "custom_value_2" }, (string[]?) response["parameter_with_multiple_values"]);
+        }
+
+        [Fact]
         public async Task ApplyLogoutResponse_AllowsHandlingResponse()
         {
             // Arrange

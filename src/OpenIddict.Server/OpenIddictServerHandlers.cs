@@ -82,12 +82,13 @@ namespace OpenIddict.Server
             GenerateUserCode.Descriptor,
             GenerateIdentityToken.Descriptor,
 
-            AttachTokenParameters.Descriptor,
+            AttachSignInParameters.Descriptor,
 
             /*
              * Sign-out processing:
              */
-            ValidateSignOutDemand.Descriptor)
+            ValidateSignOutDemand.Descriptor,
+            AttachSignOutParameters.Descriptor)
 
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Device.DefaultHandlers)
@@ -2832,16 +2833,16 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the tokens and their metadata to the sign-in response.
+        /// Contains the logic responsible of attaching the appropriate parameters to the sign-in response.
         /// </summary>
-        public class AttachTokenParameters : IOpenIddictServerHandler<ProcessSignInContext>
+        public class AttachSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .UseSingletonHandler<AttachTokenParameters>()
+                    .UseSingletonHandler<AttachSignInParameters>()
                     .SetOrder(GenerateIdentityToken.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -3004,6 +3005,41 @@ namespace OpenIddict.Server
                 if (context.EndpointType != OpenIddictServerEndpointType.Logout)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the appropriate parameters to the sign-out response.
+        /// </summary>
+        public class AttachSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                    .UseSingletonHandler<AttachSignOutParameters>()
+                    .SetOrder(ValidateSignOutDemand.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignOutContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Parameters.Count > 0)
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        context.Response.SetParameter(parameter.Key, parameter.Value);
+                    }
                 }
 
                 return default;

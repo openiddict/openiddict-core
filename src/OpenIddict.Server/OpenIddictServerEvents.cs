@@ -733,6 +733,11 @@ namespace OpenIddict.Server
                 get => Transaction.Response!;
                 set => Transaction.Response = value;
             }
+
+            /// <summary>
+            /// Gets the additional parameters returned to the client application.
+            /// </summary>
+            public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
         }
     }
 }

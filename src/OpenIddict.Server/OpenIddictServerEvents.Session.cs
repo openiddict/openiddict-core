@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using OpenIddict.Abstractions;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
@@ -116,9 +117,25 @@ namespace OpenIddict.Server
             public bool IsSignOutTriggered { get; private set; }
 
             /// <summary>
+            /// Gets the additional parameters returned to the client application.
+            /// </summary>
+            public Dictionary<string, OpenIddictParameter> Parameters { get; private set; }
+                = new(StringComparer.Ordinal);
+
+            /// <summary>
             /// Allows OpenIddict to return a sign-out response.
             /// </summary>
             public void SignOut() => IsSignOutTriggered = true;
+
+            /// <summary>
+            /// Allows OpenIddict to return a sign-out response.
+            /// </summary>
+            /// <param name="parameters">The additional parameters returned to the client application.</param>
+            public void SignOut(IDictionary<string, OpenIddictParameter> parameters)
+            {
+                IsSignOutTriggered = true;
+                Parameters = new(parameters, StringComparer.Ordinal);
+            }
         }
 
         /// <summary>
