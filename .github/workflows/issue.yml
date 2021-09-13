@@ -15,4 +15,4 @@ jobs:
       with:
         maintainers: 'kevinchalet'
         label: 'sponsor'
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.SPONSORS_TOKEN }}
