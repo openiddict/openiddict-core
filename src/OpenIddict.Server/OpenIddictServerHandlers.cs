@@ -49,6 +49,7 @@ namespace OpenIddict.Server
             AttachDefaultChallengeError.Descriptor,
             RejectDeviceCodeEntry.Descriptor,
             RejectUserCodeEntry.Descriptor,
+            AttachChallengeParameters.Descriptor,
 
             /*
             * Sign-in processing:
@@ -88,7 +89,12 @@ namespace OpenIddict.Server
              * Sign-out processing:
              */
             ValidateSignOutDemand.Descriptor,
-            AttachSignOutParameters.Descriptor)
+            AttachSignOutParameters.Descriptor,
+            
+            /*
+             * Error processing:
+             */
+            AttachErrorParameters.Descriptor)
 
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Device.DefaultHandlers)
@@ -918,8 +924,8 @@ namespace OpenIddict.Server
                 }
 
                 if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
-                                                 OpenIddictServerEndpointType.Token or
-                                                 OpenIddictServerEndpointType.Userinfo or
+                                                 OpenIddictServerEndpointType.Token         or
+                                                 OpenIddictServerEndpointType.Userinfo      or
                                                  OpenIddictServerEndpointType.Verification))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
@@ -952,38 +958,47 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                context.Response.Error ??= context.EndpointType switch
+                if (!context.Parameters.ContainsKey(Parameters.Error))
                 {
-                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
-                        => Errors.AccessDenied,
+                    context.Parameters[Parameters.Error] = context.EndpointType switch
+                    {
+                        OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                            => Errors.AccessDenied,
 
-                    OpenIddictServerEndpointType.Token    => Errors.InvalidGrant,
-                    OpenIddictServerEndpointType.Userinfo => Errors.InsufficientAccess,
+                        OpenIddictServerEndpointType.Token    => Errors.InvalidGrant,
+                        OpenIddictServerEndpointType.Userinfo => Errors.InsufficientAccess,
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
-                };
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
+                    };
+                }
 
-                context.Response.ErrorDescription ??= context.EndpointType switch
+                if (!context.Parameters.ContainsKey(Parameters.ErrorDescription))
                 {
-                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
-                        => SR.GetResourceString(SR.ID2015),
+                    context.Parameters[Parameters.ErrorDescription] = context.EndpointType switch
+                    {
+                        OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                            => SR.GetResourceString(SR.ID2015),
 
-                    OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
-                    OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2025),
+                        OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
+                        OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2025),
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
-                };
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
+                    };
+                }
 
-                context.Response.ErrorUri ??= context.EndpointType switch
+                if (!context.Parameters.ContainsKey(Parameters.ErrorUri))
                 {
-                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
-                        => SR.FormatID8000(SR.ID2015),
+                    context.Parameters[Parameters.ErrorUri] = context.EndpointType switch
+                    {
+                        OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                            => SR.FormatID8000(SR.ID2015),
 
-                    OpenIddictServerEndpointType.Token    => SR.FormatID8000(SR.ID2024),
-                    OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2025),
+                        OpenIddictServerEndpointType.Token    => SR.FormatID8000(SR.ID2024),
+                        OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2025),
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
-                };
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
+                    };
+                }
 
                 return default;
             }
@@ -1108,6 +1123,41 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Contains the logic responsible of attaching the appropriate parameters to the challenge response.
+        /// </summary>
+        public class AttachChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                    .UseSingletonHandler<AttachChallengeParameters>()
+                    .SetOrder(RejectUserCodeEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessChallengeContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Parameters.Count > 0)
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        context.Response.SetParameter(parameter.Key, parameter.Value);
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of ensuring that the sign-in demand
         /// is compatible with the type of the endpoint that handled the request.
         /// </summary>
@@ -1132,8 +1182,8 @@ namespace OpenIddict.Server
                 }
 
                 if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
-                                                 OpenIddictServerEndpointType.Device or
-                                                 OpenIddictServerEndpointType.Token or
+                                                 OpenIddictServerEndpointType.Device        or
+                                                 OpenIddictServerEndpointType.Token         or
                                                  OpenIddictServerEndpointType.Verification))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0010));
@@ -3033,6 +3083,45 @@ namespace OpenIddict.Server
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
+
+                if (context.Parameters.Count > 0)
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        context.Response.SetParameter(parameter.Key, parameter.Value);
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the appropriate parameters to the error response.
+        /// </summary>
+        public class AttachErrorParameters : IOpenIddictServerHandler<ProcessErrorContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessErrorContext>()
+                    .UseSingletonHandler<AttachErrorParameters>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessErrorContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                context.Response.Error = context.Error;
+                context.Response.ErrorDescription = context.ErrorDescription;
+                context.Response.ErrorUri = context.ErrorUri;
 
                 if (context.Parameters.Count > 0)
                 {

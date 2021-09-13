@@ -248,6 +248,26 @@ namespace OpenIddict.Server
                 get => Transaction.Response!;
                 set => Transaction.Response = value;
             }
+
+            /// <summary>
+            /// Gets or sets the error returned to the caller.
+            /// </summary>
+            public string? Error { get; set; }
+
+            /// <summary>
+            /// Gets or sets the error description returned to the caller.
+            /// </summary>
+            public string? ErrorDescription { get; set; }
+
+            /// <summary>
+            /// Gets or sets the error URL returned to the caller.
+            /// </summary>
+            public string? ErrorUri { get; set; }
+
+            /// <summary>
+            /// Gets the additional parameters returned to the caller.
+            /// </summary>
+            public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -490,6 +510,11 @@ namespace OpenIddict.Server
                 get => Transaction.Response!;
                 set => Transaction.Response = value;
             }
+
+            /// <summary>
+            /// Gets the additional parameters returned to caller.
+            /// </summary>
+            public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -524,7 +549,7 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets the additional parameters returned to the client application.
+            /// Gets the additional parameters returned to caller.
             /// </summary>
             public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
 
@@ -735,7 +760,7 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Gets the additional parameters returned to the client application.
+            /// Gets the additional parameters returned to caller.
             /// </summary>
             public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
         }

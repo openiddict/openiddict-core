@@ -35,7 +35,7 @@ namespace OpenIddict.Server.DataProtection
                 ValidateDataProtectionToken.Descriptor,
 
                 /*
-                 * Token validation:
+                 * Token generation:
                  */
                 GenerateDataProtectionToken.Descriptor);
 

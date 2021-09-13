@@ -325,18 +325,36 @@ namespace OpenIddict.Validation.Owin
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties is not null)
+                if (properties is null)
                 {
-                    context.Response.Error = GetProperty(properties, Properties.Error);
-                    context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
-                    context.Response.ErrorUri = GetProperty(properties, Properties.ErrorUri);
-                    context.Response.Scope = GetProperty(properties, Properties.Scope);
+                    return default;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.Error, out string? error) &&
+                    !string.IsNullOrEmpty(error))
+                {
+                    context.Parameters[Parameters.Error] = error;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.ErrorDescription, out string? description) &&
+                    !string.IsNullOrEmpty(description))
+                {
+                    context.Parameters[Parameters.ErrorDescription] = description;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.ErrorUri, out string? uri) &&
+                    !string.IsNullOrEmpty(uri))
+                {
+                    context.Parameters[Parameters.ErrorUri] = uri;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.Scope, out string? scope) &&
+                    !string.IsNullOrEmpty(scope))
+                {
+                    context.Parameters[Parameters.Scope] = scope;
                 }
 
                 return default;
-
-                static string? GetProperty(AuthenticationProperties properties, string name)
-                    => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
             }
         }
 

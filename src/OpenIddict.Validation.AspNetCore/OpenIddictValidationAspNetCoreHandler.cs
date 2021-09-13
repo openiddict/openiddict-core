@@ -79,12 +79,10 @@ namespace OpenIddict.Validation.AspNetCore
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
-                    Response = new OpenIddictResponse
-                    {
-                        Error = context.Error ?? Errors.InvalidRequest,
-                        ErrorDescription = context.ErrorDescription,
-                        ErrorUri = context.ErrorUri
-                    }
+                    Error = context.Error ?? Errors.InvalidRequest,
+                    ErrorDescription = context.ErrorDescription,
+                    ErrorUri = context.ErrorUri,
+                    Response = new OpenIddictResponse()
                 };
 
                 await _dispatcher.DispatchAsync(notification);
@@ -225,12 +223,10 @@ namespace OpenIddict.Validation.AspNetCore
             {
                 var notification = new ProcessErrorContext(transaction)
                 {
-                    Response = new OpenIddictResponse
-                    {
-                        Error = context.Error ?? Errors.InvalidRequest,
-                        ErrorDescription = context.ErrorDescription,
-                        ErrorUri = context.ErrorUri
-                    }
+                    Error = context.Error ?? Errors.InvalidRequest,
+                    ErrorDescription = context.ErrorDescription,
+                    ErrorUri = context.ErrorUri,
+                    Response = new OpenIddictResponse()
                 };
 
                 await _dispatcher.DispatchAsync(notification);

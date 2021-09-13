@@ -44,7 +44,7 @@ namespace OpenIddict.Server.Owin
             /*
              * Challenge processing:
              */
-            AttachHostChallengeError.Descriptor)
+            ResolveHostChallengeParameters.Descriptor)
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Device.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
@@ -285,10 +285,11 @@ namespace OpenIddict.Server.Owin
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the error details using the OWIN authentication properties.
+        /// Contains the logic responsible of resolving the additional sign-in parameters stored in the OWIN
+        /// authentication properties specified by the application that triggered the sign-in operation.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class AttachHostChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
+        public class ResolveHostChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -296,8 +297,8 @@ namespace OpenIddict.Server.Owin
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .AddFilter<RequireOwinRequest>()
-                    .UseSingletonHandler<AttachHostChallengeError>()
-                    .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 1_000)
+                    .UseSingletonHandler<ResolveHostChallengeParameters>()
+                    .SetOrder(AttachChallengeParameters.Descriptor.Order - 500)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -310,18 +311,36 @@ namespace OpenIddict.Server.Owin
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties is not null)
+                if (properties is null)
                 {
-                    context.Response.Error = GetProperty(properties, Properties.Error);
-                    context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
-                    context.Response.ErrorUri = GetProperty(properties, Properties.ErrorUri);
-                    context.Response.Scope = GetProperty(properties, Properties.Scope);
+                    return default;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.Error, out string? error) &&
+                    !string.IsNullOrEmpty(error))
+                {
+                    context.Parameters[Parameters.Error] = error;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.ErrorDescription, out string? description) &&
+                    !string.IsNullOrEmpty(description))
+                {
+                    context.Parameters[Parameters.ErrorDescription] = description;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.ErrorUri, out string? uri) &&
+                    !string.IsNullOrEmpty(uri))
+                {
+                    context.Parameters[Parameters.ErrorUri] = uri;
+                }
+
+                if (properties.Dictionary.TryGetValue(Properties.Scope, out string? scope) &&
+                    !string.IsNullOrEmpty(scope))
+                {
+                    context.Parameters[Parameters.Scope] = scope;
                 }
 
                 return default;
-
-                static string? GetProperty(AuthenticationProperties properties, string name)
-                    => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
             }
         }
 
