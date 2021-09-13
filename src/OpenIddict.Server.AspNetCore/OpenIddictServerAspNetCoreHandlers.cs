@@ -46,18 +46,17 @@ namespace OpenIddict.Server.AspNetCore
             /*
              * Challenge processing:
              */
-            AttachHostChallengeError.Descriptor,
-            AttachHostParameters<ProcessChallengeContext>.Descriptor,
+            ResolveHostChallengeParameters.Descriptor,
 
             /*
              * Sign-in processing:
              */
-            AttachHostParameters<ProcessSignInContext>.Descriptor,
+            ResolveHostSignInParameters.Descriptor,
 
             /*
              * Sign-out processing:
              */
-            AttachHostParameters<ProcessSignOutContext>.Descriptor)
+            ResolveHostSignOutParameters.Descriptor)
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Device.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
@@ -296,10 +295,11 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the error details using the ASP.NET Core authentication properties.
+        /// Contains the logic responsible of resolving the additional sign-in parameters stored in the ASP.NET
+        /// Core authentication properties specified by the application that triggered the sign-in operation.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class AttachHostChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
+        public class ResolveHostChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -307,8 +307,8 @@ namespace OpenIddict.Server.AspNetCore
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .AddFilter<RequireHttpRequest>()
-                    .UseSingletonHandler<AttachHostChallengeError>()
-                    .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 1_000)
+                    .UseSingletonHandler<ResolveHostChallengeParameters>()
+                    .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 500)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -321,55 +321,38 @@ namespace OpenIddict.Server.AspNetCore
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties is not null)
-                {
-                    context.Response.Error = properties.GetString(Properties.Error);
-                    context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
-                    context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
-                    context.Response.Scope = properties.GetString(Properties.Scope);
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of attaching custom parameters stored in the ASP.NET Core authentication properties.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-        /// </summary>
-        public class AttachHostParameters<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseContext
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
-                    .AddFilter<RequireHttpRequest>()
-                    .UseSingletonHandler<AttachHostParameters<TContext>>()
-                    .SetOrder(int.MaxValue - 150_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(TContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
-
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
                 if (properties is null)
                 {
                     return default;
                 }
 
+                if (properties.Items.TryGetValue(Properties.Error, out string? error) &&
+                    !string.IsNullOrEmpty(error))
+                {
+                    context.Parameters[Parameters.Error] = error;
+                }
+
+                if (properties.Items.TryGetValue(Properties.ErrorDescription, out string? description) &&
+                    !string.IsNullOrEmpty(description))
+                {
+                    context.Parameters[Parameters.ErrorDescription] = description;
+                }
+
+                if (properties.Items.TryGetValue(Properties.ErrorUri, out string? uri) &&
+                    !string.IsNullOrEmpty(uri))
+                {
+                    context.Parameters[Parameters.ErrorUri] = uri;
+                }
+
+                if (properties.Items.TryGetValue(Properties.Scope, out string? scope) &&
+                    !string.IsNullOrEmpty(scope))
+                {
+                    context.Parameters[Parameters.Scope] = scope;
+                }
+
                 foreach (var parameter in properties.Parameters)
                 {
-                    // Note: AddParameter() is used to ensure existing parameters are not overriden.
-                    context.Transaction.Response.AddParameter(parameter.Key, parameter.Value switch
+                    context.Parameters[parameter.Key] = parameter.Value switch
                     {
                         OpenIddictParameter value => value,
                         JsonElement         value => new OpenIddictParameter(value),
@@ -380,7 +363,111 @@ namespace OpenIddict.Server.AspNetCore
                         string[]            value => new OpenIddictParameter(value),
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
-                    });
+                    };
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of resolving the additional sign-in parameters stored in the ASP.NET
+        /// Core authentication properties specified by the application that triggered the sign-in operation.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ResolveHostSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ResolveHostSignInParameters>()
+                    .SetOrder(AttachSignInParameters.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignInContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+                if (properties is null)
+                {
+                    return default;
+                }
+
+                foreach (var parameter in properties.Parameters)
+                {
+                    context.Parameters[parameter.Key] = parameter.Value switch
+                    {
+                        OpenIddictParameter value => value,
+                        JsonElement         value => new OpenIddictParameter(value),
+                        bool                value => new OpenIddictParameter(value),
+                        int                 value => new OpenIddictParameter(value),
+                        long                value => new OpenIddictParameter(value),
+                        string              value => new OpenIddictParameter(value),
+                        string[]            value => new OpenIddictParameter(value),
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
+                    };
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of resolving the additional sign-out parameters stored in the ASP.NET
+        /// Core authentication properties specified by the application that triggered the sign-out operation.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ResolveHostSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ResolveHostSignOutParameters>()
+                    .SetOrder(AttachSignOutParameters.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessSignOutContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+                if (properties is null)
+                {
+                    return default;
+                }
+
+                foreach (var parameter in properties.Parameters)
+                {
+                    context.Parameters[parameter.Key] = parameter.Value switch
+                    {
+                        OpenIddictParameter value => value,
+                        JsonElement         value => new OpenIddictParameter(value),
+                        bool                value => new OpenIddictParameter(value),
+                        int                 value => new OpenIddictParameter(value),
+                        long                value => new OpenIddictParameter(value),
+                        string              value => new OpenIddictParameter(value),
+                        string[]            value => new OpenIddictParameter(value),
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
+                    };
                 }
 
                 return default;

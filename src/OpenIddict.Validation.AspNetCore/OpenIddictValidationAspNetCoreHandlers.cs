@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlerFilters;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
@@ -325,12 +326,49 @@ namespace OpenIddict.Validation.AspNetCore
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                if (properties is not null)
+                if (properties is null)
                 {
-                    context.Response.Error = properties.GetString(Properties.Error);
-                    context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
-                    context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
-                    context.Response.Scope = properties.GetString(Properties.Scope);
+                    return default;
+                }
+
+                if (properties.Items.TryGetValue(Properties.Error, out string? error) &&
+                    !string.IsNullOrEmpty(error))
+                {
+                    context.Parameters[Parameters.Error] = error;
+                }
+
+                if (properties.Items.TryGetValue(Properties.ErrorDescription, out string? description) &&
+                    !string.IsNullOrEmpty(description))
+                {
+                    context.Parameters[Parameters.ErrorDescription] = description;
+                }
+
+                if (properties.Items.TryGetValue(Properties.ErrorUri, out string? uri) &&
+                    !string.IsNullOrEmpty(uri))
+                {
+                    context.Parameters[Parameters.ErrorUri] = uri;
+                }
+
+                if (properties.Items.TryGetValue(Properties.Scope, out string? scope) &&
+                    !string.IsNullOrEmpty(scope))
+                {
+                    context.Parameters[Parameters.Scope] = scope;
+                }
+
+                foreach (var parameter in properties.Parameters)
+                {
+                    context.Parameters[parameter.Key] = parameter.Value switch
+                    {
+                        OpenIddictParameter value => value,
+                        JsonElement         value => new OpenIddictParameter(value),
+                        bool                value => new OpenIddictParameter(value),
+                        int                 value => new OpenIddictParameter(value),
+                        long                value => new OpenIddictParameter(value),
+                        string              value => new OpenIddictParameter(value),
+                        string[]            value => new OpenIddictParameter(value),
+
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
+                    };
                 }
 
                 return default;

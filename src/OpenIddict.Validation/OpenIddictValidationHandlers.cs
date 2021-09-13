@@ -221,6 +221,45 @@ namespace OpenIddict.Validation
         }
 
         /// <summary>
+        /// Contains the logic responsible of attaching the appropriate parameters to the error response.
+        /// </summary>
+        public class AttachErrorParameters : IOpenIddictValidationHandler<ProcessErrorContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessErrorContext>()
+                    .UseSingletonHandler<AttachErrorParameters>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ProcessErrorContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                context.Response.Error = context.Error;
+                context.Response.ErrorDescription = context.ErrorDescription;
+                context.Response.ErrorUri = context.ErrorUri;
+
+                if (context.Parameters.Count > 0)
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        context.Response.SetParameter(parameter.Key, parameter.Value);
+                    }
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of extracting potential errors from the response.
         /// </summary>
         public class HandleErrorResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseValidatingContext
