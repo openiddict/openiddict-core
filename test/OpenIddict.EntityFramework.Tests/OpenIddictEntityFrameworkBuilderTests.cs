@@ -4,14 +4,12 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework.Tests;
 

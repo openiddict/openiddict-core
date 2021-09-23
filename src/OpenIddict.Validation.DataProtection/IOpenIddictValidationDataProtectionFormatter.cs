@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.IO;
 using System.Security.Claims;
 
 namespace OpenIddict.Validation.DataProtection;

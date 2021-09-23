@@ -4,14 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server;
 using OpenIddict.Server.Owin;
-using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
-using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -42,7 +38,7 @@ public static class OpenIddictServerOwinExtensions
 
         // Register the built-in event handlers used by the OpenIddict OWIN server components.
         // Note: the order used here is not important, as the actual order is set in the options.
-        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+        builder.Services.TryAdd(OpenIddictServerOwinHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict OWIN server event handlers.
         builder.Services.TryAddSingleton<RequireAuthorizationRequestCachingEnabled>();

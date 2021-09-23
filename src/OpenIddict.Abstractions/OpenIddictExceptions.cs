@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 
 namespace OpenIddict.Abstractions;

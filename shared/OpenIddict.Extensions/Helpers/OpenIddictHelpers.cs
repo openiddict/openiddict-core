@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
-
-namespace OpenIddict.Extensions;
+﻿namespace OpenIddict.Extensions;
 
 /// <summary>
 /// Exposes common helpers used by the OpenIddict assemblies.

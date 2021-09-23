@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;

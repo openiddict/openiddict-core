@@ -4,13 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
-using MongoDB.Driver;
 using OpenIddict.Core;
 using OpenIddict.MongoDb;
 using OpenIddict.MongoDb.Models;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

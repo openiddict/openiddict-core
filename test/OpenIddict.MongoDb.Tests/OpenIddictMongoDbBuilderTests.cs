@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -12,7 +11,6 @@ using Moq;
 using OpenIddict.Core;
 using OpenIddict.MongoDb.Models;
 using Xunit;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests;
 

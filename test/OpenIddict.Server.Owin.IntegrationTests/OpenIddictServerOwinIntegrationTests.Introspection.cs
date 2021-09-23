@@ -4,14 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Threading.Tasks;
-using OpenIddict.Abstractions;
 using OpenIddict.Server.IntegrationTests;
 using Owin;
 using Xunit;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin.IntegrationTests;
 

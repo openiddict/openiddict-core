@@ -19,4 +19,18 @@
     <PackageReference Include="Microsoft.Owin.Security" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Microsoft.Owin" />
+    <Using Include="Microsoft.Owin.Infrastructure" />
+    <Using Include="Microsoft.Owin.Security" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Server.OpenIddictServerEvents" Static="true" />
+    <Using Include="OpenIddict.Server.OpenIddictServerHandlers" Static="true" />
+    <Using Include="OpenIddict.Server.OpenIddictServerHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Server.Owin.OpenIddictServerOwinHandlers" Static="true" />
+    <Using Include="OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters" Static="true" />
+  </ItemGroup>
+
 </Project>

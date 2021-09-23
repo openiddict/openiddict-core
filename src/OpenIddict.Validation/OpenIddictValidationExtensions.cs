@@ -4,12 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Validation;
-using static OpenIddict.Validation.OpenIddictValidationHandlerFilters;
-using static OpenIddict.Validation.OpenIddictValidationHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

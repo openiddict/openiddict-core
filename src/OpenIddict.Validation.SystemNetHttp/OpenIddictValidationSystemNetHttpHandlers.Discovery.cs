@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation.SystemNetHttp;
 

@@ -4,18 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Collections.Immutable;
-using System.Net.Http;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using OpenIddict.Abstractions;
 using Xunit;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.IntegrationTests;
 

@@ -4,10 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace OpenIddict.Server.AspNetCore;

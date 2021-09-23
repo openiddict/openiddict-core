@@ -4,11 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore;
 

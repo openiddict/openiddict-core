@@ -4,13 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
-using Microsoft.EntityFrameworkCore;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

@@ -4,11 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
-using OpenIddict.Abstractions;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
-
 namespace OpenIddict.Server;
 
 public static partial class OpenIddictServerEvents

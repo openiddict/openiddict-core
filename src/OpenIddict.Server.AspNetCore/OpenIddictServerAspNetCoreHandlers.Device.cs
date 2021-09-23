@@ -4,16 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Collections.Immutable;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
-using static OpenIddict.Server.OpenIddictServerEvents;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore;
 

@@ -4,11 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using OpenIddict.Abstractions;
 using OpenIddict.Core;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

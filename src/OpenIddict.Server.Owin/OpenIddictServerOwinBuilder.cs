@@ -4,13 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Owin;
 using OpenIddict.Server.Owin;
 using Owin;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

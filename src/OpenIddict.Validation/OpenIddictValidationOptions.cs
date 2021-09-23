@@ -4,15 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation;
 

@@ -4,18 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.Owin;
-using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
-using OpenIddict.Abstractions;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Server.OpenIddictServerEvents;
 using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin;
 

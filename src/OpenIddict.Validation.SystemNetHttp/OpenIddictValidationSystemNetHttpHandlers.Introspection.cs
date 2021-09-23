@@ -4,17 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Validation.OpenIddictValidationEvents;
-using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation.SystemNetHttp;
 

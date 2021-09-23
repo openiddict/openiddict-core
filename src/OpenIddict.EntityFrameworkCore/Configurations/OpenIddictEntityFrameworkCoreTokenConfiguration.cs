@@ -4,9 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OpenIddict.EntityFrameworkCore.Models;
 

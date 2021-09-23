@@ -4,12 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using Microsoft.Owin;
-using OpenIddict.Abstractions;
 using OpenIddict.Validation;
 using OpenIddict.Validation.Owin;
-using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace Owin;
 

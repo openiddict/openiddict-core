@@ -4,25 +4,13 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
-using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb;
 

@@ -12,4 +12,10 @@
     <PackageReference Include="Moq" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+  </ItemGroup>
+
 </Project>

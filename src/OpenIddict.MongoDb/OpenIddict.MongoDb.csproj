@@ -20,4 +20,13 @@
     <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="MongoDB.Bson" />
+    <Using Include="MongoDB.Driver" />
+    <Using Include="MongoDB.Driver.Linq" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+  </ItemGroup>
+
 </Project>

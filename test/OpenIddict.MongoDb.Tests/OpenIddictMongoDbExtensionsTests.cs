@@ -4,10 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.MongoDb.Models;
 using Xunit;

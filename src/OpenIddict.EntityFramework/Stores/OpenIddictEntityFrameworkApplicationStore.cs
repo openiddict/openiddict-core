@@ -4,27 +4,18 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
-using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework;
 

@@ -4,29 +4,19 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Owin.Infrastructure;
-using Microsoft.Owin.Security;
 using Owin;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
-using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using JsonWebTokenTypes = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.JsonWebTokenTypes;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin;
 

@@ -4,12 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation;
 

@@ -4,15 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
 using OpenIddict.Validation.SystemNetHttp;
-using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters;
-using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -38,7 +34,7 @@ public static class OpenIddictValidationSystemNetHttpExtensions
 
         // Register the built-in validation event handlers used by the OpenIddict System.Net.Http components.
         // Note: the order used here is not important, as the actual order is set in the options.
-        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+        builder.Services.TryAdd(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict System.Net.Http event handlers.
         builder.Services.TryAddSingleton<RequireHttpMetadataAddress>();

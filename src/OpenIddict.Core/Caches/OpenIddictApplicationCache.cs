@@ -4,18 +4,12 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using OpenIddict.Abstractions;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Core;
 

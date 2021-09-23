@@ -4,8 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using MongoDB.Driver;
-
 namespace OpenIddict.MongoDb;
 
 /// <summary>

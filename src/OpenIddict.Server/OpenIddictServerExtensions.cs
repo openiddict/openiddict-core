@@ -4,12 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Server;
-using static OpenIddict.Server.OpenIddictServerHandlerFilters;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

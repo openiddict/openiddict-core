@@ -4,9 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -27,6 +24,7 @@ public class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorizatio
     {
     }
 
+    /// <inheritdoc/>
     public override void Customize(ModelBuilder modelBuilder, DbContext context)
     {
         if (modelBuilder is null)

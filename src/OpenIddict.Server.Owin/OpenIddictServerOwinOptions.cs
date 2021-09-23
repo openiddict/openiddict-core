@@ -4,10 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Owin;
-using Microsoft.Owin.Security;
 using Owin;
 
 namespace OpenIddict.Server.Owin;

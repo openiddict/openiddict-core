@@ -4,12 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using Microsoft.AspNetCore.Http;
-using OpenIddict.Abstractions;
 using OpenIddict.Validation;
 using OpenIddict.Validation.AspNetCore;
-using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace Microsoft.AspNetCore;
 

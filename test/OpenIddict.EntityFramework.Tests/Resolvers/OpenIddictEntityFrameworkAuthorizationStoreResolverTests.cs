@@ -4,17 +4,14 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Data.Entity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
 using static OpenIddict.EntityFramework.OpenIddictEntityFrameworkAuthorizationStoreResolver;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework.Tests;
 

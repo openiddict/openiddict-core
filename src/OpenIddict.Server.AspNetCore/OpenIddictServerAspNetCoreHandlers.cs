@@ -4,31 +4,18 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using OpenIddict.Abstractions;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
-using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 using Properties = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore;
 

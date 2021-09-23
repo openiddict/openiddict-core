@@ -25,4 +25,17 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Microsoft.AspNetCore.Authentication" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Validation.OpenIddictValidationEvents" Static="true" />
+    <Using Include="OpenIddict.Validation.OpenIddictValidationHandlers" Static="true" />
+    <Using Include="OpenIddict.Validation.OpenIddictValidationHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlers" Static="true" />
+    <Using Include="OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlerFilters" Static="true" />
+  </ItemGroup>
+
 </Project>

@@ -17,4 +17,11 @@
     <PackageReference Include="Quartz.Extensions.DependencyInjection" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="Quartz" />
+  </ItemGroup>
+
 </Project>

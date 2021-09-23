@@ -4,15 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Linq;
 using System.Security.Claims;
 using Xunit;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives;
 

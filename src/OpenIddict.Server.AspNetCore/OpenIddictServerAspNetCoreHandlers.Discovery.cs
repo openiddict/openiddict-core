@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server.AspNetCore;
 

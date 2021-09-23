@@ -5,7 +5,6 @@
  */
 
 using System.Security.Claims;
-using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation;
 

@@ -4,9 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Net;
-using System.Net.Http;
 using Polly;
 using Polly.Extensions.Http;
 

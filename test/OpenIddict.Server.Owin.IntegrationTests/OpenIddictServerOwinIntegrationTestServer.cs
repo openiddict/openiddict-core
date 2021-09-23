@@ -5,7 +5,6 @@
  */
 
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.Owin.Testing;
 using OpenIddict.Server.IntegrationTests;
 

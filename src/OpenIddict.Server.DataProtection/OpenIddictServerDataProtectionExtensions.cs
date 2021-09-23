@@ -4,13 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server;
 using OpenIddict.Server.DataProtection;
-using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +34,7 @@ public static class OpenIddictServerDataProtectionExtensions
 
         // Register the built-in server event handlers used by the OpenIddict Data Protection components.
         // Note: the order used here is not important, as the actual order is set in the options.
-        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+        builder.Services.TryAdd(OpenIddictServerDataProtectionHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(new[]

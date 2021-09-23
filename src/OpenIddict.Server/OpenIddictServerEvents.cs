@@ -4,12 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
-using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server;
 
