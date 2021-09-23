@@ -4,16 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation;
+
+/// <summary>
+/// Represents the type of an OpenIddict validation endpoint.
+/// </summary>
+public enum OpenIddictValidationEndpointType
 {
     /// <summary>
-    /// Represents the type of an OpenIddict validation endpoint.
+    /// Unknown endpoint.
     /// </summary>
-    public enum OpenIddictValidationEndpointType
-    {
-        /// <summary>
-        /// Unknown endpoint.
-        /// </summary>
-        Unknown = 0
-    }
+    Unknown = 0
 }

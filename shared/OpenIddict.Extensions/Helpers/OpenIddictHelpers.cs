@@ -3,74 +3,73 @@ using System.Collections.Generic;
 using System.Linq;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Extensions
+namespace OpenIddict.Extensions;
+
+/// <summary>
+/// Exposes common helpers used by the OpenIddict assemblies.
+/// </summary>
+internal static class OpenIddictHelpers
 {
     /// <summary>
-    /// Exposes common helpers used by the OpenIddict assemblies.
+    /// Finds the first base type that matches the specified generic type definition.
     /// </summary>
-    internal static class OpenIddictHelpers
+    /// <param name="type">The type to introspect.</param>
+    /// <param name="definition">The generic type definition.</param>
+    /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
+    public static Type? FindGenericBaseType(Type type, Type definition)
+        => FindGenericBaseTypes(type, definition).FirstOrDefault();
+
+    /// <summary>
+    /// Finds all the base types that matches the specified generic type definition.
+    /// </summary>
+    /// <param name="type">The type to introspect.</param>
+    /// <param name="definition">The generic type definition.</param>
+    /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
+    public static IEnumerable<Type> FindGenericBaseTypes(Type type, Type definition)
     {
-        /// <summary>
-        /// Finds the first base type that matches the specified generic type definition.
-        /// </summary>
-        /// <param name="type">The type to introspect.</param>
-        /// <param name="definition">The generic type definition.</param>
-        /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
-        public static Type? FindGenericBaseType(Type type, Type definition)
-            => FindGenericBaseTypes(type, definition).FirstOrDefault();
-
-        /// <summary>
-        /// Finds all the base types that matches the specified generic type definition.
-        /// </summary>
-        /// <param name="type">The type to introspect.</param>
-        /// <param name="definition">The generic type definition.</param>
-        /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
-        public static IEnumerable<Type> FindGenericBaseTypes(Type type, Type definition)
+        if (type is null)
         {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            throw new ArgumentNullException(nameof(type));
+        }
 
-            if (definition is null)
-            {
-                throw new ArgumentNullException(nameof(definition));
-            }
+        if (definition is null)
+        {
+            throw new ArgumentNullException(nameof(definition));
+        }
 
-            if (!definition.IsGenericTypeDefinition)
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0263), nameof(definition));
-            }
+        if (!definition.IsGenericTypeDefinition)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0263), nameof(definition));
+        }
 
-            if (definition.IsInterface)
+        if (definition.IsInterface)
+        {
+            foreach (var contract in type.GetInterfaces())
             {
-                foreach (var contract in type.GetInterfaces())
+                if (!contract.IsGenericType && !contract.IsConstructedGenericType)
                 {
-                    if (!contract.IsGenericType && !contract.IsConstructedGenericType)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    if (contract.GetGenericTypeDefinition() == definition)
-                    {
-                        yield return contract;
-                    }
+                if (contract.GetGenericTypeDefinition() == definition)
+                {
+                    yield return contract;
                 }
             }
+        }
 
-            else
+        else
+        {
+            for (var candidate = type; candidate is not null; candidate = candidate.BaseType)
             {
-                for (var candidate = type; candidate is not null; candidate = candidate.BaseType)
+                if (!candidate.IsGenericType && !candidate.IsConstructedGenericType)
                 {
-                    if (!candidate.IsGenericType && !candidate.IsConstructedGenericType)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    if (candidate.GetGenericTypeDefinition() == definition)
-                    {
-                        yield return candidate;
-                    }
+                if (candidate.GetGenericTypeDefinition() == definition)
+                {
+                    yield return candidate;
                 }
             }
         }

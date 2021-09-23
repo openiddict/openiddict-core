@@ -12,43 +12,42 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.MongoDb
+namespace OpenIddict.MongoDb;
+
+/// <inheritdoc/>
+public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
 {
-    /// <inheritdoc/>
-    public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
+    private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
+    private readonly IServiceProvider _provider;
+
+    public OpenIddictMongoDbContext(
+        IOptionsMonitor<OpenIddictMongoDbOptions> options,
+        IServiceProvider provider)
     {
-        private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
-        private readonly IServiceProvider _provider;
+        _options = options;
+        _provider = provider;
+    }
 
-        public OpenIddictMongoDbContext(
-            IOptionsMonitor<OpenIddictMongoDbOptions> options,
-            IServiceProvider provider)
+    /// <inheritdoc/>
+    public ValueTask<IMongoDatabase> GetDatabaseAsync(CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
         {
-            _options = options;
-            _provider = provider;
+            return new ValueTask<IMongoDatabase>(Task.FromCanceled<IMongoDatabase>(cancellationToken));
         }
 
-        /// <inheritdoc/>
-        public ValueTask<IMongoDatabase> GetDatabaseAsync(CancellationToken cancellationToken)
+        var database = _options.CurrentValue.Database;
+        if (database is null)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return new ValueTask<IMongoDatabase>(Task.FromCanceled<IMongoDatabase>(cancellationToken));
-            }
-
-            var database = _options.CurrentValue.Database;
-            if (database is null)
-            {
-                database = _provider.GetService<IMongoDatabase>();
-            }
-
-            if (database is null)
-            {
-                return new ValueTask<IMongoDatabase>(Task.FromException<IMongoDatabase>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0262))));
-            }
-
-            return new ValueTask<IMongoDatabase>(database);
+            database = _provider.GetService<IMongoDatabase>();
         }
+
+        if (database is null)
+        {
+            return new ValueTask<IMongoDatabase>(Task.FromException<IMongoDatabase>(
+                new InvalidOperationException(SR.GetResourceString(SR.ID0262))));
+        }
+
+        return new ValueTask<IMongoDatabase>(database);
     }
 }

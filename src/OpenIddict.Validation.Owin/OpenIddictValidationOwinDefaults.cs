@@ -6,16 +6,15 @@
 
 using Microsoft.Owin.Security;
 
-namespace OpenIddict.Validation.Owin
+namespace OpenIddict.Validation.Owin;
+
+/// <summary>
+/// Exposes the default values used by the OpenIddict validation handler.
+/// </summary>
+public static class OpenIddictValidationOwinDefaults
 {
     /// <summary>
-    /// Exposes the default values used by the OpenIddict validation handler.
+    /// Default value for <see cref="AuthenticationOptions.AuthenticationType"/>.
     /// </summary>
-    public static class OpenIddictValidationOwinDefaults
-    {
-        /// <summary>
-        /// Default value for <see cref="AuthenticationOptions.AuthenticationType"/>.
-        /// </summary>
-        public const string AuthenticationType = "OpenIddict.Validation.Owin";
-    }
+    public const string AuthenticationType = "OpenIddict.Validation.Owin";
 }

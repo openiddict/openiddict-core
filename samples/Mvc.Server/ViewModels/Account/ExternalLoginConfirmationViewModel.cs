@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Mvc.Server.ViewModels.Account
+namespace Mvc.Server.ViewModels.Account;
+
+public class ExternalLoginConfirmationViewModel
 {
-    public class ExternalLoginConfirmationViewModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-    }
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
 }

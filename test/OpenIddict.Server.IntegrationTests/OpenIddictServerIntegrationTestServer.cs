@@ -7,15 +7,14 @@
 using System;
 using System.Threading.Tasks;
 
-namespace OpenIddict.Server.IntegrationTests
-{
-    /// <summary>
-    /// Represents a test host used by the server integration tests.
-    /// </summary>
-    public abstract class OpenIddictServerIntegrationTestServer : IAsyncDisposable
-    {
-        public abstract ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync();
+namespace OpenIddict.Server.IntegrationTests;
 
-        public virtual ValueTask DisposeAsync() => default;
-    }
+/// <summary>
+/// Represents a test host used by the server integration tests.
+/// </summary>
+public abstract class OpenIddictServerIntegrationTestServer : IAsyncDisposable
+{
+    public abstract ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync();
+
+    public virtual ValueTask DisposeAsync() => default;
 }

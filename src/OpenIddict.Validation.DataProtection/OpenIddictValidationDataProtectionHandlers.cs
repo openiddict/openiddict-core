@@ -7,12 +7,11 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 
-namespace OpenIddict.Validation.DataProtection
+namespace OpenIddict.Validation.DataProtection;
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static partial class OpenIddictValidationDataProtectionHandlers
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static partial class OpenIddictValidationDataProtectionHandlers
-    {
-        public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; }
-            = ImmutableArray.CreateRange(Protection.DefaultHandlers);
-    }
+    public static ImmutableArray<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; }
+        = ImmutableArray.CreateRange(Protection.DefaultHandlers);
 }

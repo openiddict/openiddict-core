@@ -11,98 +11,97 @@ using OpenIddict.Server;
 using OpenIddict.Server.Owin;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
-namespace Owin
+namespace Owin;
+
+/// <summary>
+/// Exposes companion extensions for the OpenIddict/OWIN integration.
+/// </summary>
+public static class OpenIddictServerOwinHelpers
 {
     /// <summary>
-    /// Exposes companion extensions for the OpenIddict/OWIN integration.
+    /// Registers the OpenIddict server OWIN middleware in the application pipeline.
+    /// Note: when using a dependency injection container supporting per-request
+    /// middleware resolution (like Autofac), calling this method is NOT recommended.
     /// </summary>
-    public static class OpenIddictServerOwinHelpers
+    /// <param name="app">The application builder used to register middleware instances.</param>
+    /// <returns>The <see cref="IAppBuilder"/>.</returns>
+    public static IAppBuilder UseOpenIddictServer(this IAppBuilder app)
     {
-        /// <summary>
-        /// Registers the OpenIddict server OWIN middleware in the application pipeline.
-        /// Note: when using a dependency injection container supporting per-request
-        /// middleware resolution (like Autofac), calling this method is NOT recommended.
-        /// </summary>
-        /// <param name="app">The application builder used to register middleware instances.</param>
-        /// <returns>The <see cref="IAppBuilder"/>.</returns>
-        public static IAppBuilder UseOpenIddictServer(this IAppBuilder app)
+        if (app is null)
         {
-            if (app is null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            return app.Use<OpenIddictServerOwinMiddlewareFactory>();
+            throw new ArgumentNullException(nameof(app));
         }
 
-        /// <summary>
-        /// Retrieves the <see cref="IOwinRequest"/> instance stored in the <see cref="OpenIddictServerTransaction"/> properties.
-        /// </summary>
-        /// <param name="transaction">The transaction instance.</param>
-        /// <returns>The <see cref="IOwinRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static IOwinRequest? GetOwinRequest(this OpenIddictServerTransaction transaction)
+        return app.Use<OpenIddictServerOwinMiddlewareFactory>();
+    }
+
+    /// <summary>
+    /// Retrieves the <see cref="IOwinRequest"/> instance stored in the <see cref="OpenIddictServerTransaction"/> properties.
+    /// </summary>
+    /// <param name="transaction">The transaction instance.</param>
+    /// <returns>The <see cref="IOwinRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    public static IOwinRequest? GetOwinRequest(this OpenIddictServerTransaction transaction)
+    {
+        if (transaction is null)
         {
-            if (transaction is null)
-            {
-                throw new ArgumentNullException(nameof(transaction));
-            }
+            throw new ArgumentNullException(nameof(transaction));
+        }
 
-            if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property))
-            {
-                return null;
-            }
-
-            if (property is WeakReference<IOwinRequest> reference && reference.TryGetTarget(out IOwinRequest? request))
-            {
-                return request;
-            }
-
+        if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property))
+        {
             return null;
         }
 
-        /// <summary>
-        /// Retrieves the <see cref="OpenIddictServerEndpointType"/> instance stored in <see cref="BaseContext"/>.
-        /// </summary>
-        /// <param name="context">The context instance.</param>
-        /// <returns>The <see cref="OpenIddictServerEndpointType"/>.</returns>
-        public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType(this IOwinContext context)
+        if (property is WeakReference<IOwinRequest> reference && reference.TryGetTarget(out IOwinRequest? request))
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.EndpointType ?? default;
+            return request;
         }
 
-        /// <summary>
-        /// Retrieves the <see cref="OpenIddictRequest"/> instance stored in <see cref="BaseContext"/>.
-        /// </summary>
-        /// <param name="context">The context instance.</param>
-        /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictRequest? GetOpenIddictServerRequest(this IOwinContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+        return null;
+    }
 
-            return context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.Request;
+    /// <summary>
+    /// Retrieves the <see cref="OpenIddictServerEndpointType"/> instance stored in <see cref="BaseContext"/>.
+    /// </summary>
+    /// <param name="context">The context instance.</param>
+    /// <returns>The <see cref="OpenIddictServerEndpointType"/>.</returns>
+    public static OpenIddictServerEndpointType GetOpenIddictServerEndpointType(this IOwinContext context)
+    {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <summary>
-        /// Retrieves the <see cref="OpenIddictResponse"/> instance stored in <see cref="BaseContext"/>.
-        /// </summary>
-        /// <param name="context">The context instance.</param>
-        /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
-        public static OpenIddictResponse? GetOpenIddictServerResponse(this IOwinContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+        return context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.EndpointType ?? default;
+    }
 
-            return context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.Response;
+    /// <summary>
+    /// Retrieves the <see cref="OpenIddictRequest"/> instance stored in <see cref="BaseContext"/>.
+    /// </summary>
+    /// <param name="context">The context instance.</param>
+    /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    public static OpenIddictRequest? GetOpenIddictServerRequest(this IOwinContext context)
+    {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
         }
+
+        return context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.Request;
+    }
+
+    /// <summary>
+    /// Retrieves the <see cref="OpenIddictResponse"/> instance stored in <see cref="BaseContext"/>.
+    /// </summary>
+    /// <param name="context">The context instance.</param>
+    /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
+    public static OpenIddictResponse? GetOpenIddictServerResponse(this IOwinContext context)
+    {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        return context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.Response;
     }
 }

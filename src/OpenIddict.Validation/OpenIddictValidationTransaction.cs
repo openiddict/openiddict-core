@@ -9,46 +9,45 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation;
+
+/// <summary>
+/// Represents the context associated with an OpenID Connect validation request.
+/// </summary>
+public class OpenIddictValidationTransaction
 {
     /// <summary>
-    /// Represents the context associated with an OpenID Connect validation request.
+    /// Gets or sets the type of the endpoint processing the current request.
     /// </summary>
-    public class OpenIddictValidationTransaction
-    {
-        /// <summary>
-        /// Gets or sets the type of the endpoint processing the current request.
-        /// </summary>
-        public OpenIddictValidationEndpointType EndpointType { get; set; }
+    public OpenIddictValidationEndpointType EndpointType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the issuer address associated with the current transaction, if available.
-        /// </summary>
-        public Uri? Issuer { get; set; }
+    /// <summary>
+    /// Gets or sets the issuer address associated with the current transaction, if available.
+    /// </summary>
+    public Uri? Issuer { get; set; }
 
-        /// <summary>
-        /// Gets or sets the logger associated with the current request.
-        /// </summary>
-        public ILogger Logger { get; set; } = default!;
+    /// <summary>
+    /// Gets or sets the logger associated with the current request.
+    /// </summary>
+    public ILogger Logger { get; set; } = default!;
 
-        /// <summary>
-        /// Gets or sets the options associated with the current request.
-        /// </summary>
-        public OpenIddictValidationOptions Options { get; set; } = default!;
+    /// <summary>
+    /// Gets or sets the options associated with the current request.
+    /// </summary>
+    public OpenIddictValidationOptions Options { get; set; } = default!;
 
-        /// <summary>
-        /// Gets the additional properties associated with the current request.
-        /// </summary>
-        public Dictionary<string, object?> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>
+    /// Gets the additional properties associated with the current request.
+    /// </summary>
+    public Dictionary<string, object?> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>
-        /// Gets or sets the current OpenID Connect request.
-        /// </summary>
-        public OpenIddictRequest? Request { get; set; }
+    /// <summary>
+    /// Gets or sets the current OpenID Connect request.
+    /// </summary>
+    public OpenIddictRequest? Request { get; set; }
 
-        /// <summary>
-        /// Gets or sets the current OpenID Connect response being returned.
-        /// </summary>
-        public OpenIddictResponse? Response { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the current OpenID Connect response being returned.
+    /// </summary>
+    public OpenIddictResponse? Response { get; set; }
 }

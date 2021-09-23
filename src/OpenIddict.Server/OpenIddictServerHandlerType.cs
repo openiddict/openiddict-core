@@ -4,26 +4,25 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server;
+
+/// <summary>
+/// Represents the type of an OpenIddict server handler.
+/// </summary>
+public enum OpenIddictServerHandlerType
 {
     /// <summary>
-    /// Represents the type of an OpenIddict server handler.
+    /// The handler is of an unspecified type.
     /// </summary>
-    public enum OpenIddictServerHandlerType
-    {
-        /// <summary>
-        /// The handler is of an unspecified type.
-        /// </summary>
-        Unknown = 0,
+    Unknown = 0,
 
-        /// <summary>
-        /// The handler is a built-in handler, provided as part of the official OpenIddict packages.
-        /// </summary>
-        BuiltIn = 1,
+    /// <summary>
+    /// The handler is a built-in handler, provided as part of the official OpenIddict packages.
+    /// </summary>
+    BuiltIn = 1,
 
-        /// <summary>
-        /// The handler is a custom handler, registered by the end user or a third-party package.
-        /// </summary>
-        Custom = 2
-    }
+    /// <summary>
+    /// The handler is a custom handler, registered by the end user or a third-party package.
+    /// </summary>
+    Custom = 2
 }

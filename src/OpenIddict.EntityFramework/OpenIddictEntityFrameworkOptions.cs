@@ -7,19 +7,18 @@
 using System;
 using System.Data.Entity;
 
-namespace OpenIddict.EntityFramework
+namespace OpenIddict.EntityFramework;
+
+/// <summary>
+/// Provides various settings needed to configure
+/// the OpenIddict Entity Framework 6.x integration.
+/// </summary>
+public class OpenIddictEntityFrameworkOptions
 {
     /// <summary>
-    /// Provides various settings needed to configure
-    /// the OpenIddict Entity Framework 6.x integration.
+    /// Gets or sets the concrete type of the <see cref="DbContext"/> used by the
+    /// OpenIddict Entity Framework 6.x stores. If this property is not populated,
+    /// an exception is thrown at runtime when trying to use the stores.
     /// </summary>
-    public class OpenIddictEntityFrameworkOptions
-    {
-        /// <summary>
-        /// Gets or sets the concrete type of the <see cref="DbContext"/> used by the
-        /// OpenIddict Entity Framework 6.x stores. If this property is not populated,
-        /// an exception is thrown at runtime when trying to use the stores.
-        /// </summary>
-        public Type? DbContextType { get; set; }
-    }
+    public Type? DbContextType { get; set; }
 }

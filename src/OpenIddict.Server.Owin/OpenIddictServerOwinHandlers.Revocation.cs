@@ -7,26 +7,25 @@
 using System.Collections.Immutable;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
-namespace OpenIddict.Server.Owin
-{
-    public static partial class OpenIddictServerOwinHandlers
-    {
-        public static class Revocation
-        {
-            public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
-                /*
-                 * Revocation request extraction:
-                 */
-                ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
-                ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
+namespace OpenIddict.Server.Owin;
 
-                /*
-                 * Revocation response processing:
-                 */
-                AttachHttpResponseCode<ApplyRevocationResponseContext>.Descriptor,
-                AttachCacheControlHeader<ApplyRevocationResponseContext>.Descriptor,
-                AttachWwwAuthenticateHeader<ApplyRevocationResponseContext>.Descriptor,
-                ProcessJsonResponse<ApplyRevocationResponseContext>.Descriptor);
-        }
+public static partial class OpenIddictServerOwinHandlers
+{
+    public static class Revocation
+    {
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+            /*
+             * Revocation request extraction:
+             */
+            ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
+            ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
+
+            /*
+             * Revocation response processing:
+             */
+            AttachHttpResponseCode<ApplyRevocationResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyRevocationResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyRevocationResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyRevocationResponseContext>.Descriptor);
     }
 }

@@ -14,99 +14,98 @@ using Moq;
 using Xunit;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.MongoDb.Tests
+namespace OpenIddict.MongoDb.Tests;
+
+public class OpenIddictMongoDbContextTests
 {
-    public class OpenIddictMongoDbContextTests
+    [Fact]
+    public async Task GetDatabaseAsync_ThrowsAnExceptionForCanceledToken()
     {
-        [Fact]
-        public async Task GetDatabaseAsync_ThrowsAnExceptionForCanceledToken()
+        // Arrange
+        var services = new ServiceCollection();
+        var provider = services.BuildServiceProvider();
+
+        var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>();
+        var token = new CancellationToken(canceled: true);
+
+        var context = new OpenIddictMongoDbContext(options, provider);
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<TaskCanceledException>(async delegate
         {
-            // Arrange
-            var services = new ServiceCollection();
-            var provider = services.BuildServiceProvider();
+            await context.GetDatabaseAsync(token);
+        });
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>();
-            var token = new CancellationToken(canceled: true);
+        Assert.Equal(token, exception.CancellationToken);
+    }
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+    [Fact]
+    public async Task GetDatabaseAsync_PrefersDatabaseRegisteredInOptionsToDatabaseRegisteredInDependencyInjectionContainer()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(Mock.Of<IMongoDatabase>());
 
-            // Act and assert
-            var exception = await Assert.ThrowsAsync<TaskCanceledException>(async delegate
+        var provider = services.BuildServiceProvider();
+
+        var database = Mock.Of<IMongoDatabase>();
+        var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
+            mock => mock.CurrentValue == new OpenIddictMongoDbOptions
             {
-                await context.GetDatabaseAsync(token);
+                Database = database
             });
 
-            Assert.Equal(token, exception.CancellationToken);
-        }
+        var context = new OpenIddictMongoDbContext(options, provider);
 
-        [Fact]
-        public async Task GetDatabaseAsync_PrefersDatabaseRegisteredInOptionsToDatabaseRegisteredInDependencyInjectionContainer()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddSingleton(Mock.Of<IMongoDatabase>());
+        // Act and assert
+        Assert.Same(database, await context.GetDatabaseAsync(CancellationToken.None));
+    }
 
-            var provider = services.BuildServiceProvider();
+    [Fact]
+    public async Task GetDatabaseAsync_ThrowsAnExceptionWhenDatabaseCannotBeFound()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var provider = services.BuildServiceProvider();
 
-            var database = Mock.Of<IMongoDatabase>();
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = database
-                });
-
-            var context = new OpenIddictMongoDbContext(options, provider);
-
-            // Act and assert
-            Assert.Same(database, await context.GetDatabaseAsync(CancellationToken.None));
-        }
-
-        [Fact]
-        public async Task GetDatabaseAsync_ThrowsAnExceptionWhenDatabaseCannotBeFound()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var provider = services.BuildServiceProvider();
-
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = null
-                });
-
-            var context = new OpenIddictMongoDbContext(options, provider);
-
-            // Act and assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async delegate
+        var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
+            mock => mock.CurrentValue == new OpenIddictMongoDbOptions
             {
-                await context.GetDatabaseAsync(CancellationToken.None);
+                Database = null
             });
 
-            Assert.Equal(SR.GetResourceString(SR.ID0262), exception.Message);
-        }
+        var context = new OpenIddictMongoDbContext(options, provider);
 
-        [Fact]
-        public async Task GetDatabaseAsync_UsesDatabaseRegisteredInDependencyInjectionContainer()
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async delegate
         {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddSingleton(Mock.Of<IMongoDatabase>());
+            await context.GetDatabaseAsync(CancellationToken.None);
+        });
 
-            var database = Mock.Of<IMongoDatabase>();
-            services.AddSingleton(database);
+        Assert.Equal(SR.GetResourceString(SR.ID0262), exception.Message);
+    }
 
-            var provider = services.BuildServiceProvider();
+    [Fact]
+    public async Task GetDatabaseAsync_UsesDatabaseRegisteredInDependencyInjectionContainer()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(Mock.Of<IMongoDatabase>());
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = null
-                });
+        var database = Mock.Of<IMongoDatabase>();
+        services.AddSingleton(database);
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+        var provider = services.BuildServiceProvider();
 
-            // Act and assert
-            Assert.Same(database, await context.GetDatabaseAsync(CancellationToken.None));
-        }
+        var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
+            mock => mock.CurrentValue == new OpenIddictMongoDbOptions
+            {
+                Database = null
+            });
+
+        var context = new OpenIddictMongoDbContext(options, provider);
+
+        // Act and assert
+        Assert.Same(database, await context.GetDatabaseAsync(CancellationToken.None));
     }
 }

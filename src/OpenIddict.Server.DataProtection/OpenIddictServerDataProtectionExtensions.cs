@@ -12,67 +12,66 @@ using OpenIddict.Server;
 using OpenIddict.Server.DataProtection;
 using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlers;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Exposes extensions allowing to register the OpenIddict ASP.NET Core Data Protection server services.
+/// </summary>
+public static class OpenIddictServerDataProtectionExtensions
 {
     /// <summary>
-    /// Exposes extensions allowing to register the OpenIddict ASP.NET Core Data Protection server services.
+    /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
+    /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
     /// </summary>
-    public static class OpenIddictServerDataProtectionExtensions
+    /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+    /// <remarks>This extension can be safely called multiple times.</remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+    public static OpenIddictServerDataProtectionBuilder UseDataProtection(this OpenIddictServerBuilder builder)
     {
-        /// <summary>
-        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
-        /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
-        /// </summary>
-        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public static OpenIddictServerDataProtectionBuilder UseDataProtection(this OpenIddictServerBuilder builder)
+        if (builder is null)
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Services.AddDataProtection();
-
-            // Register the built-in server event handlers used by the OpenIddict Data Protection components.
-            // Note: the order used here is not important, as the actual order is set in the options.
-            builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
-
-            // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-            builder.Services.TryAddEnumerable(new[]
-            {
-                ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerDataProtectionConfiguration>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerDataProtectionOptions>, OpenIddictServerDataProtectionConfiguration>()
-            });
-
-            return new OpenIddictServerDataProtectionBuilder(builder.Services);
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        /// <summary>
-        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
-        /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
-        /// </summary>
-        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        /// <param name="configuration">The configuration delegate used to configure the server services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public static OpenIddictServerBuilder UseDataProtection(
-            this OpenIddictServerBuilder builder, Action<OpenIddictServerDataProtectionBuilder> configuration)
+        builder.Services.AddDataProtection();
+
+        // Register the built-in server event handlers used by the OpenIddict Data Protection components.
+        // Note: the order used here is not important, as the actual order is set in the options.
+        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+
+        // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
+        builder.Services.TryAddEnumerable(new[]
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerDataProtectionConfiguration>(),
+            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerDataProtectionOptions>, OpenIddictServerDataProtectionConfiguration>()
+        });
 
-            if (configuration is null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
+        return new OpenIddictServerDataProtectionBuilder(builder.Services);
+    }
 
-            configuration(builder.UseDataProtection());
-
-            return builder;
+    /// <summary>
+    /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
+    /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
+    /// </summary>
+    /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+    /// <param name="configuration">The configuration delegate used to configure the server services.</param>
+    /// <remarks>This extension can be safely called multiple times.</remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+    public static OpenIddictServerBuilder UseDataProtection(
+        this OpenIddictServerBuilder builder, Action<OpenIddictServerDataProtectionBuilder> configuration)
+    {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        configuration(builder.UseDataProtection());
+
+        return builder;
     }
 }

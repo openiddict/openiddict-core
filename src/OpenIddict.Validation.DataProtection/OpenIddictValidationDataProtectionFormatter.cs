@@ -15,184 +15,183 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Properties;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Validation.DataProtection
+namespace OpenIddict.Validation.DataProtection;
+
+public class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
 {
-    public class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
+    public ClaimsPrincipal ReadToken(BinaryReader reader)
     {
-        public ClaimsPrincipal ReadToken(BinaryReader reader)
+        if (reader is null)
         {
-            if (reader is null)
+            throw new ArgumentNullException(nameof(reader));
+        }
+
+        var (principal, properties) = Read(reader);
+
+        // Tokens serialized using the ASP.NET Core Data Protection stack are compound
+        // of both claims and special authentication properties. To ensure existing tokens
+        // can be reused, well-known properties are manually mapped to their claims equivalents.
+
+        return principal
+            .SetAudiences(GetArrayProperty(properties, Properties.Audiences))
+            .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
+            .SetResources(GetArrayProperty(properties, Properties.Resources))
+            .SetScopes(GetArrayProperty(properties, Properties.Scopes))
+
+            .SetClaim(Claims.Private.AccessTokenLifetime, GetProperty(properties, Properties.AccessTokenLifetime))
+            .SetClaim(Claims.Private.AuthorizationCodeLifetime, GetProperty(properties, Properties.AuthorizationCodeLifetime))
+            .SetClaim(Claims.Private.AuthorizationId, GetProperty(properties, Properties.InternalAuthorizationId))
+            .SetClaim(Claims.Private.CodeChallenge, GetProperty(properties, Properties.CodeChallenge))
+            .SetClaim(Claims.Private.CodeChallengeMethod, GetProperty(properties, Properties.CodeChallengeMethod))
+            .SetClaim(Claims.Private.CreationDate, GetProperty(properties, Properties.Issued))
+            .SetClaim(Claims.Private.DeviceCodeId, GetProperty(properties, Properties.DeviceCodeId))
+            .SetClaim(Claims.Private.DeviceCodeLifetime, GetProperty(properties, Properties.DeviceCodeLifetime))
+            .SetClaim(Claims.Private.IdentityTokenLifetime, GetProperty(properties, Properties.IdentityTokenLifetime))
+            .SetClaim(Claims.Private.ExpirationDate, GetProperty(properties, Properties.Expires))
+            .SetClaim(Claims.Private.Nonce, GetProperty(properties, Properties.Nonce))
+            .SetClaim(Claims.Private.RedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
+            .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime))
+            .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
+            .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
+
+        static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
+        {
+            // Read the version of the format used to serialize the ticket.
+            var version = reader.ReadInt32();
+            if (version != 5)
             {
-                throw new ArgumentNullException(nameof(reader));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
             }
 
-            var (principal, properties) = Read(reader);
+            // Read the authentication scheme associated to the ticket.
+            _ = reader.ReadString();
 
-            // Tokens serialized using the ASP.NET Core Data Protection stack are compound
-            // of both claims and special authentication properties. To ensure existing tokens
-            // can be reused, well-known properties are manually mapped to their claims equivalents.
+            // Read the number of identities stored in the serialized payload.
+            var count = reader.ReadInt32();
 
-            return principal
-                .SetAudiences(GetArrayProperty(properties, Properties.Audiences))
-                .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
-                .SetResources(GetArrayProperty(properties, Properties.Resources))
-                .SetScopes(GetArrayProperty(properties, Properties.Scopes))
-
-                .SetClaim(Claims.Private.AccessTokenLifetime, GetProperty(properties, Properties.AccessTokenLifetime))
-                .SetClaim(Claims.Private.AuthorizationCodeLifetime, GetProperty(properties, Properties.AuthorizationCodeLifetime))
-                .SetClaim(Claims.Private.AuthorizationId, GetProperty(properties, Properties.InternalAuthorizationId))
-                .SetClaim(Claims.Private.CodeChallenge, GetProperty(properties, Properties.CodeChallenge))
-                .SetClaim(Claims.Private.CodeChallengeMethod, GetProperty(properties, Properties.CodeChallengeMethod))
-                .SetClaim(Claims.Private.CreationDate, GetProperty(properties, Properties.Issued))
-                .SetClaim(Claims.Private.DeviceCodeId, GetProperty(properties, Properties.DeviceCodeId))
-                .SetClaim(Claims.Private.DeviceCodeLifetime, GetProperty(properties, Properties.DeviceCodeLifetime))
-                .SetClaim(Claims.Private.IdentityTokenLifetime, GetProperty(properties, Properties.IdentityTokenLifetime))
-                .SetClaim(Claims.Private.ExpirationDate, GetProperty(properties, Properties.Expires))
-                .SetClaim(Claims.Private.Nonce, GetProperty(properties, Properties.Nonce))
-                .SetClaim(Claims.Private.RedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
-                .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime))
-                .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
-                .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
-
-            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
+            var identities = new ClaimsIdentity[count];
+            for (var index = 0; index != count; ++index)
             {
-                // Read the version of the format used to serialize the ticket.
-                var version = reader.ReadInt32();
-                if (version != 5)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
-                }
-
-                // Read the authentication scheme associated to the ticket.
-                _ = reader.ReadString();
-
-                // Read the number of identities stored in the serialized payload.
-                var count = reader.ReadInt32();
-
-                var identities = new ClaimsIdentity[count];
-                for (var index = 0; index != count; ++index)
-                {
-                    identities[index] = ReadIdentity(reader);
-                }
-
-                var properties = ReadProperties(reader);
-
-                return (new ClaimsPrincipal(identities), properties);
+                identities[index] = ReadIdentity(reader);
             }
 
-            static ClaimsIdentity ReadIdentity(BinaryReader reader)
+            var properties = ReadProperties(reader);
+
+            return (new ClaimsPrincipal(identities), properties);
+        }
+
+        static ClaimsIdentity ReadIdentity(BinaryReader reader)
+        {
+            var identity = new ClaimsIdentity(
+                authenticationType: reader.ReadString(),
+                nameType: ReadWithDefault(reader, ClaimsIdentity.DefaultNameClaimType),
+                roleType: ReadWithDefault(reader, ClaimsIdentity.DefaultRoleClaimType));
+
+            // Read the number of claims contained in the serialized identity.
+            var count = reader.ReadInt32();
+
+            for (int index = 0; index != count; ++index)
             {
-                var identity = new ClaimsIdentity(
-                    authenticationType: reader.ReadString(),
-                    nameType: ReadWithDefault(reader, ClaimsIdentity.DefaultNameClaimType),
-                    roleType: ReadWithDefault(reader, ClaimsIdentity.DefaultRoleClaimType));
+                var claim = ReadClaim(reader, identity);
 
-                // Read the number of claims contained in the serialized identity.
-                var count = reader.ReadInt32();
-
-                for (int index = 0; index != count; ++index)
-                {
-                    var claim = ReadClaim(reader, identity);
-
-                    identity.AddClaim(claim);
-                }
-
-                // Determine whether the identity has a bootstrap context attached.
-                if (reader.ReadBoolean())
-                {
-                    identity.BootstrapContext = reader.ReadString();
-                }
-
-                // Determine whether the identity has an actor identity attached.
-                if (reader.ReadBoolean())
-                {
-                    identity.Actor = ReadIdentity(reader);
-                }
-
-                return identity;
+                identity.AddClaim(claim);
             }
 
-            static Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
+            // Determine whether the identity has a bootstrap context attached.
+            if (reader.ReadBoolean())
             {
-                var type = ReadWithDefault(reader, identity.NameClaimType);
-                var value = reader.ReadString();
-                var valueType = ReadWithDefault(reader, ClaimValueTypes.String);
-                var issuer = ReadWithDefault(reader, ClaimsIdentity.DefaultIssuer);
-                var originalIssuer = ReadWithDefault(reader, issuer);
-
-                var claim = new Claim(type, value, valueType, issuer, originalIssuer, identity);
-
-                // Read the number of properties stored in the claim.
-                var count = reader.ReadInt32();
-
-                for (var index = 0; index != count; ++index)
-                {
-                    var key = reader.ReadString();
-                    var propertyValue = reader.ReadString();
-
-                    claim.Properties.Add(key, propertyValue);
-                }
-
-                return claim;
+                identity.BootstrapContext = reader.ReadString();
             }
 
-            static IReadOnlyDictionary<string, string> ReadProperties(BinaryReader reader)
+            // Determine whether the identity has an actor identity attached.
+            if (reader.ReadBoolean())
             {
-                // Read the version of the format used to serialize the properties.
-                var version = reader.ReadInt32();
-                if (version != 1)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
-                }
-
-                var count = reader.ReadInt32();
-                var properties = new Dictionary<string, string>(count, StringComparer.Ordinal);
-                for (var index = 0; index != count; ++index)
-                {
-                    properties.Add(reader.ReadString(), reader.ReadString());
-                }
-
-                return properties;
+                identity.Actor = ReadIdentity(reader);
             }
 
-            static string ReadWithDefault(BinaryReader reader, string defaultValue)
+            return identity;
+        }
+
+        static Claim ReadClaim(BinaryReader reader, ClaimsIdentity identity)
+        {
+            var type = ReadWithDefault(reader, identity.NameClaimType);
+            var value = reader.ReadString();
+            var valueType = ReadWithDefault(reader, ClaimValueTypes.String);
+            var issuer = ReadWithDefault(reader, ClaimsIdentity.DefaultIssuer);
+            var originalIssuer = ReadWithDefault(reader, issuer);
+
+            var claim = new Claim(type, value, valueType, issuer, originalIssuer, identity);
+
+            // Read the number of properties stored in the claim.
+            var count = reader.ReadInt32();
+
+            for (var index = 0; index != count; ++index)
             {
-                var value = reader.ReadString();
+                var key = reader.ReadString();
+                var propertyValue = reader.ReadString();
 
-                if (string.Equals(value, "\0", StringComparison.Ordinal))
-                {
-                    return defaultValue;
-                }
-
-                return value;
+                claim.Properties.Add(key, propertyValue);
             }
 
-            static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ? value : null;
+            return claim;
+        }
 
-            static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
+        static IReadOnlyDictionary<string, string> ReadProperties(BinaryReader reader)
+        {
+            // Read the version of the format used to serialize the properties.
+            var version = reader.ReadInt32();
+            if (version != 1)
             {
-                if (properties.TryGetValue(name, out var value))
-                {
-                    using var document = JsonDocument.Parse(value);
-                    var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0287));
+            }
 
-                    foreach (var element in document.RootElement.EnumerateArray())
+            var count = reader.ReadInt32();
+            var properties = new Dictionary<string, string>(count, StringComparer.Ordinal);
+            for (var index = 0; index != count; ++index)
+            {
+                properties.Add(reader.ReadString(), reader.ReadString());
+            }
+
+            return properties;
+        }
+
+        static string ReadWithDefault(BinaryReader reader, string defaultValue)
+        {
+            var value = reader.ReadString();
+
+            if (string.Equals(value, "\0", StringComparison.Ordinal))
+            {
+                return defaultValue;
+            }
+
+            return value;
+        }
+
+        static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
+            => properties.TryGetValue(name, out var value) ? value : null;
+
+        static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
+        {
+            if (properties.TryGetValue(name, out var value))
+            {
+                using var document = JsonDocument.Parse(value);
+                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    var item = element.GetString();
+                    if (string.IsNullOrEmpty(item))
                     {
-                        var item = element.GetString();
-                        if (string.IsNullOrEmpty(item))
-                        {
-                            continue;
-                        }
-
-                        builder.Add(item);
+                        continue;
                     }
 
-                    return builder.ToImmutable();
+                    builder.Add(item);
                 }
 
-                return ImmutableArray.Create<string>();
+                return builder.ToImmutable();
             }
+
+            return ImmutableArray.Create<string>();
         }
     }
 }

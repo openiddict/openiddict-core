@@ -1,7 +1,6 @@
-﻿namespace Mvc.Server.ViewModels.Manage
+﻿namespace Mvc.Server.ViewModels.Manage;
+
+public class FactorViewModel
 {
-    public class FactorViewModel
-    {
-        public string Purpose { get; set; }
-    }
+    public string Purpose { get; set; }
 }

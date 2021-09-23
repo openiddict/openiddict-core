@@ -7,19 +7,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 
-namespace OpenIddict.EntityFrameworkCore
+namespace OpenIddict.EntityFrameworkCore;
+
+/// <summary>
+/// Provides various settings needed to configure
+/// the OpenIddict Entity Framework Core integration.
+/// </summary>
+public class OpenIddictEntityFrameworkCoreOptions
 {
     /// <summary>
-    /// Provides various settings needed to configure
-    /// the OpenIddict Entity Framework Core integration.
+    /// Gets or sets the concrete type of the <see cref="DbContext"/> used by the
+    /// OpenIddict Entity Framework Core stores. If this property is not populated,
+    /// an exception is thrown at runtime when trying to use the stores.
     /// </summary>
-    public class OpenIddictEntityFrameworkCoreOptions
-    {
-        /// <summary>
-        /// Gets or sets the concrete type of the <see cref="DbContext"/> used by the
-        /// OpenIddict Entity Framework Core stores. If this property is not populated,
-        /// an exception is thrown at runtime when trying to use the stores.
-        /// </summary>
-        public Type? DbContextType { get; set; }
-    }
+    public Type? DbContextType { get; set; }
 }
