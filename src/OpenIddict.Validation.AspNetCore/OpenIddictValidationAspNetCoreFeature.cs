@@ -4,17 +4,16 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Validation.AspNetCore
+namespace OpenIddict.Validation.AspNetCore;
+
+/// <summary>
+/// Exposes the current validation transaction to the ASP.NET Core host.
+/// </summary>
+public class OpenIddictValidationAspNetCoreFeature
 {
     /// <summary>
-    /// Exposes the current validation transaction to the ASP.NET Core host.
+    /// Gets or sets the validation transaction that encapsulates all specific
+    /// information about an individual OpenID Connect validation request.
     /// </summary>
-    public class OpenIddictValidationAspNetCoreFeature
-    {
-        /// <summary>
-        /// Gets or sets the validation transaction that encapsulates all specific
-        /// information about an individual OpenID Connect validation request.
-        /// </summary>
-        public OpenIddictValidationTransaction? Transaction { get; set; }
-    }
+    public OpenIddictValidationTransaction? Transaction { get; set; }
 }

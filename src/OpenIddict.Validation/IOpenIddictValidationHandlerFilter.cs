@@ -7,10 +7,9 @@
 using System.Threading.Tasks;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation;
+
+public interface IOpenIddictValidationHandlerFilter<in TContext> where TContext : BaseContext
 {
-    public interface IOpenIddictValidationHandlerFilter<in TContext> where TContext : BaseContext
-    {
-        ValueTask<bool> IsActiveAsync(TContext context);
-    }
+    ValueTask<bool> IsActiveAsync(TContext context);
 }

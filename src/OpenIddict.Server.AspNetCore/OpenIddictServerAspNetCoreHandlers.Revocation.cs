@@ -7,26 +7,25 @@
 using System.Collections.Immutable;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
-namespace OpenIddict.Server.AspNetCore
-{
-    public static partial class OpenIddictServerAspNetCoreHandlers
-    {
-        public static class Revocation
-        {
-            public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
-                /*
-                 * Revocation request extraction:
-                 */
-                ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
-                ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
+namespace OpenIddict.Server.AspNetCore;
 
-                /*
-                 * Revocation response processing:
-                 */
-                AttachHttpResponseCode<ApplyRevocationResponseContext>.Descriptor,
-                AttachCacheControlHeader<ApplyRevocationResponseContext>.Descriptor,
-                AttachWwwAuthenticateHeader<ApplyRevocationResponseContext>.Descriptor,
-                ProcessJsonResponse<ApplyRevocationResponseContext>.Descriptor);
-        }
+public static partial class OpenIddictServerAspNetCoreHandlers
+{
+    public static class Revocation
+    {
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+            /*
+             * Revocation request extraction:
+             */
+            ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
+            ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
+
+            /*
+             * Revocation response processing:
+             */
+            AttachHttpResponseCode<ApplyRevocationResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyRevocationResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyRevocationResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyRevocationResponseContext>.Descriptor);
     }
 }

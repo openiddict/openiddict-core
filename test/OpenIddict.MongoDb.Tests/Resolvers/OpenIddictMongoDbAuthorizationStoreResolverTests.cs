@@ -13,61 +13,60 @@ using OpenIddict.MongoDb.Models;
 using Xunit;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.MongoDb.Tests
+namespace OpenIddict.MongoDb.Tests;
+
+public class OpenIddictMongoDbAuthorizationStoreResolverTests
 {
-    public class OpenIddictMongoDbAuthorizationStoreResolverTests
+    [Fact]
+    public void Get_ReturnsCustomStoreCorrespondingToTheSpecifiedTypeWhenAvailable()
     {
-        [Fact]
-        public void Get_ReturnsCustomStoreCorrespondingToTheSpecifiedTypeWhenAvailable()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddSingleton(Mock.Of<IOpenIddictAuthorizationStore<CustomAuthorization>>());
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(Mock.Of<IOpenIddictAuthorizationStore<CustomAuthorization>>());
 
-            var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
+        var provider = services.BuildServiceProvider();
+        var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
 
-            // Act and assert
-            Assert.NotNull(resolver.Get<CustomAuthorization>());
-        }
-
-        [Fact]
-        public void Get_ThrowsAnExceptionForInvalidEntityType()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-
-            var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomAuthorization>());
-
-            Assert.Equal(SR.GetResourceString(SR.ID0258), exception.Message);
-        }
-
-        [Fact]
-        public void Get_ReturnsDefaultStoreCorrespondingToTheSpecifiedTypeWhenAvailable()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddSingleton(Mock.Of<IOpenIddictAuthorizationStore<CustomAuthorization>>());
-            services.AddSingleton(CreateStore());
-
-            var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
-
-            // Act and assert
-            Assert.NotNull(resolver.Get<MyAuthorization>());
-        }
-
-        private static OpenIddictMongoDbAuthorizationStore<MyAuthorization> CreateStore()
-            => new Mock<OpenIddictMongoDbAuthorizationStore<MyAuthorization>>(
-                Mock.Of<IOpenIddictMongoDbContext>(),
-                Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;
-
-        public class CustomAuthorization { }
-
-        public class MyAuthorization : OpenIddictMongoDbAuthorization { }
+        // Act and assert
+        Assert.NotNull(resolver.Get<CustomAuthorization>());
     }
+
+    [Fact]
+    public void Get_ThrowsAnExceptionForInvalidEntityType()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        var provider = services.BuildServiceProvider();
+        var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomAuthorization>());
+
+        Assert.Equal(SR.GetResourceString(SR.ID0258), exception.Message);
+    }
+
+    [Fact]
+    public void Get_ReturnsDefaultStoreCorrespondingToTheSpecifiedTypeWhenAvailable()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(Mock.Of<IOpenIddictAuthorizationStore<CustomAuthorization>>());
+        services.AddSingleton(CreateStore());
+
+        var provider = services.BuildServiceProvider();
+        var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
+
+        // Act and assert
+        Assert.NotNull(resolver.Get<MyAuthorization>());
+    }
+
+    private static OpenIddictMongoDbAuthorizationStore<MyAuthorization> CreateStore()
+        => new Mock<OpenIddictMongoDbAuthorizationStore<MyAuthorization>>(
+            Mock.Of<IOpenIddictMongoDbContext>(),
+            Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;
+
+    public class CustomAuthorization { }
+
+    public class MyAuthorization : OpenIddictMongoDbAuthorization { }
 }

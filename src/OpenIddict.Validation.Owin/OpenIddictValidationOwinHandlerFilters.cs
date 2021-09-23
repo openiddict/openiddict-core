@@ -9,27 +9,26 @@ using System.Threading.Tasks;
 using Owin;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
-namespace OpenIddict.Validation.Owin
+namespace OpenIddict.Validation.Owin;
+
+/// <summary>
+/// Contains a collection of event handler filters commonly used by the OWIN handlers.
+/// </summary>
+public static class OpenIddictValidationOwinHandlerFilters
 {
     /// <summary>
-    /// Contains a collection of event handler filters commonly used by the OWIN handlers.
+    /// Represents a filter that excludes the associated handlers if no OWIN request can be found.
     /// </summary>
-    public static class OpenIddictValidationOwinHandlerFilters
+    public class RequireOwinRequest : IOpenIddictValidationHandlerFilter<BaseContext>
     {
-        /// <summary>
-        /// Represents a filter that excludes the associated handlers if no OWIN request can be found.
-        /// </summary>
-        public class RequireOwinRequest : IOpenIddictValidationHandlerFilter<BaseContext>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            if (context is null)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(context.Transaction.GetOwinRequest() is not null);
+                throw new ArgumentNullException(nameof(context));
             }
+
+            return new ValueTask<bool>(context.Transaction.GetOwinRequest() is not null);
         }
     }
 }

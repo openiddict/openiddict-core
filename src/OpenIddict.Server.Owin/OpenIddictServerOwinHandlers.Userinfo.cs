@@ -8,31 +8,30 @@ using System.Collections.Immutable;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 
-namespace OpenIddict.Server.Owin
+namespace OpenIddict.Server.Owin;
+
+public static partial class OpenIddictServerOwinHandlers
 {
-    public static partial class OpenIddictServerOwinHandlers
+    public static class Userinfo
     {
-        public static class Userinfo
-        {
-            public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
-                /*
-                 * Userinfo request extraction:
-                 */
-                ExtractGetOrPostRequest<ExtractUserinfoRequestContext>.Descriptor,
-                ExtractAccessToken<ExtractUserinfoRequestContext>.Descriptor,
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+            /*
+             * Userinfo request extraction:
+             */
+            ExtractGetOrPostRequest<ExtractUserinfoRequestContext>.Descriptor,
+            ExtractAccessToken<ExtractUserinfoRequestContext>.Descriptor,
 
-                /*
-                 * Userinfo request handling:
-                 */
-                EnablePassthroughMode<HandleUserinfoRequestContext, RequireUserinfoEndpointPassthroughEnabled>.Descriptor,
+            /*
+             * Userinfo request handling:
+             */
+            EnablePassthroughMode<HandleUserinfoRequestContext, RequireUserinfoEndpointPassthroughEnabled>.Descriptor,
 
-                /*
-                 * Userinfo response processing:
-                 */
-                AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
-                AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
-                ProcessChallengeErrorResponse<ApplyUserinfoResponseContext>.Descriptor,
-                ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor);
-        }
+            /*
+             * Userinfo response processing:
+             */
+            AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
+            ProcessChallengeErrorResponse<ApplyUserinfoResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor);
     }
 }

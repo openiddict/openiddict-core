@@ -4,12 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Validation.ServerIntegration
+namespace OpenIddict.Validation.ServerIntegration;
+
+/// <summary>
+/// Provides various settings needed to configure the OpenIddict validation/server integration.
+/// </summary>
+public class OpenIddictValidationServerIntegrationOptions
 {
-    /// <summary>
-    /// Provides various settings needed to configure the OpenIddict validation/server integration.
-    /// </summary>
-    public class OpenIddictValidationServerIntegrationOptions
-    {
-    }
 }

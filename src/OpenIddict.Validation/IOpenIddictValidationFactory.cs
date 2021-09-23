@@ -6,10 +6,9 @@
 
 using System.Threading.Tasks;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation;
+
+public interface IOpenIddictValidationFactory
 {
-    public interface IOpenIddictValidationFactory
-    {
-        ValueTask<OpenIddictValidationTransaction> CreateTransactionAsync();
-    }
+    ValueTask<OpenIddictValidationTransaction> CreateTransactionAsync();
 }

@@ -24,725 +24,724 @@ using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.EntityFrameworkCore
+namespace OpenIddict.EntityFrameworkCore;
+
+/// <summary>
+/// Provides methods allowing to manage the scopes stored in a database.
+/// </summary>
+/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+public class OpenIddictEntityFrameworkCoreScopeStore<TContext> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope, TContext, string>
+    where TContext : DbContext
 {
-    /// <summary>
-    /// Provides methods allowing to manage the scopes stored in a database.
-    /// </summary>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    public class OpenIddictEntityFrameworkCoreScopeStore<TContext> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope, TContext, string>
-        where TContext : DbContext
+    public OpenIddictEntityFrameworkCoreScopeStore(
+        IMemoryCache cache,
+        TContext context,
+        IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+        : base(cache, context, options)
     {
-        public OpenIddictEntityFrameworkCoreScopeStore(
-            IMemoryCache cache,
-            TContext context,
-            IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-            : base(cache, context, options)
-        {
-        }
+    }
+}
+
+/// <summary>
+/// Provides methods allowing to manage the scopes stored in a database.
+/// </summary>
+/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+/// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+public class OpenIddictEntityFrameworkCoreScopeStore<TContext, TKey> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope<TKey>, TContext, TKey>
+    where TContext : DbContext
+    where TKey : notnull, IEquatable<TKey>
+{
+    public OpenIddictEntityFrameworkCoreScopeStore(
+        IMemoryCache cache,
+        TContext context,
+        IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+        : base(cache, context, options)
+    {
+    }
+}
+
+/// <summary>
+/// Provides methods allowing to manage the scopes stored in a database.
+/// </summary>
+/// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+/// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+/// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
+    where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
+    where TContext : DbContext
+    where TKey : notnull, IEquatable<TKey>
+{
+    public OpenIddictEntityFrameworkCoreScopeStore(
+        IMemoryCache cache,
+        TContext context,
+        IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+    {
+        Cache = cache;
+        Context = context;
+        Options = options;
     }
 
     /// <summary>
-    /// Provides methods allowing to manage the scopes stored in a database.
+    /// Gets the memory cache associated with the current store.
     /// </summary>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictEntityFrameworkCoreScopeStore<TContext, TKey> : OpenIddictEntityFrameworkCoreScopeStore<OpenIddictEntityFrameworkCoreScope<TKey>, TContext, TKey>
-        where TContext : DbContext
-        where TKey : notnull, IEquatable<TKey>
-    {
-        public OpenIddictEntityFrameworkCoreScopeStore(
-            IMemoryCache cache,
-            TContext context,
-            IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
-            : base(cache, context, options)
-        {
-        }
-    }
+    protected IMemoryCache Cache { get; }
 
     /// <summary>
-    /// Provides methods allowing to manage the scopes stored in a database.
+    /// Gets the database context associated with the current store.
     /// </summary>
-    /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
-        where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-        where TContext : DbContext
-        where TKey : notnull, IEquatable<TKey>
+    protected TContext Context { get; }
+
+    /// <summary>
+    /// Gets the options associated with the current store.
+    /// </summary>
+    protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
+
+    /// <summary>
+    /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
+    /// </summary>
+    private DbSet<TScope> Scopes => Context.Set<TScope>();
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
+        => await Scopes.AsQueryable().LongCountAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
     {
-        public OpenIddictEntityFrameworkCoreScopeStore(
-            IMemoryCache cache,
-            TContext context,
-            IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+        if (query is null)
         {
-            Cache = cache;
-            Context = context;
-            Options = options;
+            throw new ArgumentNullException(nameof(query));
         }
 
-        /// <summary>
-        /// Gets the memory cache associated with the current store.
-        /// </summary>
-        protected IMemoryCache Cache { get; }
+        return await query(Scopes).LongCountAsync(cancellationToken);
+    }
 
-        /// <summary>
-        /// Gets the database context associated with the current store.
-        /// </summary>
-        protected TContext Context { get; }
-
-        /// <summary>
-        /// Gets the options associated with the current store.
-        /// </summary>
-        protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
-
-        /// <summary>
-        /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
-        /// </summary>
-        private DbSet<TScope> Scopes => Context.Set<TScope>();
-
-        /// <inheritdoc/>
-        public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
-            => await Scopes.AsQueryable().LongCountAsync(cancellationToken);
-
-        /// <inheritdoc/>
-        public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
         {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
-            return await query(Scopes).LongCountAsync(cancellationToken);
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken)
+        Scopes.Add(scope);
+
+        await Context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+            throw new ArgumentNullException(nameof(scope));
+        }
 
-            Scopes.Add(scope);
+        Context.Remove(scope);
 
+        try
+        {
             await Context.SaveChangesAsync(cancellationToken);
         }
 
-        /// <inheritdoc/>
-        public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken)
+        catch (DbUpdateConcurrencyException exception)
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            Context.Entry(scope).State = EntityState.Unchanged;
 
-            Context.Remove(scope);
+            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
+        }
+    }
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException exception)
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(scope).State = EntityState.Unchanged;
-
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
-            }
+    /// <inheritdoc/>
+    public virtual async ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
         }
 
-        /// <inheritdoc/>
-        public virtual async ValueTask<TScope?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        var key = ConvertIdentifierFromString(identifier);
+
+        return await (from scope in Scopes.AsTracking()
+                      where scope.Id!.Equals(key)
+                      select scope).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(name))
         {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
-            }
-
-            var key = ConvertIdentifierFromString(identifier);
-
-            return await (from scope in Scopes.AsTracking()
-                          where scope.Id!.Equals(key)
-                          select scope).FirstOrDefaultAsync(cancellationToken);
+            throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
         }
 
-        /// <inheritdoc/>
-        public virtual async ValueTask<TScope?> FindByNameAsync(string name, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0202), nameof(name));
-            }
+        return await (from scope in Scopes.AsTracking()
+                      where scope.Name == name
+                      select scope).FirstOrDefaultAsync(cancellationToken);
+    }
 
-            return await (from scope in Scopes.AsTracking()
-                          where scope.Name == name
-                          select scope).FirstOrDefaultAsync(cancellationToken);
+    /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TScope> FindByNamesAsync(
+        ImmutableArray<string> names, CancellationToken cancellationToken)
+    {
+        if (names.Any(name => string.IsNullOrEmpty(name)))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
         }
 
-        /// <inheritdoc/>
-        public virtual IAsyncEnumerable<TScope> FindByNamesAsync(
-            ImmutableArray<string> names, CancellationToken cancellationToken)
-        {
-            if (names.Any(name => string.IsNullOrEmpty(name)))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
-            }
+        // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
+        // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
+        return (from scope in Scopes.AsTracking()
+                where Enumerable.Contains(names, scope.Name)
+                select scope).AsAsyncEnumerable(cancellationToken);
+    }
 
-            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
-            // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
-            return (from scope in Scopes.AsTracking()
-                    where Enumerable.Contains(names, scope.Name)
-                    select scope).AsAsyncEnumerable(cancellationToken);
+    /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TScope> FindByResourceAsync(
+        string resource, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(resource))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
         }
 
-        /// <inheritdoc/>
-        public virtual IAsyncEnumerable<TScope> FindByResourceAsync(
-            string resource, CancellationToken cancellationToken)
+        // To optimize the efficiency of the query a bit, only scopes whose stringified
+        // Resources column contains the specified resource are returned. Once the scopes
+        // are retrieved, a second pass is made to ensure only valid elements are returned.
+        // Implementers that use this method in a hot path may want to override this method
+        // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
+
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(resource))
+            var scopes = (from scope in Scopes.AsTracking()
+                          where scope.Resources!.Contains(resource)
+                          select scope).AsAsyncEnumerable(cancellationToken);
+
+            await foreach (var scope in scopes)
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
-            }
-
-            // To optimize the efficiency of the query a bit, only scopes whose stringified
-            // Resources column contains the specified resource are returned. Once the scopes
-            // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this method in a hot path may want to override this method
-            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-
-            return ExecuteAsync(cancellationToken);
-
-            async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-            {
-                var scopes = (from scope in Scopes.AsTracking()
-                              where scope.Resources!.Contains(resource)
-                              select scope).AsAsyncEnumerable(cancellationToken);
-
-                await foreach (var scope in scopes)
+                var resources = await GetResourcesAsync(scope, cancellationToken);
+                if (resources.Contains(resource, StringComparer.Ordinal))
                 {
-                    var resources = await GetResourcesAsync(scope, cancellationToken);
-                    if (resources.Contains(resource, StringComparer.Ordinal))
-                    {
-                        yield return scope;
-                    }
+                    yield return scope;
                 }
             }
         }
+    }
 
-        /// <inheritdoc/>
-        public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
-            Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
-            TState state, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
+        Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+        TState state, CancellationToken cancellationToken)
+    {
+        if (query is null)
         {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
-            return await query(Scopes.AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
+            throw new ArgumentNullException(nameof(query));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken)
-        {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+        return await query(Scopes.AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
+    }
 
-            return new ValueTask<string?>(scope.Description);
+    /// <inheritdoc/>
+    public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(TScope scope, CancellationToken cancellationToken)
+        return new ValueTask<string?>(scope.Description);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
         {
-            if (scope is null)
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        if (string.IsNullOrEmpty(scope.Descriptions))
+        {
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+        }
+
+        // Note: parsing the stringified descriptions is an expensive operation.
+        // To mitigate that, the resulting object is stored in the memory cache.
+        var key = string.Concat("42891062-8f69-43ba-9111-db7e8ded2553", "\x1e", scope.Descriptions);
+        var descriptions = Cache.GetOrCreate(key, entry =>
+        {
+            entry.SetPriority(CacheItemPriority.High)
+                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+            using var document = JsonDocument.Parse(scope.Descriptions);
+            var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
+
+            foreach (var property in document.RootElement.EnumerateObject())
             {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
-            if (string.IsNullOrEmpty(scope.Descriptions))
-            {
-                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
-            }
-
-            // Note: parsing the stringified descriptions is an expensive operation.
-            // To mitigate that, the resulting object is stored in the memory cache.
-            var key = string.Concat("42891062-8f69-43ba-9111-db7e8ded2553", "\x1e", scope.Descriptions);
-            var descriptions = Cache.GetOrCreate(key, entry =>
-            {
-                entry.SetPriority(CacheItemPriority.High)
-                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-                using var document = JsonDocument.Parse(scope.Descriptions);
-                var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
-
-                foreach (var property in document.RootElement.EnumerateObject())
+                var value = property.Value.GetString();
+                if (string.IsNullOrEmpty(value))
                 {
-                    var value = property.Value.GetString();
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        continue;
-                    }
-
-                    builder[CultureInfo.GetCultureInfo(property.Name)] = value;
+                    continue;
                 }
 
-                return builder.ToImmutable();
-            });
+                builder[CultureInfo.GetCultureInfo(property.Name)] = value;
+            }
 
-            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(descriptions);
+            return builder.ToImmutable();
+        });
+
+        return new ValueTask<ImmutableDictionary<CultureInfo, string>>(descriptions);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken)
-        {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+        return new ValueTask<string?>(scope.DisplayName);
+    }
 
-            return new ValueTask<string?>(scope.DisplayName);
+    /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TScope scope, CancellationToken cancellationToken)
+        if (string.IsNullOrEmpty(scope.DisplayNames))
         {
-            if (scope is null)
+            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
+        }
+
+        // Note: parsing the stringified display names is an expensive operation.
+        // To mitigate that, the resulting object is stored in the memory cache.
+        var key = string.Concat("e17d437b-bdd2-43f3-974e-46d524f4bae1", "\x1e", scope.DisplayNames);
+        var names = Cache.GetOrCreate(key, entry =>
+        {
+            entry.SetPriority(CacheItemPriority.High)
+                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+            using var document = JsonDocument.Parse(scope.DisplayNames);
+            var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
+
+            foreach (var property in document.RootElement.EnumerateObject())
             {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
-            if (string.IsNullOrEmpty(scope.DisplayNames))
-            {
-                return new ValueTask<ImmutableDictionary<CultureInfo, string>>(ImmutableDictionary.Create<CultureInfo, string>());
-            }
-
-            // Note: parsing the stringified display names is an expensive operation.
-            // To mitigate that, the resulting object is stored in the memory cache.
-            var key = string.Concat("e17d437b-bdd2-43f3-974e-46d524f4bae1", "\x1e", scope.DisplayNames);
-            var names = Cache.GetOrCreate(key, entry =>
-            {
-                entry.SetPriority(CacheItemPriority.High)
-                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-                using var document = JsonDocument.Parse(scope.DisplayNames);
-                var builder = ImmutableDictionary.CreateBuilder<CultureInfo, string>();
-
-                foreach (var property in document.RootElement.EnumerateObject())
+                var value = property.Value.GetString();
+                if (string.IsNullOrEmpty(value))
                 {
-                    var value = property.Value.GetString();
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        continue;
-                    }
-
-                    builder[CultureInfo.GetCultureInfo(property.Name)] = value;
+                    continue;
                 }
 
-                return builder.ToImmutable();
-            });
+                builder[CultureInfo.GetCultureInfo(property.Name)] = value;
+            }
 
-            return new ValueTask<ImmutableDictionary<CultureInfo, string>>(names);
+            return builder.ToImmutable();
+        });
+
+        return new ValueTask<ImmutableDictionary<CultureInfo, string>>(names);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken)
-        {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+        return new ValueTask<string?>(ConvertIdentifierToString(scope.Id));
+    }
 
-            return new ValueTask<string?>(ConvertIdentifierToString(scope.Id));
+    /// <inheritdoc/>
+    public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken)
-        {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+        return new ValueTask<string?>(scope.Name);
+    }
 
-            return new ValueTask<string?>(scope.Name);
+    /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TScope scope, CancellationToken cancellationToken)
+        if (string.IsNullOrEmpty(scope.Properties))
         {
-            if (scope is null)
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
+        }
+
+        // Note: parsing the stringified properties is an expensive operation.
+        // To mitigate that, the resulting object is stored in the memory cache.
+        var key = string.Concat("78d8dfdd-3870-442e-b62e-dc9bf6eaeff7", "\x1e", scope.Properties);
+        var properties = Cache.GetOrCreate(key, entry =>
+        {
+            entry.SetPriority(CacheItemPriority.High)
+                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+            using var document = JsonDocument.Parse(scope.Properties);
+            var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
+
+            foreach (var property in document.RootElement.EnumerateObject())
             {
-                throw new ArgumentNullException(nameof(scope));
+                builder[property.Name] = property.Value.Clone();
             }
 
-            if (string.IsNullOrEmpty(scope.Properties))
+            return builder.ToImmutable();
+        });
+
+        return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        if (string.IsNullOrEmpty(scope.Resources))
+        {
+            return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
+        }
+
+        // Note: parsing the stringified resources is an expensive operation.
+        // To mitigate that, the resulting array is stored in the memory cache.
+        var key = string.Concat("b6148250-aede-4fb9-a621-07c9bcf238c3", "\x1e", scope.Resources);
+        var resources = Cache.GetOrCreate(key, entry =>
+        {
+            entry.SetPriority(CacheItemPriority.High)
+                 .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+            using var document = JsonDocument.Parse(scope.Resources);
+            var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
+
+            foreach (var element in document.RootElement.EnumerateArray())
             {
-                return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
-            }
-
-            // Note: parsing the stringified properties is an expensive operation.
-            // To mitigate that, the resulting object is stored in the memory cache.
-            var key = string.Concat("78d8dfdd-3870-442e-b62e-dc9bf6eaeff7", "\x1e", scope.Properties);
-            var properties = Cache.GetOrCreate(key, entry =>
-            {
-                entry.SetPriority(CacheItemPriority.High)
-                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-                using var document = JsonDocument.Parse(scope.Properties);
-                var builder = ImmutableDictionary.CreateBuilder<string, JsonElement>();
-
-                foreach (var property in document.RootElement.EnumerateObject())
+                var value = element.GetString();
+                if (string.IsNullOrEmpty(value))
                 {
-                    builder[property.Name] = property.Value.Clone();
+                    continue;
                 }
 
-                return builder.ToImmutable();
-            });
+                builder.Add(value);
+            }
 
-            return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
+            return builder.ToImmutable();
+        });
+
+        return new ValueTask<ImmutableArray<string>>(resources);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return new ValueTask<TScope>(Activator.CreateInstance<TScope>());
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(TScope scope, CancellationToken cancellationToken)
+        catch (MemberAccessException exception)
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+            return new ValueTask<TScope>(Task.FromException<TScope>(
+                new InvalidOperationException(SR.GetResourceString(SR.ID0246), exception)));
+        }
+    }
 
-            if (string.IsNullOrEmpty(scope.Resources))
-            {
-                return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
-            }
+    /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TScope> ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+    {
+        var query = Scopes.AsQueryable().OrderBy(scope => scope.Id!).AsTracking();
 
-            // Note: parsing the stringified resources is an expensive operation.
-            // To mitigate that, the resulting array is stored in the memory cache.
-            var key = string.Concat("b6148250-aede-4fb9-a621-07c9bcf238c3", "\x1e", scope.Resources);
-            var resources = Cache.GetOrCreate(key, entry =>
-            {
-                entry.SetPriority(CacheItemPriority.High)
-                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-
-                using var document = JsonDocument.Parse(scope.Resources);
-                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
-
-                foreach (var element in document.RootElement.EnumerateArray())
-                {
-                    var value = element.GetString();
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        continue;
-                    }
-
-                    builder.Add(value);
-                }
-
-                return builder.ToImmutable();
-            });
-
-            return new ValueTask<ImmutableArray<string>>(resources);
+        if (offset.HasValue)
+        {
+            query = query.Skip(offset.Value);
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
+        if (count.HasValue)
         {
-            try
-            {
-                return new ValueTask<TScope>(Activator.CreateInstance<TScope>());
-            }
-
-            catch (MemberAccessException exception)
-            {
-                return new ValueTask<TScope>(Task.FromException<TScope>(
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0246), exception)));
-            }
+            query = query.Take(count.Value);
         }
 
-        /// <inheritdoc/>
-        public virtual IAsyncEnumerable<TScope> ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+        return query.AsAsyncEnumerable(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
+        Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+        TState state, CancellationToken cancellationToken)
+    {
+        if (query is null)
         {
-            var query = Scopes.AsQueryable().OrderBy(scope => scope.Id!).AsTracking();
-
-            if (offset.HasValue)
-            {
-                query = query.Skip(offset.Value);
-            }
-
-            if (count.HasValue)
-            {
-                query = query.Take(count.Value);
-            }
-
-            return query.AsAsyncEnumerable(cancellationToken);
+            throw new ArgumentNullException(nameof(query));
         }
 
-        /// <inheritdoc/>
-        public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-            Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
-            TState state, CancellationToken cancellationToken)
-        {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+        return query(Scopes.AsTracking(), state).AsAsyncEnumerable(cancellationToken);
+    }
 
-            return query(Scopes.AsTracking(), state).AsAsyncEnumerable(cancellationToken);
+    /// <inheritdoc/>
+    public virtual ValueTask SetDescriptionAsync(TScope scope, string? description, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask SetDescriptionAsync(TScope scope, string? description, CancellationToken cancellationToken)
-        {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+        scope.Description = description;
 
-            scope.Description = description;
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetDescriptionsAsync(TScope scope,
+        ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        if (descriptions is null || descriptions.IsEmpty)
+        {
+            scope.Descriptions = null;
 
             return default;
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask SetDescriptionsAsync(TScope scope,
-            ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Indented = false
+        });
 
-            if (descriptions is null || descriptions.IsEmpty)
-            {
-                scope.Descriptions = null;
+        writer.WriteStartObject();
 
-                return default;
-            }
+        foreach (var description in descriptions)
+        {
+            writer.WritePropertyName(description.Key.Name);
+            writer.WriteStringValue(description.Value);
+        }
 
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = false
-            });
+        writer.WriteEndObject();
+        writer.Flush();
 
-            writer.WriteStartObject();
+        scope.Descriptions = Encoding.UTF8.GetString(stream.ToArray());
 
-            foreach (var description in descriptions)
-            {
-                writer.WritePropertyName(description.Key.Name);
-                writer.WriteStringValue(description.Value);
-            }
+        return default;
+    }
 
-            writer.WriteEndObject();
-            writer.Flush();
+    /// <inheritdoc/>
+    public virtual ValueTask SetDisplayNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
 
-            scope.Descriptions = Encoding.UTF8.GetString(stream.ToArray());
+        scope.DisplayName = name;
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetDisplayNamesAsync(TScope scope,
+        ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        if (names is null || names.IsEmpty)
+        {
+            scope.DisplayNames = null;
 
             return default;
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask SetDisplayNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Indented = false
+        });
 
-            scope.DisplayName = name;
+        writer.WriteStartObject();
+
+        foreach (var name in names)
+        {
+            writer.WritePropertyName(name.Key.Name);
+            writer.WriteStringValue(name.Value);
+        }
+
+        writer.WriteEndObject();
+        writer.Flush();
+
+        scope.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        scope.Name = name;
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetPropertiesAsync(TScope scope,
+        ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        if (properties is null || properties.IsEmpty)
+        {
+            scope.Properties = null;
 
             return default;
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask SetDisplayNamesAsync(TScope scope,
-            ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Indented = false
+        });
 
-            if (names is null || names.IsEmpty)
-            {
-                scope.DisplayNames = null;
+        writer.WriteStartObject();
 
-                return default;
-            }
+        foreach (var property in properties)
+        {
+            writer.WritePropertyName(property.Key);
+            property.Value.WriteTo(writer);
+        }
 
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = false
-            });
+        writer.WriteEndObject();
+        writer.Flush();
 
-            writer.WriteStartObject();
+        scope.Properties = Encoding.UTF8.GetString(stream.ToArray());
 
-            foreach (var name in names)
-            {
-                writer.WritePropertyName(name.Key.Name);
-                writer.WriteStringValue(name.Value);
-            }
+        return default;
+    }
 
-            writer.WriteEndObject();
-            writer.Flush();
+    /// <inheritdoc/>
+    public virtual ValueTask SetResourcesAsync(TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
 
-            scope.DisplayNames = Encoding.UTF8.GetString(stream.ToArray());
+        if (resources.IsDefaultOrEmpty)
+        {
+            scope.Resources = null;
 
             return default;
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask SetNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Indented = false
+        });
 
-            scope.Name = name;
+        writer.WriteStartArray();
 
+        foreach (var resource in resources)
+        {
+            writer.WriteStringValue(resource);
+        }
+
+        writer.WriteEndArray();
+        writer.Flush();
+
+        scope.Resources = Encoding.UTF8.GetString(stream.ToArray());
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        Context.Attach(scope);
+
+        // Generate a new concurrency token and attach it
+        // to the scope before persisting the changes.
+        scope.ConcurrencyToken = Guid.NewGuid().ToString();
+
+        Context.Update(scope);
+
+        try
+        {
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+
+        catch (DbUpdateConcurrencyException exception)
+        {
+            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            Context.Entry(scope).State = EntityState.Unchanged;
+
+            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
+        }
+    }
+
+    /// <summary>
+    /// Converts the provided identifier to a strongly typed key object.
+    /// </summary>
+    /// <param name="identifier">The identifier to convert.</param>
+    /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
+    public virtual TKey? ConvertIdentifierFromString(string? identifier)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
             return default;
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask SetPropertiesAsync(TScope scope,
-            ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
+        return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+    }
+
+    /// <summary>
+    /// Converts the provided identifier to its string representation.
+    /// </summary>
+    /// <param name="identifier">The identifier to convert.</param>
+    /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
+    public virtual string? ConvertIdentifierToString(TKey? identifier)
+    {
+        if (Equals(identifier, default(TKey)))
         {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
-            if (properties is null || properties.IsEmpty)
-            {
-                scope.Properties = null;
-
-                return default;
-            }
-
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = false
-            });
-
-            writer.WriteStartObject();
-
-            foreach (var property in properties)
-            {
-                writer.WritePropertyName(property.Key);
-                property.Value.WriteTo(writer);
-            }
-
-            writer.WriteEndObject();
-            writer.Flush();
-
-            scope.Properties = Encoding.UTF8.GetString(stream.ToArray());
-
-            return default;
+            return null;
         }
 
-        /// <inheritdoc/>
-        public virtual ValueTask SetResourcesAsync(TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
-        {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
-            if (resources.IsDefaultOrEmpty)
-            {
-                scope.Resources = null;
-
-                return default;
-            }
-
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = false
-            });
-
-            writer.WriteStartArray();
-
-            foreach (var resource in resources)
-            {
-                writer.WriteStringValue(resource);
-            }
-
-            writer.WriteEndArray();
-            writer.Flush();
-
-            scope.Resources = Encoding.UTF8.GetString(stream.ToArray());
-
-            return default;
-        }
-
-        /// <inheritdoc/>
-        public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken)
-        {
-            if (scope is null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
-            Context.Attach(scope);
-
-            // Generate a new concurrency token and attach it
-            // to the scope before persisting the changes.
-            scope.ConcurrencyToken = Guid.NewGuid().ToString();
-
-            Context.Update(scope);
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException exception)
-            {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                Context.Entry(scope).State = EntityState.Unchanged;
-
-                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0245), exception);
-            }
-        }
-
-        /// <summary>
-        /// Converts the provided identifier to a strongly typed key object.
-        /// </summary>
-        /// <param name="identifier">The identifier to convert.</param>
-        /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
-        public virtual TKey? ConvertIdentifierFromString(string? identifier)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                return default;
-            }
-
-            return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
-        }
-
-        /// <summary>
-        /// Converts the provided identifier to its string representation.
-        /// </summary>
-        /// <param name="identifier">The identifier to convert.</param>
-        /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
-        public virtual string? ConvertIdentifierToString(TKey? identifier)
-        {
-            if (Equals(identifier, default(TKey)))
-            {
-                return null;
-            }
-
-            return TypeDescriptor.GetConverter(typeof(TKey)).ConvertToInvariantString(identifier);
-        }
+        return TypeDescriptor.GetConverter(typeof(TKey)).ConvertToInvariantString(identifier);
     }
 }

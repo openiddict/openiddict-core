@@ -13,83 +13,82 @@ using OpenIddict.Server.Owin;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlers;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Exposes extensions allowing to register the OpenIddict server services.
+/// </summary>
+public static class OpenIddictServerOwinExtensions
 {
     /// <summary>
-    /// Exposes extensions allowing to register the OpenIddict server services.
+    /// Registers the OpenIddict server services for OWIN in the DI container.
     /// </summary>
-    public static class OpenIddictServerOwinExtensions
+    /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+    /// <remarks>This extension can be safely called multiple times.</remarks>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    public static OpenIddictServerOwinBuilder UseOwin(this OpenIddictServerBuilder builder)
     {
-        /// <summary>
-        /// Registers the OpenIddict server services for OWIN in the DI container.
-        /// </summary>
-        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public static OpenIddictServerOwinBuilder UseOwin(this OpenIddictServerBuilder builder)
+        if (builder is null)
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Services.AddWebEncoders();
-
-            // Note: unlike regular OWIN middleware, the OpenIddict server middleware is registered
-            // as a scoped service in the DI container. This allows containers that support middleware
-            // resolution (like Autofac) to use it without requiring additional configuration.
-            builder.Services.TryAddScoped<OpenIddictServerOwinMiddleware>();
-
-            // Register the built-in event handlers used by the OpenIddict OWIN server components.
-            // Note: the order used here is not important, as the actual order is set in the options.
-            builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
-
-            // Register the built-in filters used by the default OpenIddict OWIN server event handlers.
-            builder.Services.TryAddSingleton<RequireAuthorizationRequestCachingEnabled>();
-            builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
-            builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
-            builder.Services.TryAddSingleton<RequireLogoutRequestCachingEnabled>();
-            builder.Services.TryAddSingleton<RequireLogoutEndpointPassthroughEnabled>();
-            builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
-            builder.Services.TryAddSingleton<RequireOwinRequest>();
-            builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
-            builder.Services.TryAddSingleton<RequireUserinfoEndpointPassthroughEnabled>();
-            builder.Services.TryAddSingleton<RequireVerificationEndpointPassthroughEnabled>();
-
-            // Register the option initializers used by the OpenIddict OWIN server integration services.
-            // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-            builder.Services.TryAddEnumerable(new[]
-            {
-                ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerOwinConfiguration>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOwinOptions>, OpenIddictServerOwinConfiguration>()
-            });
-
-            return new OpenIddictServerOwinBuilder(builder.Services);
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        /// <summary>
-        /// Registers the OpenIddict server services for OWIN in the DI container.
-        /// </summary>
-        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        /// <param name="configuration">The configuration delegate used to configure the server services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public static OpenIddictServerBuilder UseOwin(
-            this OpenIddictServerBuilder builder, Action<OpenIddictServerOwinBuilder> configuration)
+        builder.Services.AddWebEncoders();
+
+        // Note: unlike regular OWIN middleware, the OpenIddict server middleware is registered
+        // as a scoped service in the DI container. This allows containers that support middleware
+        // resolution (like Autofac) to use it without requiring additional configuration.
+        builder.Services.TryAddScoped<OpenIddictServerOwinMiddleware>();
+
+        // Register the built-in event handlers used by the OpenIddict OWIN server components.
+        // Note: the order used here is not important, as the actual order is set in the options.
+        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+
+        // Register the built-in filters used by the default OpenIddict OWIN server event handlers.
+        builder.Services.TryAddSingleton<RequireAuthorizationRequestCachingEnabled>();
+        builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireLogoutRequestCachingEnabled>();
+        builder.Services.TryAddSingleton<RequireLogoutEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
+        builder.Services.TryAddSingleton<RequireOwinRequest>();
+        builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireUserinfoEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireVerificationEndpointPassthroughEnabled>();
+
+        // Register the option initializers used by the OpenIddict OWIN server integration services.
+        // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
+        builder.Services.TryAddEnumerable(new[]
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerOwinConfiguration>(),
+            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOwinOptions>, OpenIddictServerOwinConfiguration>()
+        });
 
-            if (configuration is null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
+        return new OpenIddictServerOwinBuilder(builder.Services);
+    }
 
-            configuration(builder.UseOwin());
-
-            return builder;
+    /// <summary>
+    /// Registers the OpenIddict server services for OWIN in the DI container.
+    /// </summary>
+    /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+    /// <param name="configuration">The configuration delegate used to configure the server services.</param>
+    /// <remarks>This extension can be safely called multiple times.</remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+    public static OpenIddictServerBuilder UseOwin(
+        this OpenIddictServerBuilder builder, Action<OpenIddictServerOwinBuilder> configuration)
+    {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        configuration(builder.UseOwin());
+
+        return builder;
     }
 }

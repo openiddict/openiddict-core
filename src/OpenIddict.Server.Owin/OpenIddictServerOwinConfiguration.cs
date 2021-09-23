@@ -9,36 +9,35 @@ using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.Owin
-{
-    /// <summary>
-    /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
-    /// </summary>
-    public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
-                                                     IPostConfigureOptions<OpenIddictServerOwinOptions>
-    {
-        public void Configure(OpenIddictServerOptions options)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+namespace OpenIddict.Server.Owin;
 
-            // Register the built-in event handlers used by the OpenIddict OWIN server components.
-            options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
+/// <summary>
+/// Contains the methods required to ensure that the OpenIddict server configuration is valid.
+/// </summary>
+public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
+                                                 IPostConfigureOptions<OpenIddictServerOwinOptions>
+{
+    public void Configure(OpenIddictServerOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
         }
 
-        public void PostConfigure(string name, OpenIddictServerOwinOptions options)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+        // Register the built-in event handlers used by the OpenIddict OWIN server components.
+        options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
+    }
 
-            if (options.AuthenticationMode == AuthenticationMode.Active)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0119));
-            }
+    public void PostConfigure(string name, OpenIddictServerOwinOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        if (options.AuthenticationMode == AuthenticationMode.Active)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0119));
         }
     }
 }

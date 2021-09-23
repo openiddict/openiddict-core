@@ -14,429 +14,429 @@ using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Abstractions.Tests.Primitives
+namespace OpenIddict.Abstractions.Tests.Primitives;
+
+public class OpenIddictMessageTests
 {
-    public class OpenIddictMessageTests
+    [Fact]
+    public void Constructor_ThrowsAnExceptionForInvalidJsonElement()
     {
-        [Fact]
-        public void Constructor_ThrowsAnExceptionForInvalidJsonElement()
+        // Arrange, act and assert
+        var exception = Assert.Throws<ArgumentException>(delegate
         {
-            // Arrange, act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
+            return new OpenIddictMessage(JsonSerializer.Deserialize<JsonElement>("[0,1,2,3]"));
+        });
+
+        Assert.Equal("parameters", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0189), exception.Message);
+    }
+
+    [Fact]
+    public void Constructor_ThrowsAnExceptionForDuplicateParameters()
+    {
+        // Arrange, act and assert
+        var exception = Assert.Throws<ArgumentException>(delegate
+        {
+            return new OpenIddictMessage(new[]
             {
-                return new OpenIddictMessage(JsonSerializer.Deserialize<JsonElement>("[0,1,2,3]"));
+                new KeyValuePair<string, OpenIddictParameter>("parameter", "Fabrikam"),
+                new KeyValuePair<string, OpenIddictParameter>("parameter", "Contoso")
             });
+        });
 
-            Assert.Equal("parameters", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0189), exception.Message);
-        }
+        Assert.Equal("name", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0191), exception.Message);
+    }
 
-        [Fact]
-        public void Constructor_ThrowsAnExceptionForDuplicateParameters()
+    [Fact]
+    public void Constructor_ImportsParameters()
+    {
+        // Arrange and act
+        var message = new OpenIddictMessage(new[]
         {
-            // Arrange, act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                return new OpenIddictMessage(new[]
-                {
-                    new KeyValuePair<string, OpenIddictParameter>("parameter", "Fabrikam"),
-                    new KeyValuePair<string, OpenIddictParameter>("parameter", "Contoso")
-                });
-            });
+            new KeyValuePair<string, OpenIddictParameter>("parameter", 42)
+        });
 
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0191), exception.Message);
-        }
+        // Assert
+        Assert.Equal(42, (long) message.GetParameter("parameter"));
+    }
 
-        [Fact]
-        public void Constructor_ImportsParameters()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Constructor_IgnoresNullOrEmptyParameterNames(string name)
+    {
+        // Arrange and act
+        var message = new OpenIddictMessage(new[]
         {
-            // Arrange and act
-            var message = new OpenIddictMessage(new[]
-            {
-                new KeyValuePair<string, OpenIddictParameter>("parameter", 42)
-            });
+            new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
+        });
 
-            // Assert
-            Assert.Equal(42, (long) message.GetParameter("parameter"));
-        }
+        // Assert
+        Assert.Equal(0, message.Count);
+    }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void Constructor_IgnoresNullOrEmptyParameterNames(string name)
+    [Fact]
+    public void Constructor_PreservesEmptyParameters()
+    {
+        // Arrange and act
+        var message = new OpenIddictMessage(new[]
         {
-            // Arrange and act
-            var message = new OpenIddictMessage(new[]
-            {
-                new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
-            });
+            new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string?) null),
+            new KeyValuePair<string, OpenIddictParameter>("empty-parameter", string.Empty)
+        });
 
-            // Assert
-            Assert.Equal(0, message.Count);
-        }
+        // Assert
+        Assert.Equal(2, message.Count);
+    }
 
-        [Fact]
-        public void Constructor_PreservesEmptyParameters()
+    [Fact]
+    public void Constructor_CombinesDuplicateParameters()
+    {
+        // Arrange and act
+        var message = new OpenIddictMessage(new[]
         {
-            // Arrange and act
-            var message = new OpenIddictMessage(new[]
-            {
-                new KeyValuePair<string, OpenIddictParameter>("null-parameter", (string?) null),
-                new KeyValuePair<string, OpenIddictParameter>("empty-parameter", string.Empty)
-            });
+            new KeyValuePair<string, string?>("parameter", "Fabrikam"),
+            new KeyValuePair<string, string?>("parameter", "Contoso")
+        });
 
-            // Assert
-            Assert.Equal(2, message.Count);
-        }
+        // Assert
+        Assert.Equal(1, message.Count);
+        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
+    }
 
-        [Fact]
-        public void Constructor_CombinesDuplicateParameters()
+    [Fact]
+    public void Constructor_SupportsMultiValuedParameters()
+    {
+        // Arrange and act
+        var message = new OpenIddictMessage(new[]
         {
-            // Arrange and act
-            var message = new OpenIddictMessage(new[]
-            {
-                new KeyValuePair<string, string?>("parameter", "Fabrikam"),
-                new KeyValuePair<string, string?>("parameter", "Contoso")
-            });
+            new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam", "Contoso" })
+        });
 
-            // Assert
-            Assert.Equal(1, message.Count);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
-        }
+        // Assert
+        Assert.Equal(1, message.Count);
+        Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
+    }
 
-        [Fact]
-        public void Constructor_SupportsMultiValuedParameters()
+    [Fact]
+    public void Constructor_ExtractsSingleValuedParameters()
+    {
+        // Arrange and act
+        var message = new OpenIddictMessage(new[]
         {
-            // Arrange and act
-            var message = new OpenIddictMessage(new[]
-            {
-                new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam", "Contoso" })
-            });
+            new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam" })
+        });
 
-            // Assert
-            Assert.Equal(1, message.Count);
-            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]?) message.GetParameter("parameter"));
-        }
+        // Assert
+        Assert.Equal(1, message.Count);
+        Assert.Equal("Fabrikam", message.GetParameter("parameter")?.Value);
+    }
 
-        [Fact]
-        public void Constructor_ExtractsSingleValuedParameters()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void AddParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() =>
         {
-            // Arrange and act
-            var message = new OpenIddictMessage(new[]
-            {
-                new KeyValuePair<string, string?[]?>("parameter", new[] { "Fabrikam" })
-            });
+            message.AddParameter(name, new OpenIddictParameter());
+        });
 
-            // Assert
-            Assert.Equal(1, message.Count);
-            Assert.Equal("Fabrikam", message.GetParameter("parameter")?.Value);
-        }
+        Assert.Equal("name", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
+    }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void AddParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    [Fact]
+    public void AddParameter_AddsExpectedParameter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        // Act
+        message.AddParameter("parameter", 42);
+
+        // Assert
+        Assert.Equal(42, message.GetParameter("parameter"));
+    }
+
+    [Fact]
+    public void AddParameter_IsCaseSensitive()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        // Act
+        message.AddParameter("PARAMETER", 42);
+
+        // Assert
+        Assert.Null(message.GetParameter("parameter"));
+    }
+
+    [Fact]
+    public void AddParameter_PreservesEmptyParameters()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        // Act
+        message.AddParameter("string", string.Empty);
+        message.AddParameter("array", JsonSerializer.Deserialize<JsonElement>("[]"));
+        message.AddParameter("object", JsonSerializer.Deserialize<JsonElement>("{}"));
+        message.AddParameter("value", JsonSerializer.Deserialize<JsonElement>(
+            @"{""property"":""""}").GetProperty("property").GetString());
+
+        // Assert
+        Assert.Empty((string?) message.GetParameter("string"));
+        Assert.NotNull((JsonElement?) message.GetParameter("array"));
+        Assert.NotNull((JsonElement?) message.GetParameter("object"));
+        Assert.NotNull((JsonElement?) message.GetParameter("value"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void GetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name));
+
+        Assert.Equal("name", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
+    }
+
+    [Fact]
+    public void GetParameter_ReturnsExpectedParameter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        message.SetParameter("parameter", 42);
+
+        // Act and assert
+        Assert.Equal(42, (int) message.GetParameter("parameter"));
+    }
+
+    [Fact]
+    public void GetParameter_IsCaseSensitive()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        message.SetParameter("parameter", 42);
+
+        // Act and assert
+        Assert.Null(message.GetParameter("PARAMETER"));
+    }
+
+    [Fact]
+    public void GetParameter_ReturnsNullForUnsetParameter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        // Act and assert
+        Assert.Null(message.GetParameter("parameter"));
+    }
+
+    [Fact]
+    public void GetParameters_EnumeratesParameters()
+    {
+        // Arrange
+        var parameters = new Dictionary<string, OpenIddictParameter>
         {
-            // Arrange
-            var message = new OpenIddictMessage();
+            ["int"] = int.MaxValue,
+            ["long"] = long.MaxValue,
+            ["string"] = "value"
+        };
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() =>
-            {
-                message.AddParameter(name, new OpenIddictParameter());
-            });
+        var message = new OpenIddictMessage(parameters);
 
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
-        }
+        // Act and assert
+        Assert.Equal(parameters, message.GetParameters());
+    }
 
-        [Fact]
-        public void AddParameter_AddsExpectedParameter()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void HasParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            // Act
-            message.AddParameter("parameter", 42);
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name));
 
-            // Assert
-            Assert.Equal(42, message.GetParameter("parameter"));
-        }
+        Assert.Equal("name", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
+    }
 
-        [Fact]
-        public void AddParameter_IsCaseSensitive()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+    [Theory]
+    [InlineData("parameter", true)]
+    [InlineData("PARAMETER", false)]
+    [InlineData("missing_parameter", false)]
+    public void HasParameter_ReturnsExpectedResult(string parameter, bool result)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            // Act
-            message.AddParameter("PARAMETER", 42);
+        message.SetParameter("parameter", "value");
 
-            // Assert
-            Assert.Null(message.GetParameter("parameter"));
-        }
+        // Act and assert
+        Assert.Equal(result, message.HasParameter(parameter));
+    }
 
-        [Fact]
-        public void AddParameter_PreservesEmptyParameters()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void RemoveParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            // Act
-            message.AddParameter("string", string.Empty);
-            message.AddParameter("array", JsonSerializer.Deserialize<JsonElement>("[]"));
-            message.AddParameter("object", JsonSerializer.Deserialize<JsonElement>("{}"));
-            message.AddParameter("value", JsonSerializer.Deserialize<JsonElement>(
-                @"{""property"":""""}").GetProperty("property").GetString());
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name));
 
-            // Assert
-            Assert.Empty((string?) message.GetParameter("string"));
-            Assert.NotNull((JsonElement?) message.GetParameter("array"));
-            Assert.NotNull((JsonElement?) message.GetParameter("object"));
-            Assert.NotNull((JsonElement?) message.GetParameter("value"));
-        }
+        Assert.Equal("name", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
+    }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void GetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+    [Fact]
+    public void RemoveParameter_RemovesExpectedParameter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+        message.AddParameter("parameter", 42);
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name));
+        // Act
+        message.RemoveParameter("parameter");
 
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
-        }
+        // Assert
+        Assert.Null(message.GetParameter("parameter"));
+    }
 
-        [Fact]
-        public void GetParameter_ReturnsExpectedParameter()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void SetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            message.SetParameter("parameter", 42);
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name, null));
 
-            // Act and assert
-            Assert.Equal(42, (int) message.GetParameter("parameter"));
-        }
+        Assert.Equal("name", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
+    }
 
-        [Fact]
-        public void GetParameter_IsCaseSensitive()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+    [Fact]
+    public void SetParameter_AddsExpectedParameter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            message.SetParameter("parameter", 42);
+        // Act
+        message.SetParameter("parameter", 42);
 
-            // Act and assert
-            Assert.Null(message.GetParameter("PARAMETER"));
-        }
+        // Assert
+        Assert.Equal(42, message.GetParameter("parameter"));
+    }
 
-        [Fact]
-        public void GetParameter_ReturnsNullForUnsetParameter()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+    [Fact]
+    public void SetParameter_IsCaseSensitive()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            // Act and assert
-            Assert.Null(message.GetParameter("parameter"));
-        }
+        // Act
+        message.SetParameter("PARAMETER", 42);
 
-        [Fact]
-        public void GetParameters_EnumeratesParameters()
-        {
-            // Arrange
-            var parameters = new Dictionary<string, OpenIddictParameter>
-            {
-                ["int"] = int.MaxValue,
-                ["long"] = long.MaxValue,
-                ["string"] = "value"
-            };
+        // Assert
+        Assert.Null(message.GetParameter("parameter"));
+    }
 
-            var message = new OpenIddictMessage(parameters);
+    [Fact]
+    public void SetParameter_RemovesNullParameters()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            // Act and assert
-            Assert.Equal(parameters, message.GetParameters());
-        }
+        // Act
+        message.SetParameter("null", null);
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+        // Assert
+        Assert.Empty(message.GetParameters());
+    }
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name));
+    [Fact]
+    public void SetParameter_RemovesEmptyParameters()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
-        }
+        // Act
+        message.SetParameter("string", string.Empty);
+        message.SetParameter("array", JsonSerializer.Deserialize<JsonElement>("[]"));
+        message.SetParameter("object", JsonSerializer.Deserialize<JsonElement>("{}"));
+        message.SetParameter("value", JsonSerializer.Deserialize<JsonElement>(
+            @"{""property"":""""}").GetProperty("property").GetString());
 
-        [Theory]
-        [InlineData("parameter", true)]
-        [InlineData("PARAMETER", false)]
-        [InlineData("missing_parameter", false)]
-        public void HasParameter_ReturnsExpectedResult(string parameter, bool result)
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+        // Assert
+        Assert.Empty(message.GetParameters());
+    }
 
-            message.SetParameter("parameter", "value");
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void TryGetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            // Act and assert
-            Assert.Equal(result, message.HasParameter(parameter));
-        }
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out var parameter));
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void RemoveParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
+        // Assert
+        Assert.Equal("name", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
+    }
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name));
+    [Fact]
+    public void TryGetParameter_ReturnsTrueAndExpectedParameter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+        message.SetParameter("parameter", 42);
 
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
-        }
+        // Act and assert
+        Assert.True(message.TryGetParameter("parameter", out var parameter));
+        Assert.Equal(42, (long?) parameter.Value);
+    }
 
-        [Fact]
-        public void RemoveParameter_RemovesExpectedParameter()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-            message.AddParameter("parameter", 42);
+    [Fact]
+    public void TryGetParameter_ReturnsFalseForUnsetParameter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
 
-            // Act
-            message.RemoveParameter("parameter");
+        // Act and assert
+        Assert.False(message.TryGetParameter("parameter", out OpenIddictParameter parameter));
+        Assert.Null(parameter.Value);
+    }
 
-            // Assert
-            Assert.Null(message.GetParameter("parameter"));
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void SetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name, null));
-
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
-        }
-
-        [Fact]
-        public void SetParameter_AddsExpectedParameter()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-
-            // Act
-            message.SetParameter("parameter", 42);
-
-            // Assert
-            Assert.Equal(42, message.GetParameter("parameter"));
-        }
-
-        [Fact]
-        public void SetParameter_IsCaseSensitive()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-
-            // Act
-            message.SetParameter("PARAMETER", 42);
-
-            // Assert
-            Assert.Null(message.GetParameter("parameter"));
-        }
-
-        [Fact]
-        public void SetParameter_RemovesNullParameters()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-
-            // Act
-            message.SetParameter("null", null);
-
-            // Assert
-            Assert.Empty(message.GetParameters());
-        }
-
-        [Fact]
-        public void SetParameter_RemovesEmptyParameters()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-
-            // Act
-            message.SetParameter("string", string.Empty);
-            message.SetParameter("array", JsonSerializer.Deserialize<JsonElement>("[]"));
-            message.SetParameter("object", JsonSerializer.Deserialize<JsonElement>("{}"));
-            message.SetParameter("value", JsonSerializer.Deserialize<JsonElement>(
-                @"{""property"":""""}").GetProperty("property").GetString());
-
-            // Assert
-            Assert.Empty(message.GetParameters());
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void TryGetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-
-            // Act
-            var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out var parameter));
-
-            // Assert
-            Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith(SR.GetResourceString(SR.ID0190), exception.Message);
-        }
-
-        [Fact]
-        public void TryGetParameter_ReturnsTrueAndExpectedParameter()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-            message.SetParameter("parameter", 42);
-
-            // Act and assert
-            Assert.True(message.TryGetParameter("parameter", out var parameter));
-            Assert.Equal(42, (long?) parameter.Value);
-        }
-
-        [Fact]
-        public void TryGetParameter_ReturnsFalseForUnsetParameter()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-
-            // Act and assert
-            Assert.False(message.TryGetParameter("parameter", out OpenIddictParameter parameter));
-            Assert.Null(parameter.Value);
-        }
-
-        [Fact]
-        public void ToString_ReturnsJsonRepresentation()
-        {
-            // Arrange
-            var message = JsonSerializer.Deserialize<OpenIddictMessage>(@"{
+    [Fact]
+    public void ToString_ReturnsJsonRepresentation()
+    {
+        // Arrange
+        var message = JsonSerializer.Deserialize<OpenIddictMessage>(@"{
   ""redirect_uris"": [
     ""https://client.example.org/callback"",
     ""https://client.example.org/callback2""
@@ -448,70 +448,69 @@ namespace OpenIddict.Abstractions.Tests.Primitives
   ""example_extension_parameter"": ""example_value""
 }")!;
 
-            var options = new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true
-            };
-
-            // Act and assert
-            Assert.Equal(JsonSerializer.Serialize(message, options), message.ToString());
-        }
-
-        [Theory]
-        [InlineData(Parameters.AccessToken)]
-        [InlineData(Parameters.Assertion)]
-        [InlineData(Parameters.ClientAssertion)]
-        [InlineData(Parameters.ClientSecret)]
-        [InlineData(Parameters.Code)]
-        [InlineData(Parameters.IdToken)]
-        [InlineData(Parameters.IdTokenHint)]
-        [InlineData(Parameters.Password)]
-        [InlineData(Parameters.RefreshToken)]
-        [InlineData(Parameters.Token)]
-        public void ToString_ExcludesSensitiveParameters(string parameter)
+        var options = new JsonSerializerOptions
         {
-            // Arrange
-            var message = new OpenIddictMessage();
-            message.AddParameter(parameter, "secret value");
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        };
 
-            // Act and assert
-            var element = JsonSerializer.Deserialize<JsonElement>(message.ToString());
-            Assert.DoesNotContain("secret value", message.ToString());
-            Assert.Equal("[redacted]", element.GetProperty(parameter).GetString());
-        }
+        // Act and assert
+        Assert.Equal(JsonSerializer.Serialize(message, options), message.ToString());
+    }
 
-        [Fact]
-        public void WriteTo_ThrowsAnExceptionForNullWriter()
+    [Theory]
+    [InlineData(Parameters.AccessToken)]
+    [InlineData(Parameters.Assertion)]
+    [InlineData(Parameters.ClientAssertion)]
+    [InlineData(Parameters.ClientSecret)]
+    [InlineData(Parameters.Code)]
+    [InlineData(Parameters.IdToken)]
+    [InlineData(Parameters.IdTokenHint)]
+    [InlineData(Parameters.Password)]
+    [InlineData(Parameters.RefreshToken)]
+    [InlineData(Parameters.Token)]
+    public void ToString_ExcludesSensitiveParameters(string parameter)
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+        message.AddParameter(parameter, "secret value");
+
+        // Act and assert
+        var element = JsonSerializer.Deserialize<JsonElement>(message.ToString());
+        Assert.DoesNotContain("secret value", message.ToString());
+        Assert.Equal("[redacted]", element.GetProperty(parameter).GetString());
+    }
+
+    [Fact]
+    public void WriteTo_ThrowsAnExceptionForNullWriter()
+    {
+        // Arrange
+        var message = new OpenIddictMessage();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => message.WriteTo(writer: null!));
+        Assert.Equal("writer", exception.ParamName);
+    }
+
+    [Fact]
+    public void WriteTo_WritesUtf8JsonRepresentation()
+    {
+        // Arrange
+        var message = new OpenIddictMessage
         {
-            // Arrange
-            var message = new OpenIddictMessage();
+            ["redirect_uris"] = new[] { "https://abc.org/callback" },
+            ["client_name"] = "My Example Client"
+        };
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => message.WriteTo(writer: null!));
-            Assert.Equal("writer", exception.ParamName);
-        }
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
 
-        [Fact]
-        public void WriteTo_WritesUtf8JsonRepresentation()
-        {
-            // Arrange
-            var message = new OpenIddictMessage
-            {
-                ["redirect_uris"] = new[] { "https://abc.org/callback" },
-                ["client_name"] = "My Example Client"
-            };
+        // Act
+        message.WriteTo(writer);
+        writer.Flush();
 
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream);
-
-            // Act
-            message.WriteTo(writer);
-            writer.Flush();
-
-            // Assert
-            Assert.Equal(@"{""redirect_uris"":[""https://abc.org/callback""],""client_name"":""My Example Client""}",
-                Encoding.UTF8.GetString(stream.ToArray()));
-        }
+        // Assert
+        Assert.Equal(@"{""redirect_uris"":[""https://abc.org/callback""],""client_name"":""My Example Client""}",
+            Encoding.UTF8.GetString(stream.ToArray()));
     }
 }

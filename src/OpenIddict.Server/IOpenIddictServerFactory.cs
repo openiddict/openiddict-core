@@ -6,10 +6,9 @@
 
 using System.Threading.Tasks;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server;
+
+public interface IOpenIddictServerFactory
 {
-    public interface IOpenIddictServerFactory
-    {
-        ValueTask<OpenIddictServerTransaction> CreateTransactionAsync();
-    }
+    ValueTask<OpenIddictServerTransaction> CreateTransactionAsync();
 }

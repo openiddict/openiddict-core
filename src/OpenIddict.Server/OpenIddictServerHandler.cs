@@ -8,31 +8,30 @@ using System;
 using System.Threading.Tasks;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server;
+
+/// <summary>
+/// Represents a handler able to process <typeparamref name="TContext"/> events.
+/// </summary>
+/// <typeparam name="TContext">The type of the events handled by this instance.</typeparam>
+public class OpenIddictServerHandler<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseContext
 {
+    private readonly Func<TContext, ValueTask> _handler;
+
     /// <summary>
-    /// Represents a handler able to process <typeparamref name="TContext"/> events.
+    /// Creates a new event using the specified handler delegate.
     /// </summary>
-    /// <typeparam name="TContext">The type of the events handled by this instance.</typeparam>
-    public class OpenIddictServerHandler<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseContext
-    {
-        private readonly Func<TContext, ValueTask> _handler;
+    /// <param name="handler">The event handler delegate.</param>
+    public OpenIddictServerHandler(Func<TContext, ValueTask> handler)
+        => _handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-        /// <summary>
-        /// Creates a new event using the specified handler delegate.
-        /// </summary>
-        /// <param name="handler">The event handler delegate.</param>
-        public OpenIddictServerHandler(Func<TContext, ValueTask> handler)
-            => _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-
-        /// <summary>
-        /// Processes the event.
-        /// </summary>
-        /// <param name="context">The event to process.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public ValueTask HandleAsync(TContext context)
-            => _handler(context ?? throw new ArgumentNullException(nameof(context)));
-    }
+    /// <summary>
+    /// Processes the event.
+    /// </summary>
+    /// <param name="context">The event to process.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+    /// </returns>
+    public ValueTask HandleAsync(TContext context)
+        => _handler(context ?? throw new ArgumentNullException(nameof(context)));
 }

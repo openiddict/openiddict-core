@@ -7,22 +7,21 @@
 using System;
 using Microsoft.Extensions.Options;
 
-namespace OpenIddict.Validation.Owin
-{
-    /// <summary>
-    /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
-    /// </summary>
-    public class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
-    {
-        public void Configure(OpenIddictValidationOptions options)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+namespace OpenIddict.Validation.Owin;
 
-            // Register the built-in event handlers used by the OpenIddict OWIN validation components.
-            options.Handlers.AddRange(OpenIddictValidationOwinHandlers.DefaultHandlers);
+/// <summary>
+/// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
+/// </summary>
+public class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
+{
+    public void Configure(OpenIddictValidationOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
         }
+
+        // Register the built-in event handlers used by the OpenIddict OWIN validation components.
+        options.Handlers.AddRange(OpenIddictValidationOwinHandlers.DefaultHandlers);
     }
 }

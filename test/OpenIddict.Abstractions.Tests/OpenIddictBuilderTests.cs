@@ -8,20 +8,19 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace OpenIddict.Abstractions.Tests
+namespace OpenIddict.Abstractions.Tests;
+
+public class OpenIddictBuilderTests
 {
-    public class OpenIddictBuilderTests
+    [Fact]
+    public void Constructor_ThrowsAnExceptionForNullServices()
     {
-        [Fact]
-        public void Constructor_ThrowsAnExceptionForNullServices()
-        {
-            // Arrange
-            var services = (IServiceCollection) null!;
+        // Arrange
+        var services = (IServiceCollection) null!;
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictBuilder(services));
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictBuilder(services));
 
-            Assert.Equal("services", exception.ParamName);
-        }
+        Assert.Equal("services", exception.ParamName);
     }
 }

@@ -11,38 +11,37 @@ using OpenIddict.Abstractions;
 using Xunit;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Core.Tests
+namespace OpenIddict.Core.Tests;
+
+public class OpenIddictApplicationStoreResolverTests
 {
-    public class OpenIddictApplicationStoreResolverTests
+    [Fact]
+    public void Get_ThrowsAnExceptionWhenStoreCannotBeFound()
     {
-        [Fact]
-        public void Get_ThrowsAnExceptionWhenStoreCannotBeFound()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictApplicationStoreResolver(provider);
+        // Arrange
+        var services = new ServiceCollection();
+        var provider = services.BuildServiceProvider();
+        var resolver = new OpenIddictApplicationStoreResolver(provider);
 
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictApplication>());
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictApplication>());
 
-            Assert.Equal(SR.GetResourceString(SR.ID0228), exception.Message);
-        }
-
-        [Fact]
-        public void Get_ReturnsCustomStoreCorrespondingToTheSpecifiedType()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddSingleton(Mock.Of<IOpenIddictApplicationStore<OpenIddictApplication>>());
-
-            var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictApplicationStoreResolver(provider);
-
-            // Act and assert
-            Assert.NotNull(resolver.Get<OpenIddictApplication>());
-        }
-
-        public class OpenIddictApplication { }
+        Assert.Equal(SR.GetResourceString(SR.ID0228), exception.Message);
     }
+
+    [Fact]
+    public void Get_ReturnsCustomStoreCorrespondingToTheSpecifiedType()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(Mock.Of<IOpenIddictApplicationStore<OpenIddictApplication>>());
+
+        var provider = services.BuildServiceProvider();
+        var resolver = new OpenIddictApplicationStoreResolver(provider);
+
+        // Act and assert
+        Assert.NotNull(resolver.Get<OpenIddictApplication>());
+    }
+
+    public class OpenIddictApplication { }
 }

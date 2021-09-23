@@ -7,10 +7,9 @@
 using System.IO;
 using System.Security.Claims;
 
-namespace OpenIddict.Validation.DataProtection
+namespace OpenIddict.Validation.DataProtection;
+
+public interface IOpenIddictValidationDataProtectionFormatter
 {
-    public interface IOpenIddictValidationDataProtectionFormatter
-    {
-        ClaimsPrincipal ReadToken(BinaryReader reader);
-    }
+    ClaimsPrincipal ReadToken(BinaryReader reader);
 }

@@ -6,23 +6,22 @@
 
 using Microsoft.Owin.Security;
 
-namespace OpenIddict.Validation.Owin
+namespace OpenIddict.Validation.Owin;
+
+/// <summary>
+/// Provides various settings needed to configure the OpenIddict OWIN validation integration.
+/// </summary>
+public class OpenIddictValidationOwinOptions : AuthenticationOptions
 {
     /// <summary>
-    /// Provides various settings needed to configure the OpenIddict OWIN validation integration.
+    /// Creates a new instance of the <see cref="OpenIddictValidationOwinOptions"/> class.
     /// </summary>
-    public class OpenIddictValidationOwinOptions : AuthenticationOptions
-    {
-        /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictValidationOwinOptions"/> class.
-        /// </summary>
-        public OpenIddictValidationOwinOptions()
-            : base(OpenIddictValidationOwinDefaults.AuthenticationType)
-            => AuthenticationMode = AuthenticationMode.Passive;
+    public OpenIddictValidationOwinOptions()
+        : base(OpenIddictValidationOwinDefaults.AuthenticationType)
+        => AuthenticationMode = AuthenticationMode.Passive;
 
-        /// <summary>
-        /// Gets or sets the optional "realm" value returned to the caller as part of the WWW-Authenticate header.
-        /// </summary>
-        public string? Realm { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the optional "realm" value returned to the caller as part of the WWW-Authenticate header.
+    /// </summary>
+    public string? Realm { get; set; }
 }

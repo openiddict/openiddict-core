@@ -9,148 +9,147 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using OpenIddict.Abstractions;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server;
+
+public static partial class OpenIddictServerEvents
 {
-    public static partial class OpenIddictServerEvents
+    /// <summary>
+    /// Represents an event called for each request to the token endpoint to give the user code
+    /// a chance to manually extract the token request from the ambient HTTP context.
+    /// </summary>
+    public class ExtractTokenRequestContext : BaseValidatingContext
     {
         /// <summary>
-        /// Represents an event called for each request to the token endpoint to give the user code
-        /// a chance to manually extract the token request from the ambient HTTP context.
+        /// Creates a new instance of the <see cref="ExtractTokenRequestContext"/> class.
         /// </summary>
-        public class ExtractTokenRequestContext : BaseValidatingContext
+        public ExtractTokenRequestContext(OpenIddictServerTransaction transaction)
+            : base(transaction)
         {
-            /// <summary>
-            /// Creates a new instance of the <see cref="ExtractTokenRequestContext"/> class.
-            /// </summary>
-            public ExtractTokenRequestContext(OpenIddictServerTransaction transaction)
-                : base(transaction)
-            {
-            }
-
-            /// <summary>
-            /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
-            /// </summary>
-            public OpenIddictRequest? Request
-            {
-                get => Transaction.Request;
-                set => Transaction.Request = value;
-            }
         }
 
         /// <summary>
-        /// Represents an event called for each request to the token endpoint
-        /// to determine if the request is valid and should continue to be processed.
+        /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
         /// </summary>
-        public class ValidateTokenRequestContext : BaseValidatingClientContext
+        public OpenIddictRequest? Request
         {
-            /// <summary>
-            /// Creates a new instance of the <see cref="ValidateTokenRequestContext"/> class.
-            /// </summary>
-            public ValidateTokenRequestContext(OpenIddictServerTransaction transaction)
-                : base(transaction)
-            {
-            }
+            get => Transaction.Request;
+            set => Transaction.Request = value;
+        }
+    }
 
-            /// <summary>
-            /// Gets or sets the request.
-            /// </summary>
-            public OpenIddictRequest Request
-            {
-                get => Transaction.Request!;
-                set => Transaction.Request = value;
-            }
-
-            /// <summary>
-            /// Gets or sets the security principal extracted from the authorization
-            /// code or the refresh token, if applicable to the current token request.
-            /// </summary>
-            public ClaimsPrincipal? Principal { get; set; }
+    /// <summary>
+    /// Represents an event called for each request to the token endpoint
+    /// to determine if the request is valid and should continue to be processed.
+    /// </summary>
+    public class ValidateTokenRequestContext : BaseValidatingClientContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ValidateTokenRequestContext"/> class.
+        /// </summary>
+        public ValidateTokenRequestContext(OpenIddictServerTransaction transaction)
+            : base(transaction)
+        {
         }
 
         /// <summary>
-        /// Represents an event called for each validated token request
-        /// to allow the user code to decide how the request should be handled.
+        /// Gets or sets the request.
         /// </summary>
-        public class HandleTokenRequestContext : BaseValidatingTicketContext
+        public OpenIddictRequest Request
         {
-            /// <summary>
-            /// Creates a new instance of the <see cref="HandleTokenRequestContext"/> class.
-            /// </summary>
-            public HandleTokenRequestContext(OpenIddictServerTransaction transaction)
-                : base(transaction)
-            {
-            }
-
-            /// <summary>
-            /// Gets or sets the request.
-            /// </summary>
-            public OpenIddictRequest Request
-            {
-                get => Transaction.Request!;
-                set => Transaction.Request = value;
-            }
-
-            /// <summary>
-            /// Gets the additional parameters returned to the client application.
-            /// </summary>
-            public Dictionary<string, OpenIddictParameter> Parameters { get; private set; }
-                = new(StringComparer.Ordinal);
-
-            /// <summary>
-            /// Allows OpenIddict to return a sign-in response using the specified principal.
-            /// </summary>
-            /// <param name="principal">The claims principal.</param>
-            public void SignIn(ClaimsPrincipal principal) => Principal = principal;
-
-            /// <summary>
-            /// Allows OpenIddict to return a sign-in response using the specified principal.
-            /// </summary>
-            /// <param name="principal">The claims principal.</param>
-            /// <param name="parameters">The additional parameters returned to the client application.</param>
-            public void SignIn(ClaimsPrincipal principal, IDictionary<string, OpenIddictParameter> parameters)
-            {
-                Principal = principal;
-                Parameters = new(parameters, StringComparer.Ordinal);
-            }
+            get => Transaction.Request!;
+            set => Transaction.Request = value;
         }
 
         /// <summary>
-        /// Represents an event called before the token response is returned to the caller.
+        /// Gets or sets the security principal extracted from the authorization
+        /// code or the refresh token, if applicable to the current token request.
         /// </summary>
-        public class ApplyTokenResponseContext : BaseRequestContext
+        public ClaimsPrincipal? Principal { get; set; }
+    }
+
+    /// <summary>
+    /// Represents an event called for each validated token request
+    /// to allow the user code to decide how the request should be handled.
+    /// </summary>
+    public class HandleTokenRequestContext : BaseValidatingTicketContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="HandleTokenRequestContext"/> class.
+        /// </summary>
+        public HandleTokenRequestContext(OpenIddictServerTransaction transaction)
+            : base(transaction)
         {
-            /// <summary>
-            /// Creates a new instance of the <see cref="ApplyTokenResponseContext"/> class.
-            /// </summary>
-            public ApplyTokenResponseContext(OpenIddictServerTransaction transaction)
-                : base(transaction)
-            {
-            }
-
-            /// <summary>
-            /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
-            /// </summary>
-            public OpenIddictRequest? Request
-            {
-                get => Transaction.Request;
-                set => Transaction.Request = value;
-            }
-
-            /// <summary>
-            /// Gets or sets the response.
-            /// </summary>
-            public OpenIddictResponse Response
-            {
-                get => Transaction.Response!;
-                set => Transaction.Response = value;
-            }
-
-            /// <summary>
-            /// Gets the error code returned to the client application.
-            /// When the response indicates a successful response,
-            /// this property returns <c>null</c>.
-            /// </summary>
-            public string? Error => Response.Error;
         }
+
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        public OpenIddictRequest Request
+        {
+            get => Transaction.Request!;
+            set => Transaction.Request = value;
+        }
+
+        /// <summary>
+        /// Gets the additional parameters returned to the client application.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter> Parameters { get; private set; }
+            = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Allows OpenIddict to return a sign-in response using the specified principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        public void SignIn(ClaimsPrincipal principal) => Principal = principal;
+
+        /// <summary>
+        /// Allows OpenIddict to return a sign-in response using the specified principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="parameters">The additional parameters returned to the client application.</param>
+        public void SignIn(ClaimsPrincipal principal, IDictionary<string, OpenIddictParameter> parameters)
+        {
+            Principal = principal;
+            Parameters = new(parameters, StringComparer.Ordinal);
+        }
+    }
+
+    /// <summary>
+    /// Represents an event called before the token response is returned to the caller.
+    /// </summary>
+    public class ApplyTokenResponseContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ApplyTokenResponseContext"/> class.
+        /// </summary>
+        public ApplyTokenResponseContext(OpenIddictServerTransaction transaction)
+            : base(transaction)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+        /// </summary>
+        public OpenIddictRequest? Request
+        {
+            get => Transaction.Request;
+            set => Transaction.Request = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the response.
+        /// </summary>
+        public OpenIddictResponse Response
+        {
+            get => Transaction.Response!;
+            set => Transaction.Response = value;
+        }
+
+        /// <summary>
+        /// Gets the error code returned to the client application.
+        /// When the response indicates a successful response,
+        /// this property returns <c>null</c>.
+        /// </summary>
+        public string? Error => Response.Error;
     }
 }

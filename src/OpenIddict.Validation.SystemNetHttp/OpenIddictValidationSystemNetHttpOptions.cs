@@ -10,19 +10,18 @@ using System.Net.Http;
 using Polly;
 using Polly.Extensions.Http;
 
-namespace OpenIddict.Validation.SystemNetHttp
+namespace OpenIddict.Validation.SystemNetHttp;
+
+/// <summary>
+/// Provides various settings needed to configure the OpenIddict validation/System.Net.Http integration.
+/// </summary>
+public class OpenIddictValidationSystemNetHttpOptions
 {
     /// <summary>
-    /// Provides various settings needed to configure the OpenIddict validation/System.Net.Http integration.
+    /// Gets or sets the HTTP Polly error policy used by the internal OpenIddict HTTP clients.
     /// </summary>
-    public class OpenIddictValidationSystemNetHttpOptions
-    {
-        /// <summary>
-        /// Gets or sets the HTTP Polly error policy used by the internal OpenIddict HTTP clients.
-        /// </summary>
-        public IAsyncPolicy<HttpResponseMessage>? HttpErrorPolicy { get; set; }
-            = HttpPolicyExtensions.HandleTransientHttpError()
-                .OrResult(response => response.StatusCode == HttpStatusCode.NotFound)
-                .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
-    }
+    public IAsyncPolicy<HttpResponseMessage>? HttpErrorPolicy { get; set; }
+        = HttpPolicyExtensions.HandleTransientHttpError()
+            .OrResult(response => response.StatusCode == HttpStatusCode.NotFound)
+            .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
 }

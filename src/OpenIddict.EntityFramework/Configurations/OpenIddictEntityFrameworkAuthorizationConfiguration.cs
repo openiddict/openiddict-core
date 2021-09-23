@@ -9,50 +9,49 @@ using System.ComponentModel;
 using System.Data.Entity.ModelConfiguration;
 using OpenIddict.EntityFramework.Models;
 
-namespace OpenIddict.EntityFramework
+namespace OpenIddict.EntityFramework;
+
+/// <summary>
+/// Defines a relational mapping for the Authorization entity.
+/// </summary>
+/// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+/// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+/// <typeparam name="TToken">The type of the Token entity.</typeparam>
+/// <typeparam name="TKey">The type of the Key entity.</typeparam>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public class OpenIddictEntityFrameworkAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey> : EntityTypeConfiguration<TAuthorization>
+    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
+    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
+    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
+    where TKey : notnull, IEquatable<TKey>
 {
-    /// <summary>
-    /// Defines a relational mapping for the Authorization entity.
-    /// </summary>
-    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TKey">The type of the Key entity.</typeparam>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public class OpenIddictEntityFrameworkAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey> : EntityTypeConfiguration<TAuthorization>
-        where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
-        where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
-        where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
-        where TKey : notnull, IEquatable<TKey>
+    public OpenIddictEntityFrameworkAuthorizationConfiguration()
     {
-        public OpenIddictEntityFrameworkAuthorizationConfiguration()
-        {
-            // Warning: optional foreign keys MUST NOT be added as CLR properties because
-            // Entity Framework would throw an exception due to the TKey generic parameter
-            // being non-nullable when using value types like short, int, long or Guid.
+        // Warning: optional foreign keys MUST NOT be added as CLR properties because
+        // Entity Framework would throw an exception due to the TKey generic parameter
+        // being non-nullable when using value types like short, int, long or Guid.
 
-            HasKey(authorization => authorization.Id);
+        HasKey(authorization => authorization.Id);
 
-            Property(authorization => authorization.ConcurrencyToken)
-                .HasMaxLength(50)
-                .IsConcurrencyToken();
+        Property(authorization => authorization.ConcurrencyToken)
+            .HasMaxLength(50)
+            .IsConcurrencyToken();
 
-            Property(authorization => authorization.Status)
-                .HasMaxLength(50);
+        Property(authorization => authorization.Status)
+            .HasMaxLength(50);
 
-            Property(authorization => authorization.Subject)
-                .HasMaxLength(400);
+        Property(authorization => authorization.Subject)
+            .HasMaxLength(400);
 
-            Property(authorization => authorization.Type)
-                .HasMaxLength(50);
+        Property(authorization => authorization.Type)
+            .HasMaxLength(50);
 
-            HasMany(authorization => authorization.Tokens)
-                .WithOptional(token => token.Authorization!)
-                .Map(association => association.MapKey(nameof(OpenIddictEntityFrameworkToken.Authorization) +
-                                                       nameof(OpenIddictEntityFrameworkAuthorization.Id)))
-                .WillCascadeOnDelete();
+        HasMany(authorization => authorization.Tokens)
+            .WithOptional(token => token.Authorization!)
+            .Map(association => association.MapKey(nameof(OpenIddictEntityFrameworkToken.Authorization) +
+                                                   nameof(OpenIddictEntityFrameworkAuthorization.Id)))
+            .WillCascadeOnDelete();
 
-            ToTable("OpenIddictAuthorizations");
-        }
+        ToTable("OpenIddictAuthorizations");
     }
 }

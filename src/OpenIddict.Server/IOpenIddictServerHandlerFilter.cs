@@ -7,10 +7,9 @@
 using System.Threading.Tasks;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server;
+
+public interface IOpenIddictServerHandlerFilter<in TContext> where TContext : BaseContext
 {
-    public interface IOpenIddictServerHandlerFilter<in TContext> where TContext : BaseContext
-    {
-        ValueTask<bool> IsActiveAsync(TContext context);
-    }
+    ValueTask<bool> IsActiveAsync(TContext context);
 }

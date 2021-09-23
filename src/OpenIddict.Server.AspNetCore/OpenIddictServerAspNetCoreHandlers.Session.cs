@@ -28,409 +28,408 @@ using static OpenIddict.Server.OpenIddictServerEvents;
 using JsonWebTokenTypes = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.JsonWebTokenTypes;
 using SR = OpenIddict.Abstractions.OpenIddictResources;
 
-namespace OpenIddict.Server.AspNetCore
+namespace OpenIddict.Server.AspNetCore;
+
+public static partial class OpenIddictServerAspNetCoreHandlers
 {
-    public static partial class OpenIddictServerAspNetCoreHandlers
+    public static class Session
     {
-        public static class Session
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+            /*
+             * Logout request extraction:
+             */
+            ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor,
+            RestoreCachedRequestParameters.Descriptor,
+            CacheRequestParameters.Descriptor,
+
+            /*
+             * Logout request handling:
+             */
+            EnablePassthroughMode<HandleLogoutRequestContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
+
+            /*
+             * Logout response processing:
+             */
+            RemoveCachedRequest.Descriptor,
+            AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
+            ProcessHostRedirectionResponse.Descriptor,
+            ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
+            ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
+            ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
+            ProcessQueryResponse.Descriptor,
+            ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
+
+        /// <summary>
+        /// Contains the logic responsible of restoring cached requests from the request_id, if specified.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
         {
-            public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
-                /*
-                 * Logout request extraction:
-                 */
-                ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor,
-                RestoreCachedRequestParameters.Descriptor,
-                CacheRequestParameters.Descriptor,
+            private readonly IDistributedCache _cache;
 
-                /*
-                 * Logout request handling:
-                 */
-                EnablePassthroughMode<HandleLogoutRequestContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
+            public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
-                /*
-                 * Logout response processing:
-                 */
-                RemoveCachedRequest.Descriptor,
-                AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
-                AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
-                ProcessHostRedirectionResponse.Descriptor,
-                ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
-                ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
-                ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
-                ProcessQueryResponse.Descriptor,
-                ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
+            public RestoreCachedRequestParameters(IDistributedCache cache)
+                => _cache = cache;
 
             /// <summary>
-            /// Contains the logic responsible of restoring cached requests from the request_id, if specified.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+            /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .AddFilter<RequireLogoutRequestCachingEnabled>()
+                    .UseSingletonHandler<RestoreCachedRequestParameters>()
+                    .SetOrder(ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
             {
-                private readonly IDistributedCache _cache;
-
-                public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
-
-                public RestoreCachedRequestParameters(IDistributedCache cache)
-                    => _cache = cache;
-
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireLogoutRequestCachingEnabled>()
-                        .UseSingletonHandler<RestoreCachedRequestParameters>()
-                        .SetOrder(ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor.Order + 1_000)
-                        .SetType(OpenIddictServerHandlerType.BuiltIn)
-                        .Build();
-
-                /// <inheritdoc/>
-                public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
+                if (context is null)
                 {
-                    if (context is null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
-
-                    // If a request_id parameter can be found in the logout request,
-                    // restore the complete logout request from the distributed cache.
-
-                    if (string.IsNullOrEmpty(context.Request.RequestId))
-                    {
-                        return;
-                    }
-
-                    // Note: the cache key is always prefixed with a specific marker
-                    // to avoid collisions with the other types of cached payloads.
-                    var token = await _cache.GetStringAsync(Cache.LogoutRequest + context.Request.RequestId);
-                    if (token is null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
-                    {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
-
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: SR.FormatID2052(Parameters.RequestId),
-                            uri: SR.FormatID8000(SR.ID2052));
-
-                        return;
-                    }
-
-                    var parameters = context.Options.TokenValidationParameters.Clone();
-                    parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
-                    parameters.ValidAudience = context.Issuer?.AbsoluteUri;
-                    parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.LogoutRequest };
-
-                    var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
-                    if (!result.IsValid)
-                    {
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
-
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: SR.FormatID2052(Parameters.RequestId),
-                            uri: SR.FormatID8000(SR.ID2052));
-
-                        return;
-                    }
-
-                    using var document = JsonDocument.Parse(
-                        Base64UrlEncoder.Decode(((JsonWebToken) result.SecurityToken).InnerToken.EncodedPayload));
-                    if (document.RootElement.ValueKind != JsonValueKind.Object)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0118));
-                    }
-
-                    // Restore the authorization request parameters from the serialized payload.
-                    foreach (var parameter in document.RootElement.EnumerateObject())
-                    {
-                        // Avoid overriding the current request parameters.
-                        if (context.Request.HasParameter(parameter.Name))
-                        {
-                            continue;
-                        }
-
-                        context.Request.SetParameter(parameter.Name, parameter.Value.Clone());
-                    }
+                    throw new ArgumentNullException(nameof(context));
                 }
+
+                Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
+
+                // If a request_id parameter can be found in the logout request,
+                // restore the complete logout request from the distributed cache.
+
+                if (string.IsNullOrEmpty(context.Request.RequestId))
+                {
+                    return;
+                }
+
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached payloads.
+                var token = await _cache.GetStringAsync(Cache.LogoutRequest + context.Request.RequestId);
+                if (token is null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2052(Parameters.RequestId),
+                        uri: SR.FormatID8000(SR.ID2052));
+
+                    return;
+                }
+
+                var parameters = context.Options.TokenValidationParameters.Clone();
+                parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
+                parameters.ValidAudience = context.Issuer?.AbsoluteUri;
+                parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.LogoutRequest };
+
+                var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
+                if (!result.IsValid)
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2052(Parameters.RequestId),
+                        uri: SR.FormatID8000(SR.ID2052));
+
+                    return;
+                }
+
+                using var document = JsonDocument.Parse(
+                    Base64UrlEncoder.Decode(((JsonWebToken) result.SecurityToken).InnerToken.EncodedPayload));
+                if (document.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0118));
+                }
+
+                // Restore the authorization request parameters from the serialized payload.
+                foreach (var parameter in document.RootElement.EnumerateObject())
+                {
+                    // Avoid overriding the current request parameters.
+                    if (context.Request.HasParameter(parameter.Name))
+                    {
+                        continue;
+                    }
+
+                    context.Request.SetParameter(parameter.Name, parameter.Value.Clone());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of caching logout requests, if applicable.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class CacheRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
+        {
+            private readonly IDistributedCache _cache;
+            private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
+
+            public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
+
+            public CacheRequestParameters(
+                IDistributedCache cache,
+                IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            {
+                _cache = cache;
+                _options = options;
             }
 
             /// <summary>
-            /// Contains the logic responsible of caching logout requests, if applicable.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+            /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public class CacheRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .AddFilter<RequireLogoutRequestCachingEnabled>()
+                    .UseSingletonHandler<CacheRequestParameters>()
+                    .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
             {
-                private readonly IDistributedCache _cache;
-                private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
-
-                public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
-
-                public CacheRequestParameters(
-                    IDistributedCache cache,
-                    IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+                if (context is null)
                 {
-                    _cache = cache;
-                    _options = options;
+                    throw new ArgumentNullException(nameof(context));
                 }
 
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireLogoutRequestCachingEnabled>()
-                        .UseSingletonHandler<CacheRequestParameters>()
-                        .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
-                        .SetType(OpenIddictServerHandlerType.BuiltIn)
-                        .Build();
+                Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
-                /// <inheritdoc/>
-                public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var request = context.Transaction.GetHttpRequest();
+                if (request is null)
                 {
-                    if (context is null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                }
 
-                    Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
+                // Don't cache the request if the request doesn't include any parameter.
+                // If a request_id parameter can be found in the logout request,
+                // ignore the following logic to prevent an infinite redirect loop.
+                if (context.Request.Count == 0 || !string.IsNullOrEmpty(context.Request.RequestId))
+                {
+                    return;
+                }
 
-                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var request = context.Transaction.GetHttpRequest();
-                    if (request is null)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-                    }
-
-                    // Don't cache the request if the request doesn't include any parameter.
-                    // If a request_id parameter can be found in the logout request,
-                    // ignore the following logic to prevent an infinite redirect loop.
-                    if (context.Request.Count == 0 || !string.IsNullOrEmpty(context.Request.RequestId))
-                    {
-                        return;
-                    }
-
-                    // Generate a 256-bit request identifier using a crypto-secure random number generator.
-                    var data = new byte[256 / 8];
+                // Generate a 256-bit request identifier using a crypto-secure random number generator.
+                var data = new byte[256 / 8];
 
 #if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                    RandomNumberGenerator.Fill(data);
+                RandomNumberGenerator.Fill(data);
 #else
-                    using var generator = RandomNumberGenerator.Create();
-                    generator.GetBytes(data);
+                using var generator = RandomNumberGenerator.Create();
+                generator.GetBytes(data);
 #endif
 
-                    context.Request.RequestId = Base64UrlEncoder.Encode(data);
+                context.Request.RequestId = Base64UrlEncoder.Encode(data);
 
-                    // Store the serialized logout request parameters in the distributed cache.
-                    var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
-                    {
-                        Audience = context.Issuer?.AbsoluteUri,
-                        Claims = context.Request.GetParameters().ToDictionary(
-                            parameter => parameter.Key,
-                            parameter => parameter.Value.Value),
-                        EncryptingCredentials = context.Options.EncryptionCredentials.First(),
-                        Issuer = context.Issuer?.AbsoluteUri,
-                        SigningCredentials = context.Options.SigningCredentials.First(),
-                        Subject = new ClaimsIdentity(),
-                        TokenType = JsonWebTokenTypes.Private.LogoutRequest
-                    });
+                // Store the serialized logout request parameters in the distributed cache.
+                var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
+                {
+                    Audience = context.Issuer?.AbsoluteUri,
+                    Claims = context.Request.GetParameters().ToDictionary(
+                        parameter => parameter.Key,
+                        parameter => parameter.Value.Value),
+                    EncryptingCredentials = context.Options.EncryptionCredentials.First(),
+                    Issuer = context.Issuer?.AbsoluteUri,
+                    SigningCredentials = context.Options.SigningCredentials.First(),
+                    Subject = new ClaimsIdentity(),
+                    TokenType = JsonWebTokenTypes.Private.LogoutRequest
+                });
 
-                    // Note: the cache key is always prefixed with a specific marker
-                    // to avoid collisions with the other types of cached payloads.
-                    await _cache.SetStringAsync(Cache.LogoutRequest + context.Request.RequestId,
-                        token, _options.CurrentValue.LogoutRequestCachingPolicy);
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached payloads.
+                await _cache.SetStringAsync(Cache.LogoutRequest + context.Request.RequestId,
+                    token, _options.CurrentValue.LogoutRequestCachingPolicy);
 
-                    // Create a new GET logout request containing only the request_id parameter.
-                    var address = QueryHelpers.AddQueryString(
-                        uri: request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase + request.Path,
-                        name: Parameters.RequestId,
-                        value: context.Request.RequestId);
+                // Create a new GET logout request containing only the request_id parameter.
+                var address = QueryHelpers.AddQueryString(
+                    uri: request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase + request.Path,
+                    name: Parameters.RequestId,
+                    value: context.Request.RequestId);
 
-                    request.HttpContext.Response.Redirect(address);
+                request.HttpContext.Response.Redirect(address);
 
-                    // Mark the response as handled to skip the rest of the pipeline.
-                    context.HandleRequest();
-                }
+                // Mark the response as handled to skip the rest of the pipeline.
+                context.HandleRequest();
             }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of removing cached logout requests from the distributed cache.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class RemoveCachedRequest : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        {
+            private readonly IDistributedCache _cache;
+
+            public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
+
+            public RemoveCachedRequest(IDistributedCache cache)
+                => _cache = cache;
 
             /// <summary>
-            /// Contains the logic responsible of removing cached logout requests from the distributed cache.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+            /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
-            public class RemoveCachedRequest : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .AddFilter<RequireLogoutRequestCachingEnabled>()
+                    .UseSingletonHandler<RemoveCachedRequest>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
             {
-                private readonly IDistributedCache _cache;
-
-                public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
-
-                public RemoveCachedRequest(IDistributedCache cache)
-                    => _cache = cache;
-
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireLogoutRequestCachingEnabled>()
-                        .UseSingletonHandler<RemoveCachedRequest>()
-                        .SetOrder(int.MinValue + 100_000)
-                        .SetType(OpenIddictServerHandlerType.BuiltIn)
-                        .Build();
-
-                /// <inheritdoc/>
-                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+                if (context is null)
                 {
-                    if (context is null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (string.IsNullOrEmpty(context.Request?.RequestId))
-                    {
-                        return default;
-                    }
-
-                    // Note: the ApplyLogoutResponse event is called for both successful
-                    // and errored logout responses but discrimination is not necessary here,
-                    // as the logout request must be removed from the distributed cache in both cases.
-
-                    // Note: the cache key is always prefixed with a specific marker
-                    // to avoid collisions with the other types of cached payloads.
-                    return new ValueTask(_cache.RemoveAsync(Cache.LogoutRequest + context.Request.RequestId));
+                    throw new ArgumentNullException(nameof(context));
                 }
-            }
 
-            /// <summary>
-            /// Contains the logic responsible of processing logout responses.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-            /// </summary>
-            public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .UseSingletonHandler<ProcessQueryResponse>()
-                        .SetOrder(ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order + 250)
-                        .SetType(OpenIddictServerHandlerType.BuiltIn)
-                        .Build();
-
-                /// <inheritdoc/>
-                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+                if (string.IsNullOrEmpty(context.Request?.RequestId))
                 {
-                    if (context is null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
+                    return default;
+                }
 
-                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                    if (response is null)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-                    }
+                // Note: the ApplyLogoutResponse event is called for both successful
+                // and errored logout responses but discrimination is not necessary here,
+                // as the logout request must be removed from the distributed cache in both cases.
 
-                    if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
-                    {
-                        return default;
-                    }
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached payloads.
+                return new ValueTask(_cache.RemoveAsync(Cache.LogoutRequest + context.Request.RequestId));
+            }
+        }
 
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, response);
+        /// <summary>
+        /// Contains the logic responsible of processing logout responses.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ProcessQueryResponse>()
+                    .SetOrder(ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order + 250)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
 
-                    // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
-                    // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
-                    // For consistency, multiple parameters with the same name are also supported by this endpoint.
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                }
+
+                if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
+                {
+                    return default;
+                }
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6151), context.PostLogoutRedirectUri, response);
+
+                // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
+                // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
+                // For consistency, multiple parameters with the same name are also supported by this endpoint.
 
 #if SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS
-                    var location = QueryHelpers.AddQueryString(context.PostLogoutRedirectUri,
-                        from parameter in context.Response.GetParameters()
-                        let values = (string?[]?) parameter.Value
-                        where values is not null
-                        from value in values
-                        where !string.IsNullOrEmpty(value)
-                        select KeyValuePair.Create(parameter.Key, value));
+                var location = QueryHelpers.AddQueryString(context.PostLogoutRedirectUri,
+                    from parameter in context.Response.GetParameters()
+                    let values = (string?[]?) parameter.Value
+                    where values is not null
+                    from value in values
+                    where !string.IsNullOrEmpty(value)
+                    select KeyValuePair.Create(parameter.Key, value));
 #else
-                    var location = context.PostLogoutRedirectUri;
+                var location = context.PostLogoutRedirectUri;
 
-                    foreach (var (key, value) in
-                        from parameter in context.Response.GetParameters()
-                        let values = (string?[]?) parameter.Value
-                        where values is not null
-                        from value in values
-                        where !string.IsNullOrEmpty(value)
-                        select (parameter.Key, Value: value))
-                    {
-                        location = QueryHelpers.AddQueryString(location, key, value);
-                    }
-#endif
-                    response.Redirect(location);
-                    context.HandleRequest();
-
-                    return default;
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of processing logout responses that should trigger a host redirection.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-            /// </summary>
-            public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .UseSingletonHandler<ProcessHostRedirectionResponse>()
-                        .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor.Order + 250)
-                        .SetType(OpenIddictServerHandlerType.BuiltIn)
-                        .Build();
-
-                /// <inheritdoc/>
-                public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+                foreach (var (key, value) in
+                    from parameter in context.Response.GetParameters()
+                    let values = (string?[]?) parameter.Value
+                    where values is not null
+                    from value in values
+                    where !string.IsNullOrEmpty(value)
+                    select (parameter.Key, Value: value))
                 {
-                    if (context is null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
+                    location = QueryHelpers.AddQueryString(location, key, value);
+                }
+#endif
+                response.Redirect(location);
+                context.HandleRequest();
 
-                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                    if (response is null)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-                    }
+                return default;
+            }
+        }
 
-                    // Note: this handler only executes if no post_logout_redirect_uri was specified
-                    // and if the response doesn't correspond to an error, that must be handled locally.
-                    if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) ||
-                        !string.IsNullOrEmpty(context.Response.Error))
-                    {
-                        return default;
-                    }
+        /// <summary>
+        /// Contains the logic responsible of processing logout responses that should trigger a host redirection.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ProcessHostRedirectionResponse>()
+                    .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor.Order + 250)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
 
-                    var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-                    if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
-                    {
-                        response.Redirect(properties.RedirectUri);
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
 
-                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6144));
-                        context.HandleRequest();
-                    }
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response is null)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                }
 
+                // Note: this handler only executes if no post_logout_redirect_uri was specified
+                // and if the response doesn't correspond to an error, that must be handled locally.
+                if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) ||
+                    !string.IsNullOrEmpty(context.Response.Error))
+                {
                     return default;
                 }
+
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+                if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
+                {
+                    response.Redirect(properties.RedirectUri);
+
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6144));
+                    context.HandleRequest();
+                }
+
+                return default;
             }
         }
     }

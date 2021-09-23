@@ -1,31 +1,30 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Mvc.Server.Controllers
+namespace Mvc.Server.Controllers;
+
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
+    }
 
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
+    public IActionResult About()
+    {
+        ViewData["Message"] = "Your application description page.";
 
-            return View();
-        }
+        return View();
+    }
 
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
+    public IActionResult Contact()
+    {
+        ViewData["Message"] = "Your contact page.";
 
-            return View();
-        }
+        return View();
+    }
 
-        public IActionResult Error()
-        {
-            return View("~/Views/Shared/Error.cshtml");
-        }
+    public IActionResult Error()
+    {
+        return View("~/Views/Shared/Error.cshtml");
     }
 }

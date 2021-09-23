@@ -9,33 +9,32 @@ using System.Threading.Tasks;
 using Microsoft.Owin.Testing;
 using OpenIddict.Server.IntegrationTests;
 
-namespace OpenIddict.Server.Owin.IntegrationTests
+namespace OpenIddict.Server.Owin.IntegrationTests;
+
+/// <summary>
+/// Represents a test host used by the server integration tests.
+/// </summary>
+public class OpenIddictServerOwinIntegrationTestServer : OpenIddictServerIntegrationTestServer
 {
+    public OpenIddictServerOwinIntegrationTestServer(TestServer server)
+        => Server = server;
+
     /// <summary>
-    /// Represents a test host used by the server integration tests.
+    /// Gets the ASP.NET Core test server used by this instance.
     /// </summary>
-    public class OpenIddictServerOwinIntegrationTestServer : OpenIddictServerIntegrationTestServer
+    public TestServer Server { get; }
+
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+        Justification = "The caller is responsible of disposing the test client.")]
+    public override ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync()
+        => new ValueTask<OpenIddictServerIntegrationTestClient>(
+            new OpenIddictServerIntegrationTestClient(Server.HttpClient));
+
+    public override ValueTask DisposeAsync()
     {
-        public OpenIddictServerOwinIntegrationTestServer(TestServer server)
-            => Server = server;
+        // Dispose of the underlying test server.
+        Server.Dispose();
 
-        /// <summary>
-        /// Gets the ASP.NET Core test server used by this instance.
-        /// </summary>
-        public TestServer Server { get; }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "The caller is responsible of disposing the test client.")]
-        public override ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync()
-            => new ValueTask<OpenIddictServerIntegrationTestClient>(
-                new OpenIddictServerIntegrationTestClient(Server.HttpClient));
-
-        public override ValueTask DisposeAsync()
-        {
-            // Dispose of the underlying test server.
-            Server.Dispose();
-
-            return default;
-        }
+        return default;
     }
 }

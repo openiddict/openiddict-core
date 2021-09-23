@@ -10,28 +10,27 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
-namespace OpenIddict.Validation.AspNetCore
+namespace OpenIddict.Validation.AspNetCore;
+
+/// <summary>
+/// Contains a collection of event handler filters commonly used by the ASP.NET Core handlers.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public static class OpenIddictValidationAspNetCoreHandlerFilters
 {
     /// <summary>
-    /// Contains a collection of event handler filters commonly used by the ASP.NET Core handlers.
+    /// Represents a filter that excludes the associated handlers if no ASP.NET Core request can be found.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static class OpenIddictValidationAspNetCoreHandlerFilters
+    public class RequireHttpRequest : IOpenIddictValidationHandlerFilter<BaseContext>
     {
-        /// <summary>
-        /// Represents a filter that excludes the associated handlers if no ASP.NET Core request can be found.
-        /// </summary>
-        public class RequireHttpRequest : IOpenIddictValidationHandlerFilter<BaseContext>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
-            public ValueTask<bool> IsActiveAsync(BaseContext context)
+            if (context is null)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(context.Transaction.GetHttpRequest() is not null);
+                throw new ArgumentNullException(nameof(context));
             }
+
+            return new ValueTask<bool>(context.Transaction.GetHttpRequest() is not null);
         }
     }
 }

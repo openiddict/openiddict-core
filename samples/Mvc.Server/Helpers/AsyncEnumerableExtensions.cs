@@ -2,30 +2,29 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Mvc.Server.Helpers
+namespace Mvc.Server.Helpers;
+
+public static class AsyncEnumerableExtensions
 {
-    public static class AsyncEnumerableExtensions
+    public static Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source)
     {
-        public static Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source)
+        if (source is null)
         {
-            if (source is null)
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return ExecuteAsync();
+
+        async Task<List<T>> ExecuteAsync()
+        {
+            var list = new List<T>();
+
+            await foreach (var element in source)
             {
-                throw new ArgumentNullException(nameof(source));
+                list.Add(element);
             }
 
-            return ExecuteAsync();
-
-            async Task<List<T>> ExecuteAsync()
-            {
-                var list = new List<T>();
-
-                await foreach (var element in source)
-                {
-                    list.Add(element);
-                }
-
-                return list;
-            }
+            return list;
         }
     }
 }

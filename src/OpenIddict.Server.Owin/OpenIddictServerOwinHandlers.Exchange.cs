@@ -8,31 +8,30 @@ using System.Collections.Immutable;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 
-namespace OpenIddict.Server.Owin
+namespace OpenIddict.Server.Owin;
+
+public static partial class OpenIddictServerOwinHandlers
 {
-    public static partial class OpenIddictServerOwinHandlers
+    public static class Exchange
     {
-        public static class Exchange
-        {
-            public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
-                /*
-                 * Token request extraction:
-                 */
-                ExtractPostRequest<ExtractTokenRequestContext>.Descriptor,
-                ExtractBasicAuthenticationCredentials<ExtractTokenRequestContext>.Descriptor,
+        public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+            /*
+             * Token request extraction:
+             */
+            ExtractPostRequest<ExtractTokenRequestContext>.Descriptor,
+            ExtractBasicAuthenticationCredentials<ExtractTokenRequestContext>.Descriptor,
 
-                /*
-                 * Token request handling:
-                 */
-                EnablePassthroughMode<HandleTokenRequestContext, RequireTokenEndpointPassthroughEnabled>.Descriptor,
+            /*
+             * Token request handling:
+             */
+            EnablePassthroughMode<HandleTokenRequestContext, RequireTokenEndpointPassthroughEnabled>.Descriptor,
 
-                /*
-                 * Token response processing:
-                 */
-                AttachHttpResponseCode<ApplyTokenResponseContext>.Descriptor,
-                AttachCacheControlHeader<ApplyTokenResponseContext>.Descriptor,
-                AttachWwwAuthenticateHeader<ApplyTokenResponseContext>.Descriptor,
-                ProcessJsonResponse<ApplyTokenResponseContext>.Descriptor);
-        }
+            /*
+             * Token response processing:
+             */
+            AttachHttpResponseCode<ApplyTokenResponseContext>.Descriptor,
+            AttachCacheControlHeader<ApplyTokenResponseContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ApplyTokenResponseContext>.Descriptor,
+            ProcessJsonResponse<ApplyTokenResponseContext>.Descriptor);
     }
 }

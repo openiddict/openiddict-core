@@ -6,16 +6,15 @@
 
 using Microsoft.AspNetCore.Authentication;
 
-namespace OpenIddict.Validation.AspNetCore
+namespace OpenIddict.Validation.AspNetCore;
+
+/// <summary>
+/// Exposes the default values used by the OpenIddict validation handler.
+/// </summary>
+public static class OpenIddictValidationAspNetCoreDefaults
 {
     /// <summary>
-    /// Exposes the default values used by the OpenIddict validation handler.
+    /// Default value for <see cref="AuthenticationScheme.Name"/>.
     /// </summary>
-    public static class OpenIddictValidationAspNetCoreDefaults
-    {
-        /// <summary>
-        /// Default value for <see cref="AuthenticationScheme.Name"/>.
-        /// </summary>
-        public const string AuthenticationScheme = "OpenIddict.Validation.AspNetCore";
-    }
+    public const string AuthenticationScheme = "OpenIddict.Validation.AspNetCore";
 }

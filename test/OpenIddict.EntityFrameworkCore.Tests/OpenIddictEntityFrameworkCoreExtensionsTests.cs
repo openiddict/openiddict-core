@@ -12,109 +12,108 @@ using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
 using Xunit;
 
-namespace OpenIddict.EntityFrameworkCore.Tests
+namespace OpenIddict.EntityFrameworkCore.Tests;
+
+public class OpenIddictEntityFrameworkCoreExtensionsTests
 {
-    public class OpenIddictEntityFrameworkCoreExtensionsTests
+    [Fact]
+    public void UseEntityFrameworkCore_ThrowsAnExceptionForNullBuilder()
     {
-        [Fact]
-        public void UseEntityFrameworkCore_ThrowsAnExceptionForNullBuilder()
-        {
-            // Arrange
-            var builder = (OpenIddictCoreBuilder) null!;
+        // Arrange
+        var builder = (OpenIddictCoreBuilder) null!;
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore());
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore());
 
-            Assert.Equal("builder", exception.ParamName);
-        }
+        Assert.Equal("builder", exception.ParamName);
+    }
 
-        [Fact]
-        public void UseEntityFrameworkCore_ThrowsAnExceptionForNullConfiguration()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictCoreBuilder(services);
+    [Fact]
+    public void UseEntityFrameworkCore_ThrowsAnExceptionForNullConfiguration()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var builder = new OpenIddictCoreBuilder(services);
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore(configuration: null!));
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore(configuration: null!));
 
-            Assert.Equal("configuration", exception.ParamName);
-        }
+        Assert.Equal("configuration", exception.ParamName);
+    }
 
-        [Fact]
-        public void UseEntityFrameworkCore_RegistersDefaultEntities()
-        {
-            // Arrange
-            var services = new ServiceCollection().AddOptions();
-            var builder = new OpenIddictCoreBuilder(services);
+    [Fact]
+    public void UseEntityFrameworkCore_RegistersDefaultEntities()
+    {
+        // Arrange
+        var services = new ServiceCollection().AddOptions();
+        var builder = new OpenIddictCoreBuilder(services);
 
-            // Act
-            builder.UseEntityFrameworkCore();
+        // Act
+        builder.UseEntityFrameworkCore();
 
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+        // Assert
+        var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
-            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreApplication), options.DefaultApplicationType);
-            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreAuthorization), options.DefaultAuthorizationType);
-            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreScope), options.DefaultScopeType);
-            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreToken), options.DefaultTokenType);
-        }
+        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreApplication), options.DefaultApplicationType);
+        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreAuthorization), options.DefaultAuthorizationType);
+        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreScope), options.DefaultScopeType);
+        Assert.Equal(typeof(OpenIddictEntityFrameworkCoreToken), options.DefaultTokenType);
+    }
 
-        [Theory]
-        [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver))]
-        [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver))]
-        [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver))]
-        [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver))]
-        public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolvers(Type serviceType, Type implementationType)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictCoreBuilder(services);
+    [Theory]
+    [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver))]
+    [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver))]
+    [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver))]
+    [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver))]
+    public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolvers(Type serviceType, Type implementationType)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var builder = new OpenIddictCoreBuilder(services);
 
-            // Act
-            builder.UseEntityFrameworkCore();
+        // Act
+        builder.UseEntityFrameworkCore();
 
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == serviceType &&
-                                                 service.ImplementationType == implementationType);
-        }
+        // Assert
+        Assert.Contains(services, service => service.ServiceType == serviceType &&
+                                             service.ImplementationType == implementationType);
+    }
 
-        [Theory]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver.TypeResolutionCache))]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver.TypeResolutionCache))]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver.TypeResolutionCache))]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver.TypeResolutionCache))]
-        public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolverCaches(Type type)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictCoreBuilder(services);
+    [Theory]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver.TypeResolutionCache))]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver.TypeResolutionCache))]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver.TypeResolutionCache))]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver.TypeResolutionCache))]
+    public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolverCaches(Type type)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var builder = new OpenIddictCoreBuilder(services);
 
-            // Act
-            builder.UseEntityFrameworkCore();
+        // Act
+        builder.UseEntityFrameworkCore();
 
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == type &&
-                                                 service.ImplementationType == type);
-        }
+        // Assert
+        Assert.Contains(services, service => service.ServiceType == type &&
+                                             service.ImplementationType == type);
+    }
 
-        [Theory]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStore<,,,,>))]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStore<,,,,>))]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>))]
-        [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStore<,,,,>))]
-        public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStore(Type type)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictCoreBuilder(services);
+    [Theory]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStore<,,,,>))]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStore<,,,,>))]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>))]
+    [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStore<,,,,>))]
+    public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStore(Type type)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var builder = new OpenIddictCoreBuilder(services);
 
-            // Act
-            builder.UseEntityFrameworkCore();
+        // Act
+        builder.UseEntityFrameworkCore();
 
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == type && service.ImplementationType == type);
-        }
+        // Assert
+        Assert.Contains(services, service => service.ServiceType == type && service.ImplementationType == type);
     }
 }

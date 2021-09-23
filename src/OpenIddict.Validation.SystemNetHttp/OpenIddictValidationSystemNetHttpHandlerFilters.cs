@@ -9,27 +9,26 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 
-namespace OpenIddict.Validation.SystemNetHttp
-{
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static class OpenIddictValidationSystemNetHttpHandlerFilters
-    {
-        /// <summary>
-        /// Represents a filter that excludes the associated handlers if the metadata address of the issuer is not available.
-        /// </summary>
-        public class RequireHttpMetadataAddress : IOpenIddictValidationHandlerFilter<BaseContext>
-        {
-            public ValueTask<bool> IsActiveAsync(BaseContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
+namespace OpenIddict.Validation.SystemNetHttp;
 
-                return new ValueTask<bool>(
-                    string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public static class OpenIddictValidationSystemNetHttpHandlerFilters
+{
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the metadata address of the issuer is not available.
+    /// </summary>
+    public class RequireHttpMetadataAddress : IOpenIddictValidationHandlerFilter<BaseContext>
+    {
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
             }
+
+            return new ValueTask<bool>(
+                string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

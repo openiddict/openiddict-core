@@ -7,21 +7,20 @@
 using System.Threading.Tasks;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server;
+
+/// <summary>
+/// Represents a handler able to process <typeparamref name="TContext"/> events.
+/// </summary>
+/// <typeparam name="TContext">The type of the context associated with events handled by this instance.</typeparam>
+public interface IOpenIddictServerHandler<in TContext> where TContext : BaseContext
 {
     /// <summary>
-    /// Represents a handler able to process <typeparamref name="TContext"/> events.
+    /// Processes the event.
     /// </summary>
-    /// <typeparam name="TContext">The type of the context associated with events handled by this instance.</typeparam>
-    public interface IOpenIddictServerHandler<in TContext> where TContext : BaseContext
-    {
-        /// <summary>
-        /// Processes the event.
-        /// </summary>
-        /// <param name="context">The context associated with the event to process.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        ValueTask HandleAsync(TContext context);
-    }
+    /// <param name="context">The context associated with the event to process.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+    /// </returns>
+    ValueTask HandleAsync(TContext context);
 }

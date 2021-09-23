@@ -8,30 +8,29 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation;
+
+public class OpenIddictValidationFactory : IOpenIddictValidationFactory
 {
-    public class OpenIddictValidationFactory : IOpenIddictValidationFactory
+    private readonly ILogger<OpenIddictValidationDispatcher> _logger;
+    private readonly IOptionsMonitor<OpenIddictValidationOptions> _options;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictValidationFactory"/> class.
+    /// </summary>
+    public OpenIddictValidationFactory(
+        ILogger<OpenIddictValidationDispatcher> logger,
+        IOptionsMonitor<OpenIddictValidationOptions> options)
     {
-        private readonly ILogger<OpenIddictValidationDispatcher> _logger;
-        private readonly IOptionsMonitor<OpenIddictValidationOptions> _options;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictValidationFactory"/> class.
-        /// </summary>
-        public OpenIddictValidationFactory(
-            ILogger<OpenIddictValidationDispatcher> logger,
-            IOptionsMonitor<OpenIddictValidationOptions> options)
-        {
-            _logger = logger;
-            _options = options;
-        }
-
-        public ValueTask<OpenIddictValidationTransaction> CreateTransactionAsync()
-            => new ValueTask<OpenIddictValidationTransaction>(new OpenIddictValidationTransaction
-            {
-                Issuer = _options.CurrentValue.Issuer,
-                Logger = _logger,
-                Options = _options.CurrentValue
-            });
+        _logger = logger;
+        _options = options;
     }
+
+    public ValueTask<OpenIddictValidationTransaction> CreateTransactionAsync()
+        => new ValueTask<OpenIddictValidationTransaction>(new OpenIddictValidationTransaction
+        {
+            Issuer = _options.CurrentValue.Issuer,
+            Logger = _logger,
+            Options = _options.CurrentValue
+        });
 }

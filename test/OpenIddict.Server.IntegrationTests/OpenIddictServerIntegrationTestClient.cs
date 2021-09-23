@@ -18,502 +18,501 @@ using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-namespace OpenIddict.Server.IntegrationTests
+namespace OpenIddict.Server.IntegrationTests;
+
+/// <summary>
+/// Exposes methods that allow sending OpenID Connect
+/// requests and extracting the corresponding responses.
+/// </summary>
+public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
 {
     /// <summary>
-    /// Exposes methods that allow sending OpenID Connect
-    /// requests and extracting the corresponding responses.
+    /// Initializes a new instance of the OpenID Connect client.
     /// </summary>
-    public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
+    public OpenIddictServerIntegrationTestClient()
+        : this(new HttpClient())
     {
-        /// <summary>
-        /// Initializes a new instance of the OpenID Connect client.
-        /// </summary>
-        public OpenIddictServerIntegrationTestClient()
-            : this(new HttpClient())
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the OpenID Connect client.
+    /// </summary>
+    /// <param name="client">The HTTP client used to communicate with the OpenID Connect server.</param>
+    public OpenIddictServerIntegrationTestClient(HttpClient client)
+        : this(client, new HtmlParser())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the OpenID Connect client.
+    /// </summary>
+    /// <param name="client">The HTTP client used to communicate with the OpenID Connect server.</param>
+    /// <param name="parser">The HTML parser used to parse the responses returned by the OpenID Connect server.</param>
+    public OpenIddictServerIntegrationTestClient(HttpClient client, HtmlParser parser)
+    {
+        if (client is null)
         {
+            throw new ArgumentNullException(nameof(client));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the OpenID Connect client.
-        /// </summary>
-        /// <param name="client">The HTTP client used to communicate with the OpenID Connect server.</param>
-        public OpenIddictServerIntegrationTestClient(HttpClient client)
-            : this(client, new HtmlParser())
+        if (parser is null)
         {
+            throw new ArgumentNullException(nameof(parser));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the OpenID Connect client.
-        /// </summary>
-        /// <param name="client">The HTTP client used to communicate with the OpenID Connect server.</param>
-        /// <param name="parser">The HTML parser used to parse the responses returned by the OpenID Connect server.</param>
-        public OpenIddictServerIntegrationTestClient(HttpClient client, HtmlParser parser)
+        HttpClient = client;
+        HtmlParser = parser;
+    }
+
+    /// <summary>
+    /// Gets the underlying HTTP client used to
+    /// communicate with the OpenID Connect server.
+    /// </summary>
+    public HttpClient HttpClient { get; }
+
+    /// <summary>
+    /// Gets the underlying HTML parser used to parse the
+    /// responses returned by the OpenID Connect server.
+    /// </summary>
+    public HtmlParser HtmlParser { get; }
+
+    /// <summary>
+    /// Sends an empty OpenID Connect request to the given endpoint using GET
+    /// and converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> GetAsync(string uri)
+        => GetAsync(uri, new OpenIddictRequest());
+
+    /// <summary>
+    /// Sends an empty OpenID Connect request to the given endpoint using GET
+    /// and converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> GetAsync(Uri uri)
+        => GetAsync(uri, new OpenIddictRequest());
+
+    /// <summary>
+    /// Sends a generic OpenID Connect request to the given endpoint using GET
+    /// and converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="request">The OpenID Connect request to send.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> GetAsync(string uri, OpenIddictRequest request)
+    {
+        if (request is null)
         {
-            if (client is null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
-            if (parser is null)
-            {
-                throw new ArgumentNullException(nameof(parser));
-            }
-
-            HttpClient = client;
-            HtmlParser = parser;
+            throw new ArgumentNullException(nameof(request));
         }
 
-        /// <summary>
-        /// Gets the underlying HTTP client used to
-        /// communicate with the OpenID Connect server.
-        /// </summary>
-        public HttpClient HttpClient { get; }
-
-        /// <summary>
-        /// Gets the underlying HTML parser used to parse the
-        /// responses returned by the OpenID Connect server.
-        /// </summary>
-        public HtmlParser HtmlParser { get; }
-
-        /// <summary>
-        /// Sends an empty OpenID Connect request to the given endpoint using GET
-        /// and converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> GetAsync(string uri)
-            => GetAsync(uri, new OpenIddictRequest());
-
-        /// <summary>
-        /// Sends an empty OpenID Connect request to the given endpoint using GET
-        /// and converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> GetAsync(Uri uri)
-            => GetAsync(uri, new OpenIddictRequest());
-
-        /// <summary>
-        /// Sends a generic OpenID Connect request to the given endpoint using GET
-        /// and converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <param name="request">The OpenID Connect request to send.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> GetAsync(string uri, OpenIddictRequest request)
+        if (string.IsNullOrEmpty(uri))
         {
-            if (request is null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
-            }
-
-            return GetAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
+            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
         }
 
-        /// <summary>
-        /// Sends a generic OpenID Connect request to the given endpoint using GET
-        /// and converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <param name="request">The OpenID Connect request to send.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> GetAsync(Uri uri, OpenIddictRequest request)
-            => SendAsync(HttpMethod.Get, uri, request);
+        return GetAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
+    }
 
-        /// <summary>
-        /// Sends a generic OpenID Connect request to the given endpoint using POST
-        /// and converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <param name="request">The OpenID Connect request to send.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> PostAsync(string uri, OpenIddictRequest request)
+    /// <summary>
+    /// Sends a generic OpenID Connect request to the given endpoint using GET
+    /// and converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="request">The OpenID Connect request to send.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> GetAsync(Uri uri, OpenIddictRequest request)
+        => SendAsync(HttpMethod.Get, uri, request);
+
+    /// <summary>
+    /// Sends a generic OpenID Connect request to the given endpoint using POST
+    /// and converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="request">The OpenID Connect request to send.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> PostAsync(string uri, OpenIddictRequest request)
+    {
+        if (request is null)
         {
-            if (request is null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
-            }
-
-            return PostAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
+            throw new ArgumentNullException(nameof(request));
         }
 
-        /// <summary>
-        /// Sends a generic OpenID Connect request to the given endpoint using POST
-        /// and converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <param name="request">The OpenID Connect request to send.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> PostAsync(Uri uri, OpenIddictRequest request)
-            => SendAsync(HttpMethod.Post, uri, request);
-
-        /// <summary>
-        /// Sends a generic OpenID Connect request to the given endpoint and
-        /// converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="method">The HTTP method used to send the OpenID Connect request.</param>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <param name="request">The OpenID Connect request to send.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> SendAsync(string method, string uri, OpenIddictRequest request)
+        if (string.IsNullOrEmpty(uri))
         {
-            if (request is null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (string.IsNullOrEmpty(method))
-            {
-                throw new ArgumentException("The HTTP method cannot be null or empty.", nameof(method));
-            }
-
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
-            }
-
-            return SendAsync(new HttpMethod(method), uri, request);
+            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
         }
 
-        /// <summary>
-        /// Sends a generic OpenID Connect request to the given endpoint and
-        /// converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="method">The HTTP method used to send the OpenID Connect request.</param>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <param name="request">The OpenID Connect request to send.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public Task<OpenIddictResponse> SendAsync(HttpMethod method, string uri, OpenIddictRequest request)
+        return PostAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
+    }
+
+    /// <summary>
+    /// Sends a generic OpenID Connect request to the given endpoint using POST
+    /// and converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="request">The OpenID Connect request to send.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> PostAsync(Uri uri, OpenIddictRequest request)
+        => SendAsync(HttpMethod.Post, uri, request);
+
+    /// <summary>
+    /// Sends a generic OpenID Connect request to the given endpoint and
+    /// converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="method">The HTTP method used to send the OpenID Connect request.</param>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="request">The OpenID Connect request to send.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> SendAsync(string method, string uri, OpenIddictRequest request)
+    {
+        if (request is null)
         {
-            if (method is null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            if (request is null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (string.IsNullOrEmpty(uri))
-            {
-                throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
-            }
-
-            return SendAsync(method, new Uri(uri, UriKind.RelativeOrAbsolute), request);
+            throw new ArgumentNullException(nameof(request));
         }
 
-        /// <summary>
-        /// Sends a generic OpenID Connect request to the given endpoint and
-        /// converts the returned response to an OpenID Connect response.
-        /// </summary>
-        /// <param name="method">The HTTP method used to send the OpenID Connect request.</param>
-        /// <param name="uri">The endpoint to which the request is sent.</param>
-        /// <param name="request">The OpenID Connect request to send.</param>
-        /// <returns>The OpenID Connect response returned by the server.</returns>
-        public virtual async Task<OpenIddictResponse> SendAsync(HttpMethod method, Uri uri, OpenIddictRequest request)
+        if (string.IsNullOrEmpty(method))
         {
-            if (method is null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            if (uri is null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
-
-            if (request is null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (HttpClient.BaseAddress is null && !uri.IsAbsoluteUri)
-            {
-                throw new ArgumentException("The address cannot be a relative URI when no base address " +
-                                            "is associated with the HTTP client.", nameof(uri));
-            }
-
-            using var message = CreateRequestMessage(request, method, uri);
-            using var response = await HttpClient.SendAsync(message);
-
-            return await GetResponseAsync(response);
+            throw new ArgumentException("The HTTP method cannot be null or empty.", nameof(method));
         }
 
-        private HttpRequestMessage CreateRequestMessage(OpenIddictRequest request, HttpMethod method, Uri uri)
+        if (string.IsNullOrEmpty(uri))
         {
+            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
+        }
+
+        return SendAsync(new HttpMethod(method), uri, request);
+    }
+
+    /// <summary>
+    /// Sends a generic OpenID Connect request to the given endpoint and
+    /// converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="method">The HTTP method used to send the OpenID Connect request.</param>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="request">The OpenID Connect request to send.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public Task<OpenIddictResponse> SendAsync(HttpMethod method, string uri, OpenIddictRequest request)
+    {
+        if (method is null)
+        {
+            throw new ArgumentNullException(nameof(method));
+        }
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (string.IsNullOrEmpty(uri))
+        {
+            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
+        }
+
+        return SendAsync(method, new Uri(uri, UriKind.RelativeOrAbsolute), request);
+    }
+
+    /// <summary>
+    /// Sends a generic OpenID Connect request to the given endpoint and
+    /// converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="method">The HTTP method used to send the OpenID Connect request.</param>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="request">The OpenID Connect request to send.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public virtual async Task<OpenIddictResponse> SendAsync(HttpMethod method, Uri uri, OpenIddictRequest request)
+    {
+        if (method is null)
+        {
+            throw new ArgumentNullException(nameof(method));
+        }
+
+        if (uri is null)
+        {
+            throw new ArgumentNullException(nameof(uri));
+        }
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        if (HttpClient.BaseAddress is null && !uri.IsAbsoluteUri)
+        {
+            throw new ArgumentException("The address cannot be a relative URI when no base address " +
+                                        "is associated with the HTTP client.", nameof(uri));
+        }
+
+        using var message = CreateRequestMessage(request, method, uri);
+        using var response = await HttpClient.SendAsync(message);
+
+        return await GetResponseAsync(response);
+    }
+
+    private HttpRequestMessage CreateRequestMessage(OpenIddictRequest request, HttpMethod method, Uri uri)
+    {
+        // Note: a dictionary is deliberately not used here to allow multiple parameters with the
+        // same name to be specified. While initially not allowed by the core OAuth2 specification,
+        // this is required for derived drafts like the OAuth2 token exchange specification.
+        var parameters = new List<KeyValuePair<string?, string?>>();
+
+        foreach (var parameter in request.GetParameters())
+        {
+            // If the parameter is null or empty, send an empty value.
+            if (OpenIddictParameter.IsNullOrEmpty(parameter.Value))
+            {
+                parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, string.Empty));
+
+                continue;
+            }
+
+            var values = (string?[]?) parameter.Value;
+            if (values is null || values.Length == 0)
+            {
+                continue;
+            }
+
+            foreach (var value in values)
+            {
+                parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, value));
+            }
+        }
+
+        if (method == HttpMethod.Get && parameters.Count != 0)
+        {
+            var builder = new StringBuilder();
+
+            foreach (var parameter in parameters)
+            {
+                if (string.IsNullOrEmpty(parameter.Key))
+                {
+                    continue;
+                }
+
+                if (builder.Length != 0)
+                {
+                    builder.Append('&');
+                }
+
+                builder.Append(UrlEncoder.Default.Encode(parameter.Key));
+
+                if (!string.IsNullOrEmpty(parameter.Value))
+                {
+                    builder.Append('=');
+                    builder.Append(UrlEncoder.Default.Encode(parameter.Value));
+                }
+            }
+
+            if (!uri.IsAbsoluteUri)
+            {
+                uri = new Uri(HttpClient.BaseAddress!, uri);
+            }
+
+            uri = new UriBuilder(uri) { Query = builder.ToString() }.Uri;
+        }
+
+        var message = new HttpRequestMessage(method, uri);
+
+        if (method != HttpMethod.Get)
+        {
+            message.Content = new FormUrlEncodedContent(parameters);
+        }
+
+        return message;
+    }
+
+    private async Task<OpenIddictResponse> GetResponseAsync(HttpResponseMessage message)
+    {
+        if (message.Headers.WwwAuthenticate.Count != 0)
+        {
+            var response = new OpenIddictResponse();
+
+            foreach (var header in message.Headers.WwwAuthenticate)
+            {
+                if (string.IsNullOrEmpty(header.Parameter))
+                {
+                    continue;
+                }
+
+                foreach (var parameter in header.Parameter.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var values = parameter.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (values.Length != 2)
+                    {
+                        continue;
+                    }
+
+                    var name = values[0]?.Trim(' ', '"');
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        continue;
+                    }
+
+                    var value = values[1]?.Trim(' ', '"');
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        continue;
+                    }
+
+                    response.SetParameter(name, value);
+                }
+            }
+
+            return response;
+        }
+
+        else if (message.Headers.Location is not null)
+        {
+            var payload = message.Headers.Location.Fragment;
+            if (string.IsNullOrEmpty(payload))
+            {
+                payload = message.Headers.Location.Query;
+            }
+
+            if (string.IsNullOrEmpty(payload))
+            {
+                return new OpenIddictResponse();
+            }
+
+            static string? UnescapeDataString(string value)
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                return Uri.UnescapeDataString(value.Replace("+", "%20"));
+            }
+
             // Note: a dictionary is deliberately not used here to allow multiple parameters with the
-            // same name to be specified. While initially not allowed by the core OAuth2 specification,
+            // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
             // this is required for derived drafts like the OAuth2 token exchange specification.
-            var parameters = new List<KeyValuePair<string?, string?>>();
+            var parameters = new List<KeyValuePair<string, string?>>();
 
-            foreach (var parameter in request.GetParameters())
+            foreach (var element in new StringTokenizer(payload, Separators.Ampersand))
             {
-                // If the parameter is null or empty, send an empty value.
-                if (OpenIddictParameter.IsNullOrEmpty(parameter.Value))
-                {
-                    parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, string.Empty));
-
-                    continue;
-                }
-
-                var values = (string?[]?) parameter.Value;
-                if (values is null || values.Length == 0)
+                var segment = element;
+                if (segment.Length == 0)
                 {
                     continue;
                 }
 
-                foreach (var value in values)
+                // Always skip the first char (# or ?).
+                if (segment.Offset == 0)
                 {
-                    parameters.Add(new KeyValuePair<string?, string?>(parameter.Key, value));
-                }
-            }
-
-            if (method == HttpMethod.Get && parameters.Count != 0)
-            {
-                var builder = new StringBuilder();
-
-                foreach (var parameter in parameters)
-                {
-                    if (string.IsNullOrEmpty(parameter.Key))
-                    {
-                        continue;
-                    }
-
-                    if (builder.Length != 0)
-                    {
-                        builder.Append('&');
-                    }
-
-                    builder.Append(UrlEncoder.Default.Encode(parameter.Key));
-
-                    if (!string.IsNullOrEmpty(parameter.Value))
-                    {
-                        builder.Append('=');
-                        builder.Append(UrlEncoder.Default.Encode(parameter.Value));
-                    }
+                    segment = segment.Subsegment(1, segment.Length - 1);
                 }
 
-                if (!uri.IsAbsoluteUri)
+                var index = segment.IndexOf('=');
+                if (index == -1)
                 {
-                    uri = new Uri(HttpClient.BaseAddress!, uri);
+                    continue;
                 }
 
-                uri = new UriBuilder(uri) { Query = builder.ToString() }.Uri;
+                var name = UnescapeDataString(segment.Substring(0, index));
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+
+                var value = UnescapeDataString(segment.Substring(index + 1, segment.Length - (index + 1)));
+
+                parameters.Add(new KeyValuePair<string, string?>(name, value));
             }
 
-            var message = new HttpRequestMessage(method, uri);
-
-            if (method != HttpMethod.Get)
-            {
-                message.Content = new FormUrlEncodedContent(parameters);
-            }
-
-            return message;
+            return new OpenIddictResponse(
+                from parameter in parameters
+                group parameter by parameter.Key into grouping
+                let values = grouping.Select(parameter => parameter.Value)
+                select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
         }
 
-        private async Task<OpenIddictResponse> GetResponseAsync(HttpResponseMessage message)
+        else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
         {
-            if (message.Headers.WwwAuthenticate.Count != 0)
-            {
-                var response = new OpenIddictResponse();
-
-                foreach (var header in message.Headers.WwwAuthenticate)
-                {
-                    if (string.IsNullOrEmpty(header.Parameter))
-                    {
-                        continue;
-                    }
-
-                    foreach (var parameter in header.Parameter.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        var values = parameter.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
-                        if (values.Length != 2)
-                        {
-                            continue;
-                        }
-
-                        var name = values[0]?.Trim(' ', '"');
-                        if (string.IsNullOrEmpty(name))
-                        {
-                            continue;
-                        }
-
-                        var value = values[1]?.Trim(' ', '"');
-                        if (string.IsNullOrEmpty(name))
-                        {
-                            continue;
-                        }
-
-                        response.SetParameter(name, value);
-                    }
-                }
-
-                return response;
-            }
-
-            else if (message.Headers.Location is not null)
-            {
-                var payload = message.Headers.Location.Fragment;
-                if (string.IsNullOrEmpty(payload))
-                {
-                    payload = message.Headers.Location.Query;
-                }
-
-                if (string.IsNullOrEmpty(payload))
-                {
-                    return new OpenIddictResponse();
-                }
-
-                static string? UnescapeDataString(string value)
-                {
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        return null;
-                    }
-
-                    return Uri.UnescapeDataString(value.Replace("+", "%20"));
-                }
-
-                // Note: a dictionary is deliberately not used here to allow multiple parameters with the
-                // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
-                // this is required for derived drafts like the OAuth2 token exchange specification.
-                var parameters = new List<KeyValuePair<string, string?>>();
-
-                foreach (var element in new StringTokenizer(payload, Separators.Ampersand))
-                {
-                    var segment = element;
-                    if (segment.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    // Always skip the first char (# or ?).
-                    if (segment.Offset == 0)
-                    {
-                        segment = segment.Subsegment(1, segment.Length - 1);
-                    }
-
-                    var index = segment.IndexOf('=');
-                    if (index == -1)
-                    {
-                        continue;
-                    }
-
-                    var name = UnescapeDataString(segment.Substring(0, index));
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        continue;
-                    }
-
-                    var value = UnescapeDataString(segment.Substring(index + 1, segment.Length - (index + 1)));
-
-                    parameters.Add(new KeyValuePair<string, string?>(name, value));
-                }
-
-                return new OpenIddictResponse(
-                    from parameter in parameters
-                    group parameter by parameter.Key into grouping
-                    let values = grouping.Select(parameter => parameter.Value)
-                    select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
-            }
-
-            else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
-            {
-                return (await message.Content!.ReadFromJsonAsync<OpenIddictResponse>())!;
-            }
-
-            else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
-            {
-                // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
-                // that always return their HTTP responses encoded using UTF-8. As such, the stream
-                // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-                using var stream = await message.Content!.ReadAsStreamAsync();
-                using var document = await HtmlParser.ParseDocumentAsync(stream);
-
-                // Note: a dictionary is deliberately not used here to allow multiple parameters with the
-                // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
-                // this is required for derived drafts like the OAuth2 token exchange specification.
-                var parameters = new List<KeyValuePair<string, string>>();
-
-                foreach (var element in document.Body.GetElementsByTagName("input"))
-                {
-                    var name = element.GetAttribute("name");
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        continue;
-                    }
-
-                    var value = element.GetAttribute("value");
-
-                    parameters.Add(new KeyValuePair<string, string>(name, value));
-                }
-
-                return new OpenIddictResponse(
-                    from parameter in parameters
-                    group parameter by parameter.Key into grouping
-                    let values = grouping.Select(parameter => parameter.Value)
-                    select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
-            }
-
-            else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
-            {
-                // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
-                // that always return their HTTP responses encoded using UTF-8. As such, the stream
-                // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
-                using var stream = await message.Content!.ReadAsStreamAsync();
-                using var reader = new StreamReader(stream);
-
-                // Note: a dictionary is deliberately not used here to allow multiple parameters with the
-                // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
-                // this is required for derived drafts like the OAuth2 token exchange specification.
-                var parameters = new List<KeyValuePair<string, string>>();
-
-                for (var line = await reader.ReadLineAsync(); line is not null; line = await reader.ReadLineAsync())
-                {
-                    var index = line.IndexOf(':');
-                    if (index == -1)
-                    {
-                        continue;
-                    }
-
-                    var name = line.Substring(0, index);
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        continue;
-                    }
-
-                    var value = line.Substring(index + 1);
-
-                    parameters.Add(new KeyValuePair<string, string>(name, value));
-                }
-
-                return new OpenIddictResponse(
-                    from parameter in parameters
-                    group parameter by parameter.Key into grouping
-                    let values = grouping.Select(parameter => parameter.Value)
-                    select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
-            }
-
-            return new OpenIddictResponse();
+            return (await message.Content!.ReadFromJsonAsync<OpenIddictResponse>())!;
         }
 
-        public ValueTask DisposeAsync()
+        else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
         {
-            HttpClient.Dispose();
+            // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
+            // that always return their HTTP responses encoded using UTF-8. As such, the stream
+            // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
+            using var stream = await message.Content!.ReadAsStreamAsync();
+            using var document = await HtmlParser.ParseDocumentAsync(stream);
 
-            return default;
+            // Note: a dictionary is deliberately not used here to allow multiple parameters with the
+            // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
+            // this is required for derived drafts like the OAuth2 token exchange specification.
+            var parameters = new List<KeyValuePair<string, string>>();
+
+            foreach (var element in document.Body.GetElementsByTagName("input"))
+            {
+                var name = element.GetAttribute("name");
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+
+                var value = element.GetAttribute("value");
+
+                parameters.Add(new KeyValuePair<string, string>(name, value));
+            }
+
+            return new OpenIddictResponse(
+                from parameter in parameters
+                group parameter by parameter.Key into grouping
+                let values = grouping.Select(parameter => parameter.Value)
+                select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
         }
+
+        else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
+        {
+            // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
+            // that always return their HTTP responses encoded using UTF-8. As such, the stream
+            // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
+            using var stream = await message.Content!.ReadAsStreamAsync();
+            using var reader = new StreamReader(stream);
+
+            // Note: a dictionary is deliberately not used here to allow multiple parameters with the
+            // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
+            // this is required for derived drafts like the OAuth2 token exchange specification.
+            var parameters = new List<KeyValuePair<string, string>>();
+
+            for (var line = await reader.ReadLineAsync(); line is not null; line = await reader.ReadLineAsync())
+            {
+                var index = line.IndexOf(':');
+                if (index == -1)
+                {
+                    continue;
+                }
+
+                var name = line.Substring(0, index);
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+
+                var value = line.Substring(index + 1);
+
+                parameters.Add(new KeyValuePair<string, string>(name, value));
+            }
+
+            return new OpenIddictResponse(
+                from parameter in parameters
+                group parameter by parameter.Key into grouping
+                let values = grouping.Select(parameter => parameter.Value)
+                select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
+        }
+
+        return new OpenIddictResponse();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        HttpClient.Dispose();
+
+        return default;
     }
 }
