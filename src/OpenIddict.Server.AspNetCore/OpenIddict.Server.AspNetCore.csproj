@@ -27,4 +27,18 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Microsoft.AspNetCore.Authentication" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Server.OpenIddictServerEvents" Static="true" />
+    <Using Include="OpenIddict.Server.OpenIddictServerHandlers" Static="true" />
+    <Using Include="OpenIddict.Server.OpenIddictServerHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Server.OpenIddictServerEvents" Static="true" />
+    <Using Include="OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlers" Static="true" />
+    <Using Include="OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters" Static="true" />
+  </ItemGroup>
+
 </Project>

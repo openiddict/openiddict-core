@@ -4,10 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Diagnostics;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace OpenIddict.MongoDb.Models;
 

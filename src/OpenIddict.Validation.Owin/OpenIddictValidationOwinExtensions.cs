@@ -4,14 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
 using OpenIddict.Validation.Owin;
-using static OpenIddict.Validation.Owin.OpenIddictValidationOwinHandlerFilters;
-using static OpenIddict.Validation.Owin.OpenIddictValidationOwinHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -40,7 +36,7 @@ public static class OpenIddictValidationOwinExtensions
 
         // Register the built-in event handlers used by the OpenIddict OWIN validation components.
         // Note: the order used here is not important, as the actual order is set in the options.
-        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+        builder.Services.TryAdd(OpenIddictValidationOwinHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict OWIN validation event handlers.
         builder.Services.TryAddSingleton<RequireOwinRequest>();

@@ -4,23 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Moq;
-using OpenIddict.Abstractions;
 using Xunit;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.OpenIddictServerHandlers.Introspection;
 using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.IntegrationTests;
 

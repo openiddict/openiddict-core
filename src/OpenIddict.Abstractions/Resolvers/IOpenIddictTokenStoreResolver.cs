@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenIddict.Abstractions;
+﻿namespace OpenIddict.Abstractions;
 
 /// <summary>
 /// Exposes a method allowing to resolve a token store.

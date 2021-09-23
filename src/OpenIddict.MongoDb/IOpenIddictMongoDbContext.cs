@@ -4,10 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Threading;
-using System.Threading.Tasks;
-using MongoDB.Driver;
-
 namespace OpenIddict.MongoDb;
 
 /// <summary>

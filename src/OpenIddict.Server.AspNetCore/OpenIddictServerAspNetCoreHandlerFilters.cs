@@ -4,12 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.Extensions.Options;
-using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server.AspNetCore;
 

@@ -1,8 +1,6 @@
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Quartz.Tests;
 

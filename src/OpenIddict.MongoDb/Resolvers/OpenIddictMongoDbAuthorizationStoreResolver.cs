@@ -4,12 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
-using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.MongoDb;
 

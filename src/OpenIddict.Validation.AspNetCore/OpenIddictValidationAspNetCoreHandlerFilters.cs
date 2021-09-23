@@ -4,11 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
-using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation.AspNetCore;
 

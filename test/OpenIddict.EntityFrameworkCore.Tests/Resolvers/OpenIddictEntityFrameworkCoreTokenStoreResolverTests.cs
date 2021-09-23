@@ -4,17 +4,14 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
 using Xunit;
 using static OpenIddict.EntityFrameworkCore.OpenIddictEntityFrameworkCoreTokenStoreResolver;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.EntityFrameworkCore.Tests;
 

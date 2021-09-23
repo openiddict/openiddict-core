@@ -4,13 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using OpenIddict.Abstractions;
 using OpenIddict.Server.IntegrationTests;
 using Xunit;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore.IntegrationTests;
 

@@ -4,9 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using Microsoft.EntityFrameworkCore;
-
 namespace OpenIddict.EntityFrameworkCore;
 
 /// <summary>

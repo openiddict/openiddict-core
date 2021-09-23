@@ -6,7 +6,6 @@
 
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation;
 

@@ -4,10 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server;
 

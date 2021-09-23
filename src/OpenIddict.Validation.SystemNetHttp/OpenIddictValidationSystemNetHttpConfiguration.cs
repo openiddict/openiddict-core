@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;

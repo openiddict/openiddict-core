@@ -4,15 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server;
 using OpenIddict.Server.AspNetCore;
-using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
-using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -40,7 +35,7 @@ public static class OpenIddictServerAspNetCoreExtensions
 
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core server components.
         // Note: the order used here is not important, as the actual order is set in the options.
-        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+        builder.Services.TryAdd(OpenIddictServerAspNetCoreHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict ASP.NET Core server event handlers.
         builder.Services.TryAddSingleton<RequireAuthorizationRequestCachingEnabled>();

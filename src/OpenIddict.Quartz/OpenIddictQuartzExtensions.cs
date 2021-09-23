@@ -4,11 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Quartz;
-using Quartz;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

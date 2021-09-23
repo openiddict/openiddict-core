@@ -5,10 +5,8 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Abstractions.Tests.Primitives;
 

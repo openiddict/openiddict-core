@@ -4,15 +4,10 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Linq;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
 using OpenIddict.Validation.AspNetCore;
-using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlerFilters;
-using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -40,7 +35,7 @@ public static class OpenIddictValidationAspNetCoreExtensions
 
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core validation components.
         // Note: the order used here is not important, as the actual order is set in the options.
-        builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
+        builder.Services.TryAdd(OpenIddictValidationAspNetCoreHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict ASP.NET Core validation event handlers.
         builder.Services.TryAddSingleton<RequireHttpRequest>();

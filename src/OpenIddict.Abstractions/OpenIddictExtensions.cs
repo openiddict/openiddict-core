@@ -4,8 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>

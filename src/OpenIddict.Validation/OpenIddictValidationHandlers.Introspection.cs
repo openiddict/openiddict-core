@@ -4,17 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.IdentityModel.JsonWebTokens;
-using OpenIddict.Abstractions;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Validation.OpenIddictValidationEvents;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Validation;
 

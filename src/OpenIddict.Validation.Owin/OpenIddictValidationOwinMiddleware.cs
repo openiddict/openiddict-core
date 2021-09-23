@@ -5,7 +5,6 @@
  */
 
 using Microsoft.Extensions.Options;
-using Microsoft.Owin;
 using Microsoft.Owin.Security.Infrastructure;
 
 namespace OpenIddict.Validation.Owin;

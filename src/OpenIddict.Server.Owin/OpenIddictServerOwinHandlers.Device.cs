@@ -4,16 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Collections.Immutable;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Owin.Security;
 using Owin;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin;
 

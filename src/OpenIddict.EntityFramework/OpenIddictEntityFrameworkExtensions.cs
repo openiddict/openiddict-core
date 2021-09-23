@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;

@@ -4,29 +4,17 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Owin;
-using Microsoft.Owin.Security;
-using OpenIddict.Abstractions;
 using Owin;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
-using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin;
 

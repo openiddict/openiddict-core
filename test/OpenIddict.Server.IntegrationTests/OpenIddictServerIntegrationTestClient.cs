@@ -4,19 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Primitives;
-using OpenIddict.Abstractions;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Server.IntegrationTests;
 

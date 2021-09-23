@@ -4,9 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Threading.Tasks;
-using static OpenIddict.Server.OpenIddictServerEvents;
-
 namespace OpenIddict.Server;
 
 /// <summary>

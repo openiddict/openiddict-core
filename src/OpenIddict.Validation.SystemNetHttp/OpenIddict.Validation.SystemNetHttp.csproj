@@ -18,4 +18,16 @@
     <PackageReference Include="System.Net.Http.Json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="System.Net.Http.Json" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Validation.OpenIddictValidationEvents" Static="true" />
+    <Using Include="OpenIddict.Validation.OpenIddictValidationHandlers" Static="true" />
+    <Using Include="OpenIddict.Validation.OpenIddictValidationHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlers" Static="true" />
+    <Using Include="OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters" Static="true" />
+  </ItemGroup>
+
 </Project>

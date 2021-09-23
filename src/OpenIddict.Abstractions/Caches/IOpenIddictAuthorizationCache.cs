@@ -4,10 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OpenIddict.Abstractions;
 

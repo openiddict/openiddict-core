@@ -4,10 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;

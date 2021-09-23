@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using OpenIddict.Abstractions;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace OpenIddict.Core;
 

@@ -9,4 +9,8 @@
     <PackageTags>$(PackageTags);entityframework;models</PackageTags>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Using Remove="System.Net.Http" />
+  </ItemGroup>
+
 </Project>

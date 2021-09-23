@@ -4,10 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using Microsoft.Extensions.Options;
-using Quartz;
-using SR = OpenIddict.Abstractions.OpenIddictResources;
 
 namespace OpenIddict.Quartz;
 
