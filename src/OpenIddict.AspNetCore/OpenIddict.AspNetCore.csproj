@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Versatile OpenID Connect stack for ASP.NET Core 2.1, 3.1 and 5.0.</Description>
+    <Description>Versatile OpenID Connect stack for ASP.NET Core.</Description>
     <PackageTags>$(PackageTags);aspnetcore;server;validation</PackageTags>
   </PropertyGroup>
 
