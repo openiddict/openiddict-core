@@ -1043,7 +1043,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
             return default;
         }
 
-        return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
     }
 
     /// <summary>

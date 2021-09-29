@@ -877,7 +877,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
             return default;
         }
 
-        return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
     }
 
     /// <summary>

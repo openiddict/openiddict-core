@@ -984,7 +984,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             return default;
         }
 
-        return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
     }
 
     /// <summary>

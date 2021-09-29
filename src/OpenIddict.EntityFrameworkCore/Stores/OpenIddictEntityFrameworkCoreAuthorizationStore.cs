@@ -476,7 +476,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        if (authorization.CreationDate == null)
+        if (authorization.CreationDate is null)
         {
             return new ValueTask<DateTimeOffset?>(result: null);
         }
@@ -966,7 +966,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
             return default;
         }
 
-        return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
     }
 
     /// <summary>

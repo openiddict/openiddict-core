@@ -718,7 +718,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             return default;
         }
 
-        return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        return (TKey?) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
     }
 
     /// <summary>
