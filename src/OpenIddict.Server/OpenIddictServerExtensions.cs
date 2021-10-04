@@ -71,6 +71,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
         builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenEntryCreated>();
+        builder.Services.TryAddSingleton<RequireTokenLifetimeValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenPayloadPersisted>();
         builder.Services.TryAddSingleton<RequireTokenRequest>();
         builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();

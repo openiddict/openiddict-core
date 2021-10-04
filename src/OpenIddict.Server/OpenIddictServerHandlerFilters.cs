@@ -508,6 +508,22 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if token lifetime validation was disabled.
+    /// </summary>
+    public class RequireTokenLifetimeValidationEnabled : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new ValueTask<bool>(!context.DisableLifetimeValidation);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the token payload is not persisted in the database.
     /// </summary>
     public class RequireTokenPayloadPersisted : IOpenIddictServerHandlerFilter<GenerateTokenContext>
