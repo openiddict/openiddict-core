@@ -679,6 +679,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .AddFilter<RequireTokenLifetimeValidationEnabled>()
                     .UseSingletonHandler<ValidateExpirationDate>()
                     .SetOrder(ValidatePrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -693,11 +694,6 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                if (context.DisableLifetimeValidation)
-                {
-                    return default;
-                }
 
                 var date = context.Principal.GetExpirationDate();
                 if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
