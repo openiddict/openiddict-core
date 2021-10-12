@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "6.0.100-rc.1.21458.32",
+    "dotnet": "6.0.100-rc.2.21505.57",
 
     "runtimes": {
       "aspnetcore": [
