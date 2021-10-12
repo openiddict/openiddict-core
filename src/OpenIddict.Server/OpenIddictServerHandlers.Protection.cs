@@ -1175,7 +1175,7 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                if (context.Principal is null or { Identity: not ClaimsIdentity })
+                if (context.Principal is not { Identity: ClaimsIdentity })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
                 }
@@ -1193,10 +1193,7 @@ public static partial class OpenIddictServerHandlers
                     _ => true
                 });
 
-                if (principal is null or { Identity: not ClaimsIdentity })
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
-                }
+                Debug.Assert(principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var claims = new Dictionary<string, object>(StringComparer.Ordinal);
 
