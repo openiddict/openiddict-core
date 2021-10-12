@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-
-namespace Mvc.Server;
+﻿namespace Mvc.Server;
 
 public static class Program
 {

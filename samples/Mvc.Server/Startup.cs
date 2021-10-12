@@ -1,8 +1,5 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using Quartz;

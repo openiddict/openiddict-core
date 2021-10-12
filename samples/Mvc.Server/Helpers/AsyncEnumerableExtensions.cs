@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Mvc.Server.Helpers;
+﻿namespace Mvc.Server.Helpers;
 
 public static class AsyncEnumerableExtensions
 {
