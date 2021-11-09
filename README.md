@@ -24,22 +24,24 @@ To implement a custom OpenID Connect server using OpenIddict, read **[Getting st
 
 ## Compatibility matrix
 
-| Web framework version | .NET runtime version | OpenIddict 2.0 :exclamation:            | OpenIddict 2.0.1 :exclamation:          | OpenIddict 3.0                          |
-|-----------------------|----------------------|-----------------------------------------|-----------------------------------------|-----------------------------------------|
-| ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
-| ASP.NET Core 2.1      | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      | :heavy_check_mark:                      |
-| ASP.NET Core 2.1      | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      | :heavy_check_mark:                      |
-| ASP.NET Core 2.1      | .NET Core 2.1        | :heavy_check_mark:                      | :heavy_check_mark:                      | :heavy_check_mark:                      |
-|                       |                      |                                         |                                         |                                         |
-| ASP.NET Core 3.1      | .NET Core 3.1        | :warning:                               | :heavy_check_mark:                      | :heavy_check_mark:                      |
-|                       |                      |                                         |                                         |                                         |
-| ASP.NET Core 5.0      | .NET 5.0             | :warning:                               | :heavy_check_mark:                      | :heavy_check_mark:                      |
-|                       |                      |                                         |                                         |                                         |
-| Microsoft.Owin 4.1    | .NET Framework 4.6.1 | :x:                                     | :x:                                     | :heavy_check_mark: :information_source: |
-| Microsoft.Owin 4.1    | .NET Framework 4.7.2 | :x:                                     | :x:                                     | :heavy_check_mark:                      |
-| Microsoft.Owin 4.1    | .NET Framework 4.8   | :x:                                     | :x:                                     | :heavy_check_mark:                      |
+| Web framework version | .NET runtime version | OpenIddict 3.x                          | OpenIddict 4.x (preview)                |
+|-----------------------|----------------------|-----------------------------------------|-----------------------------------------|
+| ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
+| ASP.NET Core 2.1      | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| ASP.NET Core 2.1      | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| ASP.NET Core 2.1      | .NET Core 2.1        | :heavy_check_mark:                      | :exclamation:                           |
+|                       |                      |                                         |                                         |
+| ASP.NET Core 3.1      | .NET Core 3.1        | :heavy_check_mark:                      | :heavy_check_mark:                      |
+|                       |                      |                                         |                                         |
+| ASP.NET Core 5.0      | .NET 5.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| ASP.NET Core 6.0      | .NET 6.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
+|                       |                      |                                         |                                         |
+| Microsoft.Owin 4.2    | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
+| Microsoft.Owin 4.2    | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| Microsoft.Owin 4.2    | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
 
-:exclamation: **Note: OpenIddict 2.x is no longer supported. Users are strongly encouraged to migrate to OpenIddict 3.0**.
+:exclamation: **Note: ASP.NET Core 2.1 on .NET Core 2.1 is no longer supported. While OpenIddict 4.x can still be used on .NET Core 2.1
+thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
 
 :information_source: **Note: the following features are not available when targeting .NET Framework 4.6.1**:
  - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
