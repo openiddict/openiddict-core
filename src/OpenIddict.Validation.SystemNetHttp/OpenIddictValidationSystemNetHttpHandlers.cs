@@ -256,12 +256,16 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             }
 
             var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
-            using var client = _factory.CreateClient(assembly.Name);
+            using var client = _factory.CreateClient(assembly.Name!);
             if (client is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0174));
             }
 
+#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION
+            // If supported, import the HTTP version from the client instance.
+            request.Version = client.DefaultRequestVersion;
+#endif
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
             if (response is null)
             {
