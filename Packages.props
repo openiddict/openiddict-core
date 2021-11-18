@@ -5,8 +5,8 @@
     <PackageReference Update="EntityFramework" Version="6.4.4" />
     <PackageReference Update="MartinCostello.Logging.XUnit" Version="0.1.0" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
-    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.11.1" />
-    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.11.1" />
+    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.14.1" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.14.1" />
     <PackageReference Update="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
     <PackageReference Update="Microsoft.Owin.Security" Version="4.2.0" />
     <PackageReference Update="Microsoft.Owin.Testing" Version="4.2.0" />
