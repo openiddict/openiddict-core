@@ -28,8 +28,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v1
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.11.0'
 
     # Arcade only allows the revision to contain up to two characters, and GitHub Actions does not roll-over
     # build numbers every day like Azure DevOps does. To balance these two requirements, set the official
@@ -87,8 +89,8 @@ jobs:
 
     - name: Push NuGet packages to MyGet.org
       if: ${{ github.repository_owner == 'openiddict' && (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/heads/rel/') || startsWith(github.ref, 'refs/tags/')) && runner.os == 'Windows' }}
-      run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.MYGET_API_KEY }} --skip-duplicate --source https://www.myget.org/F/openiddict/api/v3/index.json
+      run: nuget push "artifacts\packages\Release\Shipping\*.nupkg" -ApiKey ${{ secrets.MYGET_API_KEY }} -SkipDuplicate -Source https://www.myget.org/F/openiddict/api/v3/index.json
 
     - name: Push NuGet packages to NuGet.org
       if: ${{ github.repository_owner == 'openiddict' && startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
-      run: dotnet nuget push "artifacts\packages\Release\Shipping\*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --source https://api.nuget.org/v3/index.json
+      run: nuget push "artifacts\packages\Release\Shipping\*.nupkg" -ApiKey ${{ secrets.NUGET_API_KEY }} -SkipDuplicate -Source https://api.nuget.org/v3/index.json
