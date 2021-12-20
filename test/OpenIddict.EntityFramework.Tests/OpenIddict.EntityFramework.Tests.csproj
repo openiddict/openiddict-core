@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
