@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -46,11 +45,8 @@ public class Startup
             options.Scope.Add("offline_access");
             options.Scope.Add("demo_api");
 
-            options.SecurityTokenValidator = new JwtSecurityTokenHandler
-            {
-                // Disable the built-in JWT claims mapping feature.
-                InboundClaimTypeMap = new Dictionary<string, string>()
-            };
+            // Disable the built-in JWT claims mapping feature.
+            options.MapInboundClaims = false;
 
             options.TokenValidationParameters.NameClaimType = "name";
             options.TokenValidationParameters.RoleClaimType = "role";
@@ -74,8 +70,10 @@ public class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseEndpoints(options => options.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}"));
+        app.UseEndpoints(options =>
+        {
+            options.MapControllers();
+            options.MapDefaultControllerRoute();
+        });
     }
 }
