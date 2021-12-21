@@ -130,7 +130,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             }
 
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
-            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
