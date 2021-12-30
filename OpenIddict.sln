@@ -5,15 +5,15 @@ VisualStudioVersion = 17.0.31710.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D544447C-D701-46BB-9A5B-C76C612A596B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F47D1283-0EE9-4728-8026-58405C29B786}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sandbox", "sandbox", "{F47D1283-0EE9-4728-8026-58405C29B786}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5FC71D6A-A994-4F62-977F-88A7D25379D7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict", "src\OpenIddict\OpenIddict.csproj", "{80A8D6CE-C29A-4602-9844-D51FEF9C33C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Client", "samples\Mvc.Client\Mvc.Client.csproj", "{96B22EB9-771A-4DCA-B828-E6EA2774CF1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Client", "sandbox\Mvc.Client\Mvc.Client.csproj", "{96B22EB9-771A-4DCA-B828-E6EA2774CF1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Server", "samples\Mvc.Server\Mvc.Server.csproj", "{7CBEAFD2-E3D0-4424-9B78-E87AB52327A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Server", "sandbox\Mvc.Server\Mvc.Server.csproj", "{7CBEAFD2-E3D0-4424-9B78-E87AB52327A6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.EntityFrameworkCore", "src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj", "{D2450929-ED0E-420D-B475-327924F9701C}"
 EndProject
