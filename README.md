@@ -6,8 +6,8 @@
 
 ## What's OpenIddict?
 
-OpenIddict aims at providing a **versatile solution** to implement an **OpenID Connect server and token validation in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
-and starting in OpenIddict 3.0, **any ASP.NET 4.x application using Microsoft.Owin too**.
+OpenIddict aims at providing a **versatile solution** to implement an **OpenID Connect server and token validation in any ASP.NET Core 2.1 (and higher) application**.
+**ASP.NET 4.6.1 (and higher) applications are also fully supported thanks to a native Microsoft.Owin 4.2 integration**.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
 
@@ -21,6 +21,8 @@ which is based on OpenIddict, comes with sensible defaults and offers a built-in
 ## Getting started
 
 To implement a custom OpenID Connect server using OpenIddict, read **[Getting started](https://documentation.openiddict.com/guide/getting-started.html)**.
+
+**Samples demonstrating how to use OpenIddict with the different OAuth 2.0/OpenID Connect flows can be found in the [dedicated repository](https://github.com/openiddict/openiddict-samples)**.
 
 ## Compatibility matrix
 
@@ -42,6 +44,7 @@ To implement a custom OpenID Connect server using OpenIddict, read **[Getting st
 
 :exclamation: **Note: ASP.NET Core 2.1 on .NET Core 2.1 is no longer supported. While OpenIddict 4.x can still be used on .NET Core 2.1
 thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
+ASP.NET Core 2.1 on .NET Framework 4.6.1 (and higher) is still fully supported.
 
 :information_source: **Note: the following features are not available when targeting .NET Framework 4.6.1**:
  - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
