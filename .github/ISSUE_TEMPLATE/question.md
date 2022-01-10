@@ -1,5 +1,5 @@
 ---
 name: Ask a question or request support (sponsors-only)
-about: "Important: only sponsors can ask a question on GitHub. If you're not a sponsor, please post your question on StackOverflow"
+about: "Ask a question about this project or request support. Note: tickets opened by non-sponsors will be automatically closed"
 labels: question
 ---

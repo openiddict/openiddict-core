@@ -1,6 +1,6 @@
 ---
-name: Suggest an enhancement
-about: "Suggest an idea for this project. Note: priority will be given to suggestions made by sponsors"
+name: Suggest an enhancement (sponsors-only)
+about: "Suggest an idea for this project. Note: tickets opened by non-sponsors will be automatically closed"
 labels: enhancement
 ---
 

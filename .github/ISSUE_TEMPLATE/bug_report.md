@@ -1,6 +1,6 @@
 ---
-name: Report a bug
-about: Create a report about something that is not working properly
+name: Report a bug (sponsors-only)
+about: "Create a report about something that is not working properly. Note: tickets opened by non-sponsors will be automatically closed"
 labels: bug
 ---
 
