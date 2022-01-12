@@ -9,20 +9,22 @@
 OpenIddict aims at providing a **versatile solution** to implement an **OpenID Connect server and token validation in any ASP.NET Core 2.1 (and higher) application**.
 **ASP.NET 4.6.1 (and higher) applications are also fully supported thanks to a native Microsoft.Owin 4.2 integration**.
 
-OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
+OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**,
+the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628).
 
-OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**, **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)** out-of-the-box, but you can also provide your own stores.
+OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**,
+**[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)**
+out-of-the-box and custom stores can be implemented to support other providers.
 
-## I want something simple and easy to configure
+## Getting started
 
 **Developers looking for a simple and turnkey solution are strongly encouraged to use [OrchardCore and its OpenID module](https://docs.orchardcore.net/en/dev/docs/reference/modules/OpenId/)**,
 which is based on OpenIddict, comes with sensible defaults and offers a built-in management GUI to easily register OpenID client applications.
 
-## Getting started
+**To implement a custom OpenID Connect server using OpenIddict, read [Getting started](https://documentation.openiddict.com/guides/getting-started.html)**.
 
-To implement a custom OpenID Connect server using OpenIddict, read **[Getting started](https://documentation.openiddict.com/guide/getting-started.html)**.
-
-**Samples demonstrating how to use OpenIddict with the different OAuth 2.0/OpenID Connect flows can be found in the [dedicated repository](https://github.com/openiddict/openiddict-samples)**.
+**Samples demonstrating how to use OpenIddict with the different OAuth 2.0/OpenID Connect flows**
+can be found in the [dedicated repository](https://github.com/openiddict/openiddict-samples).
 
 ## Compatibility matrix
 
@@ -148,4 +150,5 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 
 ## License
 
-This project is licensed under the **Apache License**. This means that you can use, modify and distribute it freely. See [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html) for more details.
+This project is licensed under the **Apache License**. This means that you can use, modify and distribute it freely.
+See [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html) for more details.
