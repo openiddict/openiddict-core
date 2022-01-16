@@ -1,0 +1,26 @@
+name: Suggest an enhancement (sponsors and contributors-only)
+description: Suggest an idea for this project
+labels: [enhancement]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Confirm you've already contributed to this project or that you sponsor it
+    description: "Note: tickets opened by non-sponsors/contributors will be automatically closed."
+    options:
+    - label: I confirm I'm a sponsor or a contributor
+      required: true
+
+- type: textarea
+  attributes:
+    label: Describe the solution you'd like
+    description: A clear and concise description of what you want to happen. Include any alternative solutions you've considered.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Additional context
+    description: Add any other context or screenshots about the feature request here.
+  validations:
+    required: false

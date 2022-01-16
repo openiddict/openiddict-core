@@ -1,0 +1,32 @@
+name: Ask a question or request support (sponsors and contributors-only)
+description: Ask a question about this project or request support
+labels: [question]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Confirm you've already contributed to this project or that you sponsor it
+    description: "Note: tickets opened by non-sponsors/contributors will be automatically closed."
+    options:
+    - label: I confirm I'm a sponsor or a contributor
+      required: true
+
+- type: dropdown
+  id: version
+  attributes:
+    label: Version
+    description: What version of OpenIddict are you running?
+    options:
+      - 1.x (no longer supported)
+      - 2.x (no longer supported)
+      - 3.x
+      - 4.x (in preview)
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Question
+    description: Your question, including any technical information that may help answer your question.
+  validations:
+    required: true

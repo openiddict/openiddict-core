@@ -1,0 +1,49 @@
+name: Report a bug (sponsors and contributors-only)
+description: Create a report about something that is not working properly
+labels: [bug]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Confirm you've already contributed to this project or that you sponsor it
+    description: "Note: tickets opened by non-sponsors/contributors will be automatically closed."
+    options:
+    - label: I confirm I'm a sponsor or a contributor
+      required: true
+
+- type: dropdown
+  id: version
+  attributes:
+    label: Version
+    description: What version of OpenIddict are you running?
+    options:
+      - 1.x (no longer supported)
+      - 2.x (no longer supported)
+      - 3.x
+      - 4.x (in preview)
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Describe the bug
+    description: A clear and concise description of what the bug is.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: To reproduce
+    description: |
+      We ❤ code! Ideally, please point us to a minimalistic repro project hosted in a GitHub repository.
+      For a repro project, create a new project and apply the minimum required code to result in the issue you're observing.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Exceptions (if any)
+    description: Include the exception you get when facing this issue.
+    render: shell
+  validations:
+    required: false
