@@ -75,7 +75,7 @@ public static partial class OpenIddictClientHandlers
         ValidateRequiredUserinfoToken.Descriptor,
         ValidateUserinfoToken.Descriptor,
         ValidateUserinfoTokenWellknownClaims.Descriptor,
-        ValidateUserinfoTokenWellknownSubject.Descriptor,
+        ValidateUserinfoTokenSubject.Descriptor,
 
         /*
          * Challenge processing:
@@ -2663,7 +2663,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible of validating the subject claim contained in the userinfo token.
     /// </summary>
-    public class ValidateUserinfoTokenWellknownSubject : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ValidateUserinfoTokenSubject : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2672,7 +2672,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireUserinfoTokenPrincipal>()
-                .UseSingletonHandler<ValidateUserinfoTokenWellknownSubject>()
+                .UseSingletonHandler<ValidateUserinfoTokenSubject>()
                 .SetOrder(ValidateUserinfoTokenWellknownClaims.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();

@@ -110,7 +110,7 @@ public static partial class OpenIddictClientHandlers
 
                     var parameters = registration!.TokenValidationParameters.Clone();
 
-                    parameters.ValidIssuer ??= configuration.Issuer?.AbsoluteUri ?? registration.Issuer?.AbsoluteUri;
+                    parameters.ValidIssuer ??= configuration.Issuer?.OriginalString;
                     parameters.ValidateIssuer = !string.IsNullOrEmpty(parameters.ValidIssuer);
 
                     // Combine the signing keys registered statically in the token validation parameters

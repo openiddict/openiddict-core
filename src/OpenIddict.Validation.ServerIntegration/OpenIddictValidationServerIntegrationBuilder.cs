@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public class OpenIddictValidationServerIntegrationBuilder
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
+    /// Initializes a new instance of <see cref="OpenIddictValidationServerIntegrationBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
     public OpenIddictValidationServerIntegrationBuilder(IServiceCollection services)
