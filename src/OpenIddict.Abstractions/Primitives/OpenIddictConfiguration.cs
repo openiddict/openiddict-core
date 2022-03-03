@@ -90,4 +90,9 @@ public class OpenIddictConfiguration
     /// Gets the client authentication methods supported by the token endpoint.
     /// </summary>
     public HashSet<string> TokenEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets or sets the address of the userinfo endpoint.
+    /// </summary>
+    public Uri? UserinfoEndpoint { get; set; }
 }

@@ -27,9 +27,9 @@ public static partial class OpenIddictClientHandlers
          */
         ValidateAuthenticationDemand.Descriptor,
         EvaluateValidatedUpfrontTokens.Descriptor,
-        ResolveUpfrontTokens.Descriptor,
-        ValidateRequiredUpfrontTokens.Descriptor,
-        ValidateFrontchannelStateToken.Descriptor,
+        ResolveValidatedStateToken.Descriptor,
+        ValidateRequiredStateToken.Descriptor,
+        ValidateStateToken.Descriptor,
         ResolveClientRegistrationFromStateToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
         ValidateFrontchannelErrorParameters.Descriptor,
@@ -47,13 +47,13 @@ public static partial class OpenIddictClientHandlers
         ValidateFrontchannelTokenDigests.Descriptor,
 
         ValidateFrontchannelAccessToken.Descriptor,
-        ValidateFrontchannelAuthorizationCode.Descriptor,
+        ValidateAuthorizationCode.Descriptor,
 
         EvaluateValidatedBackchannelTokens.Descriptor,
 
-        AttachBackchannelRequestParameters.Descriptor,
-        SendBackchannelRequest.Descriptor,
-        ValidateBackchannelErrorParameters.Descriptor,
+        AttachTokenRequestParameters.Descriptor,
+        SendTokenRequest.Descriptor,
+        ValidateTokenErrorParameters.Descriptor,
 
         ResolveValidatedBackchannelTokens.Descriptor,
         ValidateRequiredBackchannelTokens.Descriptor,
@@ -66,7 +66,16 @@ public static partial class OpenIddictClientHandlers
         ValidateBackchannelTokenDigests.Descriptor,
 
         ValidateBackchannelAccessToken.Descriptor,
-        ValidateBackchannelRefreshToken.Descriptor,
+        ValidateRefreshToken.Descriptor,
+
+        EvaluateValidatedUserinfoToken.Descriptor,
+        AttachUserinfoRequestParameters.Descriptor,
+        SendUserinfoRequest.Descriptor,
+        ValidateUserinfoErrorParameters.Descriptor,
+        ValidateRequiredUserinfoToken.Descriptor,
+        ValidateUserinfoToken.Descriptor,
+        ValidateUserinfoTokenWellknownClaims.Descriptor,
+        ValidateUserinfoTokenWellknownSubject.Descriptor,
 
         /*
          * Challenge processing:
@@ -95,7 +104,8 @@ public static partial class OpenIddictClientHandlers
 
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Discovery.DefaultHandlers)
-        .AddRange(Protection.DefaultHandlers);
+        .AddRange(Protection.DefaultHandlers)
+        .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
     /// Contains the logic responsible of rejecting invalid authentication demands.
@@ -155,9 +165,9 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            (context.ExtractFrontchannelStateToken,
-             context.RequireFrontchannelStateToken,
-             context.ValidateFrontchannelStateToken) = context.EndpointType switch
+            (context.ExtractStateToken,
+             context.RequireStateToken,
+             context.ValidateStateToken) = context.EndpointType switch
             {
                 // While the OAuth 2.0/2.1 and OpenID Connect specifications don't require sending a
                 // state as part of authorization requests, the identity provider MUST return the state
@@ -174,16 +184,16 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the tokens to validate upfront from the incoming request.
+    /// Contains the logic responsible of resolving the state token to validate upfront from the incoming request.
     /// </summary>
-    public class ResolveUpfrontTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ResolveValidatedStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<ResolveUpfrontTokens>()
+                .UseSingletonHandler<ResolveValidatedStateToken>()
                 .SetOrder(EvaluateValidatedUpfrontTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -196,9 +206,9 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.FrontchannelStateToken = context.EndpointType switch
+            context.StateToken = context.EndpointType switch
             {
-                OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelStateToken
+                OpenIddictClientEndpointType.Redirection when context.ExtractStateToken
                     => context.Request.State,
 
                 _ => null
@@ -209,9 +219,9 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands that lack required upfront tokens.
+    /// Contains the logic responsible of rejecting authentication demands that lack the required state token.
     /// </summary>
-    public class ValidateRequiredUpfrontTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ValidateRequiredStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -219,7 +229,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<ValidateRequiredFrontchannelTokens>()
-                .SetOrder(ResolveUpfrontTokens.Descriptor.Order + 1_000)
+                .SetOrder(ResolveValidatedStateToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -231,7 +241,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.RequireFrontchannelStateToken && string.IsNullOrEmpty(context.FrontchannelStateToken))
+            if (context.RequireStateToken && string.IsNullOrEmpty(context.StateToken))
             {
                 context.Reject(
                     error: Errors.MissingToken,
@@ -248,11 +258,11 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible of validating the state token resolved from the context.
     /// </summary>
-    public class ValidateFrontchannelStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ValidateStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateFrontchannelStateToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateStateToken(IOpenIddictClientDispatcher dispatcher)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -260,9 +270,9 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelStateTokenValidated>()
-                .UseScopedHandler<ValidateFrontchannelStateToken>()
-                .SetOrder(ValidateRequiredUpfrontTokens.Descriptor.Order + 1_000)
+                .AddFilter<RequireStateTokenValidated>()
+                .UseScopedHandler<ValidateStateToken>()
+                .SetOrder(ValidateRequiredStateToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -274,15 +284,15 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.FrontchannelStateTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.FrontchannelStateToken))
+            if (context.StateTokenPrincipal is not null ||
+                string.IsNullOrEmpty(context.StateToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Token = context.FrontchannelStateToken,
+                Token = context.StateToken,
                 ValidTokenTypes = { TokenTypeHints.StateToken }
             };
 
@@ -309,7 +319,7 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            context.FrontchannelStateTokenPrincipal = notification.Principal;
+            context.StateTokenPrincipal = notification.Principal;
         }
     }
 
@@ -324,9 +334,9 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelStateTokenValidated>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveClientRegistrationFromStateToken>()
-                .SetOrder(ValidateFrontchannelStateToken.Descriptor.Order + 1_000)
+                .SetOrder(ValidateStateToken.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -337,7 +347,7 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Retrieve the client definition using the authorization server stored in the state token.
             //
@@ -349,7 +359,7 @@ public static partial class OpenIddictClientHandlers
             // Restore the identity of the authorization server from the special "as" claim.
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09#section-2
             // for more information.
-            var value = context.FrontchannelStateTokenPrincipal.GetClaim(Claims.AuthorizationServer);
+            var value = context.StateTokenPrincipal.GetClaim(Claims.AuthorizationServer);
             if (string.IsNullOrEmpty(value) || !Uri.TryCreate(value, UriKind.Absolute, out Uri? issuer) ||
                 !issuer.IsWellFormedOriginalString())
             {
@@ -514,7 +524,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelStateTokenValidated>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ValidateGrantType>()
                 .SetOrder(ValidateIssuerParameter.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -528,10 +538,10 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Resolve the negotiated grant type from the state token.
-            var type = context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.GrantType);
+            var type = context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType);
 
             // Note: OpenIddict currently only supports the implicit and authorization code
             // grants but additional grants (like CIBA) may be supported in future versions.
@@ -564,6 +574,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<EvaluateValidatedFrontchannelTokens>()
                 .SetOrder(ValidateGrantType.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -577,14 +588,32 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Resolve the grant grant and the response type stored in the state token and extract its individual elements.
             var types = (
-                GrantType: context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.GrantType),
-                ResponseTypes: context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.ResponseType)
+                GrantType: context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType),
+                ResponseTypes: context.StateTokenPrincipal.GetClaim(Claims.Private.ResponseType)
                     !.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)
                      .ToImmutableHashSet());
+
+            (context.ExtractAuthorizationCode,
+             context.RequireAuthorizationCode,
+             context.ValidateAuthorizationCode) = types switch
+            {
+                // An authorization code is returned for the authorization code and implicit grants when
+                // the response type contains the "code" value, which includes the authorization code
+                // flow and some variations of the hybrid flow. As such, an authorization code is only
+                // considered required if the negotiated response_type includes "code".
+                //
+                // Note: since authorization codes are supposed to be opaque to the clients, they are never
+                // validated by default. Clients that need to deal with non-standard implementations
+                // can use custom handlers to validate access tokens that use a readable format (e.g JWT).
+                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, ImmutableHashSet<string> set)
+                    when set.Contains(ResponseTypes.Code) => (true, true, false),
+
+                _ => (false, false, false)
+            };
 
             (context.ExtractFrontchannelAccessToken,
              context.RequireFrontchannelAccessToken,
@@ -600,24 +629,6 @@ public static partial class OpenIddictClientHandlers
                 // can use custom handlers to validate access tokens that use a readable format (e.g JWT).
                 (GrantTypes.AuthorizationCode or GrantTypes.Implicit, ImmutableHashSet<string> set)
                     when set.Contains(ResponseTypes.Token) => (true, true, false),
-
-                _ => (false, false, false)
-            };
-
-            (context.ExtractFrontchannelAuthorizationCode,
-             context.RequireFrontchannelAuthorizationCode,
-             context.ValidateFrontchannelAuthorizationCode) = types switch
-            {
-                // An authorization code is returned for the authorization code and implicit grants when
-                // the response type contains the "code" value, which includes the authorization code
-                // flow and some variations of the hybrid flow. As such, an authorization code is only
-                // considered required if the negotiated response_type includes "code".
-                //
-                // Note: since authorization codes are supposed to be opaque to the clients, they are never
-                // validated by default. Clients that need to deal with non-standard implementations
-                // can use custom handlers to validate access tokens that use a readable format (e.g JWT).
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, ImmutableHashSet<string> set)
-                    when set.Contains(ResponseTypes.Code) => (true, true, false),
 
                 _ => (false, false, false)
             };
@@ -666,18 +677,18 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.FrontchannelAccessToken = context.EndpointType switch
+            context.AuthorizationCode = context.EndpointType switch
             {
-                OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAccessToken
-                    => context.Request.AccessToken,
+                OpenIddictClientEndpointType.Redirection when context.ExtractAuthorizationCode
+                    => context.Request.Code,
 
                 _ => null
             };
 
-            context.FrontchannelAuthorizationCode = context.EndpointType switch
+            context.FrontchannelAccessToken = context.EndpointType switch
             {
-                OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAuthorizationCode
-                    => context.Request.Code,
+                OpenIddictClientEndpointType.Redirection when context.ExtractFrontchannelAccessToken
+                    => context.Request.AccessToken,
 
                 _ => null
             };
@@ -717,9 +728,9 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if ((context.RequireFrontchannelAccessToken       && string.IsNullOrEmpty(context.FrontchannelAccessToken))       ||
-                (context.RequireFrontchannelAuthorizationCode && string.IsNullOrEmpty(context.FrontchannelAuthorizationCode)) ||
-                (context.RequireFrontchannelIdentityToken     && string.IsNullOrEmpty(context.FrontchannelIdentityToken)))
+            if ((context.RequireAuthorizationCode         && string.IsNullOrEmpty(context.AuthorizationCode))       ||
+                (context.RequireFrontchannelAccessToken   && string.IsNullOrEmpty(context.FrontchannelAccessToken)) ||
+                (context.RequireFrontchannelIdentityToken && string.IsNullOrEmpty(context.FrontchannelIdentityToken)))
             {
                 context.Reject(
                     error: Errors.MissingToken,
@@ -811,7 +822,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelIdentityTokenValidated>()
+                .AddFilter<RequireFrontchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateFrontchannelIdentityTokenWellknownClaims>()
                 .SetOrder(ValidateFrontchannelIdentityToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -948,7 +959,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelIdentityTokenValidated>()
+                .AddFilter<RequireFrontchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateFrontchannelIdentityTokenAudience>()
                 .SetOrder(ValidateFrontchannelIdentityTokenWellknownClaims.Descriptor.Order + 1_000)
                 .Build();
@@ -993,7 +1004,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelIdentityTokenValidated>()
+                .AddFilter<RequireFrontchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateFrontchannelIdentityTokenPresenter>()
                 .SetOrder(ValidateFrontchannelIdentityTokenAudience.Descriptor.Order + 1_000)
                 .Build();
@@ -1036,8 +1047,8 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelIdentityTokenValidated>()
-                .AddFilter<RequireFrontchannelStateTokenValidated>()
+                .AddFilter<RequireFrontchannelIdentityTokenPrincipal>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ValidateFrontchannelIdentityTokenNonce>()
                 .SetOrder(ValidateFrontchannelIdentityTokenPresenter.Descriptor.Order + 1_000)
                 .Build();
@@ -1051,11 +1062,11 @@ public static partial class OpenIddictClientHandlers
             }
 
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             switch ((
                 FrontchannelIdentityTokenNonce: context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Nonce),
-                StateTokenNonce: context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
+                StateTokenNonce: context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
             {
                 // If no nonce if no present in the state token (e.g because the authorization server doesn't
                 // support OpenID Connect and response_type=code was negotiated), bypass the validation logic.
@@ -1100,7 +1111,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelIdentityTokenValidated>()
+                .AddFilter<RequireFrontchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateFrontchannelTokenDigests>()
                 .SetOrder(ValidateFrontchannelIdentityTokenNonce.Descriptor.Order + 1_000)
                 .Build();
@@ -1161,7 +1172,7 @@ public static partial class OpenIddictClientHandlers
 
             // If an authorization code was returned in the authorization response,
             // ensure the c_hash claim matches the hash of the actual authorization code.
-            if (!string.IsNullOrEmpty(context.FrontchannelAuthorizationCode))
+            if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 var hash = context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.CodeHash);
                 if (string.IsNullOrEmpty(hash))
@@ -1174,7 +1185,7 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                if (!ValidateTokenHash(algorithm, context.FrontchannelAuthorizationCode, hash))
+                if (!ValidateTokenHash(algorithm, context.AuthorizationCode, hash))
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1297,15 +1308,15 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the frontchannel authorization code resolved from the context.
+    /// Contains the logic responsible of validating the authorization code resolved from the context.
     /// Note: this handler is typically not used for standard-compliant implementations as authorization codes
     /// are supposed to be opaque to clients.
     /// </summary>
-    public class ValidateFrontchannelAuthorizationCode : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ValidateAuthorizationCode : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateFrontchannelAuthorizationCode(IOpenIddictClientDispatcher dispatcher)
+        public ValidateAuthorizationCode(IOpenIddictClientDispatcher dispatcher)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -1313,8 +1324,8 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelAuthorizationCodeValidated>()
-                .UseScopedHandler<ValidateFrontchannelAuthorizationCode>()
+                .AddFilter<RequireAuthorizationCodeValidated>()
+                .UseScopedHandler<ValidateAuthorizationCode>()
                 .SetOrder(ValidateFrontchannelAccessToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -1327,15 +1338,15 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.FrontchannelAuthorizationCodePrincipal is not null ||
-                string.IsNullOrEmpty(context.FrontchannelAuthorizationCode))
+            if (context.AuthorizationCodePrincipal is not null ||
+                string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Token = context.FrontchannelAuthorizationCode,
+                Token = context.AuthorizationCode,
                 ValidTokenTypes = { TokenTypeHints.AuthorizationCode }
             };
 
@@ -1362,7 +1373,7 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            context.FrontchannelAuthorizationCodePrincipal = notification.Principal;
+            context.AuthorizationCodePrincipal = notification.Principal;
         }
     }
 
@@ -1376,9 +1387,9 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelStateTokenValidated>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<EvaluateValidatedBackchannelTokens>()
-                .SetOrder(ValidateFrontchannelAuthorizationCode.Descriptor.Order + 1_000)
+                .SetOrder(ValidateAuthorizationCode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1390,12 +1401,12 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-            
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
             // Resolve the grant grant and the response type stored in the state token and extract its individual elements.
             var types = (
-                GrantType: context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.GrantType),
-                ResponseTypes: context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.ResponseType)
+                GrantType: context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType),
+                ResponseTypes: context.StateTokenPrincipal.GetClaim(Claims.Private.ResponseType)
                     !.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)
                      .ToImmutableHashSet());
 
@@ -1426,14 +1437,14 @@ public static partial class OpenIddictClientHandlers
                 // include "openid", which indicates the initial request was an OpenID Connect request.
                 (GrantTypes.AuthorizationCode or GrantTypes.Implicit, ImmutableHashSet<string> set)
                     when set.Contains(ResponseTypes.Code) &&
-                    context.FrontchannelStateTokenPrincipal.HasScope(Scopes.OpenId) => (true, true, true),
+                    context.StateTokenPrincipal.HasScope(Scopes.OpenId) => (true, true, true),
 
                 _ => (false, false, false)
             };
 
-            (context.ExtractBackchannelRefreshToken,
-             context.RequireBackchannelRefreshToken,
-             context.ValidateBackchannelRefreshToken) = types switch
+            (context.ExtractRefreshToken,
+             context.RequireRefreshToken,
+             context.ValidateRefreshToken) = types switch
              {
                  // A refresh token may be returned as part of token responses, depending on the
                  // policy enforced by the remote authorization server (e.g the "offline_access"
@@ -1454,18 +1465,18 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the parameters to the backchannel token request, if applicable.
+    /// Contains the logic responsible of attaching the parameters to the token request, if applicable.
     /// </summary>
-    public class AttachBackchannelRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class AttachTokenRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireFrontchannelAuthorizationCodeExtracted>()
-                .AddFilter<RequireFrontchannelStateTokenValidated>()
-                .UseSingletonHandler<AttachBackchannelRequestParameters>()
+                .AddFilter<RequireAuthorizationCodeExtracted>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .UseSingletonHandler<AttachTokenRequestParameters>()
                 .SetOrder(EvaluateValidatedBackchannelTokens.Descriptor.Order + 1_000)
                 .Build();
 
@@ -1477,13 +1488,13 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Attach a new request instance if none was created already.
             context.TokenRequest ??= new OpenIddictRequest();
 
             // Attach the grant type selected during the challenge phase.
-            context.TokenRequest.GrantType = context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.GrantType) switch
+            context.TokenRequest.GrantType = context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType) switch
             {
                 null => throw new InvalidOperationException(SR.GetResourceString(SR.ID0294)),
 
@@ -1509,9 +1520,9 @@ public static partial class OpenIddictClientHandlers
             // the redirect_uri from the state token principal and attach them to the request, if available.
             if (context.TokenRequest.GrantType is GrantTypes.AuthorizationCode)
             {
-                context.TokenRequest.Code = context.FrontchannelAuthorizationCode;
-                context.TokenRequest.CodeVerifier = context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.CodeVerifier);
-                context.TokenRequest.RedirectUri = context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.RedirectUri);
+                context.TokenRequest.Code = context.AuthorizationCode;
+                context.TokenRequest.CodeVerifier = context.StateTokenPrincipal.GetClaim(Claims.Private.CodeVerifier);
+                context.TokenRequest.RedirectUri = context.StateTokenPrincipal.GetClaim(Claims.Private.RedirectUri);
             }
 
             return default;
@@ -1521,11 +1532,11 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible of sending the token request, if applicable.
     /// </summary>
-    public class SendBackchannelRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class SendTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly OpenIddictClientService _service;
 
-        public SendBackchannelRequest(OpenIddictClientService service)
+        public SendTokenRequest(OpenIddictClientService service)
             => _service = service;
 
         /// <summary>
@@ -1533,9 +1544,9 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelRequest>()
-                .UseSingletonHandler<SendBackchannelRequest>()
-                .SetOrder(AttachBackchannelRequestParameters.Descriptor.Order + 1_000)
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<SendTokenRequest>()
+                .SetOrder(AttachTokenRequestParameters.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -1555,16 +1566,16 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible of rejecting errored token responses.
     /// </summary>
-    public class ValidateBackchannelErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ValidateTokenErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelResponse>()
-                .UseSingletonHandler<ValidateBackchannelErrorParameters>()
-                .SetOrder(SendBackchannelRequest.Descriptor.Order + 1_000)
+                .AddFilter<RequireTokenResponse>()
+                .UseSingletonHandler<ValidateTokenErrorParameters>()
+                .SetOrder(SendTokenRequest.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -1601,9 +1612,9 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelResponse>()
+                .AddFilter<RequireTokenResponse>()
                 .UseSingletonHandler<ResolveValidatedBackchannelTokens>()
-                .SetOrder(ValidateBackchannelErrorParameters.Descriptor.Order + 1_000)
+                .SetOrder(ValidateTokenErrorParameters.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -1628,7 +1639,7 @@ public static partial class OpenIddictClientHandlers
                 false => null
             };
 
-            context.BackchannelRefreshToken = context.ExtractBackchannelRefreshToken switch
+            context.RefreshToken = context.ExtractRefreshToken switch
             {
                 true  => context.TokenResponse.RefreshToken,
                 false => null
@@ -1661,9 +1672,9 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if ((context.RequireBackchannelAccessToken    && string.IsNullOrEmpty(context.BackchannelAccessToken))   ||
-                (context.RequireBackchannelIdentityToken  && string.IsNullOrEmpty(context.BackchannelIdentityToken)) ||
-                (context.RequireBackchannelRefreshToken   && string.IsNullOrEmpty(context.BackchannelRefreshToken)))
+            if ((context.RequireBackchannelAccessToken   && string.IsNullOrEmpty(context.BackchannelAccessToken))   ||
+                (context.RequireBackchannelIdentityToken && string.IsNullOrEmpty(context.BackchannelIdentityToken)) ||
+                (context.RequireRefreshToken             && string.IsNullOrEmpty(context.RefreshToken)))
             {
                 context.Reject(
                     error: Errors.MissingToken,
@@ -1755,7 +1766,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelIdentityTokenValidated>()
+                .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateBackchannelIdentityTokenWellknownClaims>()
                 .SetOrder(ValidateBackchannelIdentityToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -1892,7 +1903,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelIdentityTokenValidated>()
+                .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateBackchannelIdentityTokenAudience>()
                 .SetOrder(ValidateBackchannelIdentityTokenWellknownClaims.Descriptor.Order + 1_000)
                 .Build();
@@ -1937,7 +1948,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelIdentityTokenValidated>()
+                .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateBackchannelIdentityTokenPresenter>()
                 .SetOrder(ValidateBackchannelIdentityTokenAudience.Descriptor.Order + 1_000)
                 .Build();
@@ -1980,7 +1991,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelIdentityTokenValidated>()
+                .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateBackchannelIdentityTokenNonce>()
                 .SetOrder(ValidateBackchannelIdentityTokenPresenter.Descriptor.Order + 1_000)
                 .Build();
@@ -1994,11 +2005,11 @@ public static partial class OpenIddictClientHandlers
             }
 
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             switch ((
                 BackchannelIdentityTokenNonce: context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Nonce),
-                StateTokenNonce: context.FrontchannelStateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
+                StateTokenNonce: context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
             {
                 // If no nonce if no present in the state token (e.g because the authorization server doesn't
                 // support OpenID Connect and response_type=code was negotiated), bypass the validation logic.
@@ -2043,7 +2054,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelIdentityTokenValidated>()
+                .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
                 .UseSingletonHandler<ValidateBackchannelTokenDigests>()
                 .SetOrder(ValidateBackchannelIdentityTokenNonce.Descriptor.Order + 1_000)
                 .Build();
@@ -2213,15 +2224,15 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the backchannel refresh token resolved from the context.
+    /// Contains the logic responsible of validating the refresh token resolved from the context.
     /// Note: this handler is typically not used for standard-compliant implementations as refresh tokens
     /// are supposed to be opaque to clients.
     /// </summary>
-    public class ValidateBackchannelRefreshToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ValidateRefreshToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateBackchannelRefreshToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateRefreshToken(IOpenIddictClientDispatcher dispatcher)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -2229,8 +2240,8 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireBackchannelRefreshTokenValidated>()
-                .UseScopedHandler<ValidateBackchannelRefreshToken>()
+                .AddFilter<RequireRefreshTokenValidated>()
+                .UseScopedHandler<ValidateRefreshToken>()
                 .SetOrder(ValidateBackchannelAccessToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -2243,15 +2254,15 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.BackchannelRefreshTokenPrincipal is not null ||
-                string.IsNullOrEmpty(context.BackchannelRefreshToken))
+            if (context.RefreshTokenPrincipal is not null ||
+                string.IsNullOrEmpty(context.RefreshToken))
             {
                 return;
             }
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                Token = context.BackchannelRefreshToken,
+                Token = context.RefreshToken,
                 ValidTokenTypes = { TokenTypeHints.RefreshToken }
             };
 
@@ -2278,7 +2289,455 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
-            context.BackchannelRefreshTokenPrincipal = notification.Principal;
+            context.RefreshTokenPrincipal = notification.Principal;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of determining whether a userinfo token should be validated.
+    /// </summary>
+    public class EvaluateValidatedUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .UseSingletonHandler<EvaluateValidatedUserinfoToken>()
+                .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Resolve the grant grant and the response type stored in the state token and extract its individual elements.
+            var types = (
+                GrantType: context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType),
+                ResponseTypes: context.StateTokenPrincipal.GetClaim(Claims.Private.ResponseType)
+                    !.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)
+                     .ToImmutableHashSet());
+
+            (context.ExtractUserinfoToken,
+             context.RequireUserinfoToken,
+             context.ValidateUserinfoToken) = types switch
+             {
+                 // Information about the authenticated user can be retrieved from the userinfo
+                 // endpoint when a backchannel access token is available. In this case, user data
+                 // will be returned either as a JSON object or as a signed and/or encrypted
+                 // JSON Web Token if the client registration indicates the client supports it.
+                 //
+                 // By default, OpenIddict doesn't require that userinfo-as-JWT responses be used
+                 // but userinfo tokens will be extracted and validated if they are available.
+                 (GrantTypes.AuthorizationCode or GrantTypes.Implicit, ImmutableHashSet<string> set)
+                     when context.StateTokenPrincipal.HasScope(Scopes.OpenId) &&
+                     (set.Contains(ResponseTypes.Code) || set.Contains(ResponseTypes.Token))
+                     => (true, false, true),
+
+                 _ => (false, false, false)
+             };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of attaching the parameters to the userinfo request, if applicable.
+    /// </summary>
+    public class AttachUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<AttachUserinfoRequestParameters>()
+                .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+            // Ensure the issuer resolved from the configuration matches the expected value.
+            if (configuration.Issuer != context.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+            }
+
+            var token = context switch
+            {
+                // Note: the backchannel access token (retrieved from the token endpoint) is always preferred to
+                // the frontchannel access token if available, as it may grant a greater access to user's resources.
+                { ExtractBackchannelAccessToken: true, BackchannelAccessToken: { Length: > 0 } value }
+                    // If the userinfo endpoint is not available, skip the request.
+                    when configuration.UserinfoEndpoint is not null => value,
+
+                // If the backchannel access token is not available, try to use the frontchannel access token.
+                { ExtractFrontchannelAccessToken: true, FrontchannelAccessToken: { Length: > 0 } value }
+                    // If the userinfo endpoint is not available, skip the request.
+                    when configuration.UserinfoEndpoint is not null  => value,
+
+                // Otherwise, skip the userinfo request.
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return;
+            }
+
+            // Attach a new request instance if none was created already.
+            context.UserinfoRequest ??= new OpenIddictRequest();
+
+            // Attach the access token.
+            context.UserinfoRequest.AccessToken = token;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of sending the userinfo request, if applicable.
+    /// </summary>
+    public class SendUserinfoRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientService _service;
+
+        public SendUserinfoRequest(OpenIddictClientService service)
+            => _service = service;
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserinfoRequest>()
+                .UseSingletonHandler<SendUserinfoRequest>()
+                .SetOrder(AttachUserinfoRequestParameters.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Note: userinfo responses can be of two types:
+            //  - application/json responses containing a JSON object listing the user claims as-is.
+            //  - application/jwt responses containing a signed/encrypted JSON Web Token containing the user claims.
+
+            (context.UserinfoResponse, (context.UserinfoTokenPrincipal, context.UserinfoToken)) =
+                await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoRequest);
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of rejecting errored userinfo responses.
+    /// </summary>
+    public class ValidateUserinfoErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserinfoResponse>()
+                .UseSingletonHandler<ValidateUserinfoErrorParameters>()
+                .SetOrder(SendUserinfoRequest.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.UserinfoResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            if (!string.IsNullOrEmpty(context.UserinfoResponse.Error))
+            {
+                context.Reject(
+                    error: context.UserinfoResponse.Error,
+                    description: context.UserinfoResponse.ErrorDescription,
+                    uri: context.UserinfoResponse.ErrorUri);
+
+                return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of rejecting authentication demands that lack the required userinfo token.
+    /// </summary>
+    public class ValidateRequiredUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ValidateRequiredUserinfoToken>()
+                .SetOrder(ValidateUserinfoErrorParameters.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.RequireUserinfoToken && string.IsNullOrEmpty(context.UserinfoToken))
+            {
+                context.Reject(
+                    error: Errors.MissingToken,
+                    description: SR.GetResourceString(SR.ID2000),
+                    uri: SR.FormatID8000(SR.ID2000));
+
+                return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of validating the userinfo token resolved from the context.
+    /// </summary>
+    public class ValidateUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly IOpenIddictClientDispatcher _dispatcher;
+
+        public ValidateUserinfoToken(IOpenIddictClientDispatcher dispatcher)
+            => _dispatcher = dispatcher;
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserinfoTokenExtracted>()
+                .UseScopedHandler<ValidateUserinfoToken>()
+                .SetOrder(ValidateRequiredUserinfoToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.UserinfoTokenPrincipal is not null || string.IsNullOrEmpty(context.UserinfoToken))
+            {
+                return;
+            }
+
+            var notification = new ValidateTokenContext(context.Transaction)
+            {
+                Token = context.UserinfoToken,
+                ValidTokenTypes = { TokenTypeHints.UserinfoToken }
+            };
+
+            await _dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled)
+            {
+                context.HandleRequest();
+                return;
+            }
+
+            else if (notification.IsRequestSkipped)
+            {
+                context.SkipRequest();
+                return;
+            }
+
+            else if (notification.IsRejected)
+            {
+                context.Reject(
+                    error: notification.Error ?? Errors.InvalidRequest,
+                    description: notification.ErrorDescription,
+                    uri: notification.ErrorUri);
+                return;
+            }
+
+            context.UserinfoTokenPrincipal = notification.Principal;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of validating the well-known claims contained in the userinfo token.
+    /// </summary>
+    public class ValidateUserinfoTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireUserinfoTokenPrincipal>()
+                .UseSingletonHandler<ValidateUserinfoTokenWellknownClaims>()
+                .SetOrder(ValidateUserinfoToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.UserinfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // The OpenIddict client is expected to be used with standard OpenID Connect userinfo endpoints
+            // but must also support non-standard implementations, that are common with OAuth 2.0-only servers.
+            //
+            // As such, protocol requirements are only enforced if an OpenID Connect request was initially sent.
+            if (context.StateTokenPrincipal.HasScope(Scopes.OpenId))
+            {
+                foreach (var group in context.UserinfoTokenPrincipal.Claims
+                    .GroupBy(claim => claim.Type)
+                    .ToDictionary(group => group.Key, group => group.ToList()))
+                {
+                    if (ValidateClaimGroup(group))
+                    {
+                        continue;
+                    }
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2131(group.Key),
+                        uri: SR.FormatID8000(SR.ID2131));
+
+                    return default;
+                }
+            }
+
+            return default;
+
+            static bool ValidateClaimGroup(KeyValuePair<string, List<Claim>> claims) => claims switch
+            {
+                // The following JWT claims MUST be represented as unique strings.
+                {
+                    Key: Claims.Subject,
+                    Value: List<Claim> values
+                } => values.Count is 1 && values[0].ValueType is ClaimValueTypes.String,
+
+                // Claims that are not in the well-known list can be of any type.
+                _ => true
+            };
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of validating the subject claim contained in the userinfo token.
+    /// </summary>
+    public class ValidateUserinfoTokenWellknownSubject : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .AddFilter<RequireUserinfoTokenPrincipal>()
+                .UseSingletonHandler<ValidateUserinfoTokenWellknownSubject>()
+                .SetOrder(ValidateUserinfoTokenWellknownClaims.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.UserinfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // The OpenIddict client is expected to be used with standard OpenID Connect userinfo endpoints
+            // but must also support non-standard implementations, that are common with OAuth 2.0-only servers.
+            //
+            // As such, protocol requirements are only enforced if an OpenID Connect request was initially sent.
+            if (context.StateTokenPrincipal.HasScope(Scopes.OpenId))
+            {
+                // Standard OpenID Connect userinfo responses/tokens MUST contain a "sub" claim. For more
+                // information, see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
+                if (!context.UserinfoTokenPrincipal.HasClaim(Claims.Subject))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2132(Claims.Subject),
+                        uri: SR.FormatID8000(SR.ID2132));
+
+                    return default;
+                }
+
+                // The "sub" claim returned as part of the userinfo response/token MUST exactly match the value
+                // returned in the frontchannel identity token, if one was returned. For more information,
+                // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
+                if (context.FrontchannelIdentityTokenPrincipal is not null && !string.Equals(
+                    context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
+                    context.UserinfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2133(Claims.Subject),
+                        uri: SR.FormatID8000(SR.ID2133));
+
+                    return default;
+                }
+
+                // The "sub" claim returned as part of the userinfo response/token MUST exactly match the value
+                // returned in the frontchannel identity token, if one was returned. For more information,
+                // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse.
+                if (context.BackchannelIdentityTokenPrincipal is not null && !string.Equals(
+                    context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Subject),
+                    context.UserinfoTokenPrincipal.GetClaim(Claims.Subject), StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2133(Claims.Subject),
+                        uri: SR.FormatID8000(SR.ID2133));
+
+                    return default;
+                }
+            }
+
+            return default;
         }
     }
 

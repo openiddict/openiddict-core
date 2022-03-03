@@ -200,8 +200,6 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.AccessToken,
                     Value = context.AccessToken
                 });
-
-                properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
@@ -212,8 +210,6 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.AuthorizationCode,
                     Value = context.AuthorizationCode
                 });
-
-                properties.SetParameter(Properties.AuthorizationCodePrincipal, context.AuthorizationCodePrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.DeviceCode))
@@ -224,8 +220,6 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.DeviceCode,
                     Value = context.DeviceCode
                 });
-
-                properties.SetParameter(Properties.DeviceCodePrincipal, context.DeviceCodePrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.IdentityToken))
@@ -236,8 +230,6 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.IdentityToken,
                     Value = context.IdentityToken
                 });
-
-                properties.SetParameter(Properties.IdentityTokenPrincipal, context.IdentityTokenPrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.RefreshToken))
@@ -248,8 +240,6 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.RefreshToken,
                     Value = context.RefreshToken
                 });
-
-                properties.SetParameter(Properties.RefreshTokenPrincipal, context.RefreshTokenPrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.UserCode))
@@ -260,7 +250,35 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.UserCode,
                     Value = context.UserCode
                 });
+            }
 
+            if (context.AccessTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
+            }
+
+            if (context.AuthorizationCodePrincipal is not null)
+            {
+                properties.SetParameter(Properties.AuthorizationCodePrincipal, context.AuthorizationCodePrincipal);
+            }
+
+            if (context.DeviceCodePrincipal is not null)
+            {
+                properties.SetParameter(Properties.DeviceCodePrincipal, context.DeviceCodePrincipal);
+            }
+
+            if (context.IdentityTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.IdentityTokenPrincipal, context.IdentityTokenPrincipal);
+            }
+
+            if (context.RefreshTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.RefreshTokenPrincipal, context.RefreshTokenPrincipal);
+            }
+
+            if (context.UserCodePrincipal is not null)
+            {
                 properties.SetParameter(Properties.UserCodePrincipal, context.UserCodePrincipal);
             }
 

@@ -19,7 +19,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; }
         = ImmutableArray.Create<OpenIddictClientHandlerDescriptor>()
             .AddRange(Discovery.DefaultHandlers)
-            .AddRange(Exchange.DefaultHandlers);
+            .AddRange(Exchange.DefaultHandlers)
+            .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
     /// Contains the logic responsible of preparing an HTTP GET request message.

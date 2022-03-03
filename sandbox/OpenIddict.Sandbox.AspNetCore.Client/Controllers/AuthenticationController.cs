@@ -102,7 +102,7 @@ public class AuthenticationController : Controller
             // Preserve the access and refresh tokens returned in the token response, if available.
             {
                 Name: OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken or
-                      OpenIddictClientAspNetCoreConstants.Tokens.BackchannelRefreshToken
+                      OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken
             } => true,
 
             // Ignore the other tokens.

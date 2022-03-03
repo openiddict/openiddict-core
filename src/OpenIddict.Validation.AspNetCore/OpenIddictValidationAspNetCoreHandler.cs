@@ -177,7 +177,10 @@ public class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenI
                     Name = Tokens.AccessToken,
                     Value = context.AccessToken
                 });
+            }
 
+            if (context.AccessTokenPrincipal is not null)
+            {
                 properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
             }
 

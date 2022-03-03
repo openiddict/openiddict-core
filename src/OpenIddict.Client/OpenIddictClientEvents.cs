@@ -285,6 +285,14 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an authorization
+        /// code should be extracted from the current context.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool ExtractAuthorizationCode { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a backchannel
         /// access token should be extracted from the current context.
         /// Note: overriding the value of this property is generally not
@@ -301,28 +309,12 @@ public static partial class OpenIddictClientEvents
         public bool ExtractBackchannelIdentityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether a backchannel
-        /// refresh token should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
-        /// </summary>
-        public bool ExtractBackchannelRefreshToken { get; set; }
-
-        /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel
         /// access token should be extracted from the current context.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
         public bool ExtractFrontchannelAccessToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether a frontchannel
-        /// authorization code should be extracted from the current context.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
-        /// </summary>
-        public bool ExtractFrontchannelAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel
@@ -333,12 +325,36 @@ public static partial class OpenIddictClientEvents
         public bool ExtractFrontchannelIdentityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether a frontchannel
-        /// state token should be extracted from the current context.
+        /// Gets or sets a boolean indicating whether a refresh
+        /// token should be extracted from the current context.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
-        public bool ExtractFrontchannelStateToken { get; set; }
+        public bool ExtractRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a state
+        /// token should be extracted from the current context.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool ExtractStateToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a userinfo
+        /// token should be extracted from the current context.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool ExtractUserinfoToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an authorization
+        /// code must be resolved for the authentication to be considered valid.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RequireAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a backchannel access
@@ -357,28 +373,12 @@ public static partial class OpenIddictClientEvents
         public bool RequireBackchannelIdentityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether a backchannel refresh
-        /// token must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
-        /// </summary>
-        public bool RequireBackchannelRefreshToken { get; set; }
-
-        /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel identity
         /// token must be resolved for the authentication to be considered valid.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
         public bool RequireFrontchannelAccessToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether a backchannel authorization
-        /// code must be resolved for the authentication to be considered valid.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
-        /// </summary>
-        public bool RequireFrontchannelAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a frontchannel identity
@@ -389,12 +389,36 @@ public static partial class OpenIddictClientEvents
         public bool RequireFrontchannelIdentityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether a frontchannel state token
+        /// Gets or sets a boolean indicating whether a refresh token
         /// must be resolved for the authentication to be considered valid.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
-        public bool RequireFrontchannelStateToken { get; set; }
+        public bool RequireRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a state token
+        /// must be resolved for the authentication to be considered valid.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RequireStateToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a userinfo token
+        /// must be resolved for the authentication to be considered valid.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool RequireUserinfoToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the authorization
+        /// code extracted from the current context should be validated.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool ValidateAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the backchannel access
@@ -413,28 +437,12 @@ public static partial class OpenIddictClientEvents
         public bool ValidateBackchannelIdentityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether the backchannel refresh token
-        /// extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
-        /// </summary>
-        public bool ValidateBackchannelRefreshToken { get; set; }
-
-        /// <summary>
         /// Gets or sets a boolean indicating whether the frontchannel access
         /// token extracted from the current context should be validated.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
         public bool ValidateFrontchannelAccessToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether the frontchannel authorization
-        /// code extracted from the current context should be validated.
-        /// Note: overriding the value of this property is generally not
-        /// recommended, except when dealing with non-standard clients.
-        /// </summary>
-        public bool ValidateFrontchannelAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the frontchannel identity
@@ -445,12 +453,33 @@ public static partial class OpenIddictClientEvents
         public bool ValidateFrontchannelIdentityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether the frontchannel state token
+        /// Gets or sets a boolean indicating whether the refresh token
         /// extracted from the current context should be validated.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
-        public bool ValidateFrontchannelStateToken { get; set; }
+        public bool ValidateRefreshToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the state token
+        /// extracted from the current context should be validated.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool ValidateStateToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the userinfo token
+        /// extracted from the current context should be validated.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool ValidateUserinfoToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorization code to validate, if applicable.
+        /// </summary>
+        public string? AuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets the backchannel access token to validate, if applicable.
@@ -463,19 +492,9 @@ public static partial class OpenIddictClientEvents
         public string? BackchannelIdentityToken { get; set; }
 
         /// <summary>
-        /// Gets or sets the backchannel refresh token to validate, if applicable.
-        /// </summary>
-        public string? BackchannelRefreshToken { get; set; }
-
-        /// <summary>
         /// Gets or sets the frontchannel access token to validate, if applicable.
         /// </summary>
         public string? FrontchannelAccessToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets the frontchannel authorization code to validate, if applicable.
-        /// </summary>
-        public string? FrontchannelAuthorizationCode { get; set; }
 
         /// <summary>
         /// Gets or sets the frontchannel identity token to validate, if applicable.
@@ -483,9 +502,24 @@ public static partial class OpenIddictClientEvents
         public string? FrontchannelIdentityToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the refresh token to validate, if applicable.
+        /// </summary>
+        public string? RefreshToken { get; set; }
+
+        /// <summary>
         /// Gets or sets the frontchannel state token to validate, if applicable.
         /// </summary>
-        public string? FrontchannelStateToken { get; set; }
+        public string? StateToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the userinfo token to validate, if applicable.
+        /// </summary>
+        public string? UserinfoToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the authorization code, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthorizationCodePrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the principal extracted from the backchannel access token, if applicable.
@@ -498,11 +532,6 @@ public static partial class OpenIddictClientEvents
         public ClaimsPrincipal? BackchannelIdentityTokenPrincipal { get; set; }
 
         /// <summary>
-        /// Gets or sets the principal extracted from the backchannel refresh token, if applicable.
-        /// </summary>
-        public ClaimsPrincipal? BackchannelRefreshTokenPrincipal { get; set; }
-
-        /// <summary>
         /// Gets or sets the principal extracted from the frontchannel access token, if applicable.
         /// </summary>
         public ClaimsPrincipal? FrontchannelAccessTokenPrincipal { get; set; }
@@ -513,14 +542,19 @@ public static partial class OpenIddictClientEvents
         public ClaimsPrincipal? FrontchannelIdentityTokenPrincipal { get; set; }
 
         /// <summary>
-        /// Gets or sets the principal extracted from the frontchannel authorization code, if applicable.
+        /// Gets or sets the principal extracted from the refresh token, if applicable.
         /// </summary>
-        public ClaimsPrincipal? FrontchannelAuthorizationCodePrincipal { get; set; }
+        public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
 
         /// <summary>
-        /// Gets or sets the principal extracted from the frontchannel state token, if applicable.
+        /// Gets or sets the principal extracted from the state token, if applicable.
         /// </summary>
-        public ClaimsPrincipal? FrontchannelStateTokenPrincipal { get; set; }
+        public ClaimsPrincipal? StateTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the userinfo token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? UserinfoTokenPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the request sent to the token endpoint, if applicable.
@@ -531,6 +565,16 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the response returned by the token endpoint, if applicable.
         /// </summary>
         public OpenIddictResponse? TokenResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request sent to the userinfo endpoint, if applicable.
+        /// </summary>
+        public OpenIddictRequest? UserinfoRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response returned by the userinfo endpoint, if applicable.
+        /// </summary>
+        public OpenIddictResponse? UserinfoResponse { get; set; }
     }
 
     /// <summary>

@@ -22,13 +22,14 @@ public static partial class OpenIddictClientHandlers
             ExtractAuthorizationEndpoint.Descriptor,
             ExtractCryptographyEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
-            ExtractTokenEndpointClientAuthenticationMethods.Descriptor,
+            ExtractUserinfoEndpoint.Descriptor,
             ExtractGrantTypes.Descriptor,
             ExtractResponseModes.Descriptor,
             ExtractResponseTypes.Descriptor,
             ExtractCodeChallengeMethods.Descriptor,
             ExtractScopes.Descriptor,
             ExtractIssuerParameterRequirement.Descriptor,
+            ExtractTokenEndpointClientAuthenticationMethods.Descriptor,
 
             /*
              * Cryptography response handling:
@@ -89,6 +90,58 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible of extracting the authorization endpoint address from the discovery document.
+        /// </summary>
+        public class ExtractAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractAuthorizationEndpoint>()
+                    .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: the authorization_endpoint node is required by the OpenID Connect discovery specification
+                // but is optional in the OAuth 2.0 authorization server metadata specification. To make OpenIddict
+                // compatible with the newer OAuth 2.0 specification, null/empty and missing values are allowed here.
+                //
+                // Handlers that require a non-null authorization endpoint URL are expected to return an error
+                // if the authorization endpoint URL couldn't be resolved from the authorization server metadata.
+                // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient
+                // and https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
+                //
+                var address = (string?) context.Response[Metadata.AuthorizationEndpoint];
+                if (!string.IsNullOrEmpty(address))
+                {
+                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.AuthorizationEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
+
+                        return default;
+                    }
+
+                    context.Configuration.AuthorizationEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of extracting the JWKS endpoint address from the discovery document.
         /// </summary>
         public class ExtractCryptographyEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -99,7 +152,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractCryptographyEndpoint>()
-                    .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractAuthorizationEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -184,17 +237,16 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the authentication methods
-        /// supported by the token endpoint from the discovery document.
+        /// Contains the logic responsible of extracting the userinfo endpoint address from the discovery document.
         /// </summary>
-        public class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public class ExtractUserinfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractTokenEndpoint>()
+                    .UseSingletonHandler<ExtractUserinfoEndpoint>()
                     .SetOrder(ExtractTokenEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -207,71 +259,20 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Resolve the client authentication methods supported by the token endpoint, if available.
-                var methods = context.Response[Metadata.TokenEndpointAuthMethodsSupported]?.GetUnnamedParameters();
-                if (methods is { Count: > 0 })
-                {
-                    for (var index = 0; index < methods.Count; index++)
-                    {
-                        // Note: custom values are allowed in this case.
-                        var method = (string?) methods[index];
-                        if (!string.IsNullOrEmpty(method))
-                        {
-                            context.Configuration.TokenEndpointAuthMethodsSupported.Add(method);
-                        }
-                    }
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of extracting the authorization endpoint address from the discovery document.
-        /// </summary>
-        public class ExtractAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractAuthorizationEndpoint>()
-                    .SetOrder(ExtractTokenEndpointClientAuthenticationMethods.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictClientHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
-            {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // Note: the authorization_endpoint node is required by the OpenID Connect discovery specification
-                // but is optional in the OAuth 2.0 authorization server metadata specification. To make OpenIddict
-                // compatible with the newer OAuth 2.0 specification, null/empty and missing values are allowed here.
-                //
-                // Handlers that require a non-null authorization endpoint URL are expected to return an error
-                // if the authorization endpoint URL couldn't be resolved from the authorization server metadata.
-                // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient
-                // and https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
-                //
-                var address = (string?) context.Response[Metadata.AuthorizationEndpoint];
+                var address = (string?) context.Response[Metadata.UserinfoEndpoint];
                 if (!string.IsNullOrEmpty(address))
                 {
                     if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: SR.FormatID2100(Metadata.AuthorizationEndpoint),
+                            description: SR.FormatID2100(Metadata.UserinfoEndpoint),
                             uri: SR.FormatID8000(SR.ID2100));
 
                         return default;
                     }
 
-                    context.Configuration.AuthorizationEndpoint = uri;
+                    context.Configuration.UserinfoEndpoint = uri;
                 }
 
                 return default;
@@ -514,6 +515,49 @@ public static partial class OpenIddictClientHandlers
 
                 context.Configuration.AuthorizationResponseIssParameterSupported = (bool?)
                     context.Response[Metadata.AuthorizationResponseIssParameterSupported];
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of extracting the authentication methods
+        /// supported by the token endpoint from the discovery document.
+        /// </summary>
+        public class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractTokenEndpoint>()
+                    .SetOrder(ExtractIssuerParameterRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Resolve the client authentication methods supported by the token endpoint, if available.
+                var methods = context.Response[Metadata.TokenEndpointAuthMethodsSupported]?.GetUnnamedParameters();
+                if (methods is { Count: > 0 })
+                {
+                    for (var index = 0; index < methods.Count; index++)
+                    {
+                        // Note: custom values are allowed in this case.
+                        var method = (string?) methods[index];
+                        if (!string.IsNullOrEmpty(method))
+                        {
+                            context.Configuration.TokenEndpointAuthMethodsSupported.Add(method);
+                        }
+                    }
+                }
 
                 return default;
             }

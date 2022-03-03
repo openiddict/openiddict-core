@@ -1578,6 +1578,15 @@ To apply redirection responses, create a class implementing 'IOpenIddictClientHa
   <data name="ID2130" xml:space="preserve">
     <value>The specified state token is not valid in this context.</value>
   </data>
+  <data name="ID2131" xml:space="preserve">
+    <value>The '{0}' claim extracted from the specified userinfo response/token is malformed or isn't of the expected type.</value>
+  </data>
+  <data name="ID2132" xml:space="preserve">
+    <value>The mandatory '{0}' claim cannot be found in the specified userinfo response/token.</value>
+  </data>
+  <data name="ID2133" xml:space="preserve">
+    <value>The '{0}' claim returned in the specified userinfo response/token doesn't match the expected value.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>

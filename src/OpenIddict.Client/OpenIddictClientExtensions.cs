@@ -36,19 +36,26 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<OpenIddictClientService>();
 
         // Register the built-in filters used by the default OpenIddict client event handlers.
+        builder.Services.TryAddSingleton<RequireAuthorizationCodeExtracted>();
         builder.Services.TryAddSingleton<RequireAuthorizationCodeOrImplicitGrantType>();
+        builder.Services.TryAddSingleton<RequireAuthorizationCodeValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelAccessTokenValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelIdentityTokenValidated>();
-        builder.Services.TryAddSingleton<RequireBackchannelRefreshTokenValidated>();
-        builder.Services.TryAddSingleton<RequireBackchannelRequest>();
-        builder.Services.TryAddSingleton<RequireBackchannelResponse>();
+        builder.Services.TryAddSingleton<RequireBackchannelIdentityTokenPrincipal>();
         builder.Services.TryAddSingleton<RequireFrontchannelAccessTokenValidated>();
-        builder.Services.TryAddSingleton<RequireFrontchannelAuthorizationCodeExtracted>();
-        builder.Services.TryAddSingleton<RequireFrontchannelAuthorizationCodeValidated>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenValidated>();
-        builder.Services.TryAddSingleton<RequireFrontchannelStateTokenValidated>();
+        builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenPrincipal>();
         builder.Services.TryAddSingleton<RequireRedirectionRequest>();
+        builder.Services.TryAddSingleton<RequireRefreshTokenValidated>();
         builder.Services.TryAddSingleton<RequireStateTokenGenerated>();
+        builder.Services.TryAddSingleton<RequireStateTokenPrincipal>();
+        builder.Services.TryAddSingleton<RequireStateTokenValidated>();
+        builder.Services.TryAddSingleton<RequireTokenRequest>();
+        builder.Services.TryAddSingleton<RequireTokenResponse>();
+        builder.Services.TryAddSingleton<RequireUserinfoRequest>();
+        builder.Services.TryAddSingleton<RequireUserinfoResponse>();
+        builder.Services.TryAddSingleton<RequireUserinfoTokenExtracted>();
+        builder.Services.TryAddSingleton<RequireUserinfoTokenPrincipal>();
 
         // Register the built-in client event handlers used by the OpenIddict client components.
         // Note: the order used here is not important, as the actual order is set in the options.
