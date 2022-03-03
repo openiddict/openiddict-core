@@ -1,4 +1,5 @@
-﻿@model string
+﻿@using static OpenIddict.Abstractions.OpenIddictConstants
+@model string
 
 <div class="jumbotron">
     @if (User?.Identity is { IsAuthenticated: true })
@@ -17,9 +18,12 @@
             <h3>Message received from the resource controller: @Model</h3>
         }
 
-        <form action="~/" method="post">
-            <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
-        </form>
+        if (User.FindFirst(Claims.Subject)?.Issuer is "https://localhost:44349/")
+        {
+            <form action="/" method="post">
+                <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
+            </form>
+        }
 
         <a class="btn btn-lg btn-danger" href="/logout">Sign out</a>
     }
@@ -27,6 +31,13 @@
     else
     {
         <h1>Welcome, anonymous</h1>
-        <a class="btn btn-lg btn-success" href="/login">Sign in</a>
+        <a class="btn btn-lg btn-success" asp-controller="Authentication"
+            asp-action="Login" asp-route-provider="local">Sign in using the local OIDC server</a>
+        <a class="btn btn-lg btn-success" asp-controller="Authentication"
+            asp-action="Login" asp-route-provider="github">Sign in using GitHub</a>
+        <a class="btn btn-lg btn-success" asp-controller="Authentication"
+            asp-action="Login" asp-route-provider="google">Sign in using Google</a>
+        <a class="btn btn-lg btn-success" asp-controller="Authentication"
+            asp-action="Login" asp-route-provider="reddit">Sign in using Reddit</a>
     }
 </div>

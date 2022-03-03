@@ -91,6 +91,22 @@ namespace OpenIddict.Sandbox.AspNet.Client
                         RedirectUri = new Uri("https://localhost:44378/signin-oidc", UriKind.Absolute),
                         Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
                     });
+
+                    // Register the Web providers integrations.
+                    options.UseWebProviders()
+                           .AddGitHub(new()
+                           {
+                               ClientId = "c4ade52327b01ddacff3",
+                               ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
+                               RedirectUri = new Uri("https://localhost:44378/signin-oidc", UriKind.Absolute)
+                           })
+                           .AddGoogle(new()
+                           {
+                               ClientId = "1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com",
+                               ClientSecret = "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",
+                               RedirectUri = new Uri("https://localhost:44378/signin-oidc", UriKind.Absolute),
+                               Scopes = { Scopes.Profile }
+                           });
                 });
 
             // Create a new Autofac container and import the OpenIddict services.

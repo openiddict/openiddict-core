@@ -126,6 +126,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.AspNet.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.DataProtection", "src\OpenIddict.Client.DataProtection\OpenIddict.Client.DataProtection.csproj", "{E4D77737-4C73-4520-99E8-8A9E586C69A1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.WebIntegration", "src\OpenIddict.Client.WebIntegration\OpenIddict.Client.WebIntegration.csproj", "{867317E3-364E-4F4D-9D6D-A206E1F72B9F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gen", "gen", "{4CF2AFFA-A31B-4925-ADF4-062E9BDD1381}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Client.WebIntegration.Generators", "gen\OpenIddict.Client.WebIntegration.Generators\OpenIddict.Client.WebIntegration.Generators.csproj", "{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -300,6 +306,14 @@ Global
 		{E4D77737-4C73-4520-99E8-8A9E586C69A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4D77737-4C73-4520-99E8-8A9E586C69A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4D77737-4C73-4520-99E8-8A9E586C69A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{867317E3-364E-4F4D-9D6D-A206E1F72B9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{867317E3-364E-4F4D-9D6D-A206E1F72B9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{867317E3-364E-4F4D-9D6D-A206E1F72B9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{867317E3-364E-4F4D-9D6D-A206E1F72B9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -347,6 +361,8 @@ Global
 		{0DFA4EC2-035A-46D3-AAF6-4BF1DFBC1040} = {F47D1283-0EE9-4728-8026-58405C29B786}
 		{BFF5B862-D5FB-4019-8647-C43E5E7EF97D} = {F47D1283-0EE9-4728-8026-58405C29B786}
 		{E4D77737-4C73-4520-99E8-8A9E586C69A1} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{867317E3-364E-4F4D-9D6D-A206E1F72B9F} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2} = {4CF2AFFA-A31B-4925-ADF4-062E9BDD1381}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}
