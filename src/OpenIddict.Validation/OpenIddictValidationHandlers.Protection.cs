@@ -70,7 +70,7 @@ public static partial class OpenIddictValidationHandlers
                 // Clone the token validation parameters and set the issuer using the value found in the
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
                 var parameters = context.Options.TokenValidationParameters.Clone();
-                parameters.ValidIssuer ??= configuration.Issuer?.AbsoluteUri ?? context.Issuer?.AbsoluteUri;
+                parameters.ValidIssuer ??= configuration.Issuer?.OriginalString;
                 parameters.ValidateIssuer = !string.IsNullOrEmpty(parameters.ValidIssuer);
 
                 // Combine the signing keys registered statically in the token validation parameters

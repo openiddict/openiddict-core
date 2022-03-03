@@ -351,11 +351,20 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            public async ValueTask HandleAsync(HandleIntrospectionResponseContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+                // Ensure the issuer resolved from the configuration matches the expected value.
+                if (configuration is not null && configuration.Issuer != context.Issuer)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
                 }
 
                 // Create a new claims-based identity using the same authentication type
@@ -368,7 +377,9 @@ public static partial class OpenIddictValidationHandlers
                 // Resolve the issuer that will be attached to the claims created by this handler.
                 // Note: at this stage, the optional issuer extracted from the response is assumed
                 // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
-                var issuer = (string?) context.Response[Claims.Issuer] ?? context.Issuer?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
+                var issuer = (string?) context.Response[Claims.Issuer] ??
+                    configuration?.Issuer?.OriginalString ??
+                    context.Issuer?.OriginalString ?? ClaimsIdentity.DefaultIssuer;
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -443,8 +454,6 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 context.Principal = new ClaimsPrincipal(identity);
-
-                return default;
 
                 static string GetClaimValueType(JsonValueKind kind) => kind switch
                 {
