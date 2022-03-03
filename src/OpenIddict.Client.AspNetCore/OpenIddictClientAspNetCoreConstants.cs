@@ -13,27 +13,29 @@ public static class OpenIddictClientAspNetCoreConstants
 {
     public static class Properties
     {
+        public const string AuthorizationCodePrincipal = ".authorization_code_principal";
         public const string BackchannelAccessTokenPrincipal = ".backchannel_access_token_principal";
         public const string BackchannelIdentityTokenPrincipal = ".backchannel_id_token_principal";
-        public const string BackchannelRefreshTokenPrincipal = ".backchannel_refresh_token_principal";
         public const string FrontchannelAccessTokenPrincipal = ".frontchannel_access_token_principal";
-        public const string FrontchannelAuthorizationCodePrincipal = ".frontchannel_authorization_code_principal";
         public const string FrontchannelIdentityTokenPrincipal = ".frontchannel_id_token_principal";
-        public const string FrontchannelStateTokenPrincipal = ".frontchannel_state_token_principal";
         public const string Issuer = ".issuer";
         public const string Error = ".error";
         public const string ErrorDescription = ".error_description";
         public const string ErrorUri = ".error_uri";
+        public const string RefreshTokenPrincipal = ".refresh_token_principal";
+        public const string StateTokenPrincipal = ".state_token_principal";
+        public const string UserinfoTokenPrincipal = ".userinfo_token_principal";
     }
 
     public static class Tokens
     {
+        public const string AuthorizationCode = "authorization_code";
         public const string BackchannelAccessToken = "backchannel_access_token";
         public const string BackchannelIdentityToken = "backchannel_id_token";
-        public const string BackchannelRefreshToken = "backchannel_refresh_token";
         public const string FrontchannelAccessToken = "frontchannel_access_token";
-        public const string FrontchannelAuthorizationCode = "frontchannel_authorization_code";
         public const string FrontchannelIdentityToken = "frontchannel_id_token";
-        public const string FrontchannelStateToken = "frontchannel_state_token";
+        public const string RefreshToken = "refresh_token";
+        public const string StateToken = "state_token";
+        public const string UserinfoToken = "userinfo_token";
     }
 }

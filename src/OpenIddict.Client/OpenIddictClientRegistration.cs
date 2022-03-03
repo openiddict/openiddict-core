@@ -99,6 +99,7 @@ public class OpenIddictClientRegistration
     /// </summary>
     public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
     {
+        AuthenticationType = TokenValidationParameters.DefaultAuthenticationType,
         ClockSkew = TimeSpan.Zero,
         NameClaimType = Claims.Name,
         RoleClaimType = Claims.Role,

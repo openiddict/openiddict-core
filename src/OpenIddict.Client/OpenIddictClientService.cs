@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
@@ -445,6 +446,159 @@ public class OpenIddictClientService
                 }
 
                 return context.Response;
+            }
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sends the userinfo request and retrieves the corresponding response.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="request">The userinfo request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
+    public async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserinfoRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictRequest request, CancellationToken cancellationToken = default)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        if (configuration.UserinfoEndpoint is not { IsAbsoluteUri: true } ||
+           !configuration.UserinfoEndpoint.IsWellFormedOriginalString())
+        {
+            throw new InvalidOperationException(SR.FormatID0301(Metadata.UserinfoEndpoint));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            request = await PrepareUserinfoRequestAsync();
+            request = await ApplyUserinfoRequestAsync();
+
+            var (response, token) = await ExtractUserinfoResponseAsync();
+
+            return await HandleUserinfoResponseAsync();
+
+            async ValueTask<OpenIddictRequest> PrepareUserinfoRequestAsync()
+            {
+                var context = new PrepareUserinfoRequestContext(transaction)
+                {
+                    Address = configuration.UserinfoEndpoint,
+                    Issuer = registration.Issuer,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new OpenIddictExceptions.GenericException(
+                        SR.FormatID0152(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictRequest> ApplyUserinfoRequestAsync()
+            {
+                var context = new ApplyUserinfoRequestContext(transaction)
+                {
+                    Address = configuration.UserinfoEndpoint,
+                    Issuer = registration.Issuer,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new OpenIddictExceptions.GenericException(
+                        SR.FormatID0153(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
+            }
+
+            async ValueTask<(OpenIddictResponse, string?)> ExtractUserinfoResponseAsync()
+            {
+                var context = new ExtractUserinfoResponseContext(transaction)
+                {
+                    Address = configuration.UserinfoEndpoint,
+                    Issuer = registration.Issuer,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new OpenIddictExceptions.GenericException(
+                        SR.FormatID0154(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                return (context.Response, context.UserinfoToken);
+            }
+
+            async ValueTask<(OpenIddictResponse, (ClaimsPrincipal?, string?))> HandleUserinfoResponseAsync()
+            {
+                var context = new HandleUserinfoResponseContext(transaction)
+                {
+                    Address = configuration.UserinfoEndpoint,
+                    Issuer = registration.Issuer,
+                    Registration = registration,
+                    Request = request,
+                    Response = response,
+                    UserinfoToken = token
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new OpenIddictExceptions.GenericException(
+                        SR.FormatID0155(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return (context.Response, (context.Principal, context.UserinfoToken));
             }
         }
 

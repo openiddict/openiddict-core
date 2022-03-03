@@ -500,9 +500,9 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
-                // Attach the security principal extracted from the token to the validation context.
+                // Attach the security principals extracted from the tokens to the validation context.
                 context.Principal = notification.FrontchannelIdentityTokenPrincipal;
-                context.StateTokenPrincipal = notification.FrontchannelStateTokenPrincipal;
+                context.StateTokenPrincipal = notification.StateTokenPrincipal;
             }
         }
     }

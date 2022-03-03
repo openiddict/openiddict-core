@@ -363,9 +363,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireHttpRequest>()
-                .AddFilter<RequireFrontchannelStateTokenValidated>()
+                .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ValidateCorrelationCookie>()
-                .SetOrder(ValidateFrontchannelStateToken.Descriptor.Order + 500)
+                .SetOrder(ValidateStateToken.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -377,7 +377,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.FrontchannelStateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
@@ -390,7 +390,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // Resolve the request forgery protection from the state token principal.
             // If the claim cannot be found, this means the protection was disabled
             // using a custom event handler. In this case, bypass the validation.
-            var claim = context.FrontchannelStateTokenPrincipal.GetClaim(Claims.RequestForgeryProtection);
+            var claim = context.StateTokenPrincipal.GetClaim(Claims.RequestForgeryProtection);
             if (string.IsNullOrEmpty(claim))
             {
                 return default;

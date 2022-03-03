@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
 
@@ -141,16 +142,12 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
             // are attached to the authentication properties bag so they can be accessed from user code.
             var principal = context.EndpointType switch
             {
-                // Note: the OpenIddict client handler can be used as a pure OAuth 2.0-only stack for
-                // delegation scenarios where the identity of the user is not needed. In this case,
-                // since no principal can be resolved from a token or a userinfo response to construct
-                // a user identity, a fake one containing an "unauthenticated" identity (i.e with its
-                // AuthenticationType property deliberately left to null) is used to allow ASP.NET Core
-                // to return a "successful" authentication result for these delegation-only scenarios.
-                OpenIddictClientEndpointType.Redirection =>
-                    context.BackchannelIdentityTokenPrincipal  ??
-                    context.FrontchannelIdentityTokenPrincipal ??
-                    new ClaimsPrincipal(new ClaimsIdentity()),
+                // Create a composite principal containing claims resolved from the frontchannel
+                // and backchannel identity tokens and the userinfo token principal, if available.
+                OpenIddictClientEndpointType.Redirection => CreatePrincipal(
+                    context.FrontchannelIdentityTokenPrincipal,
+                    context.BackchannelIdentityTokenPrincipal,
+                    context.UserinfoTokenPrincipal),
 
                 _ => null
             };
@@ -167,13 +164,23 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
 
                 // Restore the return URL using the "target_link_uri" that was stored
                 // in the state token when the challenge operation started, if available.
-                RedirectUri = context.FrontchannelStateTokenPrincipal?.GetClaim(Claims.TargetLinkUri)
+                RedirectUri = context.StateTokenPrincipal?.GetClaim(Claims.TargetLinkUri)
             };
 
             List<AuthenticationToken>? tokens = null;
 
             // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
+
+            if (!string.IsNullOrEmpty(context.AuthorizationCode))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.AuthorizationCode,
+                    Value = context.AuthorizationCode
+                });
+            }
 
             if (!string.IsNullOrEmpty(context.BackchannelAccessToken))
             {
@@ -183,8 +190,6 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.BackchannelAccessToken,
                     Value = context.BackchannelAccessToken
                 });
-
-                properties.SetParameter(Properties.BackchannelAccessTokenPrincipal, context.BackchannelAccessTokenPrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.BackchannelIdentityToken))
@@ -195,20 +200,6 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.BackchannelIdentityToken,
                     Value = context.BackchannelIdentityToken
                 });
-
-                properties.SetParameter(Properties.BackchannelIdentityTokenPrincipal, context.BackchannelIdentityTokenPrincipal);
-            }
-
-            if (!string.IsNullOrEmpty(context.BackchannelRefreshToken))
-            {
-                tokens ??= new(capacity: 1);
-                tokens.Add(new AuthenticationToken
-                {
-                    Name = Tokens.BackchannelRefreshToken,
-                    Value = context.BackchannelRefreshToken
-                });
-
-                properties.SetParameter(Properties.BackchannelRefreshTokenPrincipal, context.BackchannelRefreshTokenPrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.FrontchannelAccessToken))
@@ -219,20 +210,6 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.FrontchannelAccessToken,
                     Value = context.FrontchannelAccessToken
                 });
-
-                properties.SetParameter(Properties.FrontchannelAccessTokenPrincipal, context.FrontchannelAccessTokenPrincipal);
-            }
-
-            if (!string.IsNullOrEmpty(context.FrontchannelAuthorizationCode))
-            {
-                tokens ??= new(capacity: 1);
-                tokens.Add(new AuthenticationToken
-                {
-                    Name = Tokens.FrontchannelAuthorizationCode,
-                    Value = context.FrontchannelAuthorizationCode
-                });
-
-                properties.SetParameter(Properties.FrontchannelAuthorizationCodePrincipal, context.FrontchannelAuthorizationCodePrincipal);
             }
 
             if (!string.IsNullOrEmpty(context.FrontchannelIdentityToken))
@@ -243,20 +220,36 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     Name = Tokens.FrontchannelIdentityToken,
                     Value = context.FrontchannelIdentityToken
                 });
-
-                properties.SetParameter(Properties.FrontchannelIdentityTokenPrincipal, context.FrontchannelIdentityTokenPrincipal);
             }
 
-            if (!string.IsNullOrEmpty(context.FrontchannelStateToken))
+            if (!string.IsNullOrEmpty(context.RefreshToken))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = Tokens.FrontchannelStateToken,
-                    Value = context.FrontchannelStateToken
+                    Name = Tokens.RefreshToken,
+                    Value = context.RefreshToken
                 });
+            }
 
-                properties.SetParameter(Properties.FrontchannelStateTokenPrincipal, context.FrontchannelStateTokenPrincipal);
+            if (!string.IsNullOrEmpty(context.StateToken))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.StateToken,
+                    Value = context.StateToken
+                });
+            }
+
+            if (!string.IsNullOrEmpty(context.UserinfoToken))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.UserinfoToken,
+                    Value = context.UserinfoToken
+                });
             }
 
             if (tokens is { Count: > 0 })
@@ -264,8 +257,87 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
                 properties.StoreTokens(tokens);
             }
 
+            if (context.AuthorizationCodePrincipal is not null)
+            {
+                properties.SetParameter(Properties.AuthorizationCodePrincipal, context.AuthorizationCodePrincipal);
+            }
+
+            if (context.BackchannelAccessTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.BackchannelAccessTokenPrincipal, context.BackchannelAccessTokenPrincipal);
+            }
+
+            if (context.BackchannelIdentityTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.BackchannelIdentityTokenPrincipal, context.BackchannelIdentityTokenPrincipal);
+            }
+
+            if (context.FrontchannelAccessTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.FrontchannelAccessTokenPrincipal, context.FrontchannelAccessTokenPrincipal);
+            }
+
+            if (context.FrontchannelIdentityTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.FrontchannelIdentityTokenPrincipal, context.FrontchannelIdentityTokenPrincipal);
+            }
+
+            if (context.RefreshTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.RefreshTokenPrincipal, context.RefreshTokenPrincipal);
+            }
+
+            if (context.StateTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.StateTokenPrincipal, context.StateTokenPrincipal);
+            }
+
+            if (context.UserinfoTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.UserinfoTokenPrincipal, context.UserinfoTokenPrincipal);
+            }
+
             return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
                 OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
+
+            static ClaimsPrincipal CreatePrincipal(params ClaimsPrincipal?[] principals)
+            {
+                // Note: the OpenIddict client handler can be used as a pure OAuth 2.0-only stack for
+                // delegation scenarios where the identity of the user is not needed. In this case,
+                // since no principal can be resolved from a token or a userinfo response to construct
+                // a user identity, a fake one containing an "unauthenticated" identity (i.e with its
+                // AuthenticationType property deliberately left to null) is used to allow ASP.NET Core
+                // to return a "successful" authentication result for these delegation-only scenarios.
+                if (!principals.Any(principal => principal?.Identity is ClaimsIdentity { IsAuthenticated: true }))
+                {
+                    return new ClaimsPrincipal(new ClaimsIdentity());
+                }
+
+                // Create a new composite identity containing the claims of all the principals.
+                var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
+
+                foreach (var principal in principals)
+                {
+                    // Note: the principal may be null if no value was extracted from the corresponding token.
+                    if (principal is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var claim in principal.Claims)
+                    {
+                        // If a claim with the same type and the same value already exist, skip it.
+                        if (identity.HasClaim(claim.Type, claim.Value))
+                        {
+                            continue;
+                        }
+
+                        identity.AddClaim(claim);
+                    }
+                }
+
+                return new ClaimsPrincipal(identity);
+            }
         }
     }
 

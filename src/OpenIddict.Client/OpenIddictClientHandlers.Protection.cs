@@ -212,20 +212,33 @@ public static partial class OpenIddictClientHandlers
                     _ => true // Allow any other claim.
                 });
 
-                // Attach the principal extracted from the token to the parent event context and store
-                // the token type (resolved from "typ" or "token_usage") as a special private claim.
-                context.Principal = new ClaimsPrincipal(identity).SetTokenType(result.TokenType switch
+                if (context.ValidTokenTypes.Contains(TokenTypeHints.StateToken))
                 {
-                    null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
+                    // Attach the principal extracted from the token to the parent event context and store
+                    // the token type (resolved from "typ" or "token_usage") as a special private claim.
+                    context.Principal = new ClaimsPrincipal(identity).SetTokenType(result.TokenType switch
+                    {
+                        null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
-                    // Both JWT and application/JWT are supported for identity tokens.
-                    JsonWebTokenTypes.IdentityToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IdentityToken
-                        => TokenTypeHints.IdToken,
+                        JsonWebTokenTypes.Private.StateToken => TokenTypeHints.StateToken,
 
-                    JsonWebTokenTypes.Private.StateToken => TokenTypeHints.StateToken,
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                    });
+                }
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                });
+                else if (context.ValidTokenTypes.Count is 1)
+                {
+                    // JSON Web Tokens defined by the OpenID Connect core specification (e.g identity or userinfo tokens)
+                    // don't have to include a specific "typ" header and all values are allowed. As such, the tokens
+                    // as assumed to be of the type that is expected by the authentication routine. Additional checks
+                    // like audience validation can be implemented to prevent tokens mix-up/confused deputy attacks.
+                    context.Principal = new ClaimsPrincipal(identity).SetTokenType(context.ValidTokenTypes.Single());
+                }
+
+                else
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0308));
+                }
 
                 // Store the resolved signing algorithm from the token and attach it to the principal.
                 context.Principal.SetClaim(Claims.Private.SigningAlgorithm, token.Alg);

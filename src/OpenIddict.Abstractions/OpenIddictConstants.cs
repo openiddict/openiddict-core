@@ -482,6 +482,7 @@ public static class OpenIddictConstants
         public const string IdToken = "id_token";
         public const string RefreshToken = "refresh_token";
         public const string StateToken = "state_token";
+        public const string UserinfoToken = "userinfo_token";
         public const string UserCode = "user_code";
     }
 

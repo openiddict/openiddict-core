@@ -316,7 +316,7 @@ public static partial class OpenIddictValidationHandlers
                     // Note: by default, OpenIddict only allows access/refresh tokens to be
                     // introspected but additional types can be added using the events model.
                     TokenTypeHints.AccessToken or TokenTypeHints.AuthorizationCode or
-                    TokenTypeHints.IdToken or TokenTypeHints.RefreshToken or
+                    TokenTypeHints.IdToken     or TokenTypeHints.RefreshToken      or
                     TokenTypeHints.UserCode
                         => true,
 
