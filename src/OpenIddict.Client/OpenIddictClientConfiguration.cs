@@ -65,7 +65,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
                     if (!registration.MetadataAddress.IsAbsoluteUri)
                     {
                         var issuer = registration.Issuer;
-                        if (issuer is null || !issuer.IsAbsoluteUri)
+                        if (issuer is not { IsAbsoluteUri: true })
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
                         }

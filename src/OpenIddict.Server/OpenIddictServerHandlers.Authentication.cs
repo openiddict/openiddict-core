@@ -56,7 +56,8 @@ public static partial class OpenIddictServerHandlers
              */
             AttachRedirectUri.Descriptor,
             InferResponseMode.Descriptor,
-            AttachResponseState.Descriptor);
+            AttachResponseState.Descriptor,
+            AttachIssuer.Descriptor);
 
         /// <summary>
         /// Contains the logic responsible of extracting authorization requests and invoking the corresponding event handlers.
@@ -528,6 +529,27 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.InvalidRequest,
                         description: SR.FormatID2031(Parameters.RedirectUri),
                         uri: SR.FormatID8000(SR.ID2031));
+
+                    return default;
+                }
+
+                // To prevent issuer fixation attacks where a malicious client would specify an "iss" parameter
+                // in the redirect_uri, ensure the query - if present - doesn't include an "iss" parameter.
+                //
+                // Note: while OAuth 2.0 parameters are case-sentitive, the following check deliberately
+                // uses a case-insensitive comparison to ensure that all variations of "iss" are rejected.
+                if (!string.IsNullOrEmpty(uri.Query) && uri.Query.TrimStart(Separators.QuestionMark[0])
+                    .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(parts => parts[0] is string value ? Uri.UnescapeDataString(value) : null)
+                    .Contains(Parameters.Iss, StringComparer.OrdinalIgnoreCase))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6181), Parameters.RedirectUri, Parameters.Iss);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2135(Parameters.RedirectUri, Parameters.Iss),
+                        uri: SR.FormatID8000(SR.ID2135));
 
                     return default;
                 }
@@ -1723,10 +1745,62 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Attach the request state to the authorization response.
-                if (string.IsNullOrEmpty(context.Response.State))
+                // If the user agent is expected to be redirected to the client application, attach the request
+                // state to the authorization response to help the client mitigate CSRF/session fixation attacks.
+                //
+                // Note: don't override the state if one was already attached to the response instance.
+                if (!string.IsNullOrEmpty(context.RedirectUri) && string.IsNullOrEmpty(context.Response.State))
                 {
                     context.Response.State = context.Request?.State;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching an "iss" parameter
+        /// containing the address of the authorization server to the response.
+        /// </summary>
+        public class AttachIssuer : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
+                    .UseSingletonHandler<AttachIssuer>()
+                    .SetOrder(AttachResponseState.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If the user agent is expected to be redirected to the client application, attach the
+                // issuer address to the authorization response to help the client detect mix-up attacks.
+                //
+                // Note: this applies to all authorization responses, whether they represent valid or errored responses.
+                // For more information, see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.
+
+                if (!string.IsNullOrEmpty(context.RedirectUri))
+                {
+                    // At this stage, throw an exception if the issuer cannot be retrieved.
+                    if (context.Issuer is not { IsAbsoluteUri: true })
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
+                    }
+
+                    // Note: don't override the issuer if one was already attached to the response instance.
+                    if (string.IsNullOrEmpty(context.Response.Iss))
+                    {
+                        context.Response.Iss = context.Issuer.AbsoluteUri;
+                    }
                 }
 
                 return default;

@@ -240,7 +240,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 .AddFilter<RequireHttpRequest>()
                 .AddFilter<RequireTransportSecurityRequirementEnabled>()
                 .UseSingletonHandler<ValidateTransportSecurityRequirement>()
-                .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                .SetOrder(InferIssuerFromHost.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

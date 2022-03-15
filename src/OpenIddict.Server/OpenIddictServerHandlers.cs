@@ -2953,7 +2953,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // At this stage, throw an exception if the issuer cannot be retrieved.
-                if (issuer is null || !issuer.IsAbsoluteUri)
+                if (issuer is not { IsAbsoluteUri: true })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
                 }

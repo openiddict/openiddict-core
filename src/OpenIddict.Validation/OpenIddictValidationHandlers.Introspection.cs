@@ -378,8 +378,8 @@ public static partial class OpenIddictValidationHandlers
                 // Note: at this stage, the optional issuer extracted from the response is assumed
                 // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
                 var issuer = (string?) context.Response[Claims.Issuer] ??
-                    configuration?.Issuer?.OriginalString ??
-                    context.Issuer?.OriginalString ?? ClaimsIdentity.DefaultIssuer;
+                    configuration?.Issuer?.AbsoluteUri ??
+                    context.Issuer?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
 
                 foreach (var parameter in context.Response.GetParameters())
                 {

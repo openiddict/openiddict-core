@@ -377,7 +377,7 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     // At this stage, throw an exception if the issuer cannot be retrieved.
-                    if (issuer is null || !issuer.IsAbsoluteUri)
+                    if (issuer is not { IsAbsoluteUri: true })
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
                     }
@@ -745,6 +745,11 @@ public static partial class OpenIddictServerHandlers
                 context.Metadata[Metadata.ClaimsParameterSupported] = false;
                 context.Metadata[Metadata.RequestParameterSupported] = false;
                 context.Metadata[Metadata.RequestUriParameterSupported] = false;
+
+                // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its own address as
+                // part of authorization responses to help clients mitigate mix-up attacks. For more information,
+                // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.
+                context.Metadata[Metadata.AuthorizationResponseIssParameterSupported] = true;
 
                 return default;
             }

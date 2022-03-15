@@ -70,8 +70,24 @@ public static partial class OpenIddictValidationHandlers
                 // Clone the token validation parameters and set the issuer using the value found in the
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
                 var parameters = context.Options.TokenValidationParameters.Clone();
-                parameters.ValidIssuer ??= configuration.Issuer?.OriginalString;
-                parameters.ValidateIssuer = !string.IsNullOrEmpty(parameters.ValidIssuer);
+
+                parameters.ValidIssuers ??= configuration.Issuer switch
+                {
+                    null => null,
+
+                    // If the issuer URI doesn't contain any path/query/fragment, allow both http://www.fabrikam.com
+                    // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
+                    // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
+                    { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } issuer => new[]
+                    {
+                        issuer.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
+                        issuer.AbsoluteUri.Substring(0, issuer.AbsoluteUri.Length - 1)
+                    },
+
+                    Uri issuer => new[] { issuer.AbsoluteUri }
+                };
+
+                parameters.ValidateIssuer = parameters.ValidIssuers is not null;
 
                 // Combine the signing keys registered statically in the token validation parameters
                 // with the signing keys resolved from the OpenID Connect server configuration.

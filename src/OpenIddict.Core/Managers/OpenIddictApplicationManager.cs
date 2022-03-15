@@ -1226,6 +1226,19 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
                 break;
             }
+
+            // To prevent issuer fixation attacks where a malicious client would specify an "iss" parameter
+            // in the callback URL, ensure the query - if present - doesn't include an "iss" parameter.
+            if (!string.IsNullOrEmpty(uri.Query) && uri.Query.TrimStart(Separators.QuestionMark[0])
+                .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
+                .Select(parts => parts[0] is string value ? Uri.UnescapeDataString(value) : null)
+                .Contains(Parameters.Iss, StringComparer.OrdinalIgnoreCase))
+            {
+                yield return new ValidationResult(SR.FormatID2134(Parameters.Iss));
+
+                break;
+            }
         }
     }
 

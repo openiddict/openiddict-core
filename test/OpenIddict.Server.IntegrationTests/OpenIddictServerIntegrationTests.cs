@@ -1201,7 +1201,12 @@ public abstract partial class OpenIddictServerIntegrationTests
         });
 
         // Assert
-        Assert.Equal(0, response.Count);
+        Assert.Null(response.AccessToken);
+        Assert.Null(response.Code);
+        Assert.Null(response.DeviceCode);
+        Assert.Null(response.IdToken);
+        Assert.Null(response.RefreshToken);
+        Assert.Null(response.UserCode);
     }
 
     [Theory]

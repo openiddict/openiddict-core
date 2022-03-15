@@ -109,7 +109,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
                 if (!options.MetadataAddress.IsAbsoluteUri)
                 {
                     var issuer = options.Issuer;
-                    if (issuer is null || !issuer.IsAbsoluteUri)
+                    if (issuer is not { IsAbsoluteUri: true })
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
                     }

@@ -154,6 +154,15 @@ public class OpenIddictResponse : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "iss" parameter.
+    /// </summary>
+    public string? Iss
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.Iss);
+        set => SetParameter(OpenIddictConstants.Parameters.Iss, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "refresh_token" parameter.
     /// </summary>
     public string? RefreshToken
