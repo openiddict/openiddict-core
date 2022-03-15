@@ -241,6 +241,41 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(message), response.ErrorUri);
     }
 
+    [Theory]
+    [InlineData("http://www.fabrikam.com/path?iss")]
+    [InlineData("http://www.fabrikam.com/path?iss=value")]
+    [InlineData("http://www.fabrikam.com/path?;iss")]
+    [InlineData("http://www.fabrikam.com/path?;iss=value")]
+    [InlineData("http://www.fabrikam.com/path?&iss")]
+    [InlineData("http://www.fabrikam.com/path?&iss=value")]
+    [InlineData("http://www.fabrikam.com/path?state;iss")]
+    [InlineData("http://www.fabrikam.com/path?state;iss=value")]
+    [InlineData("http://www.fabrikam.com/path?state&iss")]
+    [InlineData("http://www.fabrikam.com/path?state&iss=value")]
+    [InlineData("http://www.fabrikam.com/path?state=abc;iss")]
+    [InlineData("http://www.fabrikam.com/path?state=abc;iss=value")]
+    [InlineData("http://www.fabrikam.com/path?state=abc&iss")]
+    [InlineData("http://www.fabrikam.com/path?state=abc&iss=value")]
+    public async Task ValidateAuthorizationRequest_RedirectUriWithIssuerParameterCausesAnError(string address)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = address,
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2135(Parameters.RedirectUri, Parameters.Iss), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2135), response.ErrorUri);
+    }
+
     [Fact]
     public async Task ValidateAuthorizationRequest_MissingResponseTypeCausesAnError()
     {
@@ -2334,5 +2369,87 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Equal("custom_state", response.State);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("http://www.fabrikam.com/")]
+    public async Task ApplyAuthorizationResponse_SetsIssuerParameter(string issuer)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+
+            if (!string.IsNullOrEmpty(issuer))
+            {
+                options.SetIssuer(new Uri(issuer, UriKind.Absolute));
+            }
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Code,
+            State = "af0ifjsldkj"
+        });
+
+        // Assert
+        Assert.Equal(issuer is not null ? issuer : "http://localhost/", response.Iss);
+    }
+
+    [Fact]
+    public async Task ApplyAuthorizationResponse_DoesNotOverrideIssuerSetByApplicationCode()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetIssuer(new Uri("http://www.fabrikam.com/", UriKind.Absolute));
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ApplyAuthorizationResponseContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Response.Iss = "http://www.contoso.com/";
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Code,
+            State = "af0ifjsldkj"
+        });
+
+        // Assert
+        Assert.Equal("http://www.contoso.com/", response.Iss);
     }
 }

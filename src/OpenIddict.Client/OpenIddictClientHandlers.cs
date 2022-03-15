@@ -445,7 +445,8 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 // If the two values don't match, this may indicate a mix-up attack attempt.
-                if (!string.Equals(issuer, context.Issuer.AbsoluteUri, StringComparison.Ordinal))
+                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) ||
+                    !uri.IsWellFormedOriginalString() || uri != configuration.Issuer)
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,

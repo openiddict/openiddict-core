@@ -439,6 +439,10 @@ public static class OpenIddictConstants
         public static readonly char[] Ampersand = { '&' };
         public static readonly char[] Dash = { '-' };
         public static readonly char[] Dot = { '.' };
+        public static readonly char[] EqualsSign = { '=' };
+        public static readonly char[] Hash = { '#' };
+        public static readonly char[] QuestionMark = { '?' };
+        public static readonly char[] Semicolon = { ';' };
         public static readonly char[] Space = { ' ' };
     }
 

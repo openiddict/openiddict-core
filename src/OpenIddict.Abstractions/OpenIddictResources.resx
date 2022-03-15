@@ -1587,6 +1587,12 @@ To apply redirection responses, create a class implementing 'IOpenIddictClientHa
   <data name="ID2133" xml:space="preserve">
     <value>The '{0}' claim returned in the specified userinfo response/token doesn't match the expected value.</value>
   </data>
+  <data name="ID2134" xml:space="preserve">
+    <value>Callback URLs cannot contain an "{0}" parameter.</value>
+  </data>
+  <data name="ID2135" xml:space="preserve">
+    <value>The '{0}' parameter must not include a '{1}' component.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -2131,6 +2137,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6180" xml:space="preserve">
     <value>The redirection request was successfully validated.</value>
+  </data>
+  <data name="ID6181" xml:space="preserve">
+    <value>The authorization request was rejected because the '{Parameter}' contained a forbidden parameter: {Name}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

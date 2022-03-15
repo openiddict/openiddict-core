@@ -129,7 +129,7 @@ public static partial class OpenIddictClientHandlers
                 // Resolve the issuer that will be attached to the claims created by this handler.
                 // Note: at this stage, the optional issuer extracted from the response is assumed
                 // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
-                var issuer = (string?) context.Response[Claims.Issuer] ?? configuration.Issuer!.OriginalString;
+                var issuer = (string?) context.Response[Claims.Issuer] ?? configuration.Issuer!.AbsoluteUri;
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
