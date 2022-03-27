@@ -12,22 +12,6 @@ namespace OpenIddict.Client;
 public static class OpenIddictClientHandlerFilters
 {
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if no authorization code is extracted.
-    /// </summary>
-    public class RequireAuthorizationCodeExtracted : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
-    {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ExtractAuthorizationCode);
-        }
-    }
-
-    /// <summary>
     /// Represents a filter that excludes the associated handlers if the challenge
     /// doesn't correspond to an authorization code or implicit grant operation.
     /// </summary>
