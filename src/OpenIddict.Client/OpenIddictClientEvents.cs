@@ -285,6 +285,16 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets or sets the grant type used for the authentication demand, if applicable.
+        /// </summary>
+        public string? GrantType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response type used for the authentication demand, if applicable.
+        /// </summary>
+        public string? ResponseType { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
         /// code should be extracted from the current context.
         /// Note: overriding the value of this property is generally not

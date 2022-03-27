@@ -36,7 +36,6 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<OpenIddictClientService>();
 
         // Register the built-in filters used by the default OpenIddict client event handlers.
-        builder.Services.TryAddSingleton<RequireAuthorizationCodeExtracted>();
         builder.Services.TryAddSingleton<RequireAuthorizationCodeOrImplicitGrantType>();
         builder.Services.TryAddSingleton<RequireAuthorizationCodeValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelAccessTokenValidated>();
