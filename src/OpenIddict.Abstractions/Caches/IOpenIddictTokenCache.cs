@@ -70,6 +70,15 @@ public interface IOpenIddictTokenCache<TToken> where TToken : class
     IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Retrieves the list of tokens corresponding to the specified authorization identifier and token status.
+    /// </summary>
+    /// <param name="identifier">The authorization identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// /// <param name="status">The token status.</param>
+    /// <returns>The tokens corresponding to the specified authorization.</returns>
+    IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, string status, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Retrieves a token using its unique identifier.
     /// </summary>
     /// <param name="identifier">The unique identifier associated with the token.</param>

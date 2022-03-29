@@ -309,6 +309,33 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     }
 
     /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, string status, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+        // filtered using token.Authorization.Id.Equals(key). To work around this issue,
+        // this method is overriden to use an explicit join before applying the equality check.
+        // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+        var key = ConvertIdentifierFromString(identifier);
+
+        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                join authorization in Authorizations.AsTracking() on token.Authorization!.Id equals authorization.Id
+                where authorization.Id!.Equals(key) &&
+                      token.Status == status
+                select token).AsAsyncEnumerable(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))

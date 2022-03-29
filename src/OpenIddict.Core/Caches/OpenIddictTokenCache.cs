@@ -368,6 +368,53 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     }
 
     /// <inheritdoc/>
+    public IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, string status, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var parameters = new
+            {
+                Method = nameof(FindByAuthorizationIdAsync),
+                Identifier = identifier,
+                Status = status
+            };
+
+            if (!_cache.TryGetValue(parameters, out ImmutableArray<TToken> tokens))
+            {
+                var builder = ImmutableArray.CreateBuilder<TToken>();
+
+                await foreach (var token in _store.FindByAuthorizationIdAsync(identifier, status, cancellationToken))
+                {
+                    builder.Add(token);
+
+                    await AddAsync(token, cancellationToken);
+                }
+
+                tokens = builder.ToImmutable();
+
+                await CreateEntryAsync(parameters, tokens, cancellationToken);
+            }
+
+            foreach (var token in tokens)
+            {
+                yield return token;
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     public ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))

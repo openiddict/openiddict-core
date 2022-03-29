@@ -921,7 +921,7 @@ public static partial class OpenIddictServerHandlers
 
                     // Revoke all the token entries associated with the authorization,
                     // including the redeemed token that was used in the token request.
-                    await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier))
+                    await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier, OpenIddictConstants.Statuses.Valid))
                     {
                         await _tokenManager.TryRevokeAsync(token);
                     }

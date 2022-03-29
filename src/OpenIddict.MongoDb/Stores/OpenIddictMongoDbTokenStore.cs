@@ -230,6 +230,35 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
     }
 
     /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, string status, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var database = await Context.GetDatabaseAsync(cancellationToken);
+            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+            await foreach (var token in collection.Find(token =>
+                token.AuthorizationId == ObjectId.Parse(identifier) &&
+                token.Status == status).ToAsyncEnumerable(cancellationToken))
+            {
+                yield return token;
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     public virtual IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))

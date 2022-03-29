@@ -452,6 +452,53 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     }
 
     /// <summary>
+    /// Retrieves the list of tokens corresponding to the specified authorization identifier and token status.
+    /// </summary>
+    /// <param name="identifier">The authorization identifier associated with the tokens.</param>
+    /// <param name="status">The token status.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The tokens corresponding to the specified authorization.</returns>
+    public virtual IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(
+        string identifier, string status, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        var tokens = Options.CurrentValue.DisableEntityCaching ?
+            Store.FindByAuthorizationIdAsync(identifier, status, cancellationToken) :
+            Cache.FindByAuthorizationIdAsync(identifier, status, cancellationToken);
+
+        if (Options.CurrentValue.DisableAdditionalFiltering)
+        {
+            return tokens;
+        }
+
+        // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+        // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+        // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await foreach (var token in tokens)
+            {
+                if (string.Equals(await Store.GetAuthorizationIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+                {
+                    yield return token;
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Retrieves a token using its unique identifier.
     /// </summary>
     /// <param name="identifier">The unique identifier associated with the token.</param>
@@ -1376,6 +1423,10 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <inheritdoc/>
     IAsyncEnumerable<object> IOpenIddictTokenManager.FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
         => FindByAuthorizationIdAsync(identifier, cancellationToken);
+
+    /// <inheritdoc/>
+    IAsyncEnumerable<object> IOpenIddictTokenManager.FindByAuthorizationIdAsync(string identifier, string status, CancellationToken cancellationToken)
+        => FindByAuthorizationIdAsync(identifier, status, cancellationToken);
 
     /// <inheritdoc/>
     async ValueTask<object?> IOpenIddictTokenManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)

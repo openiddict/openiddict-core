@@ -125,6 +125,15 @@ public interface IOpenIddictTokenManager
     IAsyncEnumerable<object> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the list of tokens corresponding to the specified authorization identifier and token status.
+    /// </summary>
+    /// <param name="identifier">The authorization identifier associated with the tokens.</param>
+    /// <param name="status">The token status.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The tokens corresponding to the specified authorization.</returns>
+    IAsyncEnumerable<object> FindByAuthorizationIdAsync(string identifier, string status, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a token using its unique identifier.
     /// </summary>
     /// <param name="identifier">The unique identifier associated with the token.</param>

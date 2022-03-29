@@ -260,6 +260,26 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     }
 
     /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TToken> FindByAuthorizationIdAsync(string identifier, string status, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0195), nameof(identifier));
+        }
+        if (string.IsNullOrEmpty(status))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
+        }
+
+        var key = ConvertIdentifierFromString(identifier);
+
+        return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
+                where token.Authorization!.Id!.Equals(key) &&
+                token.Status == status
+                select token).AsAsyncEnumerable(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<TToken?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(identifier))
