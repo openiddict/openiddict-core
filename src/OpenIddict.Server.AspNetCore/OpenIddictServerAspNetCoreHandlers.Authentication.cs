@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
 using JsonWebTokenTypes = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.JsonWebTokenTypes;
 
@@ -319,50 +320,49 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 context.Logger.LogInformation(SR.GetResourceString(SR.ID6147), context.RedirectUri, context.Response);
 
-                using (var buffer = new MemoryStream())
-                using (var writer = new StreamWriter(buffer))
+                using var buffer = new MemoryStream();
+                using var writer = new StreamWriter(buffer);
+
+                writer.WriteLine("<!doctype html>");
+                writer.WriteLine("<html>");
+                writer.WriteLine("<body>");
+
+                // While the redirect_uri parameter should be guarded against unknown values,
+                // it's still safer to encode it to avoid cross-site scripting attacks
+                // if the authorization server has a relaxed policy concerning redirect URIs.
+                writer.WriteLine($@"<form name=""form"" method=""post"" action=""{_encoder.Encode(context.RedirectUri)}"">");
+
+                // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
+                // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
+                // For consistency, multiple parameters with the same name are also supported by this endpoint.
+                foreach (var (key, value) in
+                    from parameter in context.Response.GetParameters()
+                    let values = (string?[]?) parameter.Value
+                    where values is not null
+                    from value in values
+                    where !string.IsNullOrEmpty(value)
+                    select (parameter.Key, Value: value))
                 {
-                    writer.WriteLine("<!doctype html>");
-                    writer.WriteLine("<html>");
-                    writer.WriteLine("<body>");
-
-                    // While the redirect_uri parameter should be guarded against unknown values,
-                    // it's still safer to encode it to avoid cross-site scripting attacks
-                    // if the authorization server has a relaxed policy concerning redirect URIs.
-                    writer.WriteLine($@"<form name=""form"" method=""post"" action=""{_encoder.Encode(context.RedirectUri)}"">");
-
-                    // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
-                    // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
-                    // For consistency, multiple parameters with the same name are also supported by this endpoint.
-                    foreach (var (key, value) in
-                        from parameter in context.Response.GetParameters()
-                        let values = (string?[]?) parameter.Value
-                        where values is not null
-                        from value in values
-                        where !string.IsNullOrEmpty(value)
-                        select (parameter.Key, Value: value))
-                    {
-                        writer.WriteLine($@"<input type=""hidden"" name=""{_encoder.Encode(key)}"" value=""{_encoder.Encode(value)}"" />");
-                    }
-
-                    writer.WriteLine(@"<noscript>Click here to finish the authorization process: <input type=""submit"" /></noscript>");
-                    writer.WriteLine("</form>");
-                    writer.WriteLine("<script>document.form.submit();</script>");
-                    writer.WriteLine("</body>");
-                    writer.WriteLine("</html>");
-                    writer.Flush();
-
-                    response.StatusCode = 200;
-                    response.ContentLength = buffer.Length;
-                    response.ContentType = "text/html;charset=UTF-8";
-
-                    response.Headers["Cache-Control"] = "no-cache";
-                    response.Headers["Pragma"] = "no-cache";
-                    response.Headers["Expires"] = "-1";
-
-                    buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                    await buffer.CopyToAsync(response.Body, 4096);
+                    writer.WriteLine($@"<input type=""hidden"" name=""{_encoder.Encode(key)}"" value=""{_encoder.Encode(value)}"" />");
                 }
+
+                writer.WriteLine(@"<noscript>Click here to finish the authorization process: <input type=""submit"" /></noscript>");
+                writer.WriteLine("</form>");
+                writer.WriteLine("<script>document.form.submit();</script>");
+                writer.WriteLine("</body>");
+                writer.WriteLine("</html>");
+                writer.Flush();
+
+                response.StatusCode = 200;
+                response.ContentLength = buffer.Length;
+                response.ContentType = "text/html;charset=UTF-8";
+
+                response.Headers[HeaderNames.CacheControl] = "no-cache";
+                response.Headers[HeaderNames.Pragma] = "no-cache";
+                response.Headers[HeaderNames.Expires] = "-1";
+
+                buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await buffer.CopyToAsync(response.Body, 4096);
 
                 context.HandleRequest();
             }
