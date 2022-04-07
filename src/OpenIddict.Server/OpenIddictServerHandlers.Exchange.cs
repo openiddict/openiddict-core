@@ -78,7 +78,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ExtractTokenRequest(IOpenIddictServerDispatcher dispatcher)
+            public ExtractTokenRequest(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -93,13 +93,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context)
+            public async ValueTask HandleAsync(ProcessRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new ExtractTokenRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -140,7 +135,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateTokenRequest(IOpenIddictServerDispatcher dispatcher)
+            public ValidateTokenRequest(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -155,13 +150,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context)
+            public async ValueTask HandleAsync(ProcessRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new ValidateTokenRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -201,7 +191,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public HandleTokenRequest(IOpenIddictServerDispatcher dispatcher)
+            public HandleTokenRequest(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -216,13 +206,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context)
+            public async ValueTask HandleAsync(ProcessRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new HandleTokenRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -298,7 +283,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ApplyTokenResponse(IOpenIddictServerDispatcher dispatcher)
+            public ApplyTokenResponse(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -313,13 +298,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(TContext context)
+            public async ValueTask HandleAsync(TContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new ApplyTokenResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -355,12 +335,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Reject token requests missing the mandatory grant_type parameter.
                 if (string.IsNullOrEmpty(context.Request.GrantType))
@@ -420,13 +396,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!string.IsNullOrEmpty(context.ClientId))
                 {
                     return default;
@@ -470,12 +441,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Reject grant_type=authorization_code requests missing the authorization code.
                 // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
@@ -512,12 +479,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Reject grant_type=client_credentials requests missing the client credentials.
                 // See https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
@@ -553,12 +516,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Reject grant_type=urn:ietf:params:oauth:grant-type:device_code requests missing the device code.
                 // See https://tools.ietf.org/html/rfc8628#section-3.4 for more information.
@@ -593,12 +552,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Reject grant_type=refresh_token requests missing the refresh token.
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
@@ -635,12 +590,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Reject grant_type=password requests missing username or password.
                 // See https://tools.ietf.org/html/rfc6749#section-4.3.2 for more information.
@@ -677,13 +628,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType())
                 {
                     return default;
@@ -742,13 +688,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // If all the specified scopes are registered in the options, avoid making a database lookup.
                 var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
                 scopes.ExceptWith(context.Options.Scopes);
@@ -798,7 +739,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
+            public ValidateClientId(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -814,13 +755,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 // Retrieve the application details corresponding to the requested client_id.
@@ -851,7 +787,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientType(IOpenIddictApplicationManager applicationManager)
+            public ValidateClientType(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -867,13 +803,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
@@ -938,7 +869,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
+            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -954,13 +885,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
@@ -1002,7 +928,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
+            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -1019,13 +945,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
@@ -1060,7 +981,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager)
+            public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -1077,13 +998,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
@@ -1133,7 +1049,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateScopePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateScopePermissions(IOpenIddictApplicationManager applicationManager)
+            public ValidateScopePermissions(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -1150,13 +1066,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
@@ -1201,7 +1112,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateProofKeyForCodeExchangeRequirement(IOpenIddictApplicationManager applicationManager)
+            public ValidateProofKeyForCodeExchangeRequirement(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -1217,13 +1128,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType())
                 {
                     return;
@@ -1266,7 +1172,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+            public ValidateToken(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -1280,13 +1186,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType() &&
                     !context.Request.IsDeviceCodeGrantType() &&
                     !context.Request.IsRefreshTokenGrantType())
@@ -1346,13 +1247,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType() &&
                     !context.Request.IsDeviceCodeGrantType() &&
                     !context.Request.IsRefreshTokenGrantType())
@@ -1438,13 +1334,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType())
                 {
                     return default;
@@ -1509,13 +1400,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType())
                 {
                     return default;
@@ -1628,13 +1514,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
                 {
                     return default;
@@ -1700,13 +1581,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleTokenRequestContext context)
+            public ValueTask HandleAsync(HandleTokenRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
                 {
                     return default;
@@ -1738,13 +1614,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyTokenResponseContext context)
+            public ValueTask HandleAsync(ApplyTokenResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (string.IsNullOrEmpty(context.Error))
                 {
                     return default;

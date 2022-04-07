@@ -21,8 +21,8 @@ public static partial class OpenIddictValidationEvents
         /// <summary>
         /// Creates a new instance of the <see cref="BaseContext"/> class.
         /// </summary>
-        protected BaseContext(OpenIddictValidationTransaction transaction)
-            => Transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
+        protected BaseContext(OpenIddictValidationTransaction transaction!!)
+            => Transaction = transaction;
 
         /// <summary>
         /// Gets the environment associated with the current request being processed.

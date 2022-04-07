@@ -38,18 +38,13 @@ public static class OpenIddictEntityFrameworkHelpers
     /// </remarks>
     /// <param name="builder">The builder used to configure the Entity Framework context.</param>
     /// <returns>The Entity Framework context builder.</returns>
-    public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this DbModelBuilder builder)
+    public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this DbModelBuilder builder!!)
         where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
         where TScope : OpenIddictEntityFrameworkScope<TKey>
         where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         builder.Configurations
             .Add(new OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
             .Add(new OpenIddictEntityFrameworkAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
@@ -66,13 +61,8 @@ public static class OpenIddictEntityFrameworkHelpers
     /// <param name="source">The query source.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The non-streamed async enumeration containing the results.</returns>
-    internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
+    internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source!!, CancellationToken cancellationToken)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
         return ExecuteAsync(source, cancellationToken);
 
         static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)

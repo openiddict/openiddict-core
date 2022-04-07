@@ -21,7 +21,7 @@ public class OpenIddictCoreExtensionsTests
         var builder = (OpenIddictBuilder) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddCore());
+        var exception = Assert.Throws<ArgumentNullException>(builder.AddCore);
 
         Assert.Equal("builder", exception.ParamName);
     }
@@ -135,10 +135,7 @@ public class OpenIddictCoreExtensionsTests
         // Assert
         var provider = services.BuildServiceProvider();
 
-        var exception = Assert.Throws<InvalidOperationException>(delegate
-        {
-            return provider.GetRequiredService<IOpenIddictApplicationManager>();
-        });
+        var exception = Assert.Throws<InvalidOperationException>(provider.GetRequiredService<IOpenIddictApplicationManager>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0273), exception.Message);
     }
@@ -156,10 +153,7 @@ public class OpenIddictCoreExtensionsTests
         // Assert
         var provider = services.BuildServiceProvider();
 
-        var exception = Assert.Throws<InvalidOperationException>(delegate
-        {
-            return provider.GetRequiredService<IOpenIddictAuthorizationManager>();
-        });
+        var exception = Assert.Throws<InvalidOperationException>(provider.GetRequiredService<IOpenIddictAuthorizationManager>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0274), exception.Message);
     }
@@ -177,10 +171,7 @@ public class OpenIddictCoreExtensionsTests
         // Assert
         var provider = services.BuildServiceProvider();
 
-        var exception = Assert.Throws<InvalidOperationException>(delegate
-        {
-            return provider.GetRequiredService<IOpenIddictScopeManager>();
-        });
+        var exception = Assert.Throws<InvalidOperationException>(provider.GetRequiredService<IOpenIddictScopeManager>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0275), exception.Message);
     }
@@ -198,10 +189,7 @@ public class OpenIddictCoreExtensionsTests
         // Assert
         var provider = services.BuildServiceProvider();
 
-        var exception = Assert.Throws<InvalidOperationException>(delegate
-        {
-            return provider.GetRequiredService<IOpenIddictTokenManager>();
-        });
+        var exception = Assert.Throws<InvalidOperationException>(provider.GetRequiredService<IOpenIddictTokenManager>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0276), exception.Message);
     }

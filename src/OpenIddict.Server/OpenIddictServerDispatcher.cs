@@ -19,22 +19,17 @@ public class OpenIddictServerDispatcher : IOpenIddictServerDispatcher
     /// Creates a new instance of the <see cref="OpenIddictServerDispatcher"/> class.
     /// </summary>
     public OpenIddictServerDispatcher(
-        ILogger<OpenIddictServerDispatcher> logger,
-        IOptionsMonitor<OpenIddictServerOptions> options,
-        IServiceProvider provider)
+        ILogger<OpenIddictServerDispatcher> logger!!,
+        IOptionsMonitor<OpenIddictServerOptions> options!!,
+        IServiceProvider provider!!)
     {
         _logger = logger;
         _options = options;
         _provider = provider;
     }
 
-    public async ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext
+    public async ValueTask DispatchAsync<TContext>(TContext context!!) where TContext : BaseContext
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
         await foreach (var handler in GetHandlersAsync())
         {
             try

@@ -21,7 +21,7 @@ public class OpenIddictEntityFrameworkCoreExtensionsTests
         var builder = (OpenIddictCoreBuilder) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore());
+        var exception = Assert.Throws<ArgumentNullException>(builder.UseEntityFrameworkCore);
 
         Assert.Equal("builder", exception.ParamName);
     }

@@ -61,7 +61,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
-            public RestoreCachedRequestParameters(IDistributedCache cache)
+            public RestoreCachedRequestParameters(IDistributedCache cache!!)
                 => _cache = cache;
 
             /// <summary>
@@ -77,13 +77,8 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
+            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // If a request_id parameter can be found in the authorization request,
@@ -129,7 +124,7 @@ public static partial class OpenIddictServerOwinHandlers
 
                 using var document = JsonDocument.Parse(
                     Base64UrlEncoder.Decode(((JsonWebToken) result.SecurityToken).InnerToken.EncodedPayload));
-                if (document.RootElement.ValueKind != JsonValueKind.Object)
+                if (document.RootElement.ValueKind is not JsonValueKind.Object)
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0117));
                 }
@@ -161,7 +156,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             public CacheRequestParameters(
                 IDistributedCache cache,
-                IOptionsMonitor<OpenIddictServerOwinOptions> options)
+                IOptionsMonitor<OpenIddictServerOwinOptions> options!!)
             {
                 _cache = cache;
                 _options = options;
@@ -180,22 +175,14 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
+            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var request = context.Transaction.GetOwinRequest();
-                if (request is null)
-                {
+                var request = context.Transaction.GetOwinRequest() ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 // Don't cache the request if the request doesn't include any parameter.
                 // If a request_id parameter can be found in the authorization request,
@@ -254,7 +241,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
-            public RemoveCachedRequest(IDistributedCache cache)
+            public RemoveCachedRequest(IDistributedCache cache!!)
                 => _cache = cache;
 
             /// <summary>
@@ -270,13 +257,8 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (string.IsNullOrEmpty(context.Request?.RequestId))
                 {
                     return default;
@@ -288,7 +270,7 @@ public static partial class OpenIddictServerOwinHandlers
 
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached payloads.
-                return new ValueTask(_cache.RemoveAsync(Cache.AuthorizationRequest + context.Request.RequestId));
+                return new(_cache.RemoveAsync(Cache.AuthorizationRequest + context.Request.RequestId));
             }
         }
 
@@ -315,20 +297,12 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
+            public async ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal))
@@ -406,20 +380,12 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
@@ -470,20 +436,12 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-                }
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
                    !string.Equals(context.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))

@@ -9,7 +9,7 @@ public class OpenIddictAuthorizationStoreResolver : IOpenIddictAuthorizationStor
 {
     private readonly IServiceProvider _provider;
 
-    public OpenIddictAuthorizationStoreResolver(IServiceProvider provider)
+    public OpenIddictAuthorizationStoreResolver(IServiceProvider provider!!)
         => _provider = provider;
 
     /// <summary>

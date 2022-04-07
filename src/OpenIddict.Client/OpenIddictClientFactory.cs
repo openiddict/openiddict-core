@@ -18,15 +18,15 @@ public class OpenIddictClientFactory : IOpenIddictClientFactory
     /// Creates a new instance of the <see cref="OpenIddictClientFactory"/> class.
     /// </summary>
     public OpenIddictClientFactory(
-        ILogger<OpenIddictClientDispatcher> logger,
-        IOptionsMonitor<OpenIddictClientOptions> options)
+        ILogger<OpenIddictClientDispatcher> logger!!,
+        IOptionsMonitor<OpenIddictClientOptions> options!!)
     {
         _logger = logger;
         _options = options;
     }
 
     public ValueTask<OpenIddictClientTransaction> CreateTransactionAsync()
-        => new ValueTask<OpenIddictClientTransaction>(new OpenIddictClientTransaction
+        => new(new OpenIddictClientTransaction
         {
             Logger = _logger,
             Options = _options.CurrentValue

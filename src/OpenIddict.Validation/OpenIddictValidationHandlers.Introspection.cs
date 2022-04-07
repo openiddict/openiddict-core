@@ -49,13 +49,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
+            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 context.Request.ClientId = context.Options.ClientId;
                 context.Request.ClientSecret = context.Options.ClientSecret;
 
@@ -79,13 +74,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
+            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 context.Request.Token = context.Token;
                 context.Request.TokenTypeHint = context.TokenTypeHint;
 
@@ -109,13 +99,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // Note: the introspection specification requires that server return "active: false" instead of a proper
                 // OAuth 2.0 error when the token is invalid, expired, revoked or invalid for any other reason.
                 // While OpenIddict's server can be tweaked to return a proper error (by removing NormalizeErrorResponse)
@@ -163,13 +148,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 foreach (var parameter in context.Response.GetParameters())
                 {
                     if (ValidateClaimType(parameter.Key, parameter.Value.Value))
@@ -239,12 +219,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // The issuer claim is optional. If it's not null or empty, validate it to
                 // ensure it matches the issuer registered in the server configuration.
@@ -292,12 +268,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // OpenIddict-based authorization servers always return the actual token type using
                 // the special "token_usage" claim, that helps resource servers determine whether the
@@ -351,13 +323,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            public async ValueTask HandleAsync(HandleIntrospectionResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 

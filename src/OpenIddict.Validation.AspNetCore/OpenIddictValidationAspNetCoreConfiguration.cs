@@ -19,13 +19,8 @@ public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<Aut
     /// Registers the OpenIddict validation handler in the global authentication options.
     /// </summary>
     /// <param name="options">The options instance to initialize.</param>
-    public void Configure(AuthenticationOptions options)
+    public void Configure(AuthenticationOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
         if (options.SchemeMap.TryGetValue(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
             builder.HandlerType != typeof(OpenIddictValidationAspNetCoreHandler))
@@ -37,13 +32,8 @@ public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<Aut
             OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
-    public void Configure(OpenIddictValidationOptions options)
+    public void Configure(OpenIddictValidationOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core validation components.
         options.Handlers.AddRange(OpenIddictValidationAspNetCoreHandlers.DefaultHandlers);
     }
@@ -53,13 +43,8 @@ public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<Aut
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, AuthenticationOptions options)
+    public void PostConfigure(string name, AuthenticationOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         if (!TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
             !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
         {

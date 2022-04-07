@@ -20,8 +20,8 @@ public class OpenIddictServerDataProtectionBuilder
     /// Initializes a new instance of <see cref="OpenIddictServerDataProtectionBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictServerDataProtectionBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictServerDataProtectionBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
@@ -35,13 +35,8 @@ public class OpenIddictServerDataProtectionBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-    public OpenIddictServerDataProtectionBuilder Configure(Action<OpenIddictServerDataProtectionOptions> configuration)
+    public OpenIddictServerDataProtectionBuilder Configure(Action<OpenIddictServerDataProtectionOptions> configuration!!)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         Services.Configure(configuration);
 
         return this;
@@ -53,30 +48,16 @@ public class OpenIddictServerDataProtectionBuilder
     /// </summary>
     /// <param name="provider">The data protection provider used to create token protectors.</param>
     /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-    public OpenIddictServerDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
-    {
-        if (provider is null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
-
-        return Configure(options => options.DataProtectionProvider = provider);
-    }
+    public OpenIddictServerDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider!!)
+        => Configure(options => options.DataProtectionProvider = provider);
 
     /// <summary>
     /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
     /// </summary>
     /// <param name="formatter">The formatter used to read and write tokens.</param>
     /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-    public OpenIddictServerDataProtectionBuilder UseFormatter(IOpenIddictServerDataProtectionFormatter formatter)
-    {
-        if (formatter is null)
-        {
-            throw new ArgumentNullException(nameof(formatter));
-        }
-
-        return Configure(options => options.Formatter = formatter);
-    }
+    public OpenIddictServerDataProtectionBuilder UseFormatter(IOpenIddictServerDataProtectionFormatter formatter!!)
+        => Configure(options => options.Formatter = formatter);
 
     /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new access tokens.

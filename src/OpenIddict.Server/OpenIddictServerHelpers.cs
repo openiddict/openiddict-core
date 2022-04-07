@@ -19,13 +19,8 @@ public static class OpenIddictServerHelpers
     /// <param name="name">The property name.</param>
     /// <returns>The property value or <c>null</c> if it couldn't be found.</returns>
     public static TProperty? GetProperty<TProperty>(
-        this OpenIddictServerTransaction transaction, string name) where TProperty : class
+        this OpenIddictServerTransaction transaction!!, string name) where TProperty : class
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
-
         if (string.IsNullOrEmpty(name))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));
@@ -48,14 +43,9 @@ public static class OpenIddictServerHelpers
     /// <param name="value">The property value.</param>
     /// <returns>The server transaction, so that calls can be easily chained.</returns>
     public static OpenIddictServerTransaction SetProperty<TProperty>(
-        this OpenIddictServerTransaction transaction,
+        this OpenIddictServerTransaction transaction!!,
         string name, TProperty? value) where TProperty : class
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
-
         if (string.IsNullOrEmpty(name))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0106), nameof(name));

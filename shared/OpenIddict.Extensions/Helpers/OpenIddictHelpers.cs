@@ -20,18 +20,8 @@ internal static class OpenIddictHelpers
     /// <param name="type">The type to introspect.</param>
     /// <param name="definition">The generic type definition.</param>
     /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
-    public static IEnumerable<Type> FindGenericBaseTypes(Type type, Type definition)
+    public static IEnumerable<Type> FindGenericBaseTypes(Type type!!, Type definition!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (definition is null)
-        {
-            throw new ArgumentNullException(nameof(definition));
-        }
-
         if (!definition.IsGenericTypeDefinition)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0263), nameof(definition));

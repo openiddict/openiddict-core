@@ -22,13 +22,8 @@ public static class OpenIddictCoreExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-    public static OpenIddictCoreBuilder AddCore(this OpenIddictBuilder builder)
+    public static OpenIddictCoreBuilder AddCore(this OpenIddictBuilder builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         builder.Services.AddLogging();
         builder.Services.AddMemoryCache();
         builder.Services.AddOptions();
@@ -106,18 +101,8 @@ public static class OpenIddictCoreExtensions
     /// <param name="configuration">The configuration delegate used to configure the core services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-    public static OpenIddictBuilder AddCore(this OpenIddictBuilder builder, Action<OpenIddictCoreBuilder> configuration)
+    public static OpenIddictBuilder AddCore(this OpenIddictBuilder builder!!, Action<OpenIddictCoreBuilder> configuration!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         configuration(builder.AddCore());
 
         return builder;

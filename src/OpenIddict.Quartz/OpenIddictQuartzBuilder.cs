@@ -18,8 +18,8 @@ public class OpenIddictQuartzBuilder
     /// Initializes a new instance of <see cref="OpenIddictQuartzBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictQuartzBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictQuartzBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
@@ -33,13 +33,8 @@ public class OpenIddictQuartzBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
-    public OpenIddictQuartzBuilder Configure(Action<OpenIddictQuartzOptions> configuration)
+    public OpenIddictQuartzBuilder Configure(Action<OpenIddictQuartzOptions> configuration!!)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         Services.Configure(configuration);
 
         return this;

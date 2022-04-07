@@ -22,13 +22,8 @@ public static class OpenIddictServerExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-    public static OpenIddictServerBuilder AddServer(this OpenIddictBuilder builder)
+    public static OpenIddictServerBuilder AddServer(this OpenIddictBuilder builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         builder.Services.AddLogging();
         builder.Services.AddOptions();
 
@@ -94,18 +89,8 @@ public static class OpenIddictServerExtensions
     /// <param name="configuration">The configuration delegate used to configure the server services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-    public static OpenIddictBuilder AddServer(this OpenIddictBuilder builder, Action<OpenIddictServerBuilder> configuration)
+    public static OpenIddictBuilder AddServer(this OpenIddictBuilder builder!!, Action<OpenIddictServerBuilder> configuration!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         configuration(builder.AddServer());
 
         return builder;

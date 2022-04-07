@@ -57,20 +57,12 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
+            public ValueTask HandleAsync(ApplyAuthorizationRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response is null)
-                {
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-                }
 
                 // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
                 // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.

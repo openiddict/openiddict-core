@@ -24,8 +24,8 @@ public class OpenIddictValidationOwinHandler : AuthenticationHandler<OpenIddictV
     /// <param name="dispatcher">The OpenIddict validation provider used by this instance.</param>
     /// <param name="factory">The OpenIddict validation factory used by this instance.</param>
     public OpenIddictValidationOwinHandler(
-        IOpenIddictValidationDispatcher dispatcher,
-        IOpenIddictValidationFactory factory)
+        IOpenIddictValidationDispatcher dispatcher!!,
+        IOpenIddictValidationFactory factory!!)
     {
         _dispatcher = dispatcher;
         _factory = factory;

@@ -38,7 +38,7 @@ public class OpenIddictMongoDbAuthorizationStoreResolverTests
         var resolver = new OpenIddictMongoDbAuthorizationStoreResolver(provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomAuthorization>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<CustomAuthorization>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0258), exception.Message);
     }

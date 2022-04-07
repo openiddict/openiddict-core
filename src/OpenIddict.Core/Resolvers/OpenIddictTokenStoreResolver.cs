@@ -9,7 +9,7 @@ public class OpenIddictTokenStoreResolver : IOpenIddictTokenStoreResolver
 {
     private readonly IServiceProvider _provider;
 
-    public OpenIddictTokenStoreResolver(IServiceProvider provider)
+    public OpenIddictTokenStoreResolver(IServiceProvider provider!!)
         => _provider = provider;
 
     /// <summary>

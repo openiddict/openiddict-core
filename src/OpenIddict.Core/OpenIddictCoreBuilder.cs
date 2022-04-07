@@ -20,8 +20,8 @@ public class OpenIddictCoreBuilder
     /// Initializes a new instance of <see cref="OpenIddictCoreBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictCoreBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictCoreBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
@@ -35,13 +35,8 @@ public class OpenIddictCoreBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder Configure(Action<OpenIddictCoreOptions> configuration)
+    public OpenIddictCoreBuilder Configure(Action<OpenIddictCoreOptions> configuration!!)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         Services.Configure(configuration);
 
         return this;
@@ -69,13 +64,8 @@ public class OpenIddictCoreBuilder
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder AddApplicationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public OpenIddictCoreBuilder AddApplicationStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>));
         if (root is null)
         {
@@ -125,13 +115,8 @@ public class OpenIddictCoreBuilder
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder AddAuthorizationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public OpenIddictCoreBuilder AddAuthorizationStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>));
         if (root is null)
         {
@@ -181,13 +166,8 @@ public class OpenIddictCoreBuilder
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder AddScopeStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public OpenIddictCoreBuilder AddScopeStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>));
         if (root is null)
         {
@@ -237,13 +217,8 @@ public class OpenIddictCoreBuilder
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder AddTokenStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public OpenIddictCoreBuilder AddTokenStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>));
         if (root is null)
         {
@@ -291,13 +266,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder ReplaceApplicationManager(Type type)
+    public OpenIddictCoreBuilder ReplaceApplicationManager(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>));
         if (root is null)
         {
@@ -348,13 +318,8 @@ public class OpenIddictCoreBuilder
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceApplicationStoreResolver(
-        Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (!typeof(IOpenIddictApplicationStoreResolver).IsAssignableFrom(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
@@ -385,13 +350,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder ReplaceAuthorizationManager(Type type)
+    public OpenIddictCoreBuilder ReplaceAuthorizationManager(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>));
         if (root is null)
         {
@@ -442,13 +402,8 @@ public class OpenIddictCoreBuilder
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver(
-        Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (!typeof(IOpenIddictAuthorizationStoreResolver).IsAssignableFrom(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
@@ -479,13 +434,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder ReplaceScopeManager(Type type)
+    public OpenIddictCoreBuilder ReplaceScopeManager(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>));
         if (root is null)
         {
@@ -536,13 +486,8 @@ public class OpenIddictCoreBuilder
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceScopeStoreResolver(
-        Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (!typeof(IOpenIddictScopeStoreResolver).IsAssignableFrom(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
@@ -573,13 +518,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder ReplaceTokenManager(Type type)
+    public OpenIddictCoreBuilder ReplaceTokenManager(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>));
         if (root is null)
         {
@@ -630,13 +570,8 @@ public class OpenIddictCoreBuilder
     /// <param name="lifetime">The lifetime of the registered service.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceTokenStoreResolver(
-        Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (!typeof(IOpenIddictTokenStoreResolver).IsAssignableFrom(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
@@ -679,13 +614,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The application entity type.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder SetDefaultApplicationEntity(Type type)
+    public OpenIddictCoreBuilder SetDefaultApplicationEntity(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (type.IsValueType)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
@@ -706,13 +636,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The authorization entity type.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder SetDefaultAuthorizationEntity(Type type)
+    public OpenIddictCoreBuilder SetDefaultAuthorizationEntity(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (type.IsValueType)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
@@ -733,13 +658,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The scope entity type.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder SetDefaultScopeEntity(Type type)
+    public OpenIddictCoreBuilder SetDefaultScopeEntity(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (type.IsValueType)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
@@ -760,13 +680,8 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The token entity type.</param>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-    public OpenIddictCoreBuilder SetDefaultTokenEntity(Type type)
+    public OpenIddictCoreBuilder SetDefaultTokenEntity(Type type!!)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
         if (type.IsValueType)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));

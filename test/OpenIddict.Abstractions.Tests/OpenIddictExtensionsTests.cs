@@ -18,7 +18,7 @@ public class OpenIddictExtensionsTests
         var services = (IServiceCollection) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => services.AddOpenIddict());
+        var exception = Assert.Throws<ArgumentNullException>(services.AddOpenIddict);
 
         Assert.Equal("services", exception.ParamName);
     }

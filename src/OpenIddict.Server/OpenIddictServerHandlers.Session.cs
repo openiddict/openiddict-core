@@ -44,7 +44,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ExtractLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+            public ExtractLogoutRequest(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -59,13 +59,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context)
+            public async ValueTask HandleAsync(ProcessRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new ExtractLogoutRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -106,7 +101,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+            public ValidateLogoutRequest(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -121,13 +116,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context)
+            public async ValueTask HandleAsync(ProcessRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new ValidateLogoutRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -167,7 +157,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public HandleLogoutRequest(IOpenIddictServerDispatcher dispatcher)
+            public HandleLogoutRequest(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -182,13 +172,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context)
+            public async ValueTask HandleAsync(ProcessRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new HandleLogoutRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -263,7 +248,7 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ApplyLogoutResponse(IOpenIddictServerDispatcher dispatcher)
+            public ApplyLogoutResponse(IOpenIddictServerDispatcher dispatcher!!)
                 => _dispatcher = dispatcher;
 
             /// <summary>
@@ -278,13 +263,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(TContext context)
+            public async ValueTask HandleAsync(TContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var notification = new ApplyLogoutResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -320,13 +300,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateLogoutRequestContext context)
+            public ValueTask HandleAsync(ValidateLogoutRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                 {
                     return default;
@@ -371,7 +346,7 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientPostLogoutRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientPostLogoutRedirectUri(IOpenIddictApplicationManager applicationManager)
+            public ValidateClientPostLogoutRedirectUri(IOpenIddictApplicationManager applicationManager!!)
                 => _applicationManager = applicationManager;
 
             /// <summary>
@@ -387,13 +362,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateLogoutRequestContext context)
+            public async ValueTask HandleAsync(ValidateLogoutRequestContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(!string.IsNullOrEmpty(context.PostLogoutRedirectUri), SR.FormatID4000(Parameters.PostLogoutRedirectUri));
 
                 if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
@@ -444,13 +414,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (context.Request is null)
                 {
                     return default;
@@ -486,12 +451,8 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Attach the request state to the logout response.
                 if (string.IsNullOrEmpty(context.Response.State))

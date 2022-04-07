@@ -28,10 +28,10 @@ namespace OpenIddict.Core;
 public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TToken : class
 {
     public OpenIddictTokenManager(
-        IOpenIddictTokenCache<TToken> cache,
-        ILogger<OpenIddictTokenManager<TToken>> logger,
-        IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictTokenStoreResolver resolver)
+        IOpenIddictTokenCache<TToken> cache!!,
+        ILogger<OpenIddictTokenManager<TToken>> logger!!,
+        IOptionsMonitor<OpenIddictCoreOptions> options!!,
+        IOpenIddictTokenStoreResolver resolver!!)
     {
         Cache = cache;
         Logger = logger;
@@ -81,15 +81,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// whose result returns the number of tokens that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TResult>(
-        Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return Store.CountAsync(query, cancellationToken);
-    }
+        Func<IQueryable<TToken>, IQueryable<TResult>> query!!, CancellationToken cancellationToken = default)
+        => Store.CountAsync(query, cancellationToken);
 
     /// <summary>
     /// Creates a new token.
@@ -99,13 +92,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask CreateAsync(TToken token, CancellationToken cancellationToken = default)
+    public virtual async ValueTask CreateAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         // If no status was explicitly specified, assume that the token is valid.
         if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
         {
@@ -165,13 +153,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the token.
     /// </returns>
     public virtual async ValueTask<TToken> CreateAsync(
-        OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
+        OpenIddictTokenDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         var token = await Store.InstantiateAsync(cancellationToken);
         if (token is null)
         {
@@ -192,13 +175,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask DeleteAsync(TToken token, CancellationToken cancellationToken = default)
+    public virtual async ValueTask DeleteAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         if (!Options.CurrentValue.DisableEntityCaching)
         {
             await Cache.RemoveAsync(token, cancellationToken);
@@ -579,15 +557,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the application identifier associated with the token.
     /// </returns>
-    public virtual ValueTask<string?> GetApplicationIdAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetApplicationIdAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetApplicationIdAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetApplicationIdAsync(token, cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns the first element.
@@ -600,15 +571,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TResult>(
-        Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return GetAsync(static (tokens, query) => query(tokens), query, cancellationToken);
-    }
+        Func<IQueryable<TToken>, IQueryable<TResult>> query!!, CancellationToken cancellationToken = default)
+        => GetAsync(static (tokens, query) => query(tokens), query, cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns the first element.
@@ -623,16 +587,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TState, TResult>(
-        Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+        Func<IQueryable<TToken>, TState, IQueryable<TResult>> query!!,
         TState state, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return Store.GetAsync(query, state, cancellationToken);
-    }
+        => Store.GetAsync(query, state, cancellationToken);
 
     /// <summary>
     /// Retrieves the optional authorization identifier associated with a token.
@@ -643,15 +600,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the authorization identifier associated with the token.
     /// </returns>
-    public virtual ValueTask<string?> GetAuthorizationIdAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetAuthorizationIdAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetAuthorizationIdAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetAuthorizationIdAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the creation date associated with a token.
@@ -662,15 +612,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the creation date associated with the specified token.
     /// </returns>
-    public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetCreationDateAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetCreationDateAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the expiration date associated with a token.
@@ -681,15 +624,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the expiration date associated with the specified token.
     /// </returns>
-    public virtual ValueTask<DateTimeOffset?> GetExpirationDateAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetExpirationDateAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<DateTimeOffset?> GetExpirationDateAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetExpirationDateAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the unique identifier associated with a token.
@@ -700,15 +636,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the unique identifier associated with the token.
     /// </returns>
-    public virtual ValueTask<string?> GetIdAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetIdAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetIdAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetIdAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the payload associated with a token.
@@ -719,15 +648,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the payload associated with the specified token.
     /// </returns>
-    public virtual ValueTask<string?> GetPayloadAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetPayloadAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetPayloadAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetPayloadAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the additional properties associated with a token.
@@ -739,15 +661,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// whose result returns all the additional properties associated with the token.
     /// </returns>
     public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(
-        TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetPropertiesAsync(token, cancellationToken);
-    }
+        TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetPropertiesAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the redemption date associated with a token.
@@ -758,15 +673,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the redemption date associated with the specified token.
     /// </returns>
-    public virtual ValueTask<DateTimeOffset?> GetRedemptionDateAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetRedemptionDateAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<DateTimeOffset?> GetRedemptionDateAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetRedemptionDateAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the reference identifier associated with a token.
@@ -779,15 +687,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the reference identifier associated with the specified token.
     /// </returns>
-    public virtual ValueTask<string?> GetReferenceIdAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetReferenceIdAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetReferenceIdAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetReferenceIdAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the status associated with a token.
@@ -798,15 +699,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the status associated with the specified token.
     /// </returns>
-    public virtual ValueTask<string?> GetStatusAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetStatusAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetStatusAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetStatusAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the subject associated with a token.
@@ -817,15 +711,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the subject associated with the specified token.
     /// </returns>
-    public virtual ValueTask<string?> GetSubjectAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetSubjectAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetSubjectAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetSubjectAsync(token, cancellationToken);
 
     /// <summary>
     /// Retrieves the token type associated with a token.
@@ -836,15 +723,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the token type associated with the specified token.
     /// </returns>
-    public virtual ValueTask<string?> GetTypeAsync(TToken token, CancellationToken cancellationToken = default)
-    {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        return Store.GetTypeAsync(token, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetTypeAsync(TToken token!!, CancellationToken cancellationToken = default)
+        => Store.GetTypeAsync(token, cancellationToken);
 
     /// <summary>
     /// Determines whether a given token has the specified status.
@@ -853,13 +733,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="status">The expected status.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the token has the specified status, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> HasStatusAsync(TToken token, string status, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> HasStatusAsync(TToken token!!, string status, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         if (string.IsNullOrEmpty(status))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
@@ -875,13 +750,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="type">The expected type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the token has the specified type, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> HasTypeAsync(TToken token, string type, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> HasTypeAsync(TToken token!!, string type, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
@@ -897,13 +767,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="types">The expected types.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the token has any of the specified types, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> HasTypeAsync(TToken token, ImmutableArray<string> types, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> HasTypeAsync(TToken token!!, ImmutableArray<string> types, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         var type = await Store.GetTypeAsync(token, cancellationToken);
         if (string.IsNullOrEmpty(type))
         {
@@ -940,15 +805,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>All the elements returned when executing the specified query.</returns>
     public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
-        Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return ListAsync(static (tokens, query) => query(tokens), query, cancellationToken);
-    }
+        Func<IQueryable<TToken>, IQueryable<TResult>> query!!, CancellationToken cancellationToken = default)
+        => ListAsync(static (tokens, query) => query(tokens), query, cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns all the corresponding elements.
@@ -960,16 +818,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>All the elements returned when executing the specified query.</returns>
     public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-        Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+        Func<IQueryable<TToken>, TState, IQueryable<TResult>> query!!,
         TState state, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return Store.ListAsync(query, state, cancellationToken);
-    }
+        => Store.ListAsync(query, state, cancellationToken);
 
     /// <summary>
     /// Populates the token using the specified descriptor.
@@ -980,19 +831,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask PopulateAsync(TToken token,
-        OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
+    public virtual async ValueTask PopulateAsync(TToken token!!,
+        OpenIddictTokenDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         await Store.SetApplicationIdAsync(token, descriptor.ApplicationId, cancellationToken);
         await Store.SetAuthorizationIdAsync(token, descriptor.AuthorizationId, cancellationToken);
         await Store.SetCreationDateAsync(token, descriptor.CreationDate, cancellationToken);
@@ -1016,19 +857,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
     public virtual async ValueTask PopulateAsync(
-        OpenIddictTokenDescriptor descriptor,
-        TToken token, CancellationToken cancellationToken = default)
+        OpenIddictTokenDescriptor descriptor!!,
+        TToken token!!, CancellationToken cancellationToken = default)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         descriptor.ApplicationId = await Store.GetApplicationIdAsync(token, cancellationToken);
         descriptor.AuthorizationId = await Store.GetAuthorizationIdAsync(token, cancellationToken);
         descriptor.CreationDate = await Store.GetCreationDateAsync(token, cancellationToken);
@@ -1058,19 +889,15 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// </returns>
     public virtual ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken = default)
         => Store.PruneAsync(threshold, cancellationToken);
+
     /// <summary>
     /// Tries to redeem a token.
     /// </summary>
     /// <param name="token">The token to redeem.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> TryRedeemAsync(TToken token, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> TryRedeemAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         // If the token doesn't have a redemption date attached, this likely means it's
         // the first time the token is redeemed. In this case, attach the current date.
         if (await Store.GetRedemptionDateAsync(token, cancellationToken) is null)
@@ -1110,13 +937,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="token">The token to reject.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> TryRejectAsync(TToken token, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> TryRejectAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         await Store.SetStatusAsync(token, Statuses.Rejected, cancellationToken);
 
         try
@@ -1149,13 +971,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="token">The token to revoke.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the token was successfully revoked, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> TryRevokeAsync(TToken token, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> TryRevokeAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         await Store.SetStatusAsync(token, Statuses.Revoked, cancellationToken);
 
         try
@@ -1190,13 +1007,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask UpdateAsync(TToken token, CancellationToken cancellationToken = default)
+    public virtual async ValueTask UpdateAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         var results = await GetValidationResultsAsync(token, cancellationToken);
         if (results.Any(result => result != ValidationResult.Success))
         {
@@ -1243,18 +1055,9 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask UpdateAsync(TToken token,
-        OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
+    public virtual async ValueTask UpdateAsync(TToken token!!,
+        OpenIddictTokenDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
 
         // Store the original reference identifier for later comparison.
         var comparand = await Store.GetReferenceIdAsync(token, cancellationToken);
@@ -1278,13 +1081,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The validation error encountered when validating the token.</returns>
     public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
-        TToken token, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        TToken token!!, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (token is null)
-        {
-            throw new ArgumentNullException(nameof(token));
-        }
-
         // If a reference identifier was associated with the token,
         // ensure it's not already used for a different token.
         var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
@@ -1334,7 +1132,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         // Compute the digest of the generated identifier and use it as the hashed identifier of the reference token.
         // Doing that prevents token identifiers stolen from the database from being used as valid reference tokens.
         using var algorithm = SHA256.Create();
-        return new ValueTask<string>(Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(identifier))));
+        return new(Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(identifier))));
     }
 
     /// <inheritdoc/>

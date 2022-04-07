@@ -22,13 +22,8 @@ public static class OpenIddictClientAspNetCoreExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/>.</returns>
-    public static OpenIddictClientAspNetCoreBuilder UseAspNetCore(this OpenIddictClientBuilder builder)
+    public static OpenIddictClientAspNetCoreBuilder UseAspNetCore(this OpenIddictClientBuilder builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         builder.Services.AddAuthentication();
 
         builder.Services.TryAddScoped<OpenIddictClientAspNetCoreHandler>();
@@ -64,18 +59,8 @@ public static class OpenIddictClientAspNetCoreExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     public static OpenIddictClientBuilder UseAspNetCore(
-        this OpenIddictClientBuilder builder, Action<OpenIddictClientAspNetCoreBuilder> configuration)
+        this OpenIddictClientBuilder builder!!, Action<OpenIddictClientAspNetCoreBuilder> configuration!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         configuration(builder.UseAspNetCore());
 
         return builder;

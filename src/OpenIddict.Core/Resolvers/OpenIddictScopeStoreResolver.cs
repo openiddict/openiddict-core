@@ -9,7 +9,7 @@ public class OpenIddictScopeStoreResolver : IOpenIddictScopeStoreResolver
 {
     private readonly IServiceProvider _provider;
 
-    public OpenIddictScopeStoreResolver(IServiceProvider provider)
+    public OpenIddictScopeStoreResolver(IServiceProvider provider!!)
         => _provider = provider;
 
     /// <summary>

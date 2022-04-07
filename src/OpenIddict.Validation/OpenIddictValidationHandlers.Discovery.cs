@@ -45,12 +45,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // The issuer returned in the discovery document must exactly match the URL used to access it.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
@@ -97,13 +93,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // Note: the jwks_uri node is required by the OpenID Connect discovery specification.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
                 var address = (string?) context.Response[Metadata.JwksUri];
@@ -149,13 +140,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var address = (string?) context.Response[Metadata.IntrospectionEndpoint];
                 if (!string.IsNullOrEmpty(address))
                 {
@@ -193,12 +179,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Resolve the client authentication methods supported by the introspection endpoint, if available.
                 var methods = context.Response[Metadata.IntrospectionEndpointAuthMethodsSupported]?.GetUnnamedParameters();
@@ -235,13 +217,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            public ValueTask HandleAsync(HandleCryptographyResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var keys = context.Response[JsonWebKeySetParameterNames.Keys]?.GetUnnamedParameters();
                 if (keys is not { Count: > 0 })
                 {

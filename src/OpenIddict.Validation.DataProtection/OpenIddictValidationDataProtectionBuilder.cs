@@ -20,8 +20,8 @@ public class OpenIddictValidationDataProtectionBuilder
     /// Initializes a new instance of <see cref="OpenIddictValidationDataProtectionBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictValidationDataProtectionBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictValidationDataProtectionBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
@@ -35,13 +35,8 @@ public class OpenIddictValidationDataProtectionBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
-    public OpenIddictValidationDataProtectionBuilder Configure(Action<OpenIddictValidationDataProtectionOptions> configuration)
+    public OpenIddictValidationDataProtectionBuilder Configure(Action<OpenIddictValidationDataProtectionOptions> configuration!!)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         Services.Configure(configuration);
 
         return this;
@@ -53,30 +48,16 @@ public class OpenIddictValidationDataProtectionBuilder
     /// </summary>
     /// <param name="provider">The data protection provider used to create token protectors.</param>
     /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
-    public OpenIddictValidationDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
-    {
-        if (provider is null)
-        {
-            throw new ArgumentNullException(nameof(provider));
-        }
-
-        return Configure(options => options.DataProtectionProvider = provider);
-    }
+    public OpenIddictValidationDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider!!)
+        => Configure(options => options.DataProtectionProvider = provider);
 
     /// <summary>
     /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
     /// </summary>
     /// <param name="formatter">The formatter used to read tokens.</param>
     /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
-    public OpenIddictValidationDataProtectionBuilder UseFormatter(IOpenIddictValidationDataProtectionFormatter formatter)
-    {
-        if (formatter is null)
-        {
-            throw new ArgumentNullException(nameof(formatter));
-        }
-
-        return Configure(options => options.Formatter = formatter);
-    }
+    public OpenIddictValidationDataProtectionBuilder UseFormatter(IOpenIddictValidationDataProtectionFormatter formatter!!)
+        => Configure(options => options.Formatter = formatter);
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]

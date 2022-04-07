@@ -13,13 +13,8 @@ namespace OpenIddict.Validation.DataProtection;
 
 public class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
 {
-    public ClaimsPrincipal ReadToken(BinaryReader reader)
+    public ClaimsPrincipal ReadToken(BinaryReader reader!!)
     {
-        if (reader is null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
-
         var (principal, properties) = Read(reader);
 
         // Tokens serialized using the ASP.NET Core Data Protection stack are compound

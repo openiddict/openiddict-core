@@ -14,7 +14,7 @@ public class OpenIddictQuartzExtensionsTests
         var builder = (OpenIddictCoreBuilder) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.UseQuartz());
+        var exception = Assert.Throws<ArgumentNullException>(builder.UseQuartz);
 
         Assert.Equal("builder", exception.ParamName);
     }

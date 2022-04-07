@@ -14,25 +14,15 @@ namespace OpenIddict.Server.Owin;
 public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
                                                  IPostConfigureOptions<OpenIddictServerOwinOptions>
 {
-    public void Configure(OpenIddictServerOptions options)
+    public void Configure(OpenIddictServerOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         // Register the built-in event handlers used by the OpenIddict OWIN server components.
         options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
     }
 
-    public void PostConfigure(string name, OpenIddictServerOwinOptions options)
+    public void PostConfigure(string name, OpenIddictServerOwinOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (options.AuthenticationMode == AuthenticationMode.Active)
+        if (options.AuthenticationMode is AuthenticationMode.Active)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0119));
         }

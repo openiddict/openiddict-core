@@ -21,17 +21,12 @@ public class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
     private readonly IServiceProvider _provider;
 
-    public OpenIddictValidationSystemNetHttpConfiguration(IServiceProvider provider)
+    public OpenIddictValidationSystemNetHttpConfiguration(IServiceProvider provider!!)
         => _provider = provider;
 #endif
 
-    public void Configure(OpenIddictValidationOptions options)
+    public void Configure(OpenIddictValidationOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         // Register the built-in event handlers used by the OpenIddict System.Net.Http validation components.
         options.Handlers.AddRange(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers);
     }
@@ -39,13 +34,8 @@ public class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<
     public void Configure(HttpClientFactoryOptions options)
         => Debug.Fail("This infrastructure method shouldn't be called.");
 
-    public void Configure(string name, HttpClientFactoryOptions options)
+    public void Configure(string name, HttpClientFactoryOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
 
         if (!string.Equals(name, assembly.Name, StringComparison.Ordinal))

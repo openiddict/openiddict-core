@@ -17,8 +17,8 @@ public class OpenIddictBuilder
     /// Initializes a new instance of <see cref="OpenIddictBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
