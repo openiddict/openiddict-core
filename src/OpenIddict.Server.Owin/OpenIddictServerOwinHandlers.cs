@@ -966,11 +966,6 @@ public static partial class OpenIddictServerOwinHandlers
         {
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
-            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another server stack.
-            var response = context.Transaction.GetOwinRequest()?.Context.Response ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
-
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
                 return default;

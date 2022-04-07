@@ -155,6 +155,7 @@
     <Rule Id="CA2247" Action="Warning" />          <!-- Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum. -->
     <Rule Id="CA2248" Action="Warning" />          <!-- Provide correct 'enum' argument to 'Enum.HasFlag' -->
     <Rule Id="CA2249" Action="Warning" />          <!-- Consider using 'string.Contains' instead of 'string.IndexOf' -->
+    <Rule Id="CA2254" Action="None" />             <!-- Template should be a static expression -->
     <Rule Id="CA2300" Action="None" />             <!-- Do not use insecure deserializer BinaryFormatter -->
     <Rule Id="CA2301" Action="None" />             <!-- Do not call BinaryFormatter.Deserialize without first setting BinaryFormatter.Binder -->
     <Rule Id="CA2302" Action="None" />             <!-- Ensure BinaryFormatter.Binder is set before calling BinaryFormatter.Deserialize -->

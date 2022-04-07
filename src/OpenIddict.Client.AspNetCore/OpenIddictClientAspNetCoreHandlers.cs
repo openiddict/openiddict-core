@@ -647,11 +647,6 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(TContext context!!)
         {
-            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another server stack.
-            var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
