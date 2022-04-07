@@ -916,7 +916,6 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     public virtual async ValueTask UpdateAsync(TApplication application!!,
         OpenIddictApplicationDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-
         // Store the original client secret for later comparison.
         var comparand = await Store.GetClientSecretAsync(application, cancellationToken);
         await PopulateAsync(application, descriptor, cancellationToken);
@@ -942,7 +941,6 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
         TApplication application!!, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-
         // Ensure the client_id is not null or empty and is not already used for a different application.
         var identifier = await Store.GetClientIdAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(identifier))

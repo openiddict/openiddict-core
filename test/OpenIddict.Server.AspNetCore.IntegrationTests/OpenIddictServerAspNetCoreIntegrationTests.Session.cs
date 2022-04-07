@@ -12,7 +12,7 @@ namespace OpenIddict.Server.AspNetCore.IntegrationTests;
 
 public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServerIntegrationTests
 {
-    [Fact(Skip = "The handler responsible of rejecting such requests has not been ported yet.")]
+    [Fact(Skip = "The handler responsible for rejecting such requests has not been ported yet.")]
     public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
     {
         // Arrange

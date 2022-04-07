@@ -38,7 +38,7 @@ public static partial class OpenIddictClientHandlers
             ExtractSigningKeys.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of extracting the issuer from the discovery document.
+        /// Contains the logic responsible for extracting the issuer from the discovery document.
         /// </summary>
         public class ValidateIssuer : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -55,7 +55,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // The issuer returned in the discovery document must exactly match the URL used to access it.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient.
                 var issuer = (string?) context.Response[Metadata.Issuer];
@@ -86,7 +85,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the authorization endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the authorization endpoint address from the discovery document.
         /// </summary>
         public class ExtractAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -133,7 +132,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the JWKS endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the JWKS endpoint address from the discovery document.
         /// </summary>
         public class ExtractCryptographyEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -180,7 +179,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the token endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the token endpoint address from the discovery document.
         /// </summary>
         public class ExtractTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -218,7 +217,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the userinfo endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the userinfo endpoint address from the discovery document.
         /// </summary>
         public class ExtractUserinfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -256,7 +255,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the supported grant types from the discovery document.
+        /// Contains the logic responsible for extracting the supported grant types from the discovery document.
         /// </summary>
         public class ExtractGrantTypes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -273,7 +272,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // Resolve the grant types supported by the authorization endpoint, if available.
                 var types = context.Response[Metadata.GrantTypesSupported]?.GetUnnamedParameters();
                 if (types is { Count: > 0 })
@@ -294,7 +292,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the supported response types from the discovery document.
+        /// Contains the logic responsible for extracting the supported response types from the discovery document.
         /// </summary>
         public class ExtractResponseModes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -311,7 +309,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // Resolve the response modes supported by the authorization endpoint, if available.
                 var modes = context.Response[Metadata.ResponseModesSupported]?.GetUnnamedParameters();
                 if (modes is { Count: > 0 })
@@ -332,7 +329,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the supported response types from the discovery document.
+        /// Contains the logic responsible for extracting the supported response types from the discovery document.
         /// </summary>
         public class ExtractResponseTypes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -349,7 +346,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // Resolve the response types supported by the authorization endpoint, if available.
                 var types = context.Response[Metadata.ResponseTypesSupported]?.GetUnnamedParameters();
                 if (types is { Count: > 0 })
@@ -370,7 +366,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the supported code challenge methods from the discovery document.
+        /// Contains the logic responsible for extracting the supported code challenge methods from the discovery document.
         /// </summary>
         public class ExtractCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -387,7 +383,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // Resolve the code challenge methods supported by the authorization endpoint, if available.
                 var methods = context.Response[Metadata.CodeChallengeMethodsSupported]?.GetUnnamedParameters();
                 if (methods is { Count: > 0 })
@@ -408,7 +403,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the supported scopes from the discovery document.
+        /// Contains the logic responsible for extracting the supported scopes from the discovery document.
         /// </summary>
         public class ExtractScopes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -425,7 +420,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // Resolve the scopes supported by the remote server, if available.
                 var scopes = context.Response[Metadata.ScopesSupported]?.GetUnnamedParameters();
                 if (scopes is { Count: > 0 })
@@ -446,7 +440,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the flag indicating
+        /// Contains the logic responsible for extracting the flag indicating
         /// whether the "iss" parameter is supported from the discovery document.
         /// </summary>
         public class ExtractIssuerParameterRequirement : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -472,7 +466,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the authentication methods
+        /// Contains the logic responsible for extracting the authentication methods
         /// supported by the token endpoint from the discovery document.
         /// </summary>
         public class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -490,7 +484,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // Resolve the client authentication methods supported by the token endpoint, if available.
                 var methods = context.Response[Metadata.TokenEndpointAuthMethodsSupported]?.GetUnnamedParameters();
                 if (methods is { Count: > 0 })
@@ -511,7 +504,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the signing keys from the JWKS document.
+        /// Contains the logic responsible for extracting the signing keys from the JWKS document.
         /// </summary>
         public class ExtractSigningKeys : IOpenIddictClientHandler<HandleCryptographyResponseContext>
         {

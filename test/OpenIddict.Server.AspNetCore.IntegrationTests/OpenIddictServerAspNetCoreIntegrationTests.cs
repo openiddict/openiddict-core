@@ -798,7 +798,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The caller is responsible of disposing the test server.")]
+        Justification = "The caller is responsible for disposing the test server.")]
     protected override
 #if SUPPORTS_GENERIC_HOST
         async

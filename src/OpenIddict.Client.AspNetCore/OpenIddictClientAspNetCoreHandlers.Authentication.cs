@@ -40,7 +40,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             ProcessLocalErrorResponse<ApplyRedirectionResponseContext>.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of processing authorization requests using 302 redirects.
+        /// Contains the logic responsible for processing authorization requests using 302 redirects.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class ProcessQueryRequest : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>

@@ -52,7 +52,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing verification responses that should trigger a host redirection.
+    /// Contains the logic responsible for processing verification responses that should trigger a host redirection.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
     public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyVerificationResponseContext>

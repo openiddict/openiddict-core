@@ -40,7 +40,7 @@ public static partial class OpenIddictServerHandlers
             AttachClaims.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of extracting userinfo requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for extracting userinfo requests and invoking the corresponding event handlers.
         /// </summary>
         public class ExtractUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -97,7 +97,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating userinfo requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for validating userinfo requests and invoking the corresponding event handlers.
         /// </summary>
         public class ValidateUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -153,7 +153,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of handling userinfo requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for handling userinfo requests and invoking the corresponding event handlers.
         /// </summary>
         public class HandleUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -240,7 +240,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing userinfo responses and invoking the corresponding event handlers.
+        /// Contains the logic responsible for processing userinfo responses and invoking the corresponding event handlers.
         /// </summary>
         public class ApplyUserinfoResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
@@ -283,7 +283,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting userinfo requests that don't specify an access token.
+        /// Contains the logic responsible for rejecting userinfo requests that don't specify an access token.
         /// </summary>
         public class ValidateAccessTokenParameter : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
         {
@@ -317,7 +317,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting userinfo requests that don't specify a valid token.
+        /// Contains the logic responsible for rejecting userinfo requests that don't specify a valid token.
         /// </summary>
         public class ValidateToken : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
         {
@@ -373,7 +373,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the principal
+        /// Contains the logic responsible for attaching the principal
         /// extracted from the access token to the event context.
         /// </summary>
         public class AttachPrincipal : IOpenIddictServerHandler<HandleUserinfoRequestContext>
@@ -404,7 +404,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the audiences to the userinfo response.
+        /// Contains the logic responsible for attaching the audiences to the userinfo response.
         /// </summary>
         public class AttachAudiences : IOpenIddictServerHandler<HandleUserinfoRequestContext>
         {
@@ -433,7 +433,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching well known claims to the userinfo response.
+        /// Contains the logic responsible for attaching well known claims to the userinfo response.
         /// </summary>
         public class AttachClaims : IOpenIddictServerHandler<HandleUserinfoRequestContext>
         {

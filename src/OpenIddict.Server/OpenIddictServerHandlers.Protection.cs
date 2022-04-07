@@ -45,7 +45,7 @@ public static partial class OpenIddictServerHandlers
             BeautifyToken.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of resolving the validation parameters used to validate tokens.
+        /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
         /// </summary>
         public class ResolveTokenValidationParameters : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -113,7 +113,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating reference token identifiers.
+        /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class ValidateReferenceTokenIdentifier : IOpenIddictServerHandler<ValidateTokenContext>
@@ -230,7 +230,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating tokens generated using IdentityModel.
+        /// Contains the logic responsible for validating tokens generated using IdentityModel.
         /// </summary>
         public class ValidateIdentityModelToken : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -376,7 +376,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of normalizing the scope claims stored in the tokens.
+        /// Contains the logic responsible for normalizing the scope claims stored in the tokens.
         /// </summary>
         public class NormalizeScopeClaims : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -416,7 +416,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of mapping internal claims used by OpenIddict.
+        /// Contains the logic responsible for mapping internal claims used by OpenIddict.
         /// </summary>
         public class MapInternalClaims : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -440,7 +440,7 @@ public static partial class OpenIddictServerHandlers
 
                 // To reduce the size of tokens, some of the private claims used by OpenIddict
                 // are mapped to their standard equivalent before being removed from the token.
-                // This handler is responsible of adding back the private claims to the principal
+                // This handler is responsible for adding back the private claims to the principal
                 // when receiving the token (e.g "oi_prst" is resolved from the "scope" claim).
 
                 // In OpenIddict 3.0, the creation date of a token is stored in "oi_crt_dt".
@@ -514,7 +514,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of restoring the properties associated with a reference token entry.
+        /// Contains the logic responsible for restoring the properties associated with a reference token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class RestoreReferenceTokenProperties : IOpenIddictServerHandler<ValidateTokenContext>
@@ -561,7 +561,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands for which no valid principal was resolved.
+        /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
         /// </summary>
         public class ValidatePrincipal : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -633,7 +633,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands that use an expired token.
+        /// Contains the logic responsible for rejecting authentication demands that use an expired token.
         /// </summary>
         public class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -687,7 +687,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands that
+        /// Contains the logic responsible for rejecting authentication demands that
         /// use a token whose entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -885,7 +885,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of authentication demands a token whose
+        /// Contains the logic responsible for authentication demands a token whose
         /// associated authorization entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -950,7 +950,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of resolving the signing and encryption credentials used to protect tokens.
+        /// Contains the logic responsible for resolving the signing and encryption credentials used to protect tokens.
         /// </summary>
         public class AttachSecurityCredentials : IOpenIddictServerHandler<GenerateTokenContext>
         {
@@ -993,7 +993,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of creating a token entry.
+        /// Contains the logic responsible for creating a token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class CreateTokenEntry : IOpenIddictServerHandler<GenerateTokenContext>
@@ -1085,7 +1085,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of generating a token using IdentityModel.
+        /// Contains the logic responsible for generating a token using IdentityModel.
         /// </summary>
         public class GenerateIdentityModelToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
@@ -1203,7 +1203,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of converting the token to a reference token.
+        /// Contains the logic responsible for converting the token to a reference token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class ConvertReferenceToken : IOpenIddictServerHandler<GenerateTokenContext>
@@ -1305,7 +1305,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of beautifying user-typed tokens.
+        /// Contains the logic responsible for beautifying user-typed tokens.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
@@ -1327,7 +1327,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(GenerateTokenContext context!!)
             {
-
                 // To make user codes easier to read and type by humans, a dash is automatically
                 // appended before each new block of 4 integers. These dashes are expected to be
                 // stripped from the user codes when receiving them at the verification endpoint.

@@ -12,7 +12,7 @@ namespace OpenIddict.Server.Owin.IntegrationTests;
 
 public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
 {
-    [Fact(Skip = "The handler responsible of rejecting such requests has not been ported yet.")]
+    [Fact(Skip = "The handler responsible for rejecting such requests has not been ported yet.")]
     public async Task ExtractAuthorizationRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
     {
         // Arrange

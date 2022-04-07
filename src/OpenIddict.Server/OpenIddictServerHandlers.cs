@@ -99,7 +99,7 @@ public static partial class OpenIddictServerHandlers
         .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands made from unsupported endpoints.
+    /// Contains the logic responsible for rejecting authentication demands made from unsupported endpoints.
     /// </summary>
     public class ValidateAuthenticationDemand : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -138,7 +138,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of selecting the token types that should be validated.
+    /// Contains the logic responsible for selecting the token types that should be validated.
     /// </summary>
     public class EvaluateValidatedTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -233,7 +233,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the token from the incoming request.
+    /// Contains the logic responsible for resolving the token from the incoming request.
     /// </summary>
     public class ResolveValidatedTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -313,7 +313,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands that lack required tokens.
+    /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
     public class ValidateRequiredTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -351,7 +351,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the access token resolved from the context.
+    /// Contains the logic responsible for validating the access token resolved from the context.
     /// </summary>
     public class ValidateAccessToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -413,7 +413,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the authorization code resolved from the context.
+    /// Contains the logic responsible for validating the authorization code resolved from the context.
     /// </summary>
     public class ValidateAuthorizationCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -475,7 +475,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the device code resolved from the context.
+    /// Contains the logic responsible for validating the device code resolved from the context.
     /// </summary>
     public class ValidateDeviceCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -537,7 +537,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating tokens of unknown types resolved from the context.
+    /// Contains the logic responsible for validating tokens of unknown types resolved from the context.
     /// </summary>
     public class ValidateGenericToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -606,7 +606,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the identity token resolved from the context.
+    /// Contains the logic responsible for validating the identity token resolved from the context.
     /// </summary>
     public class ValidateIdentityToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -671,7 +671,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the refresh token resolved from the context.
+    /// Contains the logic responsible for validating the refresh token resolved from the context.
     /// </summary>
     public class ValidateRefreshToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -733,7 +733,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the user code resolved from the context.
+    /// Contains the logic responsible for validating the user code resolved from the context.
     /// </summary>
     public class ValidateUserCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
@@ -795,7 +795,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting challenge demands made from unsupported endpoints.
+    /// Contains the logic responsible for rejecting challenge demands made from unsupported endpoints.
     /// </summary>
     public class ValidateChallengeDemand : IOpenIddictServerHandler<ProcessChallengeContext>
     {
@@ -825,7 +825,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of ensuring that the challenge response contains an appropriate error.
+    /// Contains the logic responsible for ensuring that the challenge response contains an appropriate error.
     /// </summary>
     public class AttachDefaultChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
     {
@@ -889,7 +889,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting the device code entry associated with the user code.
+    /// Contains the logic responsible for rejecting the device code entry associated with the user code.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
     public class RejectDeviceCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
@@ -943,7 +943,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting the user code entry, if applicable.
+    /// Contains the logic responsible for rejecting the user code entry, if applicable.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
     public class RejectUserCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
@@ -997,7 +997,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate parameters to the challenge response.
+    /// Contains the logic responsible for attaching the appropriate parameters to the challenge response.
     /// </summary>
     public class AttachChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
     {
@@ -1027,7 +1027,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of ensuring that the sign-in demand
+    /// Contains the logic responsible for ensuring that the sign-in demand
     /// is compatible with the type of the endpoint that handled the request.
     /// </summary>
     public class ValidateSignInDemand : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1092,7 +1092,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of re-attaching internal claims to the authentication principal.
+    /// Contains the logic responsible for re-attaching internal claims to the authentication principal.
     /// </summary>
     public class RestoreInternalClaims : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -1175,7 +1175,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching default scopes to the authentication principal.
+    /// Contains the logic responsible for attaching default scopes to the authentication principal.
     /// </summary>
     public class AttachDefaultScopes : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -1207,7 +1207,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching default presenters to the authentication principal.
+    /// Contains the logic responsible for attaching default presenters to the authentication principal.
     /// </summary>
     public class AttachDefaultPresenters : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -1238,7 +1238,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of inferring resources from the audience claims if necessary.
+    /// Contains the logic responsible for inferring resources from the audience claims if necessary.
     /// </summary>
     public class InferResources : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -1272,7 +1272,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of selecting the token types that
+    /// Contains the logic responsible for selecting the token types that
     /// should be generated and optionally returned in the response.
     /// </summary>
     public class EvaluateGeneratedTokens : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1366,7 +1366,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of creating an ad-hoc authorization, if necessary.
+    /// Contains the logic responsible for creating an ad-hoc authorization, if necessary.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
     public class AttachAuthorization : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1461,7 +1461,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing and attaching the claims principal
+    /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the access token, if one is going to be returned.
     /// </summary>
     public class PrepareAccessTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1574,7 +1574,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing and attaching the claims principal
+    /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the authorization code, if one is going to be returned.
     /// </summary>
     public class PrepareAuthorizationCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1655,7 +1655,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing and attaching the claims principal
+    /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the device code, if one is going to be returned.
     /// </summary>
     public class PrepareDeviceCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1723,7 +1723,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing and attaching the claims principal
+    /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the refresh token, if one is going to be returned.
     /// </summary>
     public class PrepareRefreshTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1802,7 +1802,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing and attaching the claims principal
+    /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the identity token, if one is going to be returned.
     /// </summary>
     public class PrepareIdentityTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1910,7 +1910,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing and attaching the claims principal
+    /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the user code, if one is going to be returned.
     /// </summary>
     public class PrepareUserCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1974,7 +1974,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of redeeming the token entry corresponding to
+    /// Contains the logic responsible for redeeming the token entry corresponding to
     /// the received authorization code, device code, user code or refresh token.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
@@ -2035,7 +2035,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating an access token for the current sign-in operation.
+    /// Contains the logic responsible for generating an access token for the current sign-in operation.
     /// </summary>
     public class GenerateAccessToken : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2097,7 +2097,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating an authorization code for the current sign-in operation.
+    /// Contains the logic responsible for generating an authorization code for the current sign-in operation.
     /// </summary>
     public class GenerateAuthorizationCode : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2157,7 +2157,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating a device code for the current sign-in operation.
+    /// Contains the logic responsible for generating a device code for the current sign-in operation.
     /// </summary>
     public class GenerateDeviceCode : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2224,7 +2224,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating a refresh token for the current sign-in operation.
+    /// Contains the logic responsible for generating a refresh token for the current sign-in operation.
     /// </summary>
     public class GenerateRefreshToken : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2286,7 +2286,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating and attaching the device code identifier to the user code principal.
+    /// Contains the logic responsible for generating and attaching the device code identifier to the user code principal.
     /// </summary>
     public class AttachDeviceCodeIdentifier : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2321,7 +2321,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of updating the existing reference device code entry.
+    /// Contains the logic responsible for updating the existing reference device code entry.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
     public class UpdateReferenceDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
@@ -2393,7 +2393,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating and attaching the hashes of
+    /// Contains the logic responsible for generating and attaching the hashes of
     /// the access token and authorization code to the identity token principal.
     /// </summary>
     public class AttachTokenDigests : IOpenIddictServerHandler<ProcessSignInContext>
@@ -2516,7 +2516,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating a user code for the current sign-in operation.
+    /// Contains the logic responsible for generating a user code for the current sign-in operation.
     /// </summary>
     public class GenerateUserCode : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2576,7 +2576,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating an identity token for the current sign-in operation.
+    /// Contains the logic responsible for generating an identity token for the current sign-in operation.
     /// </summary>
     public class GenerateIdentityToken : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2637,7 +2637,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate parameters to the sign-in response.
+    /// Contains the logic responsible for attaching the appropriate parameters to the sign-in response.
     /// </summary>
     public class AttachSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
     {
@@ -2778,7 +2778,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of ensuring that the sign-out demand
+    /// Contains the logic responsible for ensuring that the sign-out demand
     /// is compatible with the type of the endpoint that handled the request.
     /// </summary>
     public class ValidateSignOutDemand : IOpenIddictServerHandler<ProcessSignOutContext>
@@ -2806,7 +2806,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate parameters to the sign-out response.
+    /// Contains the logic responsible for attaching the appropriate parameters to the sign-out response.
     /// </summary>
     public class AttachSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
     {
@@ -2836,7 +2836,7 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate parameters to the error response.
+    /// Contains the logic responsible for attaching the appropriate parameters to the error response.
     /// </summary>
     public class AttachErrorParameters : IOpenIddictServerHandler<ProcessErrorContext>
     {

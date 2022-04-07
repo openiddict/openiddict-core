@@ -72,7 +72,7 @@ public static partial class OpenIddictServerHandlers
             NormalizeErrorResponse.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of extracting token requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for extracting token requests and invoking the corresponding event handlers.
         /// </summary>
         public class ExtractTokenRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -129,7 +129,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating token requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for validating token requests and invoking the corresponding event handlers.
         /// </summary>
         public class ValidateTokenRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -185,7 +185,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of handling token requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for handling token requests and invoking the corresponding event handlers.
         /// </summary>
         public class HandleTokenRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -277,7 +277,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing sign-in responses and invoking the corresponding event handlers.
+        /// Contains the logic responsible for processing sign-in responses and invoking the corresponding event handlers.
         /// </summary>
         public class ApplyTokenResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
@@ -320,7 +320,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that specify an invalid grant type.
+        /// Contains the logic responsible for rejecting token requests that specify an invalid grant type.
         /// </summary>
         public class ValidateGrantType : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -337,7 +337,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-
                 // Reject token requests missing the mandatory grant_type parameter.
                 if (string.IsNullOrEmpty(context.Request.GrantType))
                 {
@@ -381,7 +380,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that don't specify a client identifier.
+        /// Contains the logic responsible for rejecting token requests that don't specify a client identifier.
         /// </summary>
         public class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -425,7 +424,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that don't
+        /// Contains the logic responsible for rejecting token requests that don't
         /// specify an authorization code for the authorization code grant type.
         /// </summary>
         public class ValidateAuthorizationCodeParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -443,7 +442,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-
                 // Reject grant_type=authorization_code requests missing the authorization code.
                 // See https://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
                 if (context.Request.IsAuthorizationCodeGrantType() && string.IsNullOrEmpty(context.Request.Code))
@@ -463,7 +461,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that don't
+        /// Contains the logic responsible for rejecting token requests that don't
         /// specify client credentials for the client credentials grant type.
         /// </summary>
         public class ValidateClientCredentialsParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -481,7 +479,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-
                 // Reject grant_type=client_credentials requests missing the client credentials.
                 // See https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
                 if (context.Request.IsClientCredentialsGrantType() && (string.IsNullOrEmpty(context.Request.ClientId) ||
@@ -500,7 +497,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that
+        /// Contains the logic responsible for rejecting token requests that
         /// don't specify a device code for the device code grant type.
         /// </summary>
         public class ValidateDeviceCodeParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -518,7 +515,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-
                 // Reject grant_type=urn:ietf:params:oauth:grant-type:device_code requests missing the device code.
                 // See https://tools.ietf.org/html/rfc8628#section-3.4 for more information.
                 if (context.Request.IsDeviceCodeGrantType() && string.IsNullOrEmpty(context.Request.DeviceCode))
@@ -536,7 +532,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that
+        /// Contains the logic responsible for rejecting token requests that
         /// specify invalid parameters for the refresh token grant type.
         /// </summary>
         public class ValidateRefreshTokenParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -554,7 +550,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-
                 // Reject grant_type=refresh_token requests missing the refresh token.
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 if (context.Request.IsRefreshTokenGrantType() && string.IsNullOrEmpty(context.Request.RefreshToken))
@@ -574,7 +569,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests
+        /// Contains the logic responsible for rejecting token requests
         /// that specify invalid parameters for the password grant type.
         /// </summary>
         public class ValidateResourceOwnerCredentialsParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -592,7 +587,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ValidateTokenRequestContext context!!)
             {
-
                 // Reject grant_type=password requests missing username or password.
                 // See https://tools.ietf.org/html/rfc6749#section-4.3.2 for more information.
                 if (context.Request.IsPasswordGrantType() && (string.IsNullOrEmpty(context.Request.Username) ||
@@ -613,7 +607,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that don't specify valid PKCE parameters.
+        /// Contains the logic responsible for rejecting token requests that don't specify valid PKCE parameters.
         /// </summary>
         public class ValidateProofKeyForCodeExchangeParameters : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -656,7 +650,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authorization requests that use unregistered scopes.
+        /// Contains the logic responsible for rejecting authorization requests that use unregistered scopes.
         /// Note: this handler partially works with the degraded mode but is not used when scope validation is disabled.
         /// </summary>
         public class ValidateScopes : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -730,7 +724,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that use an invalid client_id.
+        /// Contains the logic responsible for rejecting token requests that use an invalid client_id.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class ValidateClientId : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -777,7 +771,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests made by applications
+        /// Contains the logic responsible for rejecting token requests made by applications
         /// whose client type is not compatible with the requested grant type.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -860,7 +854,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests specifying an invalid client secret.
+        /// Contains the logic responsible for rejecting token requests specifying an invalid client secret.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class ValidateClientSecret : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -918,7 +912,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests made by
+        /// Contains the logic responsible for rejecting token requests made by
         /// applications that haven't been granted the token endpoint permission.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -971,7 +965,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests made by applications
+        /// Contains the logic responsible for rejecting token requests made by applications
         /// that haven't been granted the appropriate grant type permissions.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -1039,7 +1033,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests made by applications
+        /// Contains the logic responsible for rejecting token requests made by applications
         /// that haven't been granted the appropriate grant type permission.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -1102,7 +1096,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests made by
+        /// Contains the logic responsible for rejecting token requests made by
         /// applications for which proof key for code exchange (PKCE) was enforced.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -1165,7 +1159,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that don't
+        /// Contains the logic responsible for rejecting token requests that don't
         /// specify a valid authorization code, device code or refresh token.
         /// </summary>
         public class ValidateToken : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -1231,7 +1225,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that use an authorization code,
+        /// Contains the logic responsible for rejecting token requests that use an authorization code,
         /// a device code or a refresh token that was issued for a different client application.
         /// </summary>
         public class ValidatePresenters : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -1319,7 +1313,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that specify an invalid redirect_uri.
+        /// Contains the logic responsible for rejecting token requests that specify an invalid redirect_uri.
         /// </summary>
         public class ValidateRedirectUri : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -1385,7 +1379,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that specify an invalid code verifier.
+        /// Contains the logic responsible for rejecting token requests that specify an invalid code verifier.
         /// </summary>
         public class ValidateCodeVerifier : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -1498,7 +1492,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that specify scopes that
+        /// Contains the logic responsible for rejecting token requests that specify scopes that
         /// were not initially granted by the resource owner during the authorization request.
         /// </summary>
         public class ValidateGrantedScopes : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -1565,7 +1559,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the principal extracted
+        /// Contains the logic responsible for attaching the principal extracted
         /// from the authorization code/refresh token to the event context.
         /// </summary>
         public class AttachPrincipal : IOpenIddictServerHandler<HandleTokenRequestContext>
@@ -1599,7 +1593,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of converting token errors to standard invalid_grant responses.
+        /// Contains the logic responsible for converting token errors to standard invalid_grant responses.
         /// </summary>
         public class NormalizeErrorResponse : IOpenIddictServerHandler<ApplyTokenResponseContext>
         {

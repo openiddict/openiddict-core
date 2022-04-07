@@ -35,7 +35,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateAuthorizationEntry.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of resolving the validation parameters used to validate tokens.
+        /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
         /// </summary>
         public class ResolveTokenValidationParameters : IOpenIddictValidationHandler<ValidateTokenContext>
         {
@@ -115,7 +115,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating reference token identifiers.
+        /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class ValidateReferenceTokenIdentifier : IOpenIddictValidationHandler<ValidateTokenContext>
@@ -142,7 +142,6 @@ public static partial class OpenIddictValidationHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-
                 // Reference tokens are base64url-encoded payloads of exactly 256 bits (generated using a
                 // crypto-secure RNG). If the token length differs, the token cannot be a reference token.
                 if (context.Token.Length != 43)
@@ -188,7 +187,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating tokens generated using IdentityModel.
+        /// Contains the logic responsible for validating tokens generated using IdentityModel.
         /// </summary>
         public class ValidateIdentityModelToken : IOpenIddictValidationHandler<ValidateTokenContext>
         {
@@ -272,7 +271,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating the tokens using OAuth 2.0 introspection.
+        /// Contains the logic responsible for validating the tokens using OAuth 2.0 introspection.
         /// </summary>
         public class IntrospectToken : IOpenIddictValidationHandler<ValidateTokenContext>
         {
@@ -376,7 +375,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of normalizing the scope claims stored in the tokens.
+        /// Contains the logic responsible for normalizing the scope claims stored in the tokens.
         /// </summary>
         public class NormalizeScopeClaims : IOpenIddictValidationHandler<ValidateTokenContext>
         {
@@ -416,7 +415,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of mapping internal claims used by OpenIddict.
+        /// Contains the logic responsible for mapping internal claims used by OpenIddict.
         /// </summary>
         public class MapInternalClaims : IOpenIddictValidationHandler<ValidateTokenContext>
         {
@@ -440,7 +439,7 @@ public static partial class OpenIddictValidationHandlers
 
                 // To reduce the size of tokens, some of the private claims used by OpenIddict
                 // are mapped to their standard equivalent before being removed from the token.
-                // This handler is responsible of adding back the private claims to the principal
+                // This handler is responsible for adding back the private claims to the principal
                 // when receiving the token (e.g "oi_prst" is resolved from the "scope" claim).
 
                 // In OpenIddict 3.0, the creation date of a token is stored in "oi_crt_dt".
@@ -514,7 +513,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of restoring the properties associated with a reference token entry.
+        /// Contains the logic responsible for restoring the properties associated with a reference token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class RestoreReferenceTokenProperties : IOpenIddictValidationHandler<ValidateTokenContext>
@@ -562,7 +561,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands for which no valid principal was resolved.
+        /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
         /// </summary>
         public class ValidatePrincipal : IOpenIddictValidationHandler<ValidateTokenContext>
         {
@@ -609,7 +608,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands containing expired access tokens.
+        /// Contains the logic responsible for rejecting authentication demands containing expired access tokens.
         /// </summary>
         public class ValidateExpirationDate : IOpenIddictValidationHandler<ValidateTokenContext>
         {
@@ -646,7 +645,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands containing
+        /// Contains the logic responsible for rejecting authentication demands containing
         /// access tokens that were issued to be used by another audience/resource server.
         /// </summary>
         public class ValidateAudience : IOpenIddictValidationHandler<ValidateTokenContext>
@@ -705,7 +704,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of authentication demands a token whose
+        /// Contains the logic responsible for authentication demands a token whose
         /// associated token entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -764,7 +763,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of authentication demands a token whose
+        /// Contains the logic responsible for authentication demands a token whose
         /// associated authorization entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>

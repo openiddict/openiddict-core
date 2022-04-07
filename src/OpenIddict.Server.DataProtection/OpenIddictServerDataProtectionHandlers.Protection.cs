@@ -32,7 +32,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
             GenerateDataProtectionToken.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of validating tokens generated using Data Protection.
+        /// Contains the logic responsible for validating tokens generated using Data Protection.
         /// </summary>
         public class ValidateDataProtectionToken : IOpenIddictServerHandler<ValidateTokenContext>
         {
@@ -232,7 +232,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of generating a token using Data Protection.
+        /// Contains the logic responsible for generating a token using Data Protection.
         /// </summary>
         public class GenerateDataProtectionToken : IOpenIddictServerHandler<GenerateTokenContext>
         {

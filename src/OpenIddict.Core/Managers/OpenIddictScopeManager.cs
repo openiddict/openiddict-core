@@ -750,7 +750,6 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
         TScope scope!!, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-
         // Ensure the name is not null or empty, does not contain a
         // space and is not already used for a different scope entity.
         var name = await Store.GetNameAsync(scope, cancellationToken);

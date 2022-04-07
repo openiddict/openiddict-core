@@ -109,7 +109,7 @@ public static partial class OpenIddictClientHandlers
         .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible of rejecting invalid authentication demands.
+    /// Contains the logic responsible for rejecting invalid authentication demands.
     /// </summary>
     public class ValidateAuthenticationDemand : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -126,7 +126,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-
             // Authentication demands can be triggered from the redirection endpoint
             // to handle authorization callbacks but also from unknown endpoints
             // when using the refresh token grant, to perform a token refresh dance.
@@ -162,7 +161,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of determining the types of tokens to validate upfront.
+    /// Contains the logic responsible for determining the types of tokens to validate upfront.
     /// </summary>
     public class EvaluateValidatedUpfrontTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -198,7 +197,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the state token to validate upfront from the incoming request.
+    /// Contains the logic responsible for resolving the state token to validate upfront from the incoming request.
     /// </summary>
     public class ResolveValidatedStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -228,7 +227,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands that lack the required state token.
+    /// Contains the logic responsible for rejecting authentication demands that lack the required state token.
     /// </summary>
     public class ValidateRequiredStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -260,7 +259,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the state token resolved from the context.
+    /// Contains the logic responsible for validating the state token resolved from the context.
     /// </summary>
     public class ValidateStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -323,7 +322,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the client registration
+    /// Contains the logic responsible for resolving the client registration
     /// based on the authorization server identity stored in the state token.
     /// </summary>
     public class ResolveClientRegistrationFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -377,7 +376,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of ensuring the issuer parameter, if available, matches the expected issuer.
+    /// Contains the logic responsible for ensuring the issuer parameter, if available, matches the expected issuer.
     /// </summary>
     public class ValidateIssuerParameter : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -463,7 +462,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting errored authorization responses.
+    /// Contains the logic responsible for rejecting errored authorization responses.
     /// </summary>
     public class ValidateFrontchannelErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -500,7 +499,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the grant type
+    /// Contains the logic responsible for resolving the grant type
     /// initially negotiated and stored in the state token, if applicable.
     /// </summary>
     public class ResolveGrantTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -548,7 +547,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the response type
+    /// Contains the logic responsible for resolving the response type
     /// initially negotiated and stored in the state token, if applicable.
     /// </summary>
     public class ResolveResponseTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -577,7 +576,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of determining the set of frontchannel tokens to validate.
+    /// Contains the logic responsible for determining the set of frontchannel tokens to validate.
     /// </summary>
     public class EvaluateValidatedFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -654,7 +653,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the token from the incoming request.
+    /// Contains the logic responsible for resolving the token from the incoming request.
     /// </summary>
     public class ResolveValidatedFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -700,7 +699,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands that lack required tokens.
+    /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
     public class ValidateRequiredFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -734,7 +733,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the frontchannel identity token resolved from the context.
+    /// Contains the logic responsible for validating the frontchannel identity token resolved from the context.
     /// </summary>
     public class ValidateFrontchannelIdentityToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -797,7 +796,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the well-known claims contained in the frontchannel identity token.
+    /// Contains the logic responsible for validating the well-known claims contained in the frontchannel identity token.
     /// </summary>
     public class ValidateFrontchannelIdentityTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -929,7 +928,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the audience returned in the frontchannel identity token, if applicable.
+    /// Contains the logic responsible for validating the audience returned in the frontchannel identity token, if applicable.
     /// </summary>
     public class ValidateFrontchannelIdentityTokenAudience : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -969,7 +968,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the presenter returned in the frontchannel identity token, if applicable.
+    /// Contains the logic responsible for validating the presenter returned in the frontchannel identity token, if applicable.
     /// </summary>
     public class ValidateFrontchannelIdentityTokenPresenter : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1007,7 +1006,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the nonce returned in the frontchannel identity token, if applicable.
+    /// Contains the logic responsible for validating the nonce returned in the frontchannel identity token, if applicable.
     /// </summary>
     public class ValidateFrontchannelIdentityTokenNonce : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1066,7 +1065,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the digests of the frontchannel tokens, if applicable.
+    /// Contains the logic responsible for validating the digests of the frontchannel tokens, if applicable.
     /// </summary>
     public class ValidateFrontchannelTokenDigests : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1197,7 +1196,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the frontchannel access token resolved from the context.
+    /// Contains the logic responsible for validating the frontchannel access token resolved from the context.
     /// Note: this handler is typically not used for standard-compliant implementations as access tokens
     /// are supposed to be opaque to clients.
     /// </summary>
@@ -1262,7 +1261,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the authorization code resolved from the context.
+    /// Contains the logic responsible for validating the authorization code resolved from the context.
     /// Note: this handler is typically not used for standard-compliant implementations as authorization codes
     /// are supposed to be opaque to clients.
     /// </summary>
@@ -1327,7 +1326,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of determining the set of backchannel tokens to validate.
+    /// Contains the logic responsible for determining the set of backchannel tokens to validate.
     /// </summary>
     public class EvaluateValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1414,7 +1413,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the parameters to the token request, if applicable.
+    /// Contains the logic responsible for attaching the parameters to the token request, if applicable.
     /// </summary>
     public class AttachTokenRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1486,7 +1485,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of sending the token request, if applicable.
+    /// Contains the logic responsible for sending the token request, if applicable.
     /// </summary>
     public class SendTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1515,7 +1514,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting errored token responses.
+    /// Contains the logic responsible for rejecting errored token responses.
     /// </summary>
     public class ValidateTokenErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1549,7 +1548,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the backchannel tokens by sending a token request, if applicable.
+    /// Contains the logic responsible for resolving the backchannel tokens by sending a token request, if applicable.
     /// </summary>
     public class ResolveValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1591,7 +1590,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands that lack required tokens.
+    /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
     public class ValidateRequiredBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1625,7 +1624,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the backchannel identity token resolved from the context.
+    /// Contains the logic responsible for validating the backchannel identity token resolved from the context.
     /// </summary>
     public class ValidateBackchannelIdentityToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1688,7 +1687,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the well-known claims contained in the backchannel identity token.
+    /// Contains the logic responsible for validating the well-known claims contained in the backchannel identity token.
     /// </summary>
     public class ValidateBackchannelIdentityTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1820,7 +1819,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the audience returned in the backchannel identity token, if applicable.
+    /// Contains the logic responsible for validating the audience returned in the backchannel identity token, if applicable.
     /// </summary>
     public class ValidateBackchannelIdentityTokenAudience : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1860,7 +1859,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the presenter returned in the backchannel identity token, if applicable.
+    /// Contains the logic responsible for validating the presenter returned in the backchannel identity token, if applicable.
     /// </summary>
     public class ValidateBackchannelIdentityTokenPresenter : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1898,7 +1897,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the nonce returned in the backchannel identity token, if applicable.
+    /// Contains the logic responsible for validating the nonce returned in the backchannel identity token, if applicable.
     /// </summary>
     public class ValidateBackchannelIdentityTokenNonce : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1957,7 +1956,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the digests of the backchannel access token.
+    /// Contains the logic responsible for validating the digests of the backchannel access token.
     /// </summary>
     public class ValidateBackchannelTokenDigests : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2061,7 +2060,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the backchannel access token resolved from the context.
+    /// Contains the logic responsible for validating the backchannel access token resolved from the context.
     /// Note: this handler is typically not used for standard-compliant implementations as access tokens
     /// are supposed to be opaque to clients.
     /// </summary>
@@ -2126,7 +2125,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the refresh token resolved from the context.
+    /// Contains the logic responsible for validating the refresh token resolved from the context.
     /// Note: this handler is typically not used for standard-compliant implementations as refresh tokens
     /// are supposed to be opaque to clients.
     /// </summary>
@@ -2191,7 +2190,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of determining whether a userinfo token should be validated.
+    /// Contains the logic responsible for determining whether a userinfo token should be validated.
     /// </summary>
     public class EvaluateValidatedUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2244,7 +2243,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the parameters to the userinfo request, if applicable.
+    /// Contains the logic responsible for attaching the parameters to the userinfo request, if applicable.
     /// </summary>
     public class AttachUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2261,7 +2260,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-
             // Attach a new request instance if necessary.
             context.UserinfoRequest ??= new OpenIddictRequest();
 
@@ -2283,7 +2281,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of sending the userinfo request, if applicable.
+    /// Contains the logic responsible for sending the userinfo request, if applicable.
     /// </summary>
     public class SendUserinfoRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2317,7 +2315,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting errored userinfo responses.
+    /// Contains the logic responsible for rejecting errored userinfo responses.
     /// </summary>
     public class ValidateUserinfoErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2351,7 +2349,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands that lack the required userinfo token.
+    /// Contains the logic responsible for rejecting authentication demands that lack the required userinfo token.
     /// </summary>
     public class ValidateRequiredUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2383,7 +2381,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the userinfo token resolved from the context.
+    /// Contains the logic responsible for validating the userinfo token resolved from the context.
     /// </summary>
     public class ValidateUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2445,7 +2443,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the well-known claims contained in the userinfo token.
+    /// Contains the logic responsible for validating the well-known claims contained in the userinfo token.
     /// </summary>
     public class ValidateUserinfoTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2513,7 +2511,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of validating the subject claim contained in the userinfo token.
+    /// Contains the logic responsible for validating the subject claim contained in the userinfo token.
     /// </summary>
     public class ValidateUserinfoTokenSubject : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -2594,7 +2592,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting invalid challenge demands.
+    /// Contains the logic responsible for rejecting invalid challenge demands.
     /// </summary>
     public class ValidateChallengeDemand : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -2633,7 +2631,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the client registration applicable to the challenge demand.
+    /// Contains the logic responsible for resolving the client registration applicable to the challenge demand.
     /// </summary>
     public class ResolveClientRegistration : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -2650,7 +2648,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-
             // Note: if the static registration cannot be found in the options, this may indicate
             // the client was removed after the authorization dance started and thus, can no longer
             // be used to authenticate users. In this case, throw an exception to abort the flow.
@@ -2663,7 +2660,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the best grant type
+    /// Contains the logic responsible for resolving the best grant type
     /// supported by both the client and the authorization server.
     /// </summary>
     public class AttachGrantType : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -2748,7 +2745,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of selecting the token types that
+    /// Contains the logic responsible for selecting the token types that
     /// should be generated and optionally returned in the response.
     /// </summary>
     public class EvaluateGeneratedTokens : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -2766,7 +2763,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-
             // In OpenIddict, per-authorization demand values are stored in an encrypted and signed token
             // called "state token", that allows flowing per-authorization demand data like the issuer
             // targeted by the authorization demand or secret values like the code verifier used to
@@ -2789,7 +2785,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the response type to the challenge request.
+    /// Contains the logic responsible for attaching the response type to the challenge request.
     /// </summary>
     public class AttachResponseType : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -2982,7 +2978,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the response mode to the challenge request.
+    /// Contains the logic responsible for attaching the response mode to the challenge request.
     /// </summary>
     public class AttachResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3089,7 +3085,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the client identifier to the challenge request.
+    /// Contains the logic responsible for attaching the client identifier to the challenge request.
     /// </summary>
     public class AttachClientId : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3113,7 +3109,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the redirect_uri to the challenge request.
+    /// Contains the logic responsible for attaching the redirect_uri to the challenge request.
     /// </summary>
     public class AttachRedirectUri : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3130,7 +3126,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-
             // Unlike OpenID Connect, OAuth 2.0 and 2.1 don't require specifying a redirect_uri.
             // To keep OpenIddict compatible with OAuth 2.0/2.1 deployments, the redirect_uri
             // is not required for OAuth 2.0 requests but an exception will be thrown later
@@ -3142,7 +3137,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the scopes to the challenge request.
+    /// Contains the logic responsible for attaching the scopes to the challenge request.
     /// </summary>
     public class AttachScopes : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3189,7 +3184,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching a request forgery protection to the authorization request.
+    /// Contains the logic responsible for attaching a request forgery protection to the authorization request.
     /// </summary>
     public class AttachRequestForgeryProtection : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3206,7 +3201,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
             var data = new byte[256 / 8];
@@ -3223,7 +3217,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching a nonce to the authorization request.
+    /// Contains the logic responsible for attaching a nonce to the authorization request.
     /// </summary>
     public class AttachNonce : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3268,7 +3262,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the code challenge parameters to the authorization request.
+    /// Contains the logic responsible for attaching the code challenge parameters to the authorization request.
     /// </summary>
     public class AttachCodeChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3285,7 +3279,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-
             // Don't attach a code challenge method if no authorization code is requested as some implementations
             // (like OpenIddict server) are known to eagerly block authorization requests that specify an invalid
             // code_challenge/code_challenge_method/response_type combination (e.g response_type=id_token).
@@ -3369,7 +3362,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing and attaching the claims principal
+    /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the state token, if one is going to be returned.
     /// </summary>
     public class PrepareStateTokenPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -3472,7 +3465,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of generating a state token for the current challenge operation.
+    /// Contains the logic responsible for generating a state token for the current challenge operation.
     /// </summary>
     public class GenerateStateToken : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3529,7 +3522,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of ensuring the redirect_uri parameter is present
+    /// Contains the logic responsible for ensuring the redirect_uri parameter is present
     /// if the "openid" scope is requested (indicating the request is an OpenID Connect request).
     /// </summary>
     public class ValidateRedirectUriParameter : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -3547,7 +3540,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-
             // While OAuth 2.0/2.1 allows sending an authorization request without a redirect_uri,
             // doing so is illegal in OpenID Connect and such requests will always be rejected.
             // To make that requirement explicit, an exception is proactively thrown here.
@@ -3561,7 +3553,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate parameters to the challenge response.
+    /// Contains the logic responsible for attaching the appropriate parameters to the challenge response.
     /// </summary>
     public class AttachChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
     {
@@ -3578,7 +3570,6 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-
             // Note: while the exact order of the parameters has typically no effect on how requests
             // are handled by an authorization server, client_id and redirect_uri are deliberately
             // set first so that they appear early in the URL (when GET requests are used), making
@@ -3618,7 +3609,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting potential errors from the response.
+    /// Contains the logic responsible for extracting potential errors from the response.
     /// </summary>
     public class HandleErrorResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
     {
@@ -3650,7 +3641,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate parameters to the error response.
+    /// Contains the logic responsible for attaching the appropriate parameters to the error response.
     /// </summary>
     public class AttachErrorParameters : IOpenIddictClientHandler<ProcessErrorContext>
     {

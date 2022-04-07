@@ -34,7 +34,7 @@ public static partial class OpenIddictValidationHandlers
             PopulateClaims.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of attaching the client credentials to the introspection request.
+        /// Contains the logic responsible for attaching the client credentials to the introspection request.
         /// </summary>
         public class AttachCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
         {
@@ -59,7 +59,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the token to the introspection request.
+        /// Contains the logic responsible for attaching the token to the introspection request.
         /// </summary>
         public class AttachToken : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
         {
@@ -84,7 +84,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the active: false marker from the response.
+        /// Contains the logic responsible for extracting the active: false marker from the response.
         /// </summary>
         public class HandleInactiveResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
@@ -133,7 +133,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating the well-known claims contained in the introspection response.
+        /// Contains the logic responsible for validating the well-known claims contained in the introspection response.
         /// </summary>
         public class ValidateWellKnownClaims : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
@@ -204,7 +204,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the issuer from the introspection response.
+        /// Contains the logic responsible for extracting the issuer from the introspection response.
         /// </summary>
         public class ValidateIssuer : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
@@ -221,7 +221,6 @@ public static partial class OpenIddictValidationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleIntrospectionResponseContext context!!)
             {
-
                 // The issuer claim is optional. If it's not null or empty, validate it to
                 // ensure it matches the issuer registered in the server configuration.
                 var issuer = (string?) context.Response[Claims.Issuer];
@@ -253,7 +252,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting and validating the token usage from the introspection response.
+        /// Contains the logic responsible for extracting and validating the token usage from the introspection response.
         /// </summary>
         public class ValidateTokenUsage : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
@@ -270,7 +269,6 @@ public static partial class OpenIddictValidationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleIntrospectionResponseContext context!!)
             {
-
                 // OpenIddict-based authorization servers always return the actual token type using
                 // the special "token_usage" claim, that helps resource servers determine whether the
                 // introspected token is of the expected type and prevent token substitution attacks.
@@ -308,7 +306,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the claims from the introspection response.
+        /// Contains the logic responsible for extracting the claims from the introspection response.
         /// </summary>
         public class PopulateClaims : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {

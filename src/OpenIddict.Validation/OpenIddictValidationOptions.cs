@@ -40,7 +40,7 @@ public class OpenIddictValidationOptions
     };
 
     /// <summary>
-    /// Gets the list of the handlers responsible of processing the OpenIddict validation operations.
+    /// Gets the list of the handlers responsible for processing the OpenIddict validation operations.
     /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
     /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
     /// </summary>

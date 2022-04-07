@@ -35,7 +35,7 @@ public static partial class OpenIddictClientHandlers
             GenerateIdentityModelToken.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of resolving the validation parameters used to validate tokens.
+        /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
         /// </summary>
         public class ResolveTokenValidationParameters : IOpenIddictClientHandler<ValidateTokenContext>
         {
@@ -52,7 +52,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-
                 // The OpenIddict client is expected to validate tokens it creates (e.g state tokens) and
                 // tokens that are created by one or multiple authorization servers (e.g identity tokens).
                 //
@@ -143,7 +142,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating tokens generated using IdentityModel.
+        /// Contains the logic responsible for validating tokens generated using IdentityModel.
         /// </summary>
         public class ValidateIdentityModelToken : IOpenIddictClientHandler<ValidateTokenContext>
         {
@@ -254,7 +253,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of mapping internal claims used by OpenIddict.
+        /// Contains the logic responsible for mapping internal claims used by OpenIddict.
         /// </summary>
         public class MapInternalClaims : IOpenIddictClientHandler<ValidateTokenContext>
         {
@@ -306,7 +305,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands for which no valid principal was resolved.
+        /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
         /// </summary>
         public class ValidatePrincipal : IOpenIddictClientHandler<ValidateTokenContext>
         {
@@ -353,7 +352,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands that use an expired token.
+        /// Contains the logic responsible for rejecting authentication demands that use an expired token.
         /// </summary>
         public class ValidateExpirationDate : IOpenIddictClientHandler<ValidateTokenContext>
         {
@@ -388,7 +387,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of resolving the signing and encryption credentials used to protect tokens.
+        /// Contains the logic responsible for resolving the signing and encryption credentials used to protect tokens.
         /// </summary>
         public class AttachSecurityCredentials : IOpenIddictClientHandler<GenerateTokenContext>
         {
@@ -415,7 +414,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of generating a token using IdentityModel.
+        /// Contains the logic responsible for generating a token using IdentityModel.
         /// </summary>
         public class GenerateIdentityModelToken : IOpenIddictClientHandler<GenerateTokenContext>
         {

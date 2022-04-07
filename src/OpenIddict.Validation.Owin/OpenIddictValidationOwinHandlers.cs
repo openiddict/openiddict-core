@@ -55,7 +55,7 @@ public static partial class OpenIddictValidationOwinHandlers
         ProcessJsonResponse<ProcessErrorContext>.Descriptor);
 
     /// <summary>
-    /// Contains the logic responsible of infering the default issuer from the HTTP request host and validating it.
+    /// Contains the logic responsible for infering the default issuer from the HTTP request host and validating it.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class InferIssuerFromHost : IOpenIddictValidationHandler<ProcessRequestContext>
@@ -114,7 +114,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting the access token from the standard HTTP Authorization header.
+    /// Contains the logic responsible for extracting the access token from the standard HTTP Authorization header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractAccessTokenFromAuthorizationHeader : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -160,7 +160,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting the access token from the standard access_token form parameter.
+    /// Contains the logic responsible for extracting the access token from the standard access_token form parameter.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractAccessTokenFromBodyForm : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -211,7 +211,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting the access token from the standard access_token query parameter.
+    /// Contains the logic responsible for extracting the access token from the standard access_token query parameter.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractAccessTokenFromQueryString : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -257,7 +257,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the error details using the OWIN authentication properties.
+    /// Contains the logic responsible for attaching the error details using the OWIN authentication properties.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class AttachHostChallengeError : IOpenIddictValidationHandler<ProcessChallengeContext>
@@ -311,7 +311,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching an appropriate HTTP status code.
+    /// Contains the logic responsible for attaching an appropriate HTTP status code.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class AttachHttpResponseCode<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
@@ -353,7 +353,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate HTTP response cache headers.
+    /// Contains the logic responsible for attaching the appropriate HTTP response cache headers.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class AttachCacheControlHeader<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
@@ -387,7 +387,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching errors details to the WWW-Authenticate header.
+    /// Contains the logic responsible for attaching errors details to the WWW-Authenticate header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
@@ -494,7 +494,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing challenge responses that contain a WWW-Authenticate header.
+    /// Contains the logic responsible for processing challenge responses that contain a WWW-Authenticate header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ProcessChallengeErrorResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
@@ -532,7 +532,7 @@ public static partial class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing OpenID Connect responses that must be returned as JSON.
+    /// Contains the logic responsible for processing OpenID Connect responses that must be returned as JSON.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ProcessJsonResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext

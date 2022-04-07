@@ -25,7 +25,7 @@ public static partial class OpenIddictClientHandlers
             PopulateClaims.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of validating the well-known parameters contained in the userinfo response.
+        /// Contains the logic responsible for validating the well-known parameters contained in the userinfo response.
         /// </summary>
         public class ValidateWellKnownClaims : IOpenIddictClientHandler<HandleUserinfoResponseContext>
         {
@@ -77,7 +77,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the claims from the introspection response.
+        /// Contains the logic responsible for extracting the claims from the introspection response.
         /// </summary>
         public class PopulateClaims : IOpenIddictClientHandler<HandleUserinfoResponseContext>
         {
