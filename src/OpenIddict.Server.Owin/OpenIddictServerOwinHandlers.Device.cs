@@ -51,7 +51,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing verification responses that should trigger a host redirection.
+    /// Contains the logic responsible for processing verification responses that should trigger a host redirection.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyVerificationResponseContext>
@@ -84,7 +84,7 @@ public static partial class OpenIddictServerOwinHandlers
             }
 
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is not null && !string.IsNullOrEmpty(properties.RedirectUri))
+            if (!string.IsNullOrEmpty(properties?.RedirectUri))
             {
                 response.Redirect(properties.RedirectUri);
 

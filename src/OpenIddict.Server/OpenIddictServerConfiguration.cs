@@ -23,7 +23,6 @@ public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictSer
     /// <param name="options">The options instance to initialize.</param>
     public void PostConfigure(string name, OpenIddictServerOptions options!!)
     {
-
         // Explicitly disable all the features that are implicitly excluded when the degraded mode is active.
         if (options.EnableDegradedMode)
         {

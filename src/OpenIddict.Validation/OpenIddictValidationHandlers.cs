@@ -30,7 +30,7 @@ public static partial class OpenIddictValidationHandlers
         .AddRange(Protection.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible of selecting the token types that should be validated.
+    /// Contains the logic responsible for selecting the token types that should be validated.
     /// </summary>
     public class EvaluateValidatedTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
@@ -49,7 +49,7 @@ public static partial class OpenIddictValidationHandlers
         {
             (context.ExtractAccessToken, context.RequireAccessToken, context.ValidateAccessToken) = context.EndpointType switch
             {
-                // The validation handler is responsible of validating access tokens for endpoints
+                // The validation handler is responsible for validating access tokens for endpoints
                 // it doesn't manage (typically, API endpoints using token authentication).
                 //
                 // As such, sending an access token is not mandatory: API endpoints that require
@@ -70,7 +70,7 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting authentication demands that lack required tokens.
+    /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
     public class ValidateRequiredTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
@@ -102,7 +102,7 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of ensuring a token was correctly resolved from the context.
+    /// Contains the logic responsible for ensuring a token was correctly resolved from the context.
     /// </summary>
     public class ValidateAccessToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
@@ -164,7 +164,7 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of ensuring that the challenge response contains an appropriate error.
+    /// Contains the logic responsible for ensuring that the challenge response contains an appropriate error.
     /// </summary>
     public class AttachDefaultChallengeError : IOpenIddictValidationHandler<ProcessChallengeContext>
     {
@@ -218,7 +218,7 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate parameters to the error response.
+    /// Contains the logic responsible for attaching the appropriate parameters to the error response.
     /// </summary>
     public class AttachErrorParameters : IOpenIddictValidationHandler<ProcessErrorContext>
     {
@@ -252,7 +252,7 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting potential errors from the response.
+    /// Contains the logic responsible for extracting potential errors from the response.
     /// </summary>
     public class HandleErrorResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseValidatingContext
     {

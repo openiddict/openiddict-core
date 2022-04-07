@@ -55,7 +55,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of restoring cached requests from the request_id, if specified.
+        /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
@@ -147,7 +147,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of caching authorization requests, if applicable.
+        /// Contains the logic responsible for caching authorization requests, if applicable.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class CacheRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
@@ -240,7 +240,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of removing cached authorization requests from the distributed cache.
+        /// Contains the logic responsible for removing cached authorization requests from the distributed cache.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class RemoveCachedRequest : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
@@ -283,7 +283,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing authorization responses using the form_post response mode.
+        /// Contains the logic responsible for processing authorization responses using the form_post response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class ProcessFormPostResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
@@ -369,7 +369,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing authorization responses using the query response mode.
+        /// Contains the logic responsible for processing authorization responses using the query response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
@@ -435,7 +435,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing authorization responses using the fragment response mode.
+        /// Contains the logic responsible for processing authorization responses using the fragment response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class ProcessFragmentResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>

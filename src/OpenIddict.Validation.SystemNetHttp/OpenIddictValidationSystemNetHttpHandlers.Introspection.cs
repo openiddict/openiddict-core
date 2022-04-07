@@ -32,7 +32,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             DisposeHttpResponse<ExtractIntrospectionResponseContext>.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of attaching the client credentials to the HTTP Authorization header.
+        /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization header.
         /// </summary>
         public class AttachBasicAuthenticationCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
         {

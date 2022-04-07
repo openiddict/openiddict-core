@@ -38,7 +38,7 @@ public static partial class OpenIddictServerHandlers
             AttachResponseState.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of extracting logout requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for extracting logout requests and invoking the corresponding event handlers.
         /// </summary>
         public class ExtractLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -95,7 +95,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating logout requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for validating logout requests and invoking the corresponding event handlers.
         /// </summary>
         public class ValidateLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -151,7 +151,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of handling logout requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for handling logout requests and invoking the corresponding event handlers.
         /// </summary>
         public class HandleLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
@@ -242,7 +242,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing sign-in responses and invoking the corresponding event handlers.
+        /// Contains the logic responsible for processing sign-in responses and invoking the corresponding event handlers.
         /// </summary>
         public class ApplyLogoutResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
@@ -285,7 +285,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting logout requests that specify an invalid post_logout_redirect_uri parameter.
+        /// Contains the logic responsible for rejecting logout requests that specify an invalid post_logout_redirect_uri parameter.
         /// </summary>
         public class ValidatePostLogoutRedirectUriParameter : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
@@ -337,7 +337,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting logout requests that use an invalid redirect_uri.
+        /// Contains the logic responsible for rejecting logout requests that use an invalid redirect_uri.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class ValidateClientPostLogoutRedirectUri : IOpenIddictServerHandler<ValidateLogoutRequestContext>
@@ -398,7 +398,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of inferring the redirect URL
+        /// Contains the logic responsible for inferring the redirect URL
         /// used to send the response back to the client application.
         /// </summary>
         public class AttachPostLogoutRedirectUri : IOpenIddictServerHandler<ApplyLogoutResponseContext>
@@ -436,7 +436,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the state to the response.
+        /// Contains the logic responsible for attaching the state to the response.
         /// </summary>
         public class AttachResponseState : IOpenIddictServerHandler<ApplyLogoutResponseContext>
         {
@@ -453,7 +453,6 @@ public static partial class OpenIddictServerHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(ApplyLogoutResponseContext context!!)
             {
-
                 // Attach the request state to the logout response.
                 if (string.IsNullOrEmpty(context.Response.State))
                 {

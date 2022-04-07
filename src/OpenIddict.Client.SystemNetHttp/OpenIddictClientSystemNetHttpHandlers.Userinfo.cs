@@ -32,7 +32,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             DisposeHttpResponse<ExtractUserinfoResponseContext>.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of attaching the access token to the HTTP Authorization header.
+        /// Contains the logic responsible for attaching the access token to the HTTP Authorization header.
         /// </summary>
         public class AttachBearerAccessToken : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
         {
@@ -68,7 +68,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the response from the userinfo response.
+        /// Contains the logic responsible for extracting the response from the userinfo response.
         /// </summary>
         public class ExtractUserinfoHttpResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
         {

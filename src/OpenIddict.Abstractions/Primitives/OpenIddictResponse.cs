@@ -15,7 +15,7 @@ namespace OpenIddict.Abstractions;
 /// Represents a generic OpenIddict response.
 /// </summary>
 /// <remarks>
-/// Security notice: developers instantiating this type are responsible of ensuring that the
+/// Security notice: developers instantiating this type are responsible for ensuring that the
 /// imported parameters are safe and won't cause the resulting message to grow abnormally,
 /// which may result in an excessive memory consumption and a potential denial of service.
 /// </remarks>

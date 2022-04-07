@@ -22,7 +22,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             .AddRange(Introspection.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible of preparing an HTTP GET request message.
+    /// Contains the logic responsible for preparing an HTTP GET request message.
     /// </summary>
     public class PrepareGetHttpRequest<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
@@ -59,7 +59,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of preparing an HTTP POST request message.
+    /// Contains the logic responsible for preparing an HTTP POST request message.
     /// </summary>
     public class PreparePostHttpRequest<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
@@ -96,7 +96,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the query string parameters to the HTTP request.
+    /// Contains the logic responsible for attaching the query string parameters to the HTTP request.
     /// </summary>
     public class AttachQueryStringParameters<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
@@ -154,7 +154,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the form parameters to the HTTP request.
+    /// Contains the logic responsible for attaching the form parameters to the HTTP request.
     /// </summary>
     public class AttachFormParameters<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
@@ -192,7 +192,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of sending the HTTP request to the remote server.
+    /// Contains the logic responsible for sending the HTTP request to the remote server.
     /// </summary>
     public class SendHttpRequest<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
@@ -243,7 +243,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of disposing of the HTTP request message.
+    /// Contains the logic responsible for disposing of the HTTP request message.
     /// </summary>
     public class DisposeHttpRequest<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
@@ -276,7 +276,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting the response from the JSON-encoded HTTP body.
+    /// Contains the logic responsible for extracting the response from the JSON-encoded HTTP body.
     /// </summary>
     public class ExtractJsonHttpResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
@@ -309,7 +309,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of disposing of the HTTP response message.
+    /// Contains the logic responsible for disposing of the HTTP response message.
     /// </summary>
     public class DisposeHttpResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {

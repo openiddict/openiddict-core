@@ -21,7 +21,7 @@ public static partial class OpenIddictClientHandlers
             ValidateWellKnownParameters.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of validating the well-known parameters contained in the token response.
+        /// Contains the logic responsible for validating the well-known parameters contained in the token response.
         /// </summary>
         public class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleTokenResponseContext>
         {

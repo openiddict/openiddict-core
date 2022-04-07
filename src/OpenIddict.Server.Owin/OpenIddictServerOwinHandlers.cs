@@ -43,7 +43,7 @@ public static partial class OpenIddictServerOwinHandlers
         .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible of inferring the endpoint type from the request address.
+    /// Contains the logic responsible for inferring the endpoint type from the request address.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class InferEndpointType : IOpenIddictServerHandler<ProcessRequestContext>
@@ -143,7 +143,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of infering the issuer URL from the HTTP request host and validating it.
+    /// Contains the logic responsible for infering the issuer URL from the HTTP request host and validating it.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class InferIssuerFromHost : IOpenIddictServerHandler<ProcessRequestContext>
@@ -202,7 +202,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of rejecting OpenID Connect requests that don't use transport security.
+    /// Contains the logic responsible for rejecting OpenID Connect requests that don't use transport security.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ValidateTransportSecurityRequirement : IOpenIddictServerHandler<ProcessRequestContext>
@@ -249,7 +249,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of resolving the additional sign-in parameters stored in the OWIN
+    /// Contains the logic responsible for resolving the additional sign-in parameters stored in the OWIN
     /// authentication properties specified by the application that triggered the sign-in operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -304,7 +304,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting OpenID Connect requests from GET HTTP requests.
+    /// Contains the logic responsible for extracting OpenID Connect requests from GET HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractGetRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
@@ -350,7 +350,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting OpenID Connect requests from GET or POST HTTP requests.
+    /// Contains the logic responsible for extracting OpenID Connect requests from GET or POST HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractGetOrPostRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
@@ -425,7 +425,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting OpenID Connect requests from POST HTTP requests.
+    /// Contains the logic responsible for extracting OpenID Connect requests from POST HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractPostRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
@@ -495,7 +495,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting client credentials from the standard HTTP Authorization header.
+    /// Contains the logic responsible for extracting client credentials from the standard HTTP Authorization header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractBasicAuthenticationCredentials<TContext> : IOpenIddictServerHandler<TContext>
@@ -589,7 +589,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of extracting an access token from the standard HTTP Authorization header.
+    /// Contains the logic responsible for extracting an access token from the standard HTTP Authorization header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ExtractAccessToken<TContext> : IOpenIddictServerHandler<TContext>
@@ -630,7 +630,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of enabling the pass-through mode for the received request.
+    /// Contains the logic responsible for enabling the pass-through mode for the received request.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class EnablePassthroughMode<TContext, TFilter> : IOpenIddictServerHandler<TContext>
@@ -659,7 +659,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching an appropriate HTTP status code.
+    /// Contains the logic responsible for attaching an appropriate HTTP status code.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class AttachHttpResponseCode<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
@@ -708,7 +708,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching the appropriate HTTP response cache headers.
+    /// Contains the logic responsible for attaching the appropriate HTTP response cache headers.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class AttachCacheControlHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
@@ -742,7 +742,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of attaching errors details to the WWW-Authenticate header.
+    /// Contains the logic responsible for attaching errors details to the WWW-Authenticate header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
@@ -853,7 +853,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing challenge responses that contain a WWW-Authenticate header.
+    /// Contains the logic responsible for processing challenge responses that contain a WWW-Authenticate header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ProcessChallengeErrorResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
@@ -891,7 +891,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing OpenID Connect responses that must be returned as JSON.
+    /// Contains the logic responsible for processing OpenID Connect responses that must be returned as JSON.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ProcessJsonResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
@@ -940,7 +940,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing OpenID Connect responses that must be handled by another
+    /// Contains the logic responsible for processing OpenID Connect responses that must be handled by another
     /// middleware in the pipeline at a later stage (e.g an ASP.NET MVC action or a NancyFX module).
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -986,7 +986,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing OpenID Connect responses that must be returned as plain-text.
+    /// Contains the logic responsible for processing OpenID Connect responses that must be returned as plain-text.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ProcessLocalErrorResponse<TContext> : IOpenIddictServerHandler<TContext>
@@ -1055,7 +1055,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible of processing OpenID Connect responses that don't specify any parameter.
+    /// Contains the logic responsible for processing OpenID Connect responses that don't specify any parameter.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
     public class ProcessEmptyResponse<TContext> : IOpenIddictServerHandler<TContext>

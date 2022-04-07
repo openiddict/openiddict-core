@@ -45,7 +45,7 @@ public static partial class OpenIddictClientHandlers
             ValidateTokens.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of preparing authorization requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for preparing authorization requests and invoking the corresponding event handlers.
         /// </summary>
         public class PrepareAuthorizationRequest : IOpenIddictClientHandler<ProcessChallengeContext>
         {
@@ -85,7 +85,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of applying authorization requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for applying authorization requests and invoking the corresponding event handlers.
         /// </summary>
         public class ApplyAuthorizationRequest : IOpenIddictClientHandler<ProcessChallengeContext>
         {
@@ -125,7 +125,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching the address of the authorization request to the request.
+        /// Contains the logic responsible for attaching the address of the authorization request to the request.
         /// </summary>
         public class AttachAuthorizationEndpoint : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>
         {
@@ -162,7 +162,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting redirection requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for extracting redirection requests and invoking the corresponding event handlers.
         /// </summary>
         public class ExtractRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
         {
@@ -218,7 +218,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of validating redirection requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for validating redirection requests and invoking the corresponding event handlers.
         /// </summary>
         public class ValidateRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
         {
@@ -270,7 +270,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of handling redirection requests and invoking the corresponding event handlers.
+        /// Contains the logic responsible for handling redirection requests and invoking the corresponding event handlers.
         /// </summary>
         public class HandleRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
         {
@@ -321,7 +321,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing redirection responses and invoking the corresponding event handlers.
+        /// Contains the logic responsible for processing redirection responses and invoking the corresponding event handlers.
         /// </summary>
         public class ApplyRedirectionResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
         {
@@ -364,7 +364,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of removing the response mode parameter from the
+        /// Contains the logic responsible for removing the response mode parameter from the
         /// request if it corresponds to the default mode for the selected response type.
         /// </summary>
         public class NormalizeResponseModeParameter : IOpenIddictClientHandler<PrepareAuthorizationRequestContext>
@@ -381,7 +381,6 @@ public static partial class OpenIddictClientHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(PrepareAuthorizationRequestContext context!!)
             {
-
                 // When the response mode corresponds to the default mode assigned to the selected
                 // response type, the specification explicitly recommends omitting the response mode.
                 // As such, this handler is expected to remove the mode parameter in the following cases:
@@ -405,7 +404,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting redirection requests that don't
+        /// Contains the logic responsible for rejecting redirection requests that don't
         /// specify a valid access token, authorization code, identity token or state token.
         /// </summary>
         public class ValidateTokens : IOpenIddictClientHandler<ValidateRedirectionRequestContext>

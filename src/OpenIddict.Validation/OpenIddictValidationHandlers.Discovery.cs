@@ -30,7 +30,7 @@ public static partial class OpenIddictValidationHandlers
             ExtractSigningKeys.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of extracting the issuer from the discovery document.
+        /// Contains the logic responsible for extracting the issuer from the discovery document.
         /// </summary>
         public class ValidateIssuer : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
@@ -47,7 +47,6 @@ public static partial class OpenIddictValidationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // The issuer returned in the discovery document must exactly match the URL used to access it.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
                 var issuer = (string?) context.Response[Metadata.Issuer];
@@ -78,7 +77,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the JWKS endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the JWKS endpoint address from the discovery document.
         /// </summary>
         public class ExtractCryptographyEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
@@ -125,7 +124,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the introspection endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the introspection endpoint address from the discovery document.
         /// </summary>
         public class ExtractIntrospectionEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
@@ -163,7 +162,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the authentication methods
+        /// Contains the logic responsible for extracting the authentication methods
         /// supported by the introspection endpoint from the discovery document.
         /// </summary>
         public class ExtractIntrospectionEndpointClientAuthenticationMethods : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
@@ -181,7 +180,6 @@ public static partial class OpenIddictValidationHandlers
             /// <inheritdoc/>
             public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
             {
-
                 // Resolve the client authentication methods supported by the introspection endpoint, if available.
                 var methods = context.Response[Metadata.IntrospectionEndpointAuthMethodsSupported]?.GetUnnamedParameters();
                 if (methods is { Count: > 0 })
@@ -202,7 +200,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible of extracting the signing keys from the JWKS document.
+        /// Contains the logic responsible for extracting the signing keys from the JWKS document.
         /// </summary>
         public class ExtractSigningKeys : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
         {

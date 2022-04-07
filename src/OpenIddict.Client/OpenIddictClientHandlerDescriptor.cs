@@ -28,7 +28,7 @@ public class OpenIddictClientHandlerDescriptor
     public Type ContextType { get; private set; } = default!;
 
     /// <summary>
-    /// Gets the list of filters responsible of excluding the handler
+    /// Gets the list of filters responsible for excluding the handler
     /// from the activated handlers if it doesn't meet the criteria.
     /// </summary>
     public ImmutableArray<Type> FilterTypes { get; private set; } = ImmutableArray.Create<Type>();

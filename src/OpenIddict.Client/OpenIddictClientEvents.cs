@@ -39,7 +39,7 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
-        /// Gets the logger responsible of logging processed operations.
+        /// Gets the logger responsible for logging processed operations.
         /// </summary>
         public ILogger Logger => Transaction.Logger;
 

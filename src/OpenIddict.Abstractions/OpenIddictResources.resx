@@ -494,7 +494,7 @@ Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, Defaul
   </data>
   <data name="ID0111" xml:space="preserve">
     <value>The OpenID Connect response was not correctly processed.
-This may indicate that the event handler responsible of processing OpenID Connect responses was not registered or was explicitly removed from the handlers list.</value>
+This may indicate that the event handler responsible for processing OpenID Connect responses was not registered or was explicitly removed from the handlers list.</value>
   </data>
   <data name="ID0112" xml:space="preserve">
     <value>An error occurred while retrieving the OpenIddict server context. On ASP.NET Core, this may indicate that the authentication middleware was not registered early enough in the request pipeline. Make sure that 'app.UseAuthentication()' is registered before 'app.UseAuthorization()' and 'app.UseEndpoints()' (or 'app.UseMvc()') and try again.</value>

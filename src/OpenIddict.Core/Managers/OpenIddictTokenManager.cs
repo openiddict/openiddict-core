@@ -1058,7 +1058,6 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     public virtual async ValueTask UpdateAsync(TToken token!!,
         OpenIddictTokenDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-
         // Store the original reference identifier for later comparison.
         var comparand = await Store.GetReferenceIdAsync(token, cancellationToken);
         await PopulateAsync(token, descriptor, cancellationToken);
