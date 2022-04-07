@@ -2,13 +2,8 @@
 
 public static class AsyncEnumerableExtensions
 {
-    public static Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source)
+    public static Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source!!)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
         return ExecuteAsync();
 
         async Task<List<T>> ExecuteAsync()

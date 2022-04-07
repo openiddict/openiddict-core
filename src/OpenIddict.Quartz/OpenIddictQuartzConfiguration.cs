@@ -14,13 +14,8 @@ namespace OpenIddict.Quartz;
 public class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
 {
     /// <inheritdoc/>
-    public void Configure(QuartzOptions options)
+    public void Configure(QuartzOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         options.AddJob<OpenIddictQuartzJob>(builder =>
         {
             builder.StoreDurably()

@@ -22,9 +22,9 @@ public class OpenIddictEntityFrameworkAuthorizationStoreResolver : IOpenIddictAu
     private readonly IServiceProvider _provider;
 
     public OpenIddictEntityFrameworkAuthorizationStoreResolver(
-        TypeResolutionCache cache,
-        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options,
-        IServiceProvider provider)
+        TypeResolutionCache cache!!,
+        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options!!,
+        IServiceProvider provider!!)
     {
         _cache = cache;
         _options = options;

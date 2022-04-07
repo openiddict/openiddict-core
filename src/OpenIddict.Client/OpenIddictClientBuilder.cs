@@ -25,8 +25,8 @@ public class OpenIddictClientBuilder
     /// Initializes a new instance of <see cref="OpenIddictClientBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictClientBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictClientBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
@@ -42,14 +42,9 @@ public class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientBuilder AddEventHandler<TContext>(
-        Action<OpenIddictClientHandlerDescriptor.Builder<TContext>> configuration)
+        Action<OpenIddictClientHandlerDescriptor.Builder<TContext>> configuration!!)
         where TContext : OpenIddictClientEvents.BaseContext
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         // Note: handlers registered using this API are assumed to be custom handlers by default.
         var builder = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
             .SetType(OpenIddictClientHandlerType.Custom);
@@ -65,13 +60,8 @@ public class OpenIddictClientBuilder
     /// <param name="descriptor">The handler descriptor.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictClientBuilder AddEventHandler(OpenIddictClientHandlerDescriptor descriptor)
+    public OpenIddictClientBuilder AddEventHandler(OpenIddictClientHandlerDescriptor descriptor!!)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         // Register the handler in the services collection.
         Services.Add(descriptor.ServiceDescriptor);
 
@@ -84,13 +74,8 @@ public class OpenIddictClientBuilder
     /// <param name="descriptor">The descriptor corresponding to the handler to remove.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictClientBuilder RemoveEventHandler(OpenIddictClientHandlerDescriptor descriptor)
+    public OpenIddictClientBuilder RemoveEventHandler(OpenIddictClientHandlerDescriptor descriptor!!)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         Services.RemoveAll(descriptor.ServiceDescriptor.ServiceType);
 
         Services.PostConfigure<OpenIddictClientOptions>(options =>
@@ -113,13 +98,8 @@ public class OpenIddictClientBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder Configure(Action<OpenIddictClientOptions> configuration)
+    public OpenIddictClientBuilder Configure(Action<OpenIddictClientOptions> configuration!!)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         Services.Configure(configuration);
 
         return this;
@@ -130,28 +110,16 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="credentials">The encrypting credentials.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
-    {
-        if (credentials is null)
-        {
-            throw new ArgumentNullException(nameof(credentials));
-        }
-
-        return Configure(options => options.EncryptionCredentials.Add(credentials));
-    }
+    public OpenIddictClientBuilder AddEncryptionCredentials(EncryptingCredentials credentials!!)
+        => Configure(options => options.EncryptionCredentials.Add(credentials));
 
     /// <summary>
     /// Registers an encryption key.
     /// </summary>
     /// <param name="key">The security key.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder AddEncryptionKey(SecurityKey key)
+    public OpenIddictClientBuilder AddEncryptionKey(SecurityKey key!!)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
         // If the encryption key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
             asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
@@ -193,13 +161,8 @@ public class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The X.509 certificate is attached to the client options.")]
-    public OpenIddictClientBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
+    public OpenIddictClientBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject!!)
     {
-        if (subject is null)
-        {
-            throw new ArgumentNullException(nameof(subject));
-        }
-
         using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
 
@@ -354,13 +317,8 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="certificate">The encryption certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder AddEncryptionCertificate(X509Certificate2 certificate)
+    public OpenIddictClientBuilder AddEncryptionCertificate(X509Certificate2 certificate!!)
     {
-        if (certificate is null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
-
         // If the certificate is a X.509v3 certificate that specifies at least one
         // key usage, ensure that the certificate key can be used for key encryption.
         if (certificate.Version >= 3)
@@ -406,14 +364,9 @@ public class OpenIddictClientBuilder
     /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     public OpenIddictClientBuilder AddEncryptionCertificate(
-        Assembly assembly, string resource,
+        Assembly assembly!!, string resource,
         string? password, X509KeyStorageFlags flags)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
         if (string.IsNullOrEmpty(resource))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
@@ -456,13 +409,8 @@ public class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The X.509 certificate is attached to the client options.")]
-    public OpenIddictClientBuilder AddEncryptionCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
+    public OpenIddictClientBuilder AddEncryptionCertificate(Stream stream!!, string? password, X509KeyStorageFlags flags)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
-
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
@@ -534,28 +482,16 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="credentials">The signing credentials.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder AddSigningCredentials(SigningCredentials credentials)
-    {
-        if (credentials is null)
-        {
-            throw new ArgumentNullException(nameof(credentials));
-        }
-
-        return Configure(options => options.SigningCredentials.Add(credentials));
-    }
+    public OpenIddictClientBuilder AddSigningCredentials(SigningCredentials credentials!!)
+        => Configure(options => options.SigningCredentials.Add(credentials));
 
     /// <summary>
     /// Registers a signing key.
     /// </summary>
     /// <param name="key">The security key.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder AddSigningKey(SecurityKey key)
+    public OpenIddictClientBuilder AddSigningKey(SecurityKey key!!)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
         // If the signing key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
             asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
@@ -615,13 +551,8 @@ public class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The X.509 certificate is attached to the client options.")]
-    public OpenIddictClientBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
+    public OpenIddictClientBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject!!)
     {
-        if (subject is null)
-        {
-            throw new ArgumentNullException(nameof(subject));
-        }
-
         using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
         store.Open(OpenFlags.ReadWrite);
 
@@ -794,13 +725,8 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="certificate">The signing certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder AddSigningCertificate(X509Certificate2 certificate)
+    public OpenIddictClientBuilder AddSigningCertificate(X509Certificate2 certificate!!)
     {
-        if (certificate is null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
-
         // If the certificate is a X.509v3 certificate that specifies at least
         // one key usage, ensure that the certificate key can be used for signing.
         if (certificate.Version >= 3)
@@ -846,14 +772,9 @@ public class OpenIddictClientBuilder
     /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     public OpenIddictClientBuilder AddSigningCertificate(
-        Assembly assembly, string resource,
+        Assembly assembly!!, string resource,
         string? password, X509KeyStorageFlags flags)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
         if (string.IsNullOrEmpty(resource))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
@@ -896,13 +817,8 @@ public class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The X.509 certificate is attached to the client options.")]
-    public OpenIddictClientBuilder AddSigningCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
+    public OpenIddictClientBuilder AddSigningCertificate(Stream stream!!, string? password, X509KeyStorageFlags flags)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
-
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
@@ -974,15 +890,8 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="registration">The client registration.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder AddRegistration(OpenIddictClientRegistration registration)
-    {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        return Configure(options => options.Registrations.Add(registration));
-    }
+    public OpenIddictClientBuilder AddRegistration(OpenIddictClientRegistration registration!!)
+        => Configure(options => options.Registrations.Add(registration));
 
     /// <summary>
     /// Sets the relative or absolute URLs associated to the redirection endpoint.
@@ -991,15 +900,8 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder SetRedirectionEndpointUris(params string[] addresses)
-    {
-        if (addresses is null)
-        {
-            throw new ArgumentNullException(nameof(addresses));
-        }
-
-        return SetRedirectionEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
-    }
+    public OpenIddictClientBuilder SetRedirectionEndpointUris(params string[] addresses!!)
+        => SetRedirectionEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
 
     /// <summary>
     /// Sets the relative or absolute URLs associated to the redirection endpoint.
@@ -1008,13 +910,8 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public OpenIddictClientBuilder SetRedirectionEndpointUris(params Uri[] addresses)
+    public OpenIddictClientBuilder SetRedirectionEndpointUris(params Uri[] addresses!!)
     {
-        if (addresses is null)
-        {
-            throw new ArgumentNullException(nameof(addresses));
-        }
-
         if (addresses.Any(address => !address.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));

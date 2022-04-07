@@ -1078,7 +1078,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.GetDestinations());
+        var exception = Assert.Throws<ArgumentNullException>(principal.GetDestinations);
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -1876,7 +1876,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAuthorizationId());
+        var exception = Assert.Throws<ArgumentNullException>(principal.GetAuthorizationId);
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -1903,7 +1903,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenId());
+        var exception = Assert.Throws<ArgumentNullException>(principal.GetTokenId);
 
         Assert.Equal("principal", exception.ParamName);
     }
@@ -1930,7 +1930,7 @@ public class OpenIddictExtensionsTests
         var principal = (ClaimsPrincipal) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenType());
+        var exception = Assert.Throws<ArgumentNullException>(principal.GetTokenType);
 
         Assert.Equal("principal", exception.ParamName);
     }

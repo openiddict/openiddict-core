@@ -19,13 +19,8 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
     /// <returns>The <see cref="HttpRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-    public static HttpRequest? GetHttpRequest(this OpenIddictClientTransaction transaction)
+    public static HttpRequest? GetHttpRequest(this OpenIddictClientTransaction transaction!!)
     {
-        if (transaction is null)
-        {
-            throw new ArgumentNullException(nameof(transaction));
-        }
-
         if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
         {
             return null;
@@ -44,13 +39,8 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <returns>The <see cref="OpenIddictClientEndpointType"/>.</returns>
-    public static OpenIddictClientEndpointType GetOpenIddictClientEndpointType(this HttpContext context)
+    public static OpenIddictClientEndpointType GetOpenIddictClientEndpointType(this HttpContext context!!)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
         return context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction?.EndpointType ?? default;
     }
 
@@ -59,13 +49,8 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
-    public static OpenIddictRequest? GetOpenIddictClientRequest(this HttpContext context)
+    public static OpenIddictRequest? GetOpenIddictClientRequest(this HttpContext context!!)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
         return context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction?.Request;
     }
 
@@ -74,13 +59,8 @@ public static class OpenIddictClientAspNetCoreHelpers
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
-    public static OpenIddictResponse? GetOpenIddictClientResponse(this HttpContext context)
+    public static OpenIddictResponse? GetOpenIddictClientResponse(this HttpContext context!!)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
         return context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction?.Response;
     }
 }

@@ -36,13 +36,8 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleTokenResponseContext context)
+            public ValueTask HandleAsync(HandleTokenResponseContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 foreach (var parameter in context.Response.GetParameters())
                 {
                     if (ValidateParameterType(parameter.Key, parameter.Value.Value))

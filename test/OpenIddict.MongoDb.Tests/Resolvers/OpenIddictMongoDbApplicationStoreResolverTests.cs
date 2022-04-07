@@ -38,7 +38,7 @@ public class OpenIddictMongoDbApplicationStoreResolverTests
         var resolver = new OpenIddictMongoDbApplicationStoreResolver(provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomApplication>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<CustomApplication>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0257), exception.Message);
     }

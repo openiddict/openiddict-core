@@ -22,9 +22,9 @@ public class OpenIddictEntityFrameworkCoreScopeStoreResolver : IOpenIddictScopeS
     private readonly IServiceProvider _provider;
 
     public OpenIddictEntityFrameworkCoreScopeStoreResolver(
-        TypeResolutionCache cache,
-        IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options,
-        IServiceProvider provider)
+        TypeResolutionCache cache!!,
+        IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options!!,
+        IServiceProvider provider!!)
     {
         _cache = cache;
         _options = options;

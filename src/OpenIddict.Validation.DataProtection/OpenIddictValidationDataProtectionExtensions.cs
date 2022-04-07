@@ -22,13 +22,8 @@ public static class OpenIddictValidationDataProtectionExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public static OpenIddictValidationDataProtectionBuilder UseDataProtection(this OpenIddictValidationBuilder builder)
+    public static OpenIddictValidationDataProtectionBuilder UseDataProtection(this OpenIddictValidationBuilder builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         builder.Services.AddDataProtection();
 
         // Register the built-in validation event handlers used by the OpenIddict Data Protection components.
@@ -53,18 +48,8 @@ public static class OpenIddictValidationDataProtectionExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     public static OpenIddictValidationBuilder UseDataProtection(
-        this OpenIddictValidationBuilder builder, Action<OpenIddictValidationDataProtectionBuilder> configuration)
+        this OpenIddictValidationBuilder builder!!, Action<OpenIddictValidationDataProtectionBuilder> configuration!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         configuration(builder.UseDataProtection());
 
         return builder;

@@ -151,24 +151,24 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             switch (left.ValueKind)
             {
                 case JsonValueKind.Undefined:
-                    return right.ValueKind == JsonValueKind.Undefined;
+                    return right.ValueKind is JsonValueKind.Undefined;
 
                 case JsonValueKind.Null:
-                    return right.ValueKind == JsonValueKind.Null;
+                    return right.ValueKind is JsonValueKind.Null;
 
                 case JsonValueKind.False:
-                    return right.ValueKind == JsonValueKind.False;
+                    return right.ValueKind is JsonValueKind.False;
 
                 case JsonValueKind.True:
-                    return right.ValueKind == JsonValueKind.True;
+                    return right.ValueKind is JsonValueKind.True;
 
-                case JsonValueKind.Number when right.ValueKind == JsonValueKind.Number:
+                case JsonValueKind.Number when right.ValueKind is JsonValueKind.Number:
                     return left.GetInt64() == right.GetInt64();
 
-                case JsonValueKind.String when right.ValueKind == JsonValueKind.String:
+                case JsonValueKind.String when right.ValueKind is JsonValueKind.String:
                     return string.Equals(left.GetString(), right.GetString(), StringComparison.Ordinal);
 
-                case JsonValueKind.Array when right.ValueKind == JsonValueKind.Array:
+                case JsonValueKind.Array when right.ValueKind is JsonValueKind.Array:
                     if (left.GetArrayLength() != right.GetArrayLength())
                     {
                         return false;
@@ -187,7 +187,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
                     return true;
 
-                case JsonValueKind.Object when right.ValueKind == JsonValueKind.Object:
+                case JsonValueKind.Object when right.ValueKind is JsonValueKind.Object:
                     foreach (var property in left.EnumerateObject())
                     {
                         if (!right.TryGetProperty(property.Name, out JsonElement element) ||
@@ -502,13 +502,8 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// Writes the parameter value to the specified JSON writer.
     /// </summary>
     /// <param name="writer">The UTF-8 JSON writer.</param>
-    public void WriteTo(Utf8JsonWriter writer)
+    public void WriteTo(Utf8JsonWriter writer!!)
     {
-        if (writer is null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
         switch (Value)
         {
             // Note: undefined JsonElement values are assimilated to null values.
@@ -803,7 +798,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             for (var index = 0; enumerator.MoveNext(); index++)
             {
                 var element = enumerator.Current;
-                if (element.ValueKind != JsonValueKind.String)
+                if (element.ValueKind is not JsonValueKind.String)
                 {
                     return null;
                 }
@@ -820,49 +815,49 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-    public static implicit operator OpenIddictParameter(bool value) => new OpenIddictParameter(value);
+    public static implicit operator OpenIddictParameter(bool value) => new(value);
 
     /// <summary>
     /// Converts a nullable boolean to an <see cref="OpenIddictParameter"/> instance.
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-    public static implicit operator OpenIddictParameter(bool? value) => new OpenIddictParameter(value);
+    public static implicit operator OpenIddictParameter(bool? value) => new(value);
 
     /// <summary>
     /// Converts a <see cref="JsonElement"/> to an <see cref="OpenIddictParameter"/> instance.
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-    public static implicit operator OpenIddictParameter(JsonElement value) => new OpenIddictParameter(value);
+    public static implicit operator OpenIddictParameter(JsonElement value) => new(value);
 
     /// <summary>
     /// Converts a long integer to an <see cref="OpenIddictParameter"/> instance.
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-    public static implicit operator OpenIddictParameter(long value) => new OpenIddictParameter(value);
+    public static implicit operator OpenIddictParameter(long value) => new(value);
 
     /// <summary>
     /// Converts a nullable long integer to an <see cref="OpenIddictParameter"/> instance.
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-    public static implicit operator OpenIddictParameter(long? value) => new OpenIddictParameter(value);
+    public static implicit operator OpenIddictParameter(long? value) => new(value);
 
     /// <summary>
     /// Converts a string to an <see cref="OpenIddictParameter"/> instance.
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-    public static implicit operator OpenIddictParameter(string? value) => new OpenIddictParameter(value);
+    public static implicit operator OpenIddictParameter(string? value) => new(value);
 
     /// <summary>
     /// Converts an array of strings to an <see cref="OpenIddictParameter"/> instance.
     /// </summary>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
-    public static implicit operator OpenIddictParameter(string?[]? value) => new OpenIddictParameter(value);
+    public static implicit operator OpenIddictParameter(string?[]? value) => new(value);
 
     /// <summary>
     /// Determines whether a parameter is null or empty.

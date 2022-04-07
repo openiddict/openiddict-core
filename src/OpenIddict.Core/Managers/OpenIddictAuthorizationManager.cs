@@ -28,10 +28,10 @@ namespace OpenIddict.Core;
 public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthorizationManager where TAuthorization : class
 {
     public OpenIddictAuthorizationManager(
-        IOpenIddictAuthorizationCache<TAuthorization> cache,
-        ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
-        IOptionsMonitor<OpenIddictCoreOptions> options,
-        IOpenIddictAuthorizationStoreResolver resolver)
+        IOpenIddictAuthorizationCache<TAuthorization> cache!!,
+        ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger!!,
+        IOptionsMonitor<OpenIddictCoreOptions> options!!,
+        IOpenIddictAuthorizationStoreResolver resolver!!)
     {
         Cache = cache;
         Logger = logger;
@@ -81,15 +81,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the number of authorizations that match the specified query.
     /// </returns>
     public virtual ValueTask<long> CountAsync<TResult>(
-        Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return Store.CountAsync(query, cancellationToken);
-    }
+        Func<IQueryable<TAuthorization>, IQueryable<TResult>> query!!, CancellationToken cancellationToken = default)
+        => Store.CountAsync(query, cancellationToken);
 
     /// <summary>
     /// Creates a new authorization.
@@ -99,13 +92,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask CreateAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
+    public virtual async ValueTask CreateAsync(TAuthorization authorization!!, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         // If no status was explicitly specified, assume that the authorization is valid.
         if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
         {
@@ -157,13 +145,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
     /// </returns>
     public virtual async ValueTask<TAuthorization> CreateAsync(
-        OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
+        OpenIddictAuthorizationDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         var authorization = await Store.InstantiateAsync(cancellationToken);
         if (authorization is null)
         {
@@ -189,14 +172,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
     /// </returns>
     public virtual ValueTask<TAuthorization> CreateAsync(
-        ClaimsPrincipal principal, string subject, string client,
+        ClaimsPrincipal principal!!, string subject, string client,
         string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
     {
-        if (principal is null)
-        {
-            throw new ArgumentNullException(nameof(principal));
-        }
-
         if (string.IsNullOrEmpty(subject))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0198), nameof(subject));
@@ -235,13 +213,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask DeleteAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
+    public virtual async ValueTask DeleteAsync(TAuthorization authorization!!, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         if (!Options.CurrentValue.DisableEntityCaching)
         {
             await Cache.RemoveAsync(authorization, cancellationToken);
@@ -614,15 +587,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the application identifier associated with the authorization.
     /// </returns>
     public virtual ValueTask<string?> GetApplicationIdAsync(
-        TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetApplicationIdAsync(authorization, cancellationToken);
-    }
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetApplicationIdAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns the first element.
@@ -635,15 +601,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TResult>(
-        Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return GetAsync(static (authorizations, query) => query(authorizations), query, cancellationToken);
-    }
+        Func<IQueryable<TAuthorization>, IQueryable<TResult>> query!!, CancellationToken cancellationToken = default)
+        => GetAsync(static (authorizations, query) => query(authorizations), query, cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns the first element.
@@ -658,16 +617,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the first element returned when executing the query.
     /// </returns>
     public virtual ValueTask<TResult?> GetAsync<TState, TResult>(
-        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
+        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query!!,
         TState state, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return Store.GetAsync(query, state, cancellationToken);
-    }
+        => Store.GetAsync(query, state, cancellationToken);
 
     /// <summary>
     /// Retrieves the creation date associated with an authorization.
@@ -679,15 +631,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the creation date associated with the specified authorization.
     /// </returns>
     public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(
-        TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetCreationDateAsync(authorization, cancellationToken);
-    }
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetCreationDateAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Retrieves the unique identifier associated with an authorization.
@@ -698,15 +643,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
     /// whose result returns the unique identifier associated with the authorization.
     /// </returns>
-    public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetIdAsync(authorization, cancellationToken);
-    }
+    public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetIdAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Retrieves the additional properties associated with an authorization.
@@ -718,15 +656,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns all the additional properties associated with the authorization.
     /// </returns>
     public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(
-        TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetPropertiesAsync(authorization, cancellationToken);
-    }
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetPropertiesAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Retrieves the scopes associated with an authorization.
@@ -738,15 +669,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the scopes associated with the specified authorization.
     /// </returns>
     public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(
-        TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetScopesAsync(authorization, cancellationToken);
-    }
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetScopesAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Retrieves the status associated with an authorization.
@@ -758,15 +682,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the status associated with the specified authorization.
     /// </returns>
     public virtual ValueTask<string?> GetStatusAsync(
-        TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetStatusAsync(authorization, cancellationToken);
-    }
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetStatusAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Retrieves the subject associated with an authorization.
@@ -778,15 +695,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the subject associated with the specified authorization.
     /// </returns>
     public virtual ValueTask<string?> GetSubjectAsync(
-        TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetSubjectAsync(authorization, cancellationToken);
-    }
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetSubjectAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Retrieves the type associated with an authorization.
@@ -798,15 +708,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// whose result returns the type associated with the specified authorization.
     /// </returns>
     public virtual ValueTask<string?> GetTypeAsync(
-        TAuthorization authorization, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return Store.GetTypeAsync(authorization, cancellationToken);
-    }
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
+        => Store.GetTypeAsync(authorization, cancellationToken);
 
     /// <summary>
     /// Determines whether the specified scopes are included in the authorization.
@@ -815,17 +718,10 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="scopes">The scopes.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the scopes are included in the authorization, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> HasScopesAsync(TAuthorization authorization,
+    public virtual async ValueTask<bool> HasScopesAsync(TAuthorization authorization!!,
         ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
-    {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        return new HashSet<string>(await Store.GetScopesAsync(
+        => new HashSet<string>(await Store.GetScopesAsync(
             authorization, cancellationToken), StringComparer.Ordinal).IsSupersetOf(scopes);
-    }
 
     /// <summary>
     /// Determines whether a given authorization has the specified status.
@@ -834,14 +730,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="status">The expected status.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the authorization has the specified status, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> HasStatusAsync(TAuthorization authorization,
+    public virtual async ValueTask<bool> HasStatusAsync(TAuthorization authorization!!,
         string status, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         if (string.IsNullOrEmpty(status))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0199), nameof(status));
@@ -858,13 +749,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the authorization has the specified type, <c>false</c> otherwise.</returns>
     public virtual async ValueTask<bool> HasTypeAsync(
-        TAuthorization authorization, string type, CancellationToken cancellationToken = default)
+        TAuthorization authorization!!, string type, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0200), nameof(type));
@@ -892,15 +778,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>All the elements returned when executing the specified query.</returns>
     public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
-        Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return ListAsync(static (authorizations, query) => query(authorizations), query, cancellationToken);
-    }
+        Func<IQueryable<TAuthorization>, IQueryable<TResult>> query!!, CancellationToken cancellationToken = default)
+        => ListAsync(static (authorizations, query) => query(authorizations), query, cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns all the corresponding elements.
@@ -912,16 +791,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>All the elements returned when executing the specified query.</returns>
     public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
+        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query!!,
         TState state, CancellationToken cancellationToken = default)
-    {
-        if (query is null)
-        {
-            throw new ArgumentNullException(nameof(query));
-        }
-
-        return Store.ListAsync(query, state, cancellationToken);
-    }
+        => Store.ListAsync(query, state, cancellationToken);
 
     /// <summary>
     /// Populates the authorization using the specified descriptor.
@@ -932,19 +804,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask PopulateAsync(TAuthorization authorization,
-        OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
+    public virtual async ValueTask PopulateAsync(TAuthorization authorization!!,
+        OpenIddictAuthorizationDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         await Store.SetApplicationIdAsync(authorization, descriptor.ApplicationId, cancellationToken);
         await Store.SetCreationDateAsync(authorization, descriptor.CreationDate, cancellationToken);
         await Store.SetPropertiesAsync(authorization, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
@@ -964,19 +826,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
     public virtual async ValueTask PopulateAsync(
-        OpenIddictAuthorizationDescriptor descriptor,
-        TAuthorization authorization, CancellationToken cancellationToken = default)
+        OpenIddictAuthorizationDescriptor descriptor!!,
+        TAuthorization authorization!!, CancellationToken cancellationToken = default)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         descriptor.ApplicationId = await Store.GetApplicationIdAsync(authorization, cancellationToken);
         descriptor.CreationDate = await Store.GetCreationDateAsync(authorization, cancellationToken);
         descriptor.Scopes.Clear();
@@ -1014,13 +866,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="authorization">The authorization to revoke.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><c>true</c> if the authorization was successfully revoked, <c>false</c> otherwise.</returns>
-    public virtual async ValueTask<bool> TryRevokeAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> TryRevokeAsync(TAuthorization authorization!!, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         var status = await Store.GetStatusAsync(authorization, cancellationToken);
         if (string.Equals(status, Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
         {
@@ -1061,13 +908,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask UpdateAsync(TAuthorization authorization, CancellationToken cancellationToken = default)
+    public virtual async ValueTask UpdateAsync(TAuthorization authorization!!, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         var results = await GetValidationResultsAsync(authorization, cancellationToken);
         if (results.Any(result => result != ValidationResult.Success))
         {
@@ -1114,19 +956,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public virtual async ValueTask UpdateAsync(TAuthorization authorization,
-        OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
+    public virtual async ValueTask UpdateAsync(TAuthorization authorization!!,
+        OpenIddictAuthorizationDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         await PopulateAsync(authorization, descriptor, cancellationToken);
         await UpdateAsync(authorization, cancellationToken);
     }
@@ -1138,13 +970,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The validation error encountered when validating the authorization.</returns>
     public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
-        TAuthorization authorization, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        TAuthorization authorization!!, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (authorization is null)
-        {
-            throw new ArgumentNullException(nameof(authorization));
-        }
-
         var type = await Store.GetTypeAsync(authorization, cancellationToken);
         if (string.IsNullOrEmpty(type))
         {

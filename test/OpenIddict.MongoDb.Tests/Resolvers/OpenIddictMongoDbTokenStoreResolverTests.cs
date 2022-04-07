@@ -38,7 +38,7 @@ public class OpenIddictMongoDbTokenStoreResolverTests
         var resolver = new OpenIddictMongoDbTokenStoreResolver(provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomToken>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<CustomToken>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0260), exception.Message);
     }

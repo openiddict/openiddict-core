@@ -43,7 +43,7 @@ public class OpenIddictEntityFrameworkCoreScopeStoreResolverTests
         var resolver = new OpenIddictEntityFrameworkCoreScopeStoreResolver(new TypeResolutionCache(), options, provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomScope>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<CustomScope>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0255), exception.Message);
     }
@@ -64,7 +64,7 @@ public class OpenIddictEntityFrameworkCoreScopeStoreResolverTests
         var resolver = new OpenIddictEntityFrameworkCoreScopeStoreResolver(new TypeResolutionCache(), options, provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictEntityFrameworkCoreScope>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<OpenIddictEntityFrameworkCoreScope>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0253), exception.Message);
     }

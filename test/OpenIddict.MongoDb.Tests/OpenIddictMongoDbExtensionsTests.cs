@@ -21,7 +21,7 @@ public class OpenIddictMongoDbExtensionsTests
         var builder = (OpenIddictCoreBuilder) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMongoDb());
+        var exception = Assert.Throws<ArgumentNullException>(builder.UseMongoDb);
 
         Assert.Equal("builder", exception.ParamName);
     }

@@ -20,13 +20,8 @@ public class OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey> : IEn
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
     where TKey : notnull, IEquatable<TKey>
 {
-    public void Configure(EntityTypeBuilder<TScope> builder)
+    public void Configure(EntityTypeBuilder<TScope> builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         // Warning: optional foreign keys MUST NOT be added as CLR properties because
         // Entity Framework would throw an exception due to the TKey generic parameter
         // being non-nullable when using value types like short, int, long or Guid.

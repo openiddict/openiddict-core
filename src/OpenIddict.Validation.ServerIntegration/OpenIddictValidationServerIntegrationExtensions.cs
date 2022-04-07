@@ -23,13 +23,8 @@ public static class OpenIddictValidationServerIntegrationExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationServerIntegrationBuilder"/>.</returns>
-    public static OpenIddictValidationServerIntegrationBuilder UseLocalServer(this OpenIddictValidationBuilder builder)
+    public static OpenIddictValidationServerIntegrationBuilder UseLocalServer(this OpenIddictValidationBuilder builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(new[]
         {
@@ -49,18 +44,8 @@ public static class OpenIddictValidationServerIntegrationExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     public static OpenIddictValidationBuilder UseLocalServer(
-        this OpenIddictValidationBuilder builder, Action<OpenIddictValidationServerIntegrationBuilder> configuration)
+        this OpenIddictValidationBuilder builder!!, Action<OpenIddictValidationServerIntegrationBuilder> configuration!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         configuration(builder.UseLocalServer());
 
         return builder;

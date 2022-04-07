@@ -16,8 +16,8 @@ public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
     private readonly IServiceProvider _provider;
 
     public OpenIddictMongoDbContext(
-        IOptionsMonitor<OpenIddictMongoDbOptions> options,
-        IServiceProvider provider)
+        IOptionsMonitor<OpenIddictMongoDbOptions> options!!,
+        IServiceProvider provider!!)
     {
         _options = options;
         _provider = provider;
@@ -28,7 +28,7 @@ public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
     {
         if (cancellationToken.IsCancellationRequested)
         {
-            return new ValueTask<IMongoDatabase>(Task.FromCanceled<IMongoDatabase>(cancellationToken));
+            return new(Task.FromCanceled<IMongoDatabase>(cancellationToken));
         }
 
         var database = _options.CurrentValue.Database;
@@ -39,10 +39,10 @@ public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
 
         if (database is null)
         {
-            return new ValueTask<IMongoDatabase>(Task.FromException<IMongoDatabase>(
+            return new(Task.FromException<IMongoDatabase>(
                 new InvalidOperationException(SR.GetResourceString(SR.ID0262))));
         }
 
-        return new ValueTask<IMongoDatabase>(database);
+        return new(database);
     }
 }

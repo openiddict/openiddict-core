@@ -18,7 +18,7 @@ public class OpenIddictMongoDbApplicationStoreResolver : IOpenIddictApplicationS
     private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
     private readonly IServiceProvider _provider;
 
-    public OpenIddictMongoDbApplicationStoreResolver(IServiceProvider provider)
+    public OpenIddictMongoDbApplicationStoreResolver(IServiceProvider provider!!)
         => _provider = provider;
 
     /// <summary>

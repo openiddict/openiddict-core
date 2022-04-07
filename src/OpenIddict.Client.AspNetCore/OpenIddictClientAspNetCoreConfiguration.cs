@@ -19,13 +19,8 @@ public class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<Authent
     /// Registers the OpenIddict client handler in the global authentication options.
     /// </summary>
     /// <param name="options">The options instance to initialize.</param>
-    public void Configure(AuthenticationOptions options)
+    public void Configure(AuthenticationOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
         if (options.SchemeMap.TryGetValue(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
             builder.HandlerType != typeof(OpenIddictClientAspNetCoreHandler))
@@ -37,13 +32,8 @@ public class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<Authent
             OpenIddictClientAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
-    public void Configure(OpenIddictClientOptions options)
+    public void Configure(OpenIddictClientOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core client components.
         options.Handlers.AddRange(OpenIddictClientAspNetCoreHandlers.DefaultHandlers);
     }
@@ -53,13 +43,8 @@ public class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<Authent
     /// </summary>
     /// <param name="name">The authentication scheme associated with the handler instance.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, AuthenticationOptions options)
+    public void PostConfigure(string name, AuthenticationOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         if (!TryValidate(options.SchemeMap, options.DefaultAuthenticateScheme) ||
             !TryValidate(options.SchemeMap, options.DefaultScheme) ||
             !TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||

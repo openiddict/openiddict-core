@@ -40,18 +40,8 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     /// </summary>
     /// <param name="client">The HTTP client used to communicate with the OpenID Connect server.</param>
     /// <param name="parser">The HTML parser used to parse the responses returned by the OpenID Connect server.</param>
-    public OpenIddictServerIntegrationTestClient(HttpClient client, HtmlParser parser)
+    public OpenIddictServerIntegrationTestClient(HttpClient client!!, HtmlParser parser!!)
     {
-        if (client is null)
-        {
-            throw new ArgumentNullException(nameof(client));
-        }
-
-        if (parser is null)
-        {
-            throw new ArgumentNullException(nameof(parser));
-        }
-
         HttpClient = client;
         HtmlParser = parser;
     }
@@ -93,13 +83,8 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     /// <param name="uri">The endpoint to which the request is sent.</param>
     /// <param name="request">The OpenID Connect request to send.</param>
     /// <returns>The OpenID Connect response returned by the server.</returns>
-    public Task<OpenIddictResponse> GetAsync(string uri, OpenIddictRequest request)
+    public Task<OpenIddictResponse> GetAsync(string uri, OpenIddictRequest request!!)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
         if (string.IsNullOrEmpty(uri))
         {
             throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
@@ -125,13 +110,8 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     /// <param name="uri">The endpoint to which the request is sent.</param>
     /// <param name="request">The OpenID Connect request to send.</param>
     /// <returns>The OpenID Connect response returned by the server.</returns>
-    public Task<OpenIddictResponse> PostAsync(string uri, OpenIddictRequest request)
+    public Task<OpenIddictResponse> PostAsync(string uri, OpenIddictRequest request!!)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
         if (string.IsNullOrEmpty(uri))
         {
             throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
@@ -158,13 +138,8 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     /// <param name="uri">The endpoint to which the request is sent.</param>
     /// <param name="request">The OpenID Connect request to send.</param>
     /// <returns>The OpenID Connect response returned by the server.</returns>
-    public Task<OpenIddictResponse> SendAsync(string method, string uri, OpenIddictRequest request)
+    public Task<OpenIddictResponse> SendAsync(string method, string uri, OpenIddictRequest request!!)
     {
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
         if (string.IsNullOrEmpty(method))
         {
             throw new ArgumentException("The HTTP method cannot be null or empty.", nameof(method));
@@ -186,18 +161,8 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     /// <param name="uri">The endpoint to which the request is sent.</param>
     /// <param name="request">The OpenID Connect request to send.</param>
     /// <returns>The OpenID Connect response returned by the server.</returns>
-    public Task<OpenIddictResponse> SendAsync(HttpMethod method, string uri, OpenIddictRequest request)
+    public Task<OpenIddictResponse> SendAsync(HttpMethod method!!, string uri, OpenIddictRequest request!!)
     {
-        if (method is null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
         if (string.IsNullOrEmpty(uri))
         {
             throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
@@ -214,23 +179,8 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     /// <param name="uri">The endpoint to which the request is sent.</param>
     /// <param name="request">The OpenID Connect request to send.</param>
     /// <returns>The OpenID Connect response returned by the server.</returns>
-    public virtual async Task<OpenIddictResponse> SendAsync(HttpMethod method, Uri uri, OpenIddictRequest request)
+    public virtual async Task<OpenIddictResponse> SendAsync(HttpMethod method!!, Uri uri!!, OpenIddictRequest request!!)
     {
-        if (method is null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
-
-        if (uri is null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
         if (HttpClient.BaseAddress is null && !uri.IsAbsoluteUri)
         {
             throw new ArgumentException("The address cannot be a relative URI when no base address " +

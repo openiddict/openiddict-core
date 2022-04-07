@@ -16,7 +16,7 @@ public class OpenIddictValidationRetriever : IConfigurationRetriever<OpenIddictC
     /// Creates a new instance of the <see cref="OpenIddictValidationRetriever"/> class.
     /// </summary>
     /// <param name="service">The validation service.</param>
-    public OpenIddictValidationRetriever(OpenIddictValidationService service)
+    public OpenIddictValidationRetriever(OpenIddictValidationService service!!)
         => _service = service;
 
     /// <summary>
@@ -26,7 +26,8 @@ public class OpenIddictValidationRetriever : IConfigurationRetriever<OpenIddictC
     /// <param name="retriever">The retriever used by IdentityModel.</param>
     /// <param name="cancel">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    async Task<OpenIddictConfiguration> IConfigurationRetriever<OpenIddictConfiguration>.GetConfigurationAsync(string address, IDocumentRetriever retriever, CancellationToken cancel)
+    async Task<OpenIddictConfiguration> IConfigurationRetriever<OpenIddictConfiguration>.GetConfigurationAsync(
+        string address, IDocumentRetriever retriever, CancellationToken cancel)
     {
         if (string.IsNullOrEmpty(address))
         {

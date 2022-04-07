@@ -43,7 +43,7 @@ public class OpenIddictEntityFrameworkAuthorizationStoreResolverTests
         var resolver = new OpenIddictEntityFrameworkAuthorizationStoreResolver(new TypeResolutionCache(), options, provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomAuthorization>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<CustomAuthorization>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0236), exception.Message);
     }
@@ -64,7 +64,7 @@ public class OpenIddictEntityFrameworkAuthorizationStoreResolverTests
         var resolver = new OpenIddictEntityFrameworkAuthorizationStoreResolver(new TypeResolutionCache(), options, provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictEntityFrameworkAuthorization>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<OpenIddictEntityFrameworkAuthorization>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0235), exception.Message);
     }

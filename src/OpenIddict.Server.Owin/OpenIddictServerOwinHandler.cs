@@ -24,8 +24,8 @@ public class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddictServe
     /// <param name="dispatcher">The OpenIddict server dispatcher used by this instance.</param>
     /// <param name="factory">The OpenIddict server factory used by this instance.</param>
     public OpenIddictServerOwinHandler(
-        IOpenIddictServerDispatcher dispatcher,
-        IOpenIddictServerFactory factory)
+        IOpenIddictServerDispatcher dispatcher!!,
+        IOpenIddictServerFactory factory!!)
     {
         _dispatcher = dispatcher;
         _factory = factory;

@@ -26,13 +26,8 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictValidationOptions options)
+    public void PostConfigure(string name, OpenIddictValidationOptions options!!)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
         if (options.JsonWebTokenHandler is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));
@@ -44,7 +39,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
         }
 
-        if (options.ValidationType == OpenIddictValidationType.Introspection)
+        if (options.ValidationType is OpenIddictValidationType.Introspection)
         {
             if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
             {

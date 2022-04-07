@@ -20,7 +20,7 @@ public class OpenIddictServerExtensionsTests
         var builder = (OpenIddictBuilder) null!;
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.AddServer());
+        var exception = Assert.Throws<ArgumentNullException>(builder.AddServer);
 
         Assert.Equal("builder", exception.ParamName);
     }
@@ -169,7 +169,7 @@ public class OpenIddictServerExtensionsTests
         // Assert
         var provider = services.BuildServiceProvider();
 
-        var exception = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredService<OpenIddictServerConfiguration>());
+        var exception = Assert.Throws<InvalidOperationException>(provider.GetRequiredService<OpenIddictServerConfiguration>);
 
         Assert.NotNull(exception);
     }

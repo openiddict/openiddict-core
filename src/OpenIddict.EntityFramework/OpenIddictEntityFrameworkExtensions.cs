@@ -22,13 +22,8 @@ public static class OpenIddictEntityFrameworkExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-    public static OpenIddictEntityFrameworkBuilder UseEntityFramework(this OpenIddictCoreBuilder builder)
+    public static OpenIddictEntityFrameworkBuilder UseEntityFramework(this OpenIddictCoreBuilder builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         // Since Entity Framework 6.x may be used with databases performing case-insensitive
         // or culture-sensitive comparisons, ensure the additional filtering logic is enforced
         // in case case-sensitive stores were registered before this extension was called.
@@ -66,18 +61,8 @@ public static class OpenIddictEntityFrameworkExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public static OpenIddictCoreBuilder UseEntityFramework(
-        this OpenIddictCoreBuilder builder, Action<OpenIddictEntityFrameworkBuilder> configuration)
+        this OpenIddictCoreBuilder builder!!, Action<OpenIddictEntityFrameworkBuilder> configuration!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         configuration(builder.UseEntityFramework());
 
         return builder;

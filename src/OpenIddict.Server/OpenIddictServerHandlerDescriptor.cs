@@ -72,13 +72,8 @@ public class OpenIddictServerHandlerDescriptor
         /// </summary>
         /// <param name="type">The event handler filter type.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> AddFilter(Type type)
+        public Builder<TContext> AddFilter(Type type!!)
         {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
             if (!typeof(IOpenIddictServerHandlerFilter<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0104));
@@ -104,13 +99,8 @@ public class OpenIddictServerHandlerDescriptor
         /// <param name="descriptor">The existing descriptor properties are copied from.</param>
         /// <remarks>All the properties previously set on this instance are automatically replaced.</remarks>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> Import(OpenIddictServerHandlerDescriptor descriptor)
+        public Builder<TContext> Import(OpenIddictServerHandlerDescriptor descriptor!!)
         {
-            if (descriptor is null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
             if (descriptor.ContextType != typeof(TContext))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0284));
@@ -130,13 +120,8 @@ public class OpenIddictServerHandlerDescriptor
         /// </summary>
         /// <param name="descriptor">The service descriptor.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> SetServiceDescriptor(ServiceDescriptor descriptor)
+        public Builder<TContext> SetServiceDescriptor(ServiceDescriptor descriptor!!)
         {
-            if (descriptor is null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
             var type = descriptor.ServiceType;
             if (!typeof(IOpenIddictServerHandler<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
             {
@@ -182,15 +167,8 @@ public class OpenIddictServerHandlerDescriptor
         /// </summary>
         /// <param name="handler">The handler instance.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseInlineHandler(Func<TContext, ValueTask> handler)
-        {
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            return UseSingletonHandler(new OpenIddictServerHandler<TContext>(handler));
-        }
+        public Builder<TContext> UseInlineHandler(Func<TContext, ValueTask> handler!!)
+            => UseSingletonHandler(new OpenIddictServerHandler<TContext>(handler));
 
         /// <summary>
         /// Configures the descriptor to use the specified scoped handler.
@@ -208,17 +186,10 @@ public class OpenIddictServerHandlerDescriptor
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <param name="factory">The factory used to create the handler.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseScopedHandler<THandler>(Func<IServiceProvider, object> factory)
+        public Builder<TContext> UseScopedHandler<THandler>(Func<IServiceProvider, object> factory!!)
             where THandler : IOpenIddictServerHandler<TContext>
-        {
-            if (factory is null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            return SetServiceDescriptor(new ServiceDescriptor(
+            => SetServiceDescriptor(new ServiceDescriptor(
                 typeof(THandler), factory, ServiceLifetime.Scoped));
-        }
 
         /// <summary>
         /// Configures the descriptor to use the specified singleton handler.
@@ -236,17 +207,10 @@ public class OpenIddictServerHandlerDescriptor
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <param name="factory">The factory used to create the handler.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseSingletonHandler<THandler>(Func<IServiceProvider, object> factory)
+        public Builder<TContext> UseSingletonHandler<THandler>(Func<IServiceProvider, object> factory!!)
             where THandler : IOpenIddictServerHandler<TContext>
-        {
-            if (factory is null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            return SetServiceDescriptor(new ServiceDescriptor(
+            => SetServiceDescriptor(new ServiceDescriptor(
                 typeof(THandler), factory, ServiceLifetime.Singleton));
-        }
 
         /// <summary>
         /// Configures the descriptor to use the specified singleton handler.
@@ -254,16 +218,9 @@ public class OpenIddictServerHandlerDescriptor
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <param name="handler">The handler instance.</param>
         /// <returns>The builder instance, so that calls can be easily chained.</returns>
-        public Builder<TContext> UseSingletonHandler<THandler>(THandler handler)
+        public Builder<TContext> UseSingletonHandler<THandler>(THandler handler!!)
             where THandler : IOpenIddictServerHandler<TContext>
-        {
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            return SetServiceDescriptor(new ServiceDescriptor(typeof(THandler), handler));
-        }
+            => SetServiceDescriptor(new ServiceDescriptor(typeof(THandler), handler));
 
         /// <summary>
         /// Build a new descriptor instance, based on the parameters that were previously set.

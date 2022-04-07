@@ -40,7 +40,7 @@ public class OpenIddictMessage
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
     public OpenIddictMessage(JsonElement parameters)
     {
-        if (parameters.ValueKind != JsonValueKind.Object)
+        if (parameters.ValueKind is not JsonValueKind.Object)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0189), nameof(parameters));
         }
@@ -69,13 +69,8 @@ public class OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The message parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    public OpenIddictMessage(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
+    public OpenIddictMessage(IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters!!)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
-
         foreach (var parameter in parameters)
         {
             // Ignore parameters whose name is null or empty.
@@ -93,13 +88,8 @@ public class OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The message parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?>> parameters)
+    public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?>> parameters!!)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
-
         foreach (var parameter in parameters.GroupBy(parameter => parameter.Key))
         {
             // Ignore parameters whose name is null or empty.
@@ -128,13 +118,8 @@ public class OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The message parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?[]?>> parameters)
+    public OpenIddictMessage(IEnumerable<KeyValuePair<string, string?[]?>> parameters!!)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
-
         foreach (var parameter in parameters)
         {
             // Ignore parameters whose name is null or empty.
@@ -161,13 +146,8 @@ public class OpenIddictMessage
     /// </summary>
     /// <param name="parameters">The message parameters.</param>
     /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
-    public OpenIddictMessage(IEnumerable<KeyValuePair<string, StringValues>> parameters)
+    public OpenIddictMessage(IEnumerable<KeyValuePair<string, StringValues>> parameters!!)
     {
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
-
         foreach (var parameter in parameters)
         {
             // Ignore parameters whose name is null or empty.
@@ -387,13 +367,8 @@ public class OpenIddictMessage
     /// Writes the message to the specified JSON writer.
     /// </summary>
     /// <param name="writer">The UTF-8 JSON writer.</param>
-    public void WriteTo(Utf8JsonWriter writer)
+    public void WriteTo(Utf8JsonWriter writer!!)
     {
-        if (writer is null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
         writer.WriteStartObject();
 
         foreach (var parameter in Parameters)

@@ -33,13 +33,8 @@ public class OpenIddictServerOwinMiddlewareFactory : OwinMiddleware
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public override Task Invoke(IOwinContext context)
+    public override Task Invoke(IOwinContext context!!)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
         var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName);
         if (provider is null)
         {

@@ -19,8 +19,8 @@ public class OpenIddictValidationOwinBuilder
     /// Initializes a new instance of <see cref="OpenIddictValidationOwinBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictValidationOwinBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictValidationOwinBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
@@ -34,13 +34,8 @@ public class OpenIddictValidationOwinBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
-    public OpenIddictValidationOwinBuilder Configure(Action<OpenIddictValidationOwinOptions> configuration)
+    public OpenIddictValidationOwinBuilder Configure(Action<OpenIddictValidationOwinOptions> configuration!!)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         Services.Configure(configuration);
 
         return this;

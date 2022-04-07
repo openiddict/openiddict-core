@@ -845,7 +845,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
 #else
         var server = new TestServer(builder);
 
-        return new ValueTask<OpenIddictServerIntegrationTestServer>(new OpenIddictServerAspNetCoreIntegrationTestServer(server));
+        return new(new OpenIddictServerAspNetCoreIntegrationTestServer(server));
 #endif
 
         void ConfigurePipeline(IApplicationBuilder app)

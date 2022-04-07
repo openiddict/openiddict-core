@@ -25,18 +25,8 @@ public class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorizatio
     }
 
     /// <inheritdoc/>
-    public override void Customize(ModelBuilder modelBuilder, DbContext context)
+    public override void Customize(ModelBuilder modelBuilder!!, DbContext context!!)
     {
-        if (modelBuilder is null)
-        {
-            throw new ArgumentNullException(nameof(modelBuilder));
-        }
-
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
         // Register the OpenIddict entity sets.
         modelBuilder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
 

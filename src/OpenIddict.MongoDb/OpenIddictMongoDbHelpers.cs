@@ -20,13 +20,8 @@ internal static class OpenIddictMongoDbHelpers
     /// <param name="source">The query source.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The streamed async enumeration containing the results.</returns>
-    internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IAsyncCursorSource<T> source, CancellationToken cancellationToken)
+    internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IAsyncCursorSource<T> source!!, CancellationToken cancellationToken)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
         return ExecuteAsync(source, cancellationToken);
 
         static async IAsyncEnumerable<T> ExecuteAsync(IAsyncCursorSource<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -50,13 +45,6 @@ internal static class OpenIddictMongoDbHelpers
     /// <param name="source">The query source.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The streamed async enumeration containing the results.</returns>
-    internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
-    {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        return ((IAsyncCursorSource<T>) source).ToAsyncEnumerable(cancellationToken);
-    }
+    internal static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IQueryable<T> source!!, CancellationToken cancellationToken)
+        => ((IAsyncCursorSource<T>) source).ToAsyncEnumerable(cancellationToken);
 }

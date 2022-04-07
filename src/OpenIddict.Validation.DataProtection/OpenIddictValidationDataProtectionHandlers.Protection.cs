@@ -33,7 +33,7 @@ public static partial class OpenIddictValidationDataProtectionHandlers
         {
             private readonly IOptionsMonitor<OpenIddictValidationDataProtectionOptions> _options;
 
-            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options)
+            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options!!)
                 => _options = options;
 
             /// <summary>

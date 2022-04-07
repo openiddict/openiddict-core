@@ -124,12 +124,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // Authentication demands can be triggered from the redirection endpoint
             // to handle authorization callbacks but also from unknown endpoints
@@ -181,13 +177,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             (context.ExtractStateToken,
              context.RequireStateToken,
              context.ValidateStateToken) = context.EndpointType switch
@@ -222,13 +213,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             context.StateToken = context.EndpointType switch
             {
                 OpenIddictClientEndpointType.Redirection when context.ExtractStateToken
@@ -257,13 +243,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.RequireStateToken && string.IsNullOrEmpty(context.StateToken))
             {
                 context.Reject(
@@ -285,7 +266,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateStateToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateStateToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -300,13 +281,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.StateTokenPrincipal is not null ||
                 string.IsNullOrEmpty(context.StateToken))
             {
@@ -363,13 +339,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Retrieve the client definition using the authorization server stored in the state token.
@@ -421,13 +392,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 
             var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
@@ -512,13 +478,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var (error, description, uri) = (
                 (string?) context.Request[Parameters.Error],
                 (string?) context.Request[Parameters.ErrorDescription],
@@ -556,13 +517,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Resolve the negotiated grant type from the state token.
@@ -609,13 +565,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Resolve the negotiated response type from the state token.
@@ -641,13 +592,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             (context.ExtractAuthorizationCode,
              context.RequireAuthorizationCode,
              context.ValidateAuthorizationCode) = context.GrantType switch
@@ -723,13 +669,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             context.AuthorizationCode = context.EndpointType switch
             {
                 OpenIddictClientEndpointType.Redirection when context.ExtractAuthorizationCode
@@ -774,13 +715,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if ((context.RequireAuthorizationCode         && string.IsNullOrEmpty(context.AuthorizationCode))       ||
                 (context.RequireFrontchannelAccessToken   && string.IsNullOrEmpty(context.FrontchannelAccessToken)) ||
                 (context.RequireFrontchannelIdentityToken && string.IsNullOrEmpty(context.FrontchannelIdentityToken)))
@@ -804,7 +740,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateFrontchannelIdentityToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateFrontchannelIdentityToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -819,13 +755,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.FrontchannelIdentityTokenPrincipal is not null ||
                 string.IsNullOrEmpty(context.FrontchannelIdentityToken))
             {
@@ -882,13 +813,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.FrontchannelIdentityTokenPrincipal.Claims
@@ -1018,13 +944,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Note: while an identity token typically contains a single audience represented
@@ -1063,13 +984,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Note: the "azp" claim is optional, but if it's present, it MUST match the client identifier of the application.
@@ -1107,13 +1023,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -1170,13 +1081,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Resolve the signing algorithm used to sign the identity token. If the private
@@ -1299,7 +1205,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateFrontchannelAccessToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateFrontchannelAccessToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -1314,13 +1220,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.FrontchannelAccessTokenPrincipal is not null ||
                 string.IsNullOrEmpty(context.FrontchannelAccessToken))
             {
@@ -1369,7 +1270,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateAuthorizationCode(IOpenIddictClientDispatcher dispatcher)
+        public ValidateAuthorizationCode(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -1384,13 +1285,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.AuthorizationCodePrincipal is not null ||
                 string.IsNullOrEmpty(context.AuthorizationCode))
             {
@@ -1446,13 +1342,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             (context.ExtractBackchannelAccessToken,
              context.RequireBackchannelAccessToken,
              context.ValidateBackchannelAccessToken) = context.GrantType switch
@@ -1537,13 +1428,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (!context.ExtractBackchannelAccessToken   &&
                 !context.ExtractBackchannelIdentityToken &&
                 !context.ExtractRefreshToken)
@@ -1620,13 +1506,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
             context.TokenResponse = await _service.SendTokenRequestAsync(context.Registration, context.TokenRequest);
@@ -1649,13 +1530,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
 
             if (!string.IsNullOrEmpty(context.TokenResponse.Error))
@@ -1688,13 +1564,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
 
             context.BackchannelAccessToken = context.ExtractBackchannelAccessToken switch
@@ -1735,13 +1606,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if ((context.RequireBackchannelAccessToken   && string.IsNullOrEmpty(context.BackchannelAccessToken))   ||
                 (context.RequireBackchannelIdentityToken && string.IsNullOrEmpty(context.BackchannelIdentityToken)) ||
                 (context.RequireRefreshToken             && string.IsNullOrEmpty(context.RefreshToken)))
@@ -1765,7 +1631,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateBackchannelIdentityToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateBackchannelIdentityToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -1780,13 +1646,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.BackchannelIdentityTokenPrincipal is not null ||
                 string.IsNullOrEmpty(context.BackchannelIdentityToken))
             {
@@ -1843,13 +1704,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             foreach (var group in context.BackchannelIdentityTokenPrincipal.Claims
@@ -1979,13 +1835,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Note: while an identity token typically contains a single audience represented
@@ -2024,13 +1875,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Note: the "azp" claim is optional, but if it's present, it MUST match the client identifier of the application.
@@ -2068,13 +1914,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -2131,13 +1972,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
             Debug.Assert(!string.IsNullOrEmpty(context.BackchannelAccessToken), SR.GetResourceString(SR.ID4010));
 
@@ -2233,7 +2069,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateBackchannelAccessToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateBackchannelAccessToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -2248,13 +2084,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.BackchannelAccessTokenPrincipal is not null ||
                 string.IsNullOrEmpty(context.BackchannelAccessToken))
             {
@@ -2303,7 +2134,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateRefreshToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateRefreshToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -2318,13 +2149,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.RefreshTokenPrincipal is not null ||
                 string.IsNullOrEmpty(context.RefreshToken))
             {
@@ -2380,13 +2206,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
@@ -2438,12 +2259,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // Attach a new request instance if necessary.
             context.UserinfoRequest ??= new OpenIddictRequest();
@@ -2486,13 +2303,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
             // Note: userinfo responses can be of two types:
@@ -2520,13 +2332,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.UserinfoResponse is not null, SR.GetResourceString(SR.ID4007));
 
             if (!string.IsNullOrEmpty(context.UserinfoResponse.Error))
@@ -2559,13 +2366,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.RequireUserinfoToken && string.IsNullOrEmpty(context.UserinfoToken))
             {
                 context.Reject(
@@ -2587,7 +2389,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public ValidateUserinfoToken(IOpenIddictClientDispatcher dispatcher)
+        public ValidateUserinfoToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -2602,13 +2404,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context.UserinfoTokenPrincipal is not null || string.IsNullOrEmpty(context.UserinfoToken))
             {
                 return;
@@ -2664,13 +2461,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.UserinfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
@@ -2737,13 +2529,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.UserinfoTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
@@ -2822,13 +2609,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // If an explicit grant type was specified, ensure it is supported by OpenIddict.
             if (!string.IsNullOrEmpty(context.GrantType) &&
                 context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
@@ -2866,12 +2648,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // Note: if the static registration cannot be found in the options, this may indicate
             // the client was removed after the authorization dance started and thus, can no longer
@@ -2901,13 +2679,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // If an explicit grant type was specified, don't overwrite it.
             if (!string.IsNullOrEmpty(context.GrantType))
             {
@@ -2991,12 +2764,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // In OpenIddict, per-authorization demand values are stored in an encrypted and signed token
             // called "state token", that allows flowing per-authorization demand data like the issuer
@@ -3035,13 +2804,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // If an explicit response type was specified, don't overwrite it.
             if (!string.IsNullOrEmpty(context.ResponseType))
             {
@@ -3233,13 +2997,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // If an explicit response type was specified, don't overwrite it.
             if (!string.IsNullOrEmpty(context.ResponseMode))
             {
@@ -3345,13 +3104,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             context.ClientId ??= context.Registration.ClientId;
 
             return default;
@@ -3374,12 +3128,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // Unlike OpenID Connect, OAuth 2.0 and 2.1 don't require specifying a redirect_uri.
             // To keep OpenIddict compatible with OAuth 2.0/2.1 deployments, the redirect_uri
@@ -3407,13 +3157,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // If an explicit set of scopes was specified, don't overwrite it.
             if (context.Scopes.Count > 0)
             {
@@ -3459,12 +3204,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
@@ -3497,13 +3238,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
@@ -3547,12 +3283,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // Don't attach a code challenge method if no authorization code is requested as some implementations
             // (like OpenIddict server) are known to eagerly block authorization requests that specify an invalid
@@ -3654,13 +3386,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -3751,7 +3478,7 @@ public static partial class OpenIddictClientHandlers
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public GenerateStateToken(IOpenIddictClientDispatcher dispatcher)
+        public GenerateStateToken(IOpenIddictClientDispatcher dispatcher!!)
             => _dispatcher = dispatcher;
 
         /// <summary>
@@ -3766,13 +3493,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 Principal = context.StateTokenPrincipal!,
@@ -3823,12 +3545,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // While OAuth 2.0/2.1 allows sending an authorization request without a redirect_uri,
             // doing so is illegal in OpenID Connect and such requests will always be rejected.
@@ -3858,12 +3576,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
+        public ValueTask HandleAsync(ProcessChallengeContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
 
             // Note: while the exact order of the parameters has typically no effect on how requests
             // are handled by an authorization server, client_id and redirect_uri are deliberately
@@ -3919,13 +3633,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (!string.IsNullOrEmpty(context.Transaction.Response?.Error))
             {
                 context.Reject(
@@ -3956,13 +3665,8 @@ public static partial class OpenIddictClientHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessErrorContext context)
+        public ValueTask HandleAsync(ProcessErrorContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             context.Response.Error = context.Error;
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;

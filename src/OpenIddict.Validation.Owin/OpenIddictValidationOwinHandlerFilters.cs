@@ -18,14 +18,7 @@ public static class OpenIddictValidationOwinHandlerFilters
     /// </summary>
     public class RequireOwinRequest : IOpenIddictValidationHandlerFilter<BaseContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.Transaction.GetOwinRequest() is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
+            => new(context.Transaction.GetOwinRequest() is not null);
     }
 }

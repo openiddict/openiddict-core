@@ -17,15 +17,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireAuthorizationCodeOrImplicitGrantType : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.Implicit);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context!!)
+            => new(context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.Implicit);
     }
 
     /// <summary>
@@ -33,15 +26,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireAuthorizationCodeValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ValidateAuthorizationCode);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ValidateAuthorizationCode);
     }
 
     /// <summary>
@@ -49,15 +35,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireBackchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ValidateBackchannelAccessToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ValidateBackchannelAccessToken);
     }
 
     /// <summary>
@@ -65,15 +44,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireBackchannelIdentityTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.BackchannelIdentityTokenPrincipal is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.BackchannelIdentityTokenPrincipal is not null);
     }
 
     /// <summary>
@@ -81,15 +53,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireBackchannelIdentityTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ValidateBackchannelIdentityToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ValidateBackchannelIdentityToken);
     }
 
     /// <summary>
@@ -97,15 +62,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireFrontchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ValidateFrontchannelAccessToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ValidateFrontchannelAccessToken);
     }
 
     /// <summary>
@@ -113,15 +71,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireFrontchannelIdentityTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.FrontchannelIdentityTokenPrincipal is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.FrontchannelIdentityTokenPrincipal is not null);
     }
 
     /// <summary>
@@ -129,15 +80,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireFrontchannelIdentityTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ValidateFrontchannelIdentityToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ValidateFrontchannelIdentityToken);
     }
 
     /// <summary>
@@ -145,15 +89,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.EndpointType == OpenIddictClientEndpointType.Redirection);
-        }
+        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
+            => new(context.EndpointType is OpenIddictClientEndpointType.Redirection);
     }
 
     /// <summary>
@@ -161,15 +98,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireRefreshTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ValidateRefreshToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ValidateRefreshToken);
     }
 
     /// <summary>
@@ -177,15 +107,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.GenerateStateToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context!!)
+            => new(context.GenerateStateToken);
     }
 
     /// <summary>
@@ -193,15 +116,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireStateTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.StateTokenPrincipal is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.StateTokenPrincipal is not null);
     }
 
     /// <summary>
@@ -209,15 +125,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireStateTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ValidateStateToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ValidateStateToken);
     }
 
     /// <summary>
@@ -225,15 +134,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireTokenRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.TokenRequest is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.TokenRequest is not null);
     }
 
     /// <summary>
@@ -241,15 +143,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireTokenResponse : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.TokenResponse is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.TokenResponse is not null);
     }
 
     /// <summary>
@@ -257,15 +152,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireUserinfoRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.UserinfoRequest is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.UserinfoRequest is not null);
     }
 
     /// <summary>
@@ -273,15 +161,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireUserinfoResponse : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.UserinfoResponse is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.UserinfoResponse is not null);
     }
 
     /// <summary>
@@ -289,15 +170,8 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireUserinfoTokenExtracted : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.ExtractUserinfoToken);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.ExtractUserinfoToken);
     }
 
     /// <summary>
@@ -305,14 +179,7 @@ public static class OpenIddictClientHandlerFilters
     /// </summary>
     public class RequireUserinfoTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new ValueTask<bool>(context.UserinfoTokenPrincipal is not null);
-        }
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
+            => new(context.UserinfoTokenPrincipal is not null);
     }
 }

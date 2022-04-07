@@ -24,8 +24,8 @@ public class OpenIddictValidationBuilder
     /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictValidationBuilder(IServiceCollection services)
-        => Services = services ?? throw new ArgumentNullException(nameof(services));
+    public OpenIddictValidationBuilder(IServiceCollection services!!)
+        => Services = services;
 
     /// <summary>
     /// Gets the services collection.
@@ -41,14 +41,9 @@ public class OpenIddictValidationBuilder
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder AddEventHandler<TContext>(
-        Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration)
+        Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration!!)
         where TContext : OpenIddictValidationEvents.BaseContext
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         // Note: handlers registered using this API are assumed to be custom handlers by default.
         var builder = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
             .SetType(OpenIddictValidationHandlerType.Custom);
@@ -64,13 +59,8 @@ public class OpenIddictValidationBuilder
     /// <param name="descriptor">The handler descriptor.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictValidationBuilder AddEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
+    public OpenIddictValidationBuilder AddEventHandler(OpenIddictValidationHandlerDescriptor descriptor!!)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         // Register the handler in the services collection.
         Services.Add(descriptor.ServiceDescriptor);
 
@@ -83,13 +73,8 @@ public class OpenIddictValidationBuilder
     /// <param name="descriptor">The descriptor corresponding to the handler to remove.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictValidationBuilder RemoveEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
+    public OpenIddictValidationBuilder RemoveEventHandler(OpenIddictValidationHandlerDescriptor descriptor!!)
     {
-        if (descriptor is null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
-
         Services.RemoveAll(descriptor.ServiceDescriptor.ServiceType);
 
         Services.PostConfigure<OpenIddictValidationOptions>(options =>
@@ -112,13 +97,8 @@ public class OpenIddictValidationBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder Configure(Action<OpenIddictValidationOptions> configuration)
+    public OpenIddictValidationBuilder Configure(Action<OpenIddictValidationOptions> configuration!!)
     {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         Services.Configure(configuration);
 
         return this;
@@ -129,28 +109,16 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="credentials">The encrypting credentials.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
-    {
-        if (credentials is null)
-        {
-            throw new ArgumentNullException(nameof(credentials));
-        }
-
-        return Configure(options => options.EncryptionCredentials.Add(credentials));
-    }
+    public OpenIddictValidationBuilder AddEncryptionCredentials(EncryptingCredentials credentials!!)
+        => Configure(options => options.EncryptionCredentials.Add(credentials));
 
     /// <summary>
     /// Registers an encryption key.
     /// </summary>
     /// <param name="key">The security key.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder AddEncryptionKey(SecurityKey key)
+    public OpenIddictValidationBuilder AddEncryptionKey(SecurityKey key!!)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
         // If the encryption key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
             asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
@@ -178,13 +146,8 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="certificate">The encryption certificate.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder AddEncryptionCertificate(X509Certificate2 certificate)
+    public OpenIddictValidationBuilder AddEncryptionCertificate(X509Certificate2 certificate!!)
     {
-        if (certificate is null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
-
         // If the certificate is a X.509v3 certificate that specifies at least one
         // key usage, ensure that the certificate key can be used for key encryption.
         if (certificate.Version >= 3)
@@ -231,14 +194,9 @@ public class OpenIddictValidationBuilder
     /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(
-        Assembly assembly, string resource,
+        Assembly assembly!!, string resource,
         string? password, X509KeyStorageFlags flags)
     {
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
         if (string.IsNullOrEmpty(resource))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
@@ -282,13 +240,8 @@ public class OpenIddictValidationBuilder
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictValidationBuilder AddEncryptionCertificate(
-        Stream stream, string? password, X509KeyStorageFlags flags)
+        Stream stream!!, string? password, X509KeyStorageFlags flags)
     {
-        if (stream is null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
-
         using var buffer = new MemoryStream();
         stream.CopyTo(buffer);
 
@@ -362,14 +315,9 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="audiences">The audiences valid for this resource server.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder AddAudiences(params string[] audiences)
+    public OpenIddictValidationBuilder AddAudiences(params string[] audiences!!)
     {
-        if (audiences is null)
-        {
-            throw new ArgumentNullException(nameof(audiences));
-        }
-
-        if (audiences.Any(audience => string.IsNullOrEmpty(audience)))
+        if (audiences.Any(string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0123), nameof(audiences));
         }
@@ -403,15 +351,8 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="configuration">The server configuration.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder SetConfiguration(OpenIddictConfiguration configuration)
-    {
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        return Configure(options => options.Configuration = configuration);
-    }
+    public OpenIddictValidationBuilder SetConfiguration(OpenIddictConfiguration configuration!!)
+        => Configure(options => options.Configuration = configuration);
 
     /// <summary>
     /// Sets the client identifier client_id used when communicating
@@ -451,15 +392,8 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="address">The issuer address.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder SetIssuer(Uri address)
-    {
-        if (address is null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
-
-        return Configure(options => options.Issuer = address);
-    }
+    public OpenIddictValidationBuilder SetIssuer(Uri address!!)
+        => Configure(options => options.Issuer = address);
 
     /// <summary>
     /// Sets the issuer address, which is used to determine the actual location of the

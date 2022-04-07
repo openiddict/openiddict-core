@@ -21,13 +21,8 @@ public static class OpenIddictClientExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public static OpenIddictClientBuilder AddClient(this OpenIddictBuilder builder)
+    public static OpenIddictClientBuilder AddClient(this OpenIddictBuilder builder!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
         builder.Services.AddLogging();
         builder.Services.AddOptions();
 
@@ -74,18 +69,8 @@ public static class OpenIddictClientExtensions
     /// <param name="configuration">The configuration delegate used to configure the client services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-    public static OpenIddictBuilder AddClient(this OpenIddictBuilder builder, Action<OpenIddictClientBuilder> configuration)
+    public static OpenIddictBuilder AddClient(this OpenIddictBuilder builder!!, Action<OpenIddictClientBuilder> configuration!!)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration is null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         configuration(builder.AddClient());
 
         return builder;

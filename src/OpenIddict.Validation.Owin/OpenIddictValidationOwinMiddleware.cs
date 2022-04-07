@@ -29,9 +29,9 @@ public class OpenIddictValidationOwinMiddleware : AuthenticationMiddleware<OpenI
     /// <param name="factory">The OpenIddict validation factory.</param>
     public OpenIddictValidationOwinMiddleware(
         OwinMiddleware? next,
-        IOptionsMonitor<OpenIddictValidationOwinOptions> options,
-        IOpenIddictValidationDispatcher dispatcher,
-        IOpenIddictValidationFactory factory)
+        IOptionsMonitor<OpenIddictValidationOwinOptions> options!!,
+        IOpenIddictValidationDispatcher dispatcher!!,
+        IOpenIddictValidationFactory factory!!)
         : base(next, options.CurrentValue)
     {
         _dispatcher = dispatcher;

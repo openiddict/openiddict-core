@@ -25,12 +25,12 @@ public class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenI
     /// Creates a new instance of the <see cref="OpenIddictValidationAspNetCoreHandler"/> class.
     /// </summary>
     public OpenIddictValidationAspNetCoreHandler(
-        IOpenIddictValidationDispatcher dispatcher,
-        IOpenIddictValidationFactory factory,
-        IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options,
-        ILoggerFactory logger,
-        UrlEncoder encoder,
-        ISystemClock clock)
+        IOpenIddictValidationDispatcher dispatcher!!,
+        IOpenIddictValidationFactory factory!!,
+        IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options!!,
+        ILoggerFactory logger!!,
+        UrlEncoder encoder!!,
+        ISystemClock clock!!)
         : base(options, logger, encoder, clock)
     {
         _dispatcher = dispatcher;

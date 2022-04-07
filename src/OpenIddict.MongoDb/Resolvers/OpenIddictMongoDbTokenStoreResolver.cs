@@ -18,7 +18,7 @@ public class OpenIddictMongoDbTokenStoreResolver : IOpenIddictTokenStoreResolver
     private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
     private readonly IServiceProvider _provider;
 
-    public OpenIddictMongoDbTokenStoreResolver(IServiceProvider provider)
+    public OpenIddictMongoDbTokenStoreResolver(IServiceProvider provider!!)
         => _provider = provider;
 
     /// <summary>

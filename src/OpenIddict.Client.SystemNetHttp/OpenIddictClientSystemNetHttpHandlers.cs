@@ -41,13 +41,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The HTTP request message is disposed later by a dedicated handler.")]
-        public ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var request = new HttpRequestMessage(HttpMethod.Get, context.Address)
             {
                 Headers =
@@ -83,13 +78,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <inheritdoc/>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The HTTP request message is disposed later by a dedicated handler.")]
-        public ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var request = new HttpRequestMessage(HttpMethod.Post, context.Address)
             {
                 Headers =
@@ -123,22 +113,14 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
-            var request = context.Transaction.GetHttpRequestMessage();
-            if (request is null)
-            {
+            var request = context.Transaction.GetHttpRequestMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-            }
 
             if (request.RequestUri is null || context.Transaction.Request.Count == 0)
             {
@@ -189,22 +171,14 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
-            var request = context.Transaction.GetHttpRequestMessage();
-            if (request is null)
-            {
+            var request = context.Transaction.GetHttpRequestMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-            }
 
             request.Content = new FormUrlEncodedContent(
                 from parameter in context.Transaction.Request.GetParameters()
@@ -240,20 +214,12 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context)
+        public async ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
-            var request = context.Transaction.GetHttpRequestMessage();
-            if (request is null)
-            {
+            var request = context.Transaction.GetHttpRequestMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-            }
 
             var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
             using var client = _factory.CreateClient(assembly.Name!);
@@ -294,20 +260,12 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
-            var request = context.Transaction.GetHttpRequestMessage();
-            if (request is null)
-            {
+            var request = context.Transaction.GetHttpRequestMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-            }
 
             request.Dispose();
 
@@ -335,20 +293,12 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context)
+        public async ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
-            var response = context.Transaction.GetHttpResponseMessage();
-            if (response is null)
-            {
+            var response = context.Transaction.GetHttpResponseMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-            }
 
             // The status code is deliberately not validated to ensure even errored responses
             // (typically in the 4xx range) can be deserialized and handled by the event handlers.
@@ -376,20 +326,12 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
+        public ValueTask HandleAsync(TContext context!!)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
-            var response = context.Transaction.GetHttpResponseMessage();
-            if (response is null)
-            {
+            var response = context.Transaction.GetHttpResponseMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-            }
 
             response.Dispose();
 

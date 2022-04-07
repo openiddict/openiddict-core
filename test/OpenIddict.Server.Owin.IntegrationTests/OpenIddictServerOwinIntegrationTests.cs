@@ -814,7 +814,6 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
             });
         });
 
-        return new ValueTask<OpenIddictServerIntegrationTestServer>(
-            new OpenIddictServerOwinIntegrationTestServer(server));
+        return new(new OpenIddictServerOwinIntegrationTestServer(server));
     }
 }

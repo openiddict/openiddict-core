@@ -21,7 +21,7 @@ public class OpenIddictTokenStoreResolverTests
         var resolver = new OpenIddictTokenStoreResolver(provider);
 
         // Act and assert
-        var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictToken>());
+        var exception = Assert.Throws<InvalidOperationException>(resolver.Get<OpenIddictToken>);
 
         Assert.Equal(SR.GetResourceString(SR.ID0231), exception.Message);
     }

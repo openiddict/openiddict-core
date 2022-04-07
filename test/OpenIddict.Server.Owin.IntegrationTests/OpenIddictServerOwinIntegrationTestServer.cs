@@ -26,8 +26,7 @@ public class OpenIddictServerOwinIntegrationTestServer : OpenIddictServerIntegra
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The caller is responsible of disposing the test client.")]
     public override ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync()
-        => new ValueTask<OpenIddictServerIntegrationTestClient>(
-            new OpenIddictServerIntegrationTestClient(Server.HttpClient));
+        => new(new OpenIddictServerIntegrationTestClient(Server.HttpClient));
 
     public override ValueTask DisposeAsync()
     {

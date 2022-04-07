@@ -18,15 +18,15 @@ public class OpenIddictValidationFactory : IOpenIddictValidationFactory
     /// Creates a new instance of the <see cref="OpenIddictValidationFactory"/> class.
     /// </summary>
     public OpenIddictValidationFactory(
-        ILogger<OpenIddictValidationDispatcher> logger,
-        IOptionsMonitor<OpenIddictValidationOptions> options)
+        ILogger<OpenIddictValidationDispatcher> logger!!,
+        IOptionsMonitor<OpenIddictValidationOptions> options!!)
     {
         _logger = logger;
         _options = options;
     }
 
     public ValueTask<OpenIddictValidationTransaction> CreateTransactionAsync()
-        => new ValueTask<OpenIddictValidationTransaction>(new OpenIddictValidationTransaction
+        => new(new OpenIddictValidationTransaction
         {
             Issuer = _options.CurrentValue.Issuer,
             Logger = _logger,

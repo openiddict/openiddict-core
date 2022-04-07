@@ -51,13 +51,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
@@ -129,7 +124,7 @@ public static partial class OpenIddictValidationHandlers
 
             public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0139));
 
-            public ValidateReferenceTokenIdentifier(IOpenIddictTokenManager tokenManager)
+            public ValidateReferenceTokenIdentifier(IOpenIddictTokenManager tokenManager!!)
                 => _tokenManager = tokenManager;
 
             /// <summary>
@@ -145,12 +140,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
 
                 // Reference tokens are base64url-encoded payloads of exactly 256 bits (generated using a
                 // crypto-secure RNG). If the token length differs, the token cannot be a reference token.
@@ -213,13 +204,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal is not null)
                 {
@@ -307,13 +293,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal is not null)
                 {
@@ -410,13 +391,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (context.Principal is null)
                 {
                     return default;
@@ -455,13 +431,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (context.Principal is null)
                 {
                     return default;
@@ -552,7 +523,7 @@ public static partial class OpenIddictValidationHandlers
 
             public RestoreReferenceTokenProperties() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0139));
 
-            public RestoreReferenceTokenProperties(IOpenIddictTokenManager tokenManager)
+            public RestoreReferenceTokenProperties(IOpenIddictTokenManager tokenManager!!)
                 => _tokenManager = tokenManager;
 
             /// <summary>
@@ -568,13 +539,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (context.Principal is null || string.IsNullOrEmpty(context.TokenId))
                 {
                     return;
@@ -611,13 +577,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 if (context.Principal is null)
                 {
                     context.Reject(
@@ -663,13 +624,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var date = context.Principal.GetExpirationDate();
@@ -706,13 +662,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 // If no explicit audience has been configured,
@@ -764,7 +715,7 @@ public static partial class OpenIddictValidationHandlers
 
             public ValidateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0139));
 
-            public ValidateTokenEntry(IOpenIddictTokenManager tokenManager)
+            public ValidateTokenEntry(IOpenIddictTokenManager tokenManager!!)
                 => _tokenManager = tokenManager;
 
             /// <summary>
@@ -780,13 +731,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var identifier = context.Principal.GetTokenId();
@@ -828,7 +774,7 @@ public static partial class OpenIddictValidationHandlers
 
             public ValidateAuthorizationEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0142));
 
-            public ValidateAuthorizationEntry(IOpenIddictAuthorizationManager authorizationManager)
+            public ValidateAuthorizationEntry(IOpenIddictAuthorizationManager authorizationManager!!)
                 => _authorizationManager = authorizationManager;
 
             /// <summary>
@@ -844,13 +790,8 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context!!)
             {
-                if (context is null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var identifier = context.Principal.GetAuthorizationId();
