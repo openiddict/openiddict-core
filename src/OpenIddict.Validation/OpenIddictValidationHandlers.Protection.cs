@@ -545,11 +545,8 @@ public static partial class OpenIddictValidationHandlers
                     return;
                 }
 
-                var token = await _tokenManager.FindByIdAsync(context.TokenId);
-                if (token is null)
-                {
+                var token = await _tokenManager.FindByIdAsync(context.TokenId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
-                }
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
                 context.Principal.SetCreationDate(await _tokenManager.GetCreationDateAsync(token))

@@ -319,7 +319,7 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
     public virtual ValueTask SetPropertiesAsync(TScope scope!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             scope.Properties = null;
 

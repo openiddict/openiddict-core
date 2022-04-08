@@ -1427,20 +1427,14 @@ public static partial class OpenIddictServerHandlers
             // If the client application is known, associate it to the authorization.
             if (!string.IsNullOrEmpty(context.Request.ClientId))
             {
-                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                if (application is null)
-                {
+                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
-                }
 
                 descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
             }
 
-            var authorization = await _authorizationManager.CreateAsync(descriptor);
-            if (authorization is null)
-            {
+            var authorization = await _authorizationManager.CreateAsync(descriptor) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0018));
-            }
 
             var identifier = await _authorizationManager.GetIdAsync(authorization);
 
@@ -2368,11 +2362,8 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0008));
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier);
-            if (token is null)
-            {
+            var token = await _tokenManager.FindByIdAsync(identifier) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0265));
-            }
 
             // Replace the device code details by the payload derived from the new device code principal,
             // that includes all the user claims populated by the application after authenticating the user.
@@ -2423,14 +2414,11 @@ public static partial class OpenIddictServerHandlers
             }
 
             var credentials = context.Options.SigningCredentials.Find(
-                credentials => credentials.Key is AsymmetricSecurityKey);
-            if (credentials is null)
-            {
+                credentials => credentials.Key is AsymmetricSecurityKey) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
-            }
 
             using var algorithm = GetHashAlgorithm(credentials);
-            if (algorithm is null || algorithm is KeyedHashAlgorithm)
+            if (algorithm is null or KeyedHashAlgorithm)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0267));
             }

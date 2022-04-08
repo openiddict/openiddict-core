@@ -1197,6 +1197,14 @@ To apply redirection responses, create a class implementing 'IOpenIddictClientHa
   <data name="ID0311" xml:space="preserve">
     <value>A refresh token must be specified when using the refresh token grant.</value>
   </data>
+  <data name="ID0312" xml:space="preserve">
+    <value>The event handler of type '{0}' couldn't be resolved.
+This may indicate that it was not properly registered in the dependency injection container. To register an event handler, use 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0313" xml:space="preserve">
+    <value>A discovery client must be registered when using server discovery.
+Reference the 'OpenIddict.Client.SystemNetHttp' package and call 'services.AddOpenIddict().AddClient().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

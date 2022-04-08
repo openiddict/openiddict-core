@@ -416,7 +416,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
     public virtual ValueTask SetDescriptionsAsync(TScope scope!!,
         ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
     {
-        if (descriptions is null || descriptions.IsEmpty)
+        if (descriptions is not { Count: > 0 })
         {
             scope.Descriptions = null;
 
@@ -458,7 +458,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
     public virtual ValueTask SetDisplayNamesAsync(TScope scope!!,
         ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
     {
-        if (names is null || names.IsEmpty)
+        if (names is not { Count: > 0 })
         {
             scope.DisplayNames = null;
 
@@ -500,7 +500,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
     public virtual ValueTask SetPropertiesAsync(TScope scope!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             scope.Properties = null;
 

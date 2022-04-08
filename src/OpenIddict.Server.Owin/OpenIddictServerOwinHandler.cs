@@ -109,11 +109,8 @@ public class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddictServe
     /// <inheritdoc/>
     protected override async Task<AuthenticationTicket?> AuthenticateCoreAsync()
     {
-        var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
-        if (transaction is null)
-        {
+        var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
-        }
 
         // Note: in many cases, the authentication token was already validated by the time this action is called
         // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,

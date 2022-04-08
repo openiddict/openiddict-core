@@ -587,13 +587,9 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     {
         if (!string.IsNullOrEmpty(identifier))
         {
-            var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
-            if (application is null)
-            {
+            authorization.Application = await Applications.FindAsync(
+                cancellationToken, ConvertIdentifierFromString(identifier)) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
-            }
-
-            authorization.Application = application;
         }
 
         else
@@ -627,7 +623,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     public virtual ValueTask SetPropertiesAsync(TAuthorization authorization!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             authorization.Properties = null;
 

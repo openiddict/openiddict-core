@@ -191,11 +191,8 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     public virtual async ValueTask<TApplication> CreateAsync(
         OpenIddictApplicationDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        var application = await Store.InstantiateAsync(cancellationToken);
-        if (application is null)
-        {
+        var application = await Store.InstantiateAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0208));
-        }
 
         await PopulateAsync(application, descriptor, cancellationToken);
 

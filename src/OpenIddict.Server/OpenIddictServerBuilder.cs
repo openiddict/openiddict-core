@@ -381,11 +381,8 @@ public class OpenIddictServerBuilder
             throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
         }
 
-        using var stream = assembly.GetManifestResourceStream(resource);
-        if (stream is null)
-        {
+        using var stream = assembly.GetManifestResourceStream(resource) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
-        }
 
         return AddEncryptionCertificate(stream, password, flags);
     }
@@ -438,13 +435,10 @@ public class OpenIddictServerBuilder
             throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
         }
 
-        var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
-        if (certificate is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
-        }
-
-        return AddEncryptionCertificate(certificate);
+        return AddEncryptionCertificate(
+            GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
+            GetCertificate(StoreLocation.LocalMachine, thumbprint) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
 
         static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
         {
@@ -474,16 +468,10 @@ public class OpenIddictServerBuilder
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
 
-        var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-            .OfType<X509Certificate2>()
-            .SingleOrDefault();
-
-        if (certificate is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
-        }
-
-        return AddEncryptionCertificate(certificate);
+        return AddEncryptionCertificate(
+            store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                .OfType<X509Certificate2>()
+                .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
     }
 
     /// <summary>
@@ -789,11 +777,8 @@ public class OpenIddictServerBuilder
             throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
         }
 
-        using var stream = assembly.GetManifestResourceStream(resource);
-        if (stream is null)
-        {
+        using var stream = assembly.GetManifestResourceStream(resource) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
-        }
 
         return AddSigningCertificate(stream, password, flags);
     }
@@ -846,13 +831,10 @@ public class OpenIddictServerBuilder
             throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
         }
 
-        var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
-        if (certificate is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
-        }
-
-        return AddSigningCertificate(certificate);
+        return AddSigningCertificate(
+            GetCertificate(StoreLocation.CurrentUser, thumbprint)  ??
+            GetCertificate(StoreLocation.LocalMachine, thumbprint) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
 
         static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
         {
@@ -882,16 +864,11 @@ public class OpenIddictServerBuilder
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
 
-        var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
-            .OfType<X509Certificate2>()
-            .SingleOrDefault();
 
-        if (certificate is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0066));
-        }
-
-        return AddSigningCertificate(certificate);
+        return AddSigningCertificate(
+            store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                .OfType<X509Certificate2>()
+                .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
     }
 
     /// <summary>

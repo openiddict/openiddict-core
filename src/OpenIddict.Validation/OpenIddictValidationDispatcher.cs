@@ -93,16 +93,15 @@ public class OpenIddictValidationDispatcher : IOpenIddictValidationDispatcher
                     continue;
                 }
 
-                var handler = descriptor.ServiceDescriptor.ImplementationInstance is not null ?
-                    descriptor.ServiceDescriptor.ImplementationInstance as IOpenIddictValidationHandler<TContext> :
-                    _provider.GetService(descriptor.ServiceDescriptor.ServiceType) as IOpenIddictValidationHandler<TContext>;
-
-                if (handler is null)
+                yield return descriptor.ServiceDescriptor switch
                 {
-                    throw new InvalidOperationException(SR.FormatID0138(descriptor.ServiceDescriptor.ServiceType));
-                }
+                    { ImplementationInstance: IOpenIddictValidationHandler<TContext> handler } => handler,
 
-                yield return handler;
+                    _ when _provider.GetService(descriptor.ServiceDescriptor.ServiceType)
+                        is IOpenIddictValidationHandler<TContext> handler => handler,
+
+                    _ => throw new InvalidOperationException(SR.FormatID0138(descriptor.ServiceDescriptor.ServiceType))
+                };
             }
         }
 

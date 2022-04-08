@@ -527,11 +527,8 @@ public static partial class OpenIddictServerHandlers
             {
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
-                {
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-                }
 
                 if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                 {
@@ -596,11 +593,8 @@ public static partial class OpenIddictServerHandlers
             {
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
-                {
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-                }
 
                 // If the application is a public client, don't validate the client secret.
                 if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
@@ -656,11 +650,8 @@ public static partial class OpenIddictServerHandlers
             {
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
-                {
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-                }
 
                 // Reject the request if the application is not allowed to use the device endpoint.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Device))
@@ -707,11 +698,8 @@ public static partial class OpenIddictServerHandlers
             {
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
-                {
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-                }
 
                 // Reject the request if the application is not allowed to use the device code grant.
                 if (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.DeviceCode))
@@ -775,11 +763,8 @@ public static partial class OpenIddictServerHandlers
             {
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                if (application is null)
-                {
+                var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
-                }
 
                 foreach (var scope in context.Request.GetScopes())
                 {

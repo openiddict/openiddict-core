@@ -35,11 +35,8 @@ public class OpenIddictServerOwinMiddlewareFactory : OwinMiddleware
     /// </returns>
     public override Task Invoke(IOwinContext context!!)
     {
-        var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName);
-        if (provider is null)
-        {
+        var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0121));
-        }
 
         // Note: the Microsoft.Extensions.DependencyInjection container doesn't support resolving services
         // with arbitrary parameters, which prevents the server OWIN middleware from being resolved directly

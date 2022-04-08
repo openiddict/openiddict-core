@@ -211,7 +211,7 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
             }
 
             var values = (string?[]?) parameter.Value;
-            if (values is null || values.Length == 0)
+            if (values is not { Length: > 0 })
             {
                 continue;
             }

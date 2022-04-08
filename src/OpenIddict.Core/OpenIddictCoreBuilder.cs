@@ -66,11 +66,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder AddApplicationStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictApplicationStore<>)
         // or closed generics (e.g OpenIddictApplicationStore<OpenIddictApplication>).
@@ -117,11 +114,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder AddAuthorizationStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictAuthorizationStore<>)
         // or closed generics (e.g OpenIddictAuthorizationStore<OpenIddictAuthorization>).
@@ -168,11 +162,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder AddScopeStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictScopeStore<>)
         // or closed generics (e.g OpenIddictScopeStore<OpenIddictScope>).
@@ -219,11 +210,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder AddTokenStore(Type type!!, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictTokenStore<>)
         // or closed generics (e.g OpenIddictTokenStore<OpenIddictToken>).
@@ -268,11 +256,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceApplicationManager(Type type!!)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictApplicationManager<>)
         // or closed generics (e.g OpenIddictApplicationManager<OpenIddictApplication>).
@@ -352,11 +337,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceAuthorizationManager(Type type!!)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictAuthorizationManager<>)
         // or closed generics (e.g OpenIddictAuthorizationManager<OpenIddictAuthorization>).
@@ -436,11 +418,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceScopeManager(Type type!!)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictScopeManager<>)
         // or closed generics (e.g OpenIddictScopeManager<OpenIddictScope>).
@@ -520,11 +499,8 @@ public class OpenIddictCoreBuilder
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public OpenIddictCoreBuilder ReplaceTokenManager(Type type!!)
     {
-        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>));
-        if (root is null)
-        {
+        var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>)) ??
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));
-        }
 
         // Note: managers can be either open generics (e.g OpenIddictTokenManager<>)
         // or closed generics (e.g OpenIddictTokenManager<OpenIddictToken>).

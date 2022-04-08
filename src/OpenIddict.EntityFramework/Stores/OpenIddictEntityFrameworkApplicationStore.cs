@@ -610,7 +610,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
     public virtual ValueTask SetDisplayNamesAsync(TApplication application!!,
         ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
     {
-        if (names is null || names.IsEmpty)
+        if (names is not { Count: > 0 })
         {
             application.DisplayNames = null;
 
@@ -709,7 +709,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
     public virtual ValueTask SetPropertiesAsync(TApplication application!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             application.Properties = null;
 

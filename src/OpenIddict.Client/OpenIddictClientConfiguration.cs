@@ -49,7 +49,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
                     if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
                         !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0313));
                     }
 
                     if (registration.MetadataAddress is null)

@@ -272,13 +272,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
 
         if (application is not null)
         {
-            var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(application, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(1L);
@@ -299,13 +294,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
 
         foreach (var application in applications)
         {
-            var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(application, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(applications.Length);
