@@ -1170,7 +1170,7 @@ public static partial class OpenIddictServerHandlers
                     return certificate.GetCertHash(algorithm);
 #else
                     using var hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
-                    if (hash is null || hash is KeyedHashAlgorithm)
+                    if (hash is null or KeyedHashAlgorithm)
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0217));
                     }

@@ -594,17 +594,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
             // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
             // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
-            var application =
-                await Applications.AsQueryable()
-                                  .AsTracking()
-                                  .FirstOrDefaultAsync(application => application.Id!.Equals(key), cancellationToken);
-
-            if (application is null)
-            {
+            token.Application = await Applications.AsQueryable()
+                .AsTracking()
+                .FirstOrDefaultAsync(application => application.Id!.Equals(key), cancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0250));
-            }
-
-            token.Application = application;
         }
 
         else
@@ -634,17 +627,10 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
 
             // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
             // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
-            var authorization =
-                await Authorizations.AsQueryable()
-                                    .AsTracking()
-                                    .FirstOrDefaultAsync(authorization => authorization.Id!.Equals(key), cancellationToken);
-
-            if (authorization is null)
-            {
+            token.Authorization = await Authorizations.AsQueryable()
+                .AsTracking()
+                .FirstOrDefaultAsync(authorization => authorization.Id!.Equals(key), cancellationToken) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
-            }
-
-            token.Authorization = authorization;
         }
 
         else

@@ -245,13 +245,8 @@ public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisp
 
         if (scope is not null)
         {
-            var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(scope, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(1L);
@@ -272,13 +267,8 @@ public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisp
 
         foreach (var scope in scopes)
         {
-            var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(scope, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(scopes.Length);

@@ -222,21 +222,15 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
             var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
-            using var client = _factory.CreateClient(assembly.Name!);
-            if (client is null)
-            {
+            using var client = _factory.CreateClient(assembly.Name!) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0174));
-            }
 
 #if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION
             // If supported, import the HTTP version from the client instance.
             request.Version = client.DefaultRequestVersion;
 #endif
-            var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
-            if (response is null)
-            {
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0175));
-            }
 
             // Store the HttpResponseMessage in the transaction properties.
             context.Transaction.SetProperty(typeof(HttpResponseMessage).FullName!, response);

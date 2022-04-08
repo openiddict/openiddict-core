@@ -509,7 +509,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
     public virtual ValueTask SetPropertiesAsync(TAuthorization authorization!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             authorization.Properties = null;
 

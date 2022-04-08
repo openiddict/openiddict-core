@@ -530,13 +530,9 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     {
         if (!string.IsNullOrEmpty(identifier))
         {
-            var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
-            if (application is null)
-            {
+            token.Application = await Applications.FindAsync(
+                cancellationToken, ConvertIdentifierFromString(identifier)) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0250));
-            }
-
-            token.Application = application;
         }
 
         else
@@ -562,13 +558,9 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
     {
         if (!string.IsNullOrEmpty(identifier))
         {
-            var authorization = await Authorizations.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
-            if (authorization is null)
-            {
+            token.Authorization = await Authorizations.FindAsync(
+                cancellationToken, ConvertIdentifierFromString(identifier)) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
-            }
-
-            token.Authorization = authorization;
         }
 
         else

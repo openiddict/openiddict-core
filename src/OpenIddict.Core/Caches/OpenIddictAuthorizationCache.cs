@@ -448,13 +448,8 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
 
         if (authorization is not null)
         {
-            var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(authorization, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(1L);
@@ -475,13 +470,8 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
 
         foreach (var authorization in authorizations)
         {
-            var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(authorization, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(authorizations.Length);

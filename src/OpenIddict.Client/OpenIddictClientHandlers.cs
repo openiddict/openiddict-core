@@ -362,11 +362,8 @@ public static partial class OpenIddictClientHandlers
             // Note: if the static registration cannot be found in the options, this may indicate
             // the client was removed after the authorization dance started and thus, can no longer
             // be used to authenticate users. In this case, throw an exception to abort the flow.
-            var registration = context.Options.Registrations.Find(registration => registration.Issuer == issuer);
-            if (registration is null)
-            {
+            var registration = context.Options.Registrations.Find(registration => registration.Issuer == issuer) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
-            }
 
             context.Issuer = issuer;
             context.Registration = registration;
@@ -1096,11 +1093,7 @@ public static partial class OpenIddictClientHandlers
 
             // Resolve the hash algorithm corresponding to the signing algorithm. If an
             // instance of the BCL hash algorithm cannot be resolved, throw an exception.
-            var algorithm = GetHashAlgorithm(name);
-            if (algorithm is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0293));
-            }
+            var algorithm = GetHashAlgorithm(name) ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0293));
 
             // If a frontchannel access token was returned in the authorization response,
             // ensure the at_hash claim matches the hash of the actual access token.
@@ -1988,11 +1981,7 @@ public static partial class OpenIddictClientHandlers
 
             // Resolve the hash algorithm corresponding to the signing algorithm. If an
             // instance of the BCL hash algorithm cannot be resolved, throw an exception.
-            var algorithm = GetHashAlgorithm(name);
-            if (algorithm is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
-            }
+            var algorithm = GetHashAlgorithm(name) ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
 
             var hash = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.AccessTokenHash);
             if (string.IsNullOrEmpty(hash))
@@ -2404,7 +2393,8 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            if (context.UserinfoTokenPrincipal is not null || string.IsNullOrEmpty(context.UserinfoToken))
+            if (context.UserinfoTokenPrincipal is not null ||
+                string.IsNullOrEmpty(context.UserinfoToken))
             {
                 return;
             }

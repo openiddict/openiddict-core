@@ -147,11 +147,8 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     public virtual async ValueTask<TAuthorization> CreateAsync(
         OpenIddictAuthorizationDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        var authorization = await Store.InstantiateAsync(cancellationToken);
-        if (authorization is null)
-        {
+        var authorization = await Store.InstantiateAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0220));
-        }
 
         await PopulateAsync(authorization, descriptor, cancellationToken);
         await CreateAsync(authorization, cancellationToken);

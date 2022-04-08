@@ -545,11 +545,8 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var token = await _tokenManager.FindByIdAsync(context.TokenId);
-                if (token is null)
-                {
+                var token = await _tokenManager.FindByIdAsync(context.TokenId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
-                }
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
                 context.Principal.SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
@@ -1060,20 +1057,14 @@ public static partial class OpenIddictServerHandlers
                 // If the client application is known, associate it with the token.
                 if (!string.IsNullOrEmpty(context.ClientId))
                 {
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application is null)
-                    {
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
-                    }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                var token = await _tokenManager.CreateAsync(descriptor);
-                if (token is null)
-                {
+                var token = await _tokenManager.CreateAsync(descriptor) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0019));
-                }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
 
@@ -1237,11 +1228,8 @@ public static partial class OpenIddictServerHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
                 }
 
-                var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token is null)
-                {
+                var token = await _tokenManager.FindByIdAsync(identifier) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
-                }
 
                 var descriptor = new OpenIddictTokenDescriptor();
                 await _tokenManager.PopulateAsync(descriptor, token);

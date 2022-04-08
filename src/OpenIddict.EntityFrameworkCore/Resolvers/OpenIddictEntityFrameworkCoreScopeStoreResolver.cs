@@ -47,17 +47,11 @@ public class OpenIddictEntityFrameworkCoreScopeStoreResolver : IOpenIddictScopeS
 
         var type = _cache.GetOrAdd(typeof(TScope), key =>
         {
-            var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkCoreScope<>));
-            if (root is null)
-            {
+            var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkCoreScope<>)) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0255));
-            }
 
-            var context = _options.CurrentValue.DbContextType;
-            if (context is null)
-            {
+            var context = _options.CurrentValue.DbContextType ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0253));
-            }
 
             return typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>).MakeGenericType(
                 /* TScope: */ key,

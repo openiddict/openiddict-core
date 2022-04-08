@@ -55,13 +55,8 @@ public class OpenIddictClientService
             request = await ApplyConfigurationRequestAsync();
             var response = await ExtractConfigurationResponseAsync();
 
-            var configuration = await HandleConfigurationResponseAsync();
-            if (configuration is null)
-            {
+            return await HandleConfigurationResponseAsync() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
-            }
-
-            return configuration;
 
             async ValueTask<OpenIddictRequest> PrepareConfigurationRequestAsync()
             {
@@ -195,13 +190,8 @@ public class OpenIddictClientService
 
             var response = await ExtractCryptographyResponseAsync();
 
-            var keys = await HandleCryptographyResponseAsync();
-            if (keys is null)
-            {
+            return await HandleCryptographyResponseAsync() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
-            }
-
-            return keys;
 
             async ValueTask<OpenIddictRequest> PrepareCryptographyRequestAsync()
             {

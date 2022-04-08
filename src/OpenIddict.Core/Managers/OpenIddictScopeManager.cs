@@ -140,11 +140,8 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
     public virtual async ValueTask<TScope> CreateAsync(
         OpenIddictScopeDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        var scope = await Store.InstantiateAsync(cancellationToken);
-        if (scope is null)
-        {
+        var scope = await Store.InstantiateAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0223));
-        }
 
         await PopulateAsync(scope, descriptor, cancellationToken);
         await CreateAsync(scope, cancellationToken);

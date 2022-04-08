@@ -155,11 +155,8 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     public virtual async ValueTask<TToken> CreateAsync(
         OpenIddictTokenDescriptor descriptor!!, CancellationToken cancellationToken = default)
     {
-        var token = await Store.InstantiateAsync(cancellationToken);
-        if (token is null)
-        {
+        var token = await Store.InstantiateAsync(cancellationToken) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0226));
-        }
 
         await PopulateAsync(token, descriptor, cancellationToken);
         await CreateAsync(token, cancellationToken);

@@ -500,13 +500,8 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
 
         if (token is not null)
         {
-            var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(1L);
@@ -527,13 +522,8 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
 
         foreach (var token in tokens)
         {
-            var signal = await CreateExpirationSignalAsync(token, cancellationToken);
-            if (signal is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197));
-            }
-
-            entry.AddExpirationToken(signal);
+            entry.AddExpirationToken(await CreateExpirationSignalAsync(token, cancellationToken) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
         entry.SetSize(tokens.Length);

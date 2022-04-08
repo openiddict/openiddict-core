@@ -698,7 +698,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // If it was not registered or enabled, let the default OpenIddict client handlers render
             // a default error page instead of delegating the rendering to the status code middleware.
             var feature = response.HttpContext.Features.Get<IStatusCodePagesFeature>();
-            if (feature is null || !feature.Enabled)
+            if (feature is not { Enabled: true })
             {
                 return default;
             }

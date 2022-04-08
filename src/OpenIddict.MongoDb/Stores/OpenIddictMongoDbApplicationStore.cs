@@ -387,7 +387,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
     public virtual ValueTask SetPropertiesAsync(TApplication application!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             application.Properties = null;
 
