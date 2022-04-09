@@ -131,7 +131,7 @@ public class OpenIddictServerBuilder
     {
         // If the encryption key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
+            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0055));
         }
@@ -491,7 +491,7 @@ public class OpenIddictServerBuilder
     {
         // If the signing key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
+            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
         }
@@ -1505,7 +1505,7 @@ public class OpenIddictServerBuilder
     /// a new access token by making a grant_type=refresh_token token request
     /// or a prompt=none authorization request, depending on the selected flow.
     /// Using long-lived access tokens or tokens that never expire is not recommended.
-    /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
+    /// While discouraged, <see langword="null"/> can be specified to issue tokens that never expire.
     /// </summary>
     /// <param name="lifetime">The access token lifetime.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -1516,7 +1516,7 @@ public class OpenIddictServerBuilder
     /// Sets the authorization code lifetime, after which client applications
     /// are unable to send a grant_type=authorization_code token request.
     /// Using short-lived authorization codes is strongly recommended.
-    /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
+    /// While discouraged, <see langword="null"/> can be specified to issue codes that never expire.
     /// </summary>
     /// <param name="lifetime">The authorization code lifetime.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -1527,7 +1527,7 @@ public class OpenIddictServerBuilder
     /// Sets the device code lifetime, after which client applications are unable to
     /// send a grant_type=urn:ietf:params:oauth:grant-type:device_code token request.
     /// Using short-lived device codes is strongly recommended.
-    /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
+    /// While discouraged, <see langword="null"/> can be specified to issue codes that never expire.
     /// </summary>
     /// <param name="lifetime">The authorization code lifetime.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -1537,7 +1537,7 @@ public class OpenIddictServerBuilder
     /// <summary>
     /// Sets the identity token lifetime, after which client
     /// applications should refuse processing identity tokens.
-    /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
+    /// While discouraged, <see langword="null"/> can be specified to issue tokens that never expire.
     /// </summary>
     /// <param name="lifetime">The identity token lifetime.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -1549,7 +1549,7 @@ public class OpenIddictServerBuilder
     /// a new authorization from the user. When sliding expiration is enabled,
     /// a new refresh token is always issued to the client application,
     /// which prolongs the validity period of the refresh token.
-    /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
+    /// While discouraged, <see langword="null"/> can be specified to issue tokens that never expire.
     /// </summary>
     /// <param name="lifetime">The refresh token lifetime.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -1568,7 +1568,7 @@ public class OpenIddictServerBuilder
     /// <summary>
     /// Sets the user code lifetime, after which they'll no longer be considered valid.
     /// Using short-lived device codes is strongly recommended.
-    /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
+    /// While discouraged, <see langword="null"/> can be specified to issue codes that never expire.
     /// </summary>
     /// <param name="lifetime">The authorization code lifetime.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>

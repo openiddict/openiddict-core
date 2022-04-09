@@ -18,7 +18,7 @@ public static class OpenIddictServerAspNetCoreHelpers
     /// Retrieves the <see cref="HttpRequest"/> instance stored in the <see cref="OpenIddictServerTransaction"/> properties.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="HttpRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="HttpRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static HttpRequest? GetHttpRequest(this OpenIddictServerTransaction transaction!!)
     {
         if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
@@ -48,7 +48,7 @@ public static class OpenIddictServerAspNetCoreHelpers
     /// Retrieves the <see cref="OpenIddictRequest"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="OpenIddictRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictRequest? GetOpenIddictServerRequest(this HttpContext context!!)
     {
         return context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction?.Request;
@@ -58,7 +58,7 @@ public static class OpenIddictServerAspNetCoreHelpers
     /// Retrieves the <see cref="OpenIddictResponse"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="OpenIddictResponse"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictResponse? GetOpenIddictServerResponse(this HttpContext context!!)
     {
         return context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction?.Response;

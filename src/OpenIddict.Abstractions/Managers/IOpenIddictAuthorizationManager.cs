@@ -289,7 +289,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="authorization">The authorization.</param>
     /// <param name="scopes">The scopes.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the scopes are included in the authorization, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the scopes are included in the authorization, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasScopesAsync(object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -298,7 +298,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="authorization">The authorization.</param>
     /// <param name="status">The expected status.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the authorization has the specified status, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the authorization has the specified status, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasStatusAsync(object authorization, string status, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -307,7 +307,7 @@ public interface IOpenIddictAuthorizationManager
     /// <param name="authorization">The authorization.</param>
     /// <param name="type">The expected type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the authorization has the specified type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the authorization has the specified type, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasTypeAsync(object authorization, string type, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -385,7 +385,7 @@ public interface IOpenIddictAuthorizationManager
     /// </summary>
     /// <param name="authorization">The authorization to revoke.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the authorization was successfully revoked, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the authorization was successfully revoked, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> TryRevokeAsync(object authorization, CancellationToken cancellationToken = default);
 
     /// <summary>

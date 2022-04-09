@@ -450,7 +450,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         TScope scope!!, CultureInfo culture!!, CancellationToken cancellationToken = default)
     {
         var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
-        if (names is not { IsEmpty: false })
+        if (names is not { Count: > 0 })
         {
             return await Store.GetDisplayNameAsync(scope, cancellationToken);
         }
@@ -500,7 +500,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         TScope scope!!, CultureInfo culture!!, CancellationToken cancellationToken = default)
     {
         var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
-        if (descriptions is not { IsEmpty: false })
+        if (descriptions is not { Count: > 0 })
         {
             return await Store.GetDescriptionAsync(scope, cancellationToken);
         }

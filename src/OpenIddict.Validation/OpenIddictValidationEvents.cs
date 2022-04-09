@@ -195,7 +195,7 @@ public static partial class OpenIddictValidationEvents
         }
 
         /// <summary>
-        /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+        /// Gets or sets the request, or <see langword="null"/> if it couldn't be extracted.
         /// </summary>
         public OpenIddictRequest? Request
         {

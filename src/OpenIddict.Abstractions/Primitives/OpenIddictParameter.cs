@@ -76,8 +76,8 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     public OpenIddictParameter? this[string name] => GetNamedParameter(name);
 
     /// <summary>
-    /// Gets the number of unnamed child items contained in the current parameter or
-    /// <c>0</c> if the parameter doesn't represent an array of strings or a JSON array.
+    /// Gets the number of unnamed child items contained in the current parameter
+    /// or 0 if the parameter doesn't represent an array of strings or a JSON array.
     /// </summary>
     public int Count => Value switch
     {
@@ -103,7 +103,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// instance is equal to the specified <see cref="OpenIddictParameter"/>.
     /// </summary>
     /// <param name="other">The other object to which to compare this instance.</param>
-    /// <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the two instances are equal, <see langword="false"/> otherwise.</returns>
     public bool Equals(OpenIddictParameter other)
     {
         return (left: Value, right: other.Value) switch
@@ -214,7 +214,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// instance is equal to the specified <see cref="object"/>.
     /// </summary>
     /// <param name="obj">The other object to which to compare this instance.</param>
-    /// <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the two instances are equal, <see langword="false"/> otherwise.</returns>
     public override bool Equals(object? obj) => obj is OpenIddictParameter parameter && Equals(parameter);
 
     /// <summary>
@@ -431,7 +431,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="name">The name of the child item.</param>
     /// <param name="value">An <see cref="OpenIddictParameter"/> instance containing the item value.</param>
-    /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the parameter could be found, <see langword="false"/> otherwise.</returns>
     public bool TryGetNamedParameter(string name, out OpenIddictParameter value)
     {
         if (string.IsNullOrEmpty(name))
@@ -457,7 +457,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="index">The index of the child item.</param>
     /// <param name="value">An <see cref="OpenIddictParameter"/> instance containing the item value.</param>
-    /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the parameter could be found, <see langword="false"/> otherwise.</returns>
     public bool TryGetUnnamedParameter(int index, out OpenIddictParameter value)
     {
         if (index < 0)
@@ -548,7 +548,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="left">The first instance.</param>
     /// <param name="right">The second instance.</param>
-    /// <returns><c>true</c> if the two instances are equal, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the two instances are equal, <see langword="false"/> otherwise.</returns>
     public static bool operator ==(OpenIddictParameter left, OpenIddictParameter right) => left.Equals(right);
 
     /// <summary>
@@ -556,7 +556,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="left">The first instance.</param>
     /// <param name="right">The second instance.</param>
-    /// <returns><c>true</c> if the two instances are not equal, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the two instances are not equal, <see langword="false"/> otherwise.</returns>
     public static bool operator !=(OpenIddictParameter left, OpenIddictParameter right) => !left.Equals(right);
 
     /// <summary>
@@ -863,7 +863,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// Determines whether a parameter is null or empty.
     /// </summary>
     /// <param name="parameter">The parameter.</param>
-    /// <returns><c>true</c> if the parameter is null or empty, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the parameter is null or empty, <see langword="false"/> otherwise.</returns>
     public static bool IsNullOrEmpty(OpenIddictParameter parameter)
     {
         return parameter.Value switch

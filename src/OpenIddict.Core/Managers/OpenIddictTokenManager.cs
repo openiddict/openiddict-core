@@ -729,7 +729,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="token">The token.</param>
     /// <param name="status">The expected status.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token has the specified status, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token has the specified status, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasStatusAsync(TToken token!!, string status, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(status))
@@ -746,7 +746,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="token">The token.</param>
     /// <param name="type">The expected type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token has the specified type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token has the specified type, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasTypeAsync(TToken token!!, string type, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(type))
@@ -763,7 +763,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <param name="token">The token.</param>
     /// <param name="types">The expected types.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token has any of the specified types, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token has any of the specified types, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasTypeAsync(TToken token!!, ImmutableArray<string> types, CancellationToken cancellationToken = default)
     {
         var type = await Store.GetTypeAsync(token, cancellationToken);
@@ -892,7 +892,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// </summary>
     /// <param name="token">The token to redeem.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token was successfully redemeed, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> TryRedeemAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
         // If the token doesn't have a redemption date attached, this likely means it's
@@ -933,7 +933,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// </summary>
     /// <param name="token">The token to reject.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token was successfully redemeed, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> TryRejectAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
         await Store.SetStatusAsync(token, Statuses.Rejected, cancellationToken);
@@ -967,7 +967,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// </summary>
     /// <param name="token">The token to revoke.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token was successfully revoked, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token was successfully revoked, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> TryRevokeAsync(TToken token!!, CancellationToken cancellationToken = default)
     {
         await Store.SetStatusAsync(token, Statuses.Revoked, cancellationToken);

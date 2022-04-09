@@ -114,7 +114,7 @@ public static class OpenIddictExtensions
     /// See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is a response_type=none request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is a response_type=none request, <see langword="false"/> otherwise.</returns>
     public static bool IsNoneFlow(this OpenIddictRequest request!!)
     {
         if (string.IsNullOrEmpty(request.ResponseType))
@@ -136,7 +136,7 @@ public static class OpenIddictExtensions
     /// See http://tools.ietf.org/html/rfc6749#section-4.1.1 for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is a code flow request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is a code flow request, <see langword="false"/> otherwise.</returns>
     public static bool IsAuthorizationCodeFlow(this OpenIddictRequest request!!)
     {
         if (string.IsNullOrEmpty(request.ResponseType))
@@ -159,7 +159,7 @@ public static class OpenIddictExtensions
     /// http://openid.net/specs/openid-connect-core-1_0.html for more information
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is an implicit flow request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is an implicit flow request, <see langword="false"/> otherwise.</returns>
     public static bool IsImplicitFlow(this OpenIddictRequest request!!)
     {
         if (string.IsNullOrEmpty(request.ResponseType))
@@ -208,7 +208,7 @@ public static class OpenIddictExtensions
     /// http://openid.net/specs/openid-connect-core-1_0.html for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is an hybrid flow request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is an hybrid flow request, <see langword="false"/> otherwise.</returns>
     public static bool IsHybridFlow(this OpenIddictRequest request!!)
     {
         if (string.IsNullOrEmpty(request.ResponseType))
@@ -268,8 +268,8 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns>
-    /// <c>true</c> if the request specified the fragment response mode or if
-    /// it's the default value for the requested flow, <c>false</c> otherwise.
+    /// <see langword="true"/> if the request specified the fragment response mode or if
+    /// it's the default value for the requested flow, <see langword="false"/> otherwise.
     /// </returns>
     public static bool IsFragmentResponseMode(this OpenIddictRequest request!!)
     {
@@ -296,8 +296,8 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns>
-    /// <c>true</c> if the request specified the query response mode or if
-    /// it's the default value for the requested flow, <c>false</c> otherwise.
+    /// <see langword="true"/> if the request specified the query response mode or if
+    /// it's the default value for the requested flow, <see langword="false"/> otherwise.
     /// </returns>
     public static bool IsQueryResponseMode(this OpenIddictRequest request!!)
     {
@@ -323,8 +323,8 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns>
-    /// <c>true</c> if the request specified the form post response mode or if
-    /// it's the default value for the requested flow, <c>false</c> otherwise.
+    /// <see langword="true"/> if the request specified the form post response mode or if
+    /// it's the default value for the requested flow, <see langword="false"/> otherwise.
     /// </returns>
     public static bool IsFormPostResponseMode(this OpenIddictRequest request!!)
         => string.Equals(request.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal);
@@ -334,7 +334,7 @@ public static class OpenIddictExtensions
     /// See http://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is a code grant request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is a code grant request, <see langword="false"/> otherwise.</returns>
     public static bool IsAuthorizationCodeGrantType(this OpenIddictRequest request!!)
         => string.Equals(request.GrantType, GrantTypes.AuthorizationCode, StringComparison.Ordinal);
 
@@ -343,7 +343,7 @@ public static class OpenIddictExtensions
     /// See http://tools.ietf.org/html/rfc6749#section-4.4.2 for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is a client credentials grant request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is a client credentials grant request, <see langword="false"/> otherwise.</returns>
     public static bool IsClientCredentialsGrantType(this OpenIddictRequest request!!)
         => string.Equals(request.GrantType, GrantTypes.ClientCredentials, StringComparison.Ordinal);
 
@@ -352,7 +352,7 @@ public static class OpenIddictExtensions
     /// See https://tools.ietf.org/html/rfc8628 for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is a device code grant request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is a device code grant request, <see langword="false"/> otherwise.</returns>
     public static bool IsDeviceCodeGrantType(this OpenIddictRequest request!!)
         => string.Equals(request.GrantType, GrantTypes.DeviceCode, StringComparison.Ordinal);
 
@@ -361,7 +361,7 @@ public static class OpenIddictExtensions
     /// See http://tools.ietf.org/html/rfc6749#section-4.3.2 for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is a password grant request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is a password grant request, <see langword="false"/> otherwise.</returns>
     public static bool IsPasswordGrantType(this OpenIddictRequest request!!)
         => string.Equals(request.GrantType, GrantTypes.Password, StringComparison.Ordinal);
 
@@ -370,7 +370,7 @@ public static class OpenIddictExtensions
     /// See http://tools.ietf.org/html/rfc6749#section-6 for more information.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    /// <returns><c>true</c> if the request is a refresh token grant request, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the request is a refresh token grant request, <see langword="false"/> otherwise.</returns>
     public static bool IsRefreshTokenGrantType(this OpenIddictRequest request!!)
         => string.Equals(request.GrantType, GrantTypes.RefreshToken, StringComparison.Ordinal);
 
@@ -551,8 +551,8 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="identity">The <see cref="ClaimsIdentity"/> instance to filter.</param>
     /// <param name="filter">
-    /// The delegate filtering the claims: return <c>true</c>
-    /// to accept the claim, <c>false</c> to remove it.
+    /// The delegate filtering the claims: return <see langword="true"/>
+    /// to accept the claim, <see langword="false"/> to remove it.
     /// </param>
     public static ClaimsIdentity Clone(this ClaimsIdentity identity!!, Func<Claim, bool> filter!!)
     {
@@ -581,8 +581,8 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance to filter.</param>
     /// <param name="filter">
-    /// The delegate filtering the claims: return <c>true</c>
-    /// to accept the claim, <c>false</c> to remove it.
+    /// The delegate filtering the claims: return <see langword="true"/>
+    /// to accept the claim, <see langword="false"/> to remove it.
     /// </param>
     public static ClaimsPrincipal Clone(this ClaimsPrincipal principal!!, Func<Claim, bool> filter!!)
     {
@@ -704,7 +704,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="identity">The claims identity.</param>
     /// <param name="type">The claim type.</param>
-    /// <returns><c>true</c> if the identity contains at least one claim of the specified type.</returns>
+    /// <returns><see langword="true"/> if the identity contains at least one claim of the specified type.</returns>
     public static bool HasClaim(this ClaimsIdentity identity!!, string type)
     {
         if (string.IsNullOrEmpty(type))
@@ -736,7 +736,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <param name="type">The claim type.</param>
-    /// <returns><c>true</c> if the principal contains at least one claim of the specified type.</returns>
+    /// <returns><see langword="true"/> if the principal contains at least one claim of the specified type.</returns>
     public static bool HasClaim(this ClaimsPrincipal principal!!, string type)
     {
         if (string.IsNullOrEmpty(type))
@@ -902,7 +902,7 @@ public static class OpenIddictExtensions
     /// Gets the creation date stored in the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The creation date or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The creation date or <see langword="null"/> if the claim cannot be found.</returns>
     public static DateTimeOffset? GetCreationDate(this ClaimsPrincipal principal!!)
     {
         var claim = principal.FindFirst(Claims.Private.CreationDate);
@@ -923,7 +923,7 @@ public static class OpenIddictExtensions
     /// Gets the expiration date stored in the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The expiration date or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The expiration date or <see langword="null"/> if the claim cannot be found.</returns>
     public static DateTimeOffset? GetExpirationDate(this ClaimsPrincipal principal!!)
     {
         var claim = principal.FindFirst(Claims.Private.ExpirationDate);
@@ -976,7 +976,7 @@ public static class OpenIddictExtensions
     /// Gets the access token lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The access token lifetime or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The access token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
     public static TimeSpan? GetAccessTokenLifetime(this ClaimsPrincipal principal)
         => GetLifetime(principal, Claims.Private.AccessTokenLifetime);
 
@@ -984,7 +984,7 @@ public static class OpenIddictExtensions
     /// Gets the authorization code lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The authorization code lifetime or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The authorization code lifetime or <see langword="null"/> if the claim cannot be found.</returns>
     public static TimeSpan? GetAuthorizationCodeLifetime(this ClaimsPrincipal principal)
         => GetLifetime(principal, Claims.Private.AuthorizationCodeLifetime);
 
@@ -992,7 +992,7 @@ public static class OpenIddictExtensions
     /// Gets the device code lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The device code lifetime or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The device code lifetime or <see langword="null"/> if the claim cannot be found.</returns>
     public static TimeSpan? GetDeviceCodeLifetime(this ClaimsPrincipal principal)
         => GetLifetime(principal, Claims.Private.DeviceCodeLifetime);
 
@@ -1000,7 +1000,7 @@ public static class OpenIddictExtensions
     /// Gets the identity token lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The identity token lifetime or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The identity token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
     public static TimeSpan? GetIdentityTokenLifetime(this ClaimsPrincipal principal)
         => GetLifetime(principal, Claims.Private.IdentityTokenLifetime);
 
@@ -1008,7 +1008,7 @@ public static class OpenIddictExtensions
     /// Gets the refresh token lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The refresh token lifetime or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The refresh token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
     public static TimeSpan? GetRefreshTokenLifetime(this ClaimsPrincipal principal)
         => GetLifetime(principal, Claims.Private.RefreshTokenLifetime);
 
@@ -1016,7 +1016,7 @@ public static class OpenIddictExtensions
     /// Gets the state token lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The state token lifetime or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The state token lifetime or <see langword="null"/> if the claim cannot be found.</returns>
     public static TimeSpan? GetStateTokenLifetime(this ClaimsPrincipal principal)
         => GetLifetime(principal, Claims.Private.StateTokenLifetime);
 
@@ -1024,7 +1024,7 @@ public static class OpenIddictExtensions
     /// Gets the user code lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The user code lifetime or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The user code lifetime or <see langword="null"/> if the claim cannot be found.</returns>
     public static TimeSpan? GetUserCodeLifetime(this ClaimsPrincipal principal)
         => GetLifetime(principal, Claims.Private.UserCodeLifetime);
 
@@ -1032,7 +1032,7 @@ public static class OpenIddictExtensions
     /// Gets the internal authorization identifier associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The unique identifier or <see langword="null"/> if the claim cannot be found.</returns>
     public static string? GetAuthorizationId(this ClaimsPrincipal principal)
         => principal.GetClaim(Claims.Private.AuthorizationId);
 
@@ -1040,7 +1040,7 @@ public static class OpenIddictExtensions
     /// Gets the internal token identifier associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The unique identifier or <see langword="null"/> if the claim cannot be found.</returns>
     public static string? GetTokenId(this ClaimsPrincipal principal)
         => principal.GetClaim(Claims.Private.TokenId);
 
@@ -1048,7 +1048,7 @@ public static class OpenIddictExtensions
     /// Gets the token type associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
-    /// <returns>The token type or <c>null</c> if the claim cannot be found.</returns>
+    /// <returns>The token type or <see langword="null"/> if the claim cannot be found.</returns>
     public static string? GetTokenType(this ClaimsPrincipal principal)
         => principal.GetClaim(Claims.Private.TokenType);
 
@@ -1057,7 +1057,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <param name="audience">The audience.</param>
-    /// <returns><c>true</c> if the principal contains the given audience.</returns>
+    /// <returns><see langword="true"/> if the principal contains the given audience.</returns>
     public static bool HasAudience(this ClaimsPrincipal principal!!, string audience)
     {
         if (string.IsNullOrEmpty(audience))
@@ -1073,7 +1073,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <param name="presenter">The presenter.</param>
-    /// <returns><c>true</c> if the principal contains the given presenter.</returns>
+    /// <returns><see langword="true"/> if the principal contains the given presenter.</returns>
     public static bool HasPresenter(this ClaimsPrincipal principal!!, string presenter)
     {
         if (string.IsNullOrEmpty(presenter))
@@ -1089,7 +1089,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <param name="resource">The resource.</param>
-    /// <returns><c>true</c> if the principal contains the given resource.</returns>
+    /// <returns><see langword="true"/> if the principal contains the given resource.</returns>
     public static bool HasResource(this ClaimsPrincipal principal!!, string resource)
     {
         if (string.IsNullOrEmpty(resource))
@@ -1105,7 +1105,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <param name="scope">The scope.</param>
-    /// <returns><c>true</c> if the principal contains the given scope.</returns>
+    /// <returns><see langword="true"/> if the principal contains the given scope.</returns>
     public static bool HasScope(this ClaimsPrincipal principal!!, string scope)
     {
         if (string.IsNullOrEmpty(scope))
@@ -1121,7 +1121,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <param name="type">The token type.</param>
-    /// <returns><c>true</c> if the token type matches the specified type.</returns>
+    /// <returns><see langword="true"/> if the token type matches the specified type.</returns>
     public static bool HasTokenType(this ClaimsPrincipal principal!!, string type)
     {
         if (string.IsNullOrEmpty(type))

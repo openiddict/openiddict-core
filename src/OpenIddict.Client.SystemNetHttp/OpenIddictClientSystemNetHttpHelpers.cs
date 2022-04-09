@@ -17,7 +17,7 @@ public static class OpenIddictClientSystemNetHttpHelpers
     /// Gets the <see cref="HttpRequestMessage"/> associated with the current context.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="HttpRequestMessage"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="HttpRequestMessage"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static HttpRequestMessage? GetHttpRequestMessage(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<HttpRequestMessage>(typeof(HttpRequestMessage).FullName!);
 
@@ -25,7 +25,7 @@ public static class OpenIddictClientSystemNetHttpHelpers
     /// Gets the <see cref="HttpResponseMessage"/> associated with the current context.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="HttpResponseMessage"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="HttpResponseMessage"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static HttpResponseMessage? GetHttpResponseMessage(this OpenIddictClientTransaction transaction)
         => transaction.GetProperty<HttpResponseMessage>(typeof(HttpResponseMessage).FullName!);
 }

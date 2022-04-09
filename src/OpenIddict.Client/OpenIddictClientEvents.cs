@@ -224,7 +224,7 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
-        /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+        /// Gets or sets the request, or <see langword="null"/> if it couldn't be extracted.
         /// </summary>
         public OpenIddictRequest? Request
         {
@@ -709,7 +709,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the generated state token, if applicable.
         /// The access token will only be returned if
-        /// <see cref="IncludeStateToken"/> is set to <c>true</c>.
+        /// <see cref="IncludeStateToken"/> is set to <see langword="true"/>.
         /// </summary>
         public string? StateToken { get; set; }
 

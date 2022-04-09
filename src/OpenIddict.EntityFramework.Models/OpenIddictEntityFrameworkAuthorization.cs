@@ -51,7 +51,7 @@ public class OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
 
     /// <summary>
     /// Gets or sets the additional properties serialized as a JSON object,
-    /// or <c>null</c> if no bag was associated with the current authorization.
+    /// or <see langword="null"/> if no bag was associated with the current authorization.
     /// </summary>
     public virtual string? Properties { get; set; }
 

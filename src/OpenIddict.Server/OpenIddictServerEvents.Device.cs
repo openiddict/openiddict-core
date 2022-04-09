@@ -25,7 +25,7 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+        /// Gets or sets the request, or <see langword="null"/> if it wasn't extracted yet.
         /// </summary>
         public OpenIddictRequest? Request
         {
@@ -119,7 +119,7 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+        /// Gets or sets the request, or <see langword="null"/> if it couldn't be extracted.
         /// </summary>
         public OpenIddictRequest? Request
         {
@@ -139,7 +139,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets the error code returned to the client application.
         /// When the response indicates a successful response,
-        /// this property returns <c>null</c>.
+        /// this property returns <see langword="null"/>.
         /// </summary>
         public string? Error => Response.Error;
     }
@@ -159,7 +159,7 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets or sets the request, or <c>null</c> if it wasn't extracted yet.
+        /// Gets or sets the request, or <see langword="null"/> if it wasn't extracted yet.
         /// </summary>
         public OpenIddictRequest? Request
         {
@@ -263,7 +263,7 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+        /// Gets or sets the request, or <see langword="null"/> if it couldn't be extracted.
         /// </summary>
         public OpenIddictRequest? Request
         {
@@ -283,7 +283,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets the error code returned to the client application.
         /// When the response indicates a successful response,
-        /// this property returns <c>null</c>.
+        /// this property returns <see langword="null"/>.
         /// </summary>
         public string? Error => Response.Error;
     }
