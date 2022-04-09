@@ -92,7 +92,7 @@ public static partial class OpenIddictValidationEvents
         }
 
         /// <summary>
-        /// Gets or sets the response, or <c>null</c> if it wasn't extracted yet.
+        /// Gets or sets the response, or <see langword="null"/> if it wasn't extracted yet.
         /// </summary>
         public OpenIddictResponse? Response
         {

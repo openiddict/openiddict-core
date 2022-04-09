@@ -23,7 +23,7 @@ public class OpenIddictServerOwinOptions : AuthenticationOptions
 
     /// <summary>
     /// Gets or sets a boolean indicating whether incoming requests arriving on insecure endpoints should be rejected.
-    /// By default, this property is set to <c>false</c> to help mitigate man-in-the-middle attacks.
+    /// By default, this property is set to <see langword="false"/> to help mitigate man-in-the-middle attacks.
     /// </summary>
     public bool DisableTransportSecurityRequirement { get; set; }
 

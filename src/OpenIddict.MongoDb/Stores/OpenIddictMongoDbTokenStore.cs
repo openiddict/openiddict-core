@@ -545,7 +545,7 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
     public virtual ValueTask SetPropertiesAsync(TToken token!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             token.Properties = null;
 

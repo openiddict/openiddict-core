@@ -350,7 +350,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
         if (authorization.Application is null)
         {
             var reference = Context.Entry(authorization).Reference(entry => entry.Application);
-            if (reference.EntityEntry.State == EntityState.Detached)
+            if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
             }
@@ -598,7 +598,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
             if (authorization.Application is null)
             {
                 var reference = Context.Entry(authorization).Reference(entry => entry.Application);
-                if (reference.EntityEntry.State == EntityState.Detached)
+                if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;
                 }

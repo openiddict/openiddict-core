@@ -196,7 +196,7 @@ public static partial class OpenIddictServerEvents
         public ClaimsPrincipal? Principal { get; set; }
 
         /// <summary>
-        /// Gets the client identifier, or <c>null</c> if the client application is unknown.
+        /// Gets the client identifier, or <see langword="null"/> if the client application is unknown.
         /// </summary>
         public string? ClientId => Transaction.Request?.ClientId;
     }
@@ -229,7 +229,7 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets or sets the request or <c>null</c> if it couldn't be extracted.
+        /// Gets or sets the request or <see langword="null"/> if it couldn't be extracted.
         /// </summary>
         public OpenIddictRequest? Request
         {
@@ -705,7 +705,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the generated access token, if applicable.
         /// The access token will only be returned if
-        /// <see cref="IncludeAccessToken"/> is set to <c>true</c>.
+        /// <see cref="IncludeAccessToken"/> is set to <see langword="true"/>.
         /// </summary>
         public string? AccessToken { get; set; }
 
@@ -718,7 +718,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the generated authorization code, if applicable.
         /// The authorization code will only be returned if
-        /// <see cref="IncludeAuthorizationCode"/> is set to <c>true</c>.
+        /// <see cref="IncludeAuthorizationCode"/> is set to <see langword="true"/>.
         /// </summary>
         public string? AuthorizationCode { get; set; }
 
@@ -731,7 +731,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the generated device code, if applicable.
         /// The device code will only be returned if
-        /// <see cref="IncludeDeviceCode"/> is set to <c>true</c>.
+        /// <see cref="IncludeDeviceCode"/> is set to <see langword="true"/>.
         /// </summary>
         public string? DeviceCode { get; set; }
 
@@ -744,7 +744,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the generated identity token, if applicable.
         /// The identity token will only be returned if
-        /// <see cref="IncludeIdentityToken"/> is set to <c>true</c>.
+        /// <see cref="IncludeIdentityToken"/> is set to <see langword="true"/>.
         /// </summary>
         public string? IdentityToken { get; set; }
 
@@ -757,7 +757,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the generated refresh token, if applicable.
         /// The refresh token will only be returned if
-        /// <see cref="IncludeRefreshToken"/> is set to <c>true</c>.
+        /// <see cref="IncludeRefreshToken"/> is set to <see langword="true"/>.
         /// </summary>
         public string? RefreshToken { get; set; }
 
@@ -770,7 +770,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the generated user code, if applicable.
         /// The user code will only be returned if
-        /// <see cref="IncludeUserCode"/> is set to <c>true</c>.
+        /// <see cref="IncludeUserCode"/> is set to <see langword="true"/>.
         /// </summary>
         public string? UserCode { get; set; }
 

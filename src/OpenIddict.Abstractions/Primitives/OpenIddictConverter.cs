@@ -18,7 +18,7 @@ public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// Determines whether the specified type is supported by this converter.
     /// </summary>
     /// <param name="typeToConvert">The type to convert.</param>
-    /// <returns><c>true</c> if the type is supported, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the type is supported, <see langword="false"/> otherwise.</returns>
     public override bool CanConvert(Type typeToConvert!!)
     {
         return typeToConvert == typeof(OpenIddictMessage) ||

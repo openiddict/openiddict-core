@@ -76,7 +76,7 @@ public class OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorizati
 
     /// <summary>
     /// Gets or sets the additional properties serialized as a JSON object,
-    /// or <c>null</c> if no bag was associated with the current token.
+    /// or <see langword="null"/> if no bag was associated with the current token.
     /// </summary>
     public virtual string? Properties { get; set; }
 

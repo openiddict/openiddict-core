@@ -324,7 +324,7 @@ public interface IOpenIddictTokenManager
     /// <param name="token">The token.</param>
     /// <param name="status">The expected status.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token has the specified status, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token has the specified status, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasStatusAsync(object token, string status, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -333,7 +333,7 @@ public interface IOpenIddictTokenManager
     /// <param name="token">The token.</param>
     /// <param name="type">The expected type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token has the specified type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token has the specified type, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasTypeAsync(object token, string type, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -342,7 +342,7 @@ public interface IOpenIddictTokenManager
     /// <param name="token">The token.</param>
     /// <param name="types">The expected types.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token has any of the specified types, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token has any of the specified types, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasTypeAsync(object token, ImmutableArray<string> types, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -416,7 +416,7 @@ public interface IOpenIddictTokenManager
     /// </summary>
     /// <param name="token">The token to redeem.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token was successfully redemeed, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> TryRedeemAsync(object token, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -424,7 +424,7 @@ public interface IOpenIddictTokenManager
     /// </summary>
     /// <param name="token">The token to reject.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token was successfully redemeed, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> TryRejectAsync(object token, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -432,7 +432,7 @@ public interface IOpenIddictTokenManager
     /// </summary>
     /// <param name="token">The token to revoke.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the token was successfully revoked, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the token was successfully revoked, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> TryRevokeAsync(object token, CancellationToken cancellationToken = default);
 
     /// <summary>

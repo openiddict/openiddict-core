@@ -121,7 +121,7 @@ public class OpenIddictValidationBuilder
     {
         // If the encryption key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
+            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0055));
         }

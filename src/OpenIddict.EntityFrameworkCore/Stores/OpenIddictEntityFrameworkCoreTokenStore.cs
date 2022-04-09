@@ -339,7 +339,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
         if (token.Application is null)
         {
             var reference = Context.Entry(token).Reference(entry => entry.Application);
-            if (reference.EntityEntry.State == EntityState.Detached)
+            if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
             }
@@ -370,7 +370,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
         if (token.Authorization is null)
         {
             var reference = Context.Entry(token).Reference(entry => entry.Authorization);
-            if (reference.EntityEntry.State == EntityState.Detached)
+            if (reference.EntityEntry.State is EntityState.Detached)
             {
                 return null;
             }
@@ -606,7 +606,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             if (token.Application is null)
             {
                 var reference = Context.Entry(token).Reference(entry => entry.Application);
-                if (reference.EntityEntry.State == EntityState.Detached)
+                if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;
                 }
@@ -639,7 +639,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             if (token.Authorization is null)
             {
                 var reference = Context.Entry(token).Reference(entry => entry.Authorization);
-                if (reference.EntityEntry.State == EntityState.Detached)
+                if (reference.EntityEntry.State is EntityState.Detached)
                 {
                     return;
                 }
@@ -679,7 +679,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
     public virtual ValueTask SetPropertiesAsync(TToken token!!,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
-        if (properties is not { IsEmpty: false })
+        if (properties is not { Count: > 0 })
         {
             token.Properties = null;
 

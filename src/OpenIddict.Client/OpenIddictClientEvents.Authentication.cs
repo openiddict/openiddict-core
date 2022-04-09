@@ -80,7 +80,7 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
-        /// Gets or sets the request or <c>null</c> if it was extracted yet.
+        /// Gets or sets the request or <see langword="null"/> if it was extracted yet.
         /// </summary>
         public OpenIddictRequest? Request
         {
@@ -170,7 +170,7 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
-        /// Gets or sets the request, or <c>null</c> if it couldn't be extracted.
+        /// Gets or sets the request, or <see langword="null"/> if it couldn't be extracted.
         /// </summary>
         public OpenIddictRequest? Request
         {

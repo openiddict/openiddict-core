@@ -218,7 +218,7 @@ public class OpenIddictMessage
     /// Gets the value corresponding to a given parameter.
     /// </summary>
     /// <param name="name">The parameter name.</param>
-    /// <returns>The parameter value, or <c>null</c> if it cannot be found.</returns>
+    /// <returns>The parameter value, or <see langword="null"/> if it cannot be found.</returns>
     public OpenIddictParameter? GetParameter(string name)
     {
         if (string.IsNullOrEmpty(name))
@@ -245,7 +245,7 @@ public class OpenIddictMessage
     /// Determines whether the current message contains the specified parameter.
     /// </summary>
     /// <param name="name">The parameter name.</param>
-    /// <returns><c>true</c> if the parameter is present, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the parameter is present, <see langword="false"/> otherwise.</returns>
     public bool HasParameter(string name)
     {
         if (string.IsNullOrEmpty(name))
@@ -306,7 +306,7 @@ public class OpenIddictMessage
     /// </summary>
     /// <param name="name">The parameter name.</param>
     /// <param name="value">The parameter value.</param>
-    /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the parameter could be found, <see langword="false"/> otherwise.</returns>
     public bool TryGetParameter(string name, out OpenIddictParameter value)
     {
         if (string.IsNullOrEmpty(name))

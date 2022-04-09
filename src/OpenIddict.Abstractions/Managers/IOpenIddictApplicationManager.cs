@@ -310,7 +310,7 @@ public interface IOpenIddictApplicationManager
     /// <param name="application">The application.</param>
     /// <param name="type">The expected client type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the application has the specified client type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the application has the specified client type, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasClientTypeAsync(object application, string type, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -319,7 +319,7 @@ public interface IOpenIddictApplicationManager
     /// <param name="application">The application.</param>
     /// <param name="type">The expected consent type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the application has the specified consent type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the application has the specified consent type, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasConsentTypeAsync(object application, string type, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -328,7 +328,7 @@ public interface IOpenIddictApplicationManager
     /// <param name="application">The application.</param>
     /// <param name="permission">The permission.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the application has been granted the specified permission, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the application has been granted the specified permission, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasPermissionAsync(object application, string permission, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -337,7 +337,7 @@ public interface IOpenIddictApplicationManager
     /// <param name="application">The application.</param>
     /// <param name="requirement">The requirement.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the requirement has been enforced for the specified application, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the requirement has been enforced for the specified application, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasRequirementAsync(object application, string requirement, CancellationToken cancellationToken = default);
 
     /// <summary>

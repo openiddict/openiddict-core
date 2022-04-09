@@ -714,7 +714,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="authorization">The authorization.</param>
     /// <param name="scopes">The scopes.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the scopes are included in the authorization, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the scopes are included in the authorization, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasScopesAsync(TAuthorization authorization!!,
         ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
         => new HashSet<string>(await Store.GetScopesAsync(
@@ -726,7 +726,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="authorization">The authorization.</param>
     /// <param name="status">The expected status.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the authorization has the specified status, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the authorization has the specified status, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasStatusAsync(TAuthorization authorization!!,
         string status, CancellationToken cancellationToken = default)
     {
@@ -744,7 +744,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// <param name="authorization">The authorization.</param>
     /// <param name="type">The expected type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the authorization has the specified type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the authorization has the specified type, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasTypeAsync(
         TAuthorization authorization!!, string type, CancellationToken cancellationToken = default)
     {
@@ -862,7 +862,7 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
     /// </summary>
     /// <param name="authorization">The authorization to revoke.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the authorization was successfully revoked, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the authorization was successfully revoked, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> TryRevokeAsync(TAuthorization authorization!!, CancellationToken cancellationToken = default)
     {
         var status = await Store.GetStatusAsync(authorization, cancellationToken);

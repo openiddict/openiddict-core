@@ -39,7 +39,7 @@ public class OpenIddictCoreOptions
     /// Gets or sets a boolean indicating whether additional filtering should be disabled,
     /// so that the OpenIddict managers don't execute a second check to ensure the results
     /// returned by the stores exactly match the specified query filters, casing included.
-    /// This property SHOULD NOT be set to <c>true</c> except when the underlying stores
+    /// This property SHOULD NOT be set to <see langword="true"/> except when the underlying stores
     /// are guaranteed to execute case-sensitive filtering at the database level.
     /// Disabling this feature MAY result in security vulnerabilities in the other cases.
     /// </summary>
@@ -56,7 +56,7 @@ public class OpenIddictCoreOptions
     /// Gets or sets the maximum number of cached entries allowed. When the threshold
     /// is reached, the cache is automatically compacted to ensure it doesn't grow
     /// abnormally and doesn't cause a memory starvation or out-of-memory exceptions.
-    /// This property is not used when <see cref="DisableEntityCaching"/> is <c>true</c>.
+    /// This property is not used when <see cref="DisableEntityCaching"/> is <see langword="true"/>.
     /// </summary>
     public int EntityCacheLimit { get; set; } = 250;
 }

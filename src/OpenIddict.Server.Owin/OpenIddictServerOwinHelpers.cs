@@ -28,7 +28,7 @@ public static class OpenIddictServerOwinHelpers
     /// Retrieves the <see cref="IOwinRequest"/> instance stored in the <see cref="OpenIddictServerTransaction"/> properties.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
-    /// <returns>The <see cref="IOwinRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="IOwinRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static IOwinRequest? GetOwinRequest(this OpenIddictServerTransaction transaction!!)
     {
         if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property))
@@ -56,7 +56,7 @@ public static class OpenIddictServerOwinHelpers
     /// Retrieves the <see cref="OpenIddictRequest"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="OpenIddictRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictRequest? GetOpenIddictServerRequest(this IOwinContext context!!)
         => context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.Request;
 
@@ -64,7 +64,7 @@ public static class OpenIddictServerOwinHelpers
     /// Retrieves the <see cref="OpenIddictResponse"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
+    /// <returns>The <see cref="OpenIddictResponse"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static OpenIddictResponse? GetOpenIddictServerResponse(this IOwinContext context!!)
         => context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName)?.Response;
 }

@@ -122,7 +122,7 @@ public class OpenIddictClientBuilder
     {
         // If the encryption key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
+            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0055));
         }
@@ -482,7 +482,7 @@ public class OpenIddictClientBuilder
     {
         // If the signing key is an asymmetric security key, ensure it has a private key.
         if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
-            asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
+            asymmetricSecurityKey.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0067));
         }
@@ -909,7 +909,7 @@ public class OpenIddictClientBuilder
     /// Sets the state token lifetime, after which authorization callbacks
     /// using an expired state token will be automatically rejected by OpenIddict.
     /// Using long-lived state tokens or tokens that never expire is not recommended.
-    /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
+    /// While discouraged, <see langword="null"/> can be specified to issue tokens that never expire.
     /// </summary>
     /// <param name="lifetime">The access token lifetime.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
@@ -920,7 +920,7 @@ public class OpenIddictClientBuilder
     /// Determines whether the specified object is equal to the current object.
     /// </summary>
     /// <param name="obj">The object to compare with the current object.</param>
-    /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, false.</returns>
+    /// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, false.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);
 

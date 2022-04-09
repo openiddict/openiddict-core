@@ -535,7 +535,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         TApplication application!!, CultureInfo culture!!, CancellationToken cancellationToken = default)
     {
         var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
-        if (names is not { IsEmpty: false })
+        if (names is not { Count: > 0 })
         {
             return await Store.GetDisplayNameAsync(application, cancellationToken);
         }
@@ -626,7 +626,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="application">The application.</param>
     /// <param name="type">The expected client type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the application has the specified client type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the application has the specified client type, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasClientTypeAsync(
         TApplication application!!, string type, CancellationToken cancellationToken = default)
     {
@@ -644,7 +644,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="application">The application.</param>
     /// <param name="type">The expected consent type.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the application has the specified consent type, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the application has the specified consent type, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasConsentTypeAsync(
         TApplication application!!, string type, CancellationToken cancellationToken = default)
     {
@@ -662,7 +662,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="application">The application.</param>
     /// <param name="permission">The permission.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the application has been granted the specified permission, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the application has been granted the specified permission, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasPermissionAsync(
         TApplication application!!, string permission, CancellationToken cancellationToken = default)
     {
@@ -680,7 +680,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="application">The application.</param>
     /// <param name="requirement">The requirement.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns><c>true</c> if the requirement has been enforced for the specified application, <c>false</c> otherwise.</returns>
+    /// <returns><see langword="true"/> if the requirement has been enforced for the specified application, <see langword="false"/> otherwise.</returns>
     public virtual async ValueTask<bool> HasRequirementAsync(
         TApplication application!!, string requirement, CancellationToken cancellationToken = default)
     {
