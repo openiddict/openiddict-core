@@ -40,17 +40,15 @@ public static partial class OpenIddictClientHandlers
             {
                 foreach (var parameter in context.Response.GetParameters())
                 {
-                    if (ValidateParameterType(parameter.Key, parameter.Value))
+                    if (!ValidateParameterType(parameter.Key, parameter.Value))
                     {
-                        continue;
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2107(parameter.Key),
+                            uri: SR.FormatID8000(SR.ID2107));
+
+                        return default;
                     }
-
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.FormatID2107(parameter.Key),
-                        uri: SR.FormatID8000(SR.ID2107));
-
-                    return default;
                 }
 
                 return default;
@@ -64,11 +62,11 @@ public static partial class OpenIddictClientHandlers
                 // JsonElement instance using the same value type as the original parameter value.
                 static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
-                    // The 'access_token', 'id_token' and 'refresh_token' parameters MUST be formatted as unique strings.
+                    // The following parameters MUST be formatted as unique strings:
                     Parameters.AccessToken or Parameters.IdToken or Parameters.RefreshToken
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
-                    // The 'expires_in' parameter MUST be formatted as a numeric date value.
+                    // The following parameters MUST be formatted as numeric dates:
                     Parameters.ExpiresIn => ((JsonElement) value).ValueKind is JsonValueKind.Number,
 
                     // Parameters that are not in the well-known list can be of any type.

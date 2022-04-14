@@ -1524,7 +1524,7 @@ Reference the 'OpenIddict.Client.SystemNetHttp' package and call 'services.AddOp
     <value>The token was rejected by the remote authentication server.</value>
   </data>
   <data name="ID2107" xml:space="preserve">
-    <value>The '{0}' claim is malformed or isn't of the expected type.</value>
+    <value>The '{0}' parameter is malformed or isn't of the expected type.</value>
   </data>
   <data name="ID2108" xml:space="preserve">
     <value>An introspection response containing a malformed issuer was returned.</value>

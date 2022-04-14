@@ -49,17 +49,15 @@ public static partial class OpenIddictClientHandlers
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
-                    if (ValidateClaimType(parameter.Key, parameter.Value))
+                    if (!ValidateParameterType(parameter.Key, parameter.Value))
                     {
-                        continue;
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2107(parameter.Key),
+                            uri: SR.FormatID8000(SR.ID2107));
+
+                        return default;
                     }
-
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.FormatID2107(parameter.Key),
-                        uri: SR.FormatID8000(SR.ID2107));
-
-                    return default;
                 }
 
                 return default;
@@ -71,9 +69,9 @@ public static partial class OpenIddictClientHandlers
                 // (e.g when custom parameters are manually added to the response), the static
                 // conversion operator would take care of converting the underlying value to a
                 // JsonElement instance using the same value type as the original parameter value.
-                static bool ValidateClaimType(string name, OpenIddictParameter value) => name switch
+                static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
-                    // The 'sub' parameter MUST be formatted as a unique string value.
+                    // The following parameters MUST be formatted as unique strings:
                     Claims.Subject => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // Parameters that are not in the well-known list can be of any type.
