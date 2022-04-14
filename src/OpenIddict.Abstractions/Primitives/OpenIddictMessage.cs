@@ -12,6 +12,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Primitives;
 
+#if SUPPORTS_JSON_NODES
+using System.Text.Json.Nodes;
+#endif
+
 namespace OpenIddict.Abstractions;
 
 /// <summary>
@@ -63,6 +67,34 @@ public class OpenIddictMessage
             AddParameter(parameter.Name, parameter.Value);
         }
     }
+
+#if SUPPORTS_JSON_NODES
+    /// <summary>
+    /// Initializes a new OpenIddict message.
+    /// </summary>
+    /// <param name="parameters">The message parameters.</param>
+    /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
+    public OpenIddictMessage(JsonObject parameters!!)
+    {
+        foreach (var parameter in parameters)
+        {
+            // Ignore parameters whose name is null or empty.
+            if (string.IsNullOrEmpty(parameter.Key))
+            {
+                continue;
+            }
+
+            // While generally discouraged, JSON objects can contain multiple properties with
+            // the same name. In this case, the last occurrence replaces the previous ones.
+            if (HasParameter(parameter.Key))
+            {
+                RemoveParameter(parameter.Key);
+            }
+
+            AddParameter(parameter.Key, parameter.Value);
+        }
+    }
+#endif
 
     /// <summary>
     /// Initializes a new OpenIddict message.
@@ -220,19 +252,7 @@ public class OpenIddictMessage
     /// <param name="name">The parameter name.</param>
     /// <returns>The parameter value, or <see langword="null"/> if it cannot be found.</returns>
     public OpenIddictParameter? GetParameter(string name)
-    {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0190), nameof(name));
-        }
-
-        if (Parameters.TryGetValue(name, out OpenIddictParameter value))
-        {
-            return value;
-        }
-
-        return null;
-    }
+        => TryGetParameter(name, out var parameter) ? parameter : (OpenIddictParameter?) null;
 
     /// <summary>
     /// Gets all the parameters associated with this instance.

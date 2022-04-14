@@ -9,6 +9,10 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Xunit;
 
+#if SUPPORTS_JSON_NODES
+using System.Text.Json.Nodes;
+#endif
+
 namespace OpenIddict.Abstractions.Tests.Primitives;
 
 public class OpenIddictMessageTests
@@ -185,11 +189,23 @@ public class OpenIddictMessageTests
         message.AddParameter("value", JsonSerializer.Deserialize<JsonElement>(
             @"{""property"":""""}").GetProperty("property").GetString());
 
+#if SUPPORTS_JSON_NODES
+        message.AddParameter("node_array", new JsonArray());
+        message.AddParameter("node_object", new JsonObject());
+        message.AddParameter("node_value", JsonValue.Create(string.Empty));
+#endif
+
         // Assert
         Assert.Empty((string?) message.GetParameter("string"));
         Assert.NotNull((JsonElement?) message.GetParameter("array"));
         Assert.NotNull((JsonElement?) message.GetParameter("object"));
         Assert.NotNull((JsonElement?) message.GetParameter("value"));
+
+#if SUPPORTS_JSON_NODES
+        Assert.NotNull((JsonNode?) message.GetParameter("node_array"));
+        Assert.NotNull((JsonNode?) message.GetParameter("node_object"));
+        Assert.NotNull((JsonNode?) message.GetParameter("node_value"));
+#endif
     }
 
     [Theory]
@@ -383,6 +399,12 @@ public class OpenIddictMessageTests
         message.SetParameter("object", JsonSerializer.Deserialize<JsonElement>("{}"));
         message.SetParameter("value", JsonSerializer.Deserialize<JsonElement>(
             @"{""property"":""""}").GetProperty("property").GetString());
+
+#if SUPPORTS_JSON_NODES
+        message.SetParameter("node_array", new JsonArray());
+        message.SetParameter("node_object", new JsonObject());
+        message.SetParameter("node_value", JsonValue.Create(string.Empty));
+#endif
 
         // Assert
         Assert.Empty(message.GetParameters());

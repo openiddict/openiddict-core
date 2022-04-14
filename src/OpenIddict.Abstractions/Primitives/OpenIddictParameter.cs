@@ -7,9 +7,12 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+
+#if SUPPORTS_JSON_NODES
+using System.Text.Json.Nodes;
+#endif
 
 namespace OpenIddict.Abstractions;
 
@@ -36,6 +39,14 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="value">The parameter value.</param>
     public OpenIddictParameter(JsonElement value) => Value = value;
+
+#if SUPPORTS_JSON_NODES
+    /// <summary>
+    /// Initializes a new parameter using the specified value.
+    /// </summary>
+    /// <param name="value">The parameter value.</param>
+    public OpenIddictParameter(JsonNode? value) => Value = value;
+#endif
 
     /// <summary>
     /// Initializes a new parameter using the specified value.
@@ -76,20 +87,68 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     public OpenIddictParameter? this[string name] => GetNamedParameter(name);
 
     /// <summary>
-    /// Gets the number of unnamed child items contained in the current parameter
-    /// or 0 if the parameter doesn't represent an array of strings or a JSON array.
+    /// Gets the number of named or unnamed child items contained in the current parameter or 0
+    /// if the parameter doesn't represent an array of strings, a JSON array or a JSON object.
     /// </summary>
-    public int Count => Value switch
+    public int Count
     {
-        // If the parameter is a primitive array of strings, return its length.
-        string?[] value => value.Length,
+        get
+        {
+            return Value switch
+            {
+                // If the parameter is a primitive array of strings, return its length.
+                string?[] value => value.Length,
 
-        // If the parameter is a JSON array, return its length.
-        JsonElement { ValueKind: JsonValueKind.Array } value => value.GetArrayLength(),
+                // If the parameter is a JSON array or a JSON object, return its length.
+                JsonElement { ValueKind: JsonValueKind.Array or JsonValueKind.Object } element
+                    => Count(element),
 
-        // Otherwise, return 0.
-        _ => 0
-    };
+#if SUPPORTS_JSON_NODES
+                // If the parameter is a JsonArray, return its length.
+                JsonArray value => value.Count,
+
+                // If the parameter is a JsonObject, return its length.
+                JsonObject value => value.Count,
+
+                // If the parameter is any other JsonNode (e.g a JsonValue), serialize it
+                // to a JsonElement first to determine its actual JSON representation
+                // and extract the number of items if the element is a JSON array or object.
+                JsonNode value when JsonSerializer.SerializeToElement(value)
+                    is JsonElement { ValueKind: JsonValueKind.Array or JsonValueKind.Object } element
+                    => Count(element),
+#endif
+                // Otherwise, return 0.
+                _ => 0
+            };
+
+            static int Count(JsonElement element)
+            {
+                switch (element.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        return element.GetArrayLength();
+
+                    case JsonValueKind.Object:
+                        var count = 0;
+
+                        using (var enumerator = element.EnumerateObject())
+                        {
+                            checked
+                            {
+                                while (enumerator.MoveNext())
+                                {
+                                    count++;
+                                }
+                            }
+                        }
+
+                        return count;
+
+                    default: return 0;
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the associated value, that can be either a primitive CLR type
@@ -103,91 +162,137 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// instance is equal to the specified <see cref="OpenIddictParameter"/>.
     /// </summary>
     /// <param name="other">The other object to which to compare this instance.</param>
-    /// <returns><see langword="true"/> if the two instances are equal, <see langword="false"/> otherwise.</returns>
+    /// <returns>
+    /// <see langword="true"/> if the two instances have both the same representation
+    /// (e.g <see cref="string"/>) and value, <see langword="false"/> otherwise.
+    /// </returns>
     public bool Equals(OpenIddictParameter other)
     {
         return (left: Value, right: other.Value) switch
         {
             // If the two parameters reference the same instance, return true.
+            //
             // Note: true will also be returned if the two parameters are null.
             var (left, right) when ReferenceEquals(left, right) => true,
 
             // If one of the two parameters is null, return false.
             (null, _) or (_, null) => false,
 
+            // If the two parameters are booleans, compare them directly.
+            (bool left, bool right) => left == right,
+
+            // If the two parameters are integers, compare them directly.
+            (long left, long right) => left == right,
+
+            // If the two parameters are strings, use string.Equals().
+            (string left, string right) => string.Equals(left, right, StringComparison.Ordinal),
+
             // If the two parameters are string arrays, use SequenceEqual().
             (string?[] left, string?[] right) => left.SequenceEqual(right),
 
+            // If one of the two parameters is an undefined JsonElement, treat it
+            // as a null value and return true if the other parameter is null too.
+            (JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined }, var right)
+                => right is null,
+
+            (var left, JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined })
+                => left is null,
+
             // If the two parameters are JsonElement instances, use the custom comparer.
-            (JsonElement left, JsonElement right) => Equals(left, right),
+            (JsonElement left, JsonElement right) => DeepEquals(left, right),
 
-            // When one of the parameters is a bool, compare them as booleans.
-            (JsonElement { ValueKind: JsonValueKind.True  }, bool right) => right,
+            // When one of the parameters is a JsonElement, compare their underlying values.
+            (JsonElement { ValueKind: JsonValueKind.True }, bool right) => right,
+            (bool left, JsonElement { ValueKind: JsonValueKind.True })  => left,
+
             (JsonElement { ValueKind: JsonValueKind.False }, bool right) => !right,
+            (bool left, JsonElement { ValueKind: JsonValueKind.False })  => !left,
 
-            (bool left, JsonElement { ValueKind: JsonValueKind.True  }) => left,
-            (bool left, JsonElement { ValueKind: JsonValueKind.False }) => !left,
-
-            // When one of the parameters is a number, compare them as integers.
             (JsonElement { ValueKind: JsonValueKind.Number } left, long right)
-                => right == left.GetInt64(),
+                when left.TryGetInt64(out var result) => result == right,
 
             (long left, JsonElement { ValueKind: JsonValueKind.Number } right)
-                => left == right.GetInt64(),
+                when right.TryGetInt64(out var result) => left == result,
 
-            // When one of the parameters is a string, compare them as texts.
             (JsonElement { ValueKind: JsonValueKind.String } left, string right)
                 => string.Equals(left.GetString(), right, StringComparison.Ordinal),
 
             (string left, JsonElement { ValueKind: JsonValueKind.String } right)
                 => string.Equals(left, right.GetString(), StringComparison.Ordinal),
 
-            // Otherwise, use direct CLR comparison.
-            var (left, right) => left.Equals(right)
+#if SUPPORTS_JSON_NODES
+            // When one of the parameters is a JsonValue, try to compare their underlying values
+            // if the wrapped type is a common CLR primitive type to avoid the less efficient
+            // JsonElement-based comparison, that requires doing a full JSON serialization.
+            (JsonValue left, bool right) when  left.TryGetValue(out bool result) => result == right,
+            (bool left, JsonValue right) when right.TryGetValue(out bool result) => result == left,
+
+            (JsonValue left, long right) when  left.TryGetValue(out int result) => result == right,
+            (long left, JsonValue right) when right.TryGetValue(out int result) => result == left,
+
+            (JsonValue left, long right) when  left.TryGetValue(out long result) => result == right,
+            (long left, JsonValue right) when right.TryGetValue(out long result) => result == left,
+
+            (JsonValue left, string right) when left.TryGetValue(out string? result)
+                => string.Equals(result, right, StringComparison.Ordinal),
+
+            (string left, JsonValue right) when right.TryGetValue(out string? result)
+                => string.Equals(left, result, StringComparison.Ordinal),
+#endif
+            // Otherwise, serialize both values to JsonElement and compare them.
+#if SUPPORTS_DIRECT_JSON_ELEMENT_SERIALIZATION
+            var (left, right) => DeepEquals(
+                JsonSerializer.SerializeToElement(left, left.GetType()),
+                JsonSerializer.SerializeToElement(right, right.GetType()))
+#else
+            var (left, right) => DeepEquals(
+                JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(left, left.GetType())),
+                JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(right, right.GetType())))
+#endif
         };
 
-        static bool Equals(JsonElement left, JsonElement right)
+        static bool DeepEquals(JsonElement left, JsonElement right)
         {
-            switch (left.ValueKind)
+            switch ((left.ValueKind, right.ValueKind))
             {
-                case JsonValueKind.Undefined:
-                    return right.ValueKind is JsonValueKind.Undefined;
+                case (JsonValueKind.Undefined, JsonValueKind.Undefined):
+                case (JsonValueKind.Null,      JsonValueKind.Null):
+                case (JsonValueKind.False,     JsonValueKind.False):
+                case (JsonValueKind.True,      JsonValueKind.True):
+                    return true;
 
-                case JsonValueKind.Null:
-                    return right.ValueKind is JsonValueKind.Null;
+                // Treat undefined JsonElement instances as null values.
+                case (JsonValueKind.Undefined, JsonValueKind.Null):
+                case (JsonValueKind.Null, JsonValueKind.Undefined):
+                    return true;
 
-                case JsonValueKind.False:
-                    return right.ValueKind is JsonValueKind.False;
+                case (JsonValueKind.Number, JsonValueKind.Number):
+                    return string.Equals(left.GetRawText(), right.GetRawText(), StringComparison.Ordinal);
 
-                case JsonValueKind.True:
-                    return right.ValueKind is JsonValueKind.True;
-
-                case JsonValueKind.Number when right.ValueKind is JsonValueKind.Number:
-                    return left.GetInt64() == right.GetInt64();
-
-                case JsonValueKind.String when right.ValueKind is JsonValueKind.String:
+                case (JsonValueKind.String, JsonValueKind.String):
                     return string.Equals(left.GetString(), right.GetString(), StringComparison.Ordinal);
 
-                case JsonValueKind.Array when right.ValueKind is JsonValueKind.Array:
-                    if (left.GetArrayLength() != right.GetArrayLength())
+                case (JsonValueKind.Array, JsonValueKind.Array):
+                {
+                    var length = left.GetArrayLength();
+                    if (length != right.GetArrayLength())
                     {
                         return false;
                     }
 
-                    using (var enumerator = left.EnumerateArray())
+                    for (var index = 0; index < length; index++)
                     {
-                        for (var index = 0; enumerator.MoveNext(); index++)
+                        if (!DeepEquals(left[index], right[index]))
                         {
-                            if (!Equals(left[index], right[index]))
-                            {
-                                return false;
-                            }
+                            return false;
                         }
                     }
 
                     return true;
+                }
 
-                case JsonValueKind.Object when right.ValueKind is JsonValueKind.Object:
+                case (JsonValueKind.Object, JsonValueKind.Object):
+                {
                     foreach (var property in left.EnumerateObject())
                     {
                         if (!right.TryGetProperty(property.Name, out JsonElement element) ||
@@ -196,13 +301,14 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                             return false;
                         }
 
-                        if (!Equals(property.Value, element))
+                        if (!DeepEquals(property.Value, element))
                         {
                             return false;
                         }
                     }
 
                     return true;
+                }
 
                 default: return false;
             }
@@ -214,7 +320,10 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// instance is equal to the specified <see cref="object"/>.
     /// </summary>
     /// <param name="obj">The other object to which to compare this instance.</param>
-    /// <returns><see langword="true"/> if the two instances are equal, <see langword="false"/> otherwise.</returns>
+    /// <returns>
+    /// <see langword="true"/> if the two instances have both the same representation
+    /// (e.g <see cref="string"/>) and value, <see langword="false"/> otherwise.
+    /// </returns>
     public override bool Equals(object? obj) => obj is OpenIddictParameter parameter && Equals(parameter);
 
     /// <summary>
@@ -228,40 +337,81 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             // When the parameter value is null, return 0.
             null => 0,
 
-            // When the parameter is a JsonElement, compute its hash code.
-            JsonElement value => GetHashCode(value),
+            // When the parameter is an array of strings, compute the hash code of its items to
+            // match the logic used when treating a JsonElement instance representing an array.
+            string?[] value => GetHashCodeFromArray(value),
 
+            // When the parameter is a JsonElement, compute its hash code.
+            JsonElement value => GetHashCodeFromJsonElement(value),
+
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonValue wrapping a JsonElement,
+            // apply the same logic as with direct JsonElement instances.
+            JsonValue value when value.TryGetValue(out JsonElement element)
+                => GetHashCodeFromJsonElement(element),
+
+            // When the parameter is a JsonValue, compute the hash code of its underlying value
+            // if the wrapped type is a common CLR primitive type to avoid the less efficient
+            // JsonElement-based computation, that requires doing a full JSON serialization.
+            JsonValue value when value.TryGetValue(out bool result) => result.GetHashCode(),
+
+            JsonValue value when value.TryGetValue(out int  result) => result.GetHashCode(),
+            JsonValue value when value.TryGetValue(out long result) => result.GetHashCode(),
+
+            JsonValue value when value.TryGetValue(out string? result) => result.GetHashCode(),
+
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
+                => GetHashCodeFromJsonElement(element),
+#endif
             // Otherwise, use the default hash code method.
             var value => value.GetHashCode()
         };
 
-        static int GetHashCode(JsonElement value)
+        static int GetHashCodeFromArray(string?[] array)
         {
-            switch (value.ValueKind)
+            var hash = new HashCode();
+
+            for (var index = 0; index < array.Length; index++)
+            {
+                hash.Add(array[index]);
+            }
+
+            return hash.ToHashCode();
+        }
+
+        static int GetHashCodeFromJsonElement(JsonElement element)
+        {
+            switch (element.ValueKind)
             {
                 case JsonValueKind.Undefined:
                 case JsonValueKind.Null:
                     return 0;
 
-                case JsonValueKind.False:
-                    return false.GetHashCode();
-
                 case JsonValueKind.True:
                     return true.GetHashCode();
 
+                case JsonValueKind.False:
+                    return false.GetHashCode();
+
+                case JsonValueKind.Number when element.TryGetInt64(out var result):
+                    return result.GetHashCode();
+
                 case JsonValueKind.Number:
-                    return value.GetInt64().GetHashCode();
+                    return element.GetRawText().GetHashCode();
 
                 case JsonValueKind.String:
-                    return value.GetString()!.GetHashCode();
+                    return element.GetString()!.GetHashCode();
 
                 case JsonValueKind.Array:
                 {
                     var hash = new HashCode();
 
-                    foreach (var element in value.EnumerateArray())
+                    foreach (var item in element.EnumerateArray())
                     {
-                        hash.Add(GetHashCode(element));
+                        hash.Add(GetHashCodeFromJsonElement(item));
                     }
 
                     return hash.ToHashCode();
@@ -271,10 +421,10 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 {
                     var hash = new HashCode();
 
-                    foreach (var property in value.EnumerateObject())
+                    foreach (var property in element.EnumerateObject())
                     {
                         hash.Add(property.Name);
-                        hash.Add(GetHashCode(property.Value));
+                        hash.Add(GetHashCodeFromJsonElement(property.Value));
                     }
 
                     return hash.ToHashCode();
@@ -291,25 +441,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="name">The name of the child item.</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance containing the item value.</returns>
     public OpenIddictParameter? GetNamedParameter(string name)
-    {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0192), nameof(name));
-        }
-
-        if (Value is JsonElement { ValueKind: JsonValueKind.Object } element)
-        {
-            if (element.TryGetProperty(name, out JsonElement value))
-            {
-                return new OpenIddictParameter(value);
-            }
-
-            // If the item doesn't exist, return a null parameter.
-            return null;
-        }
-
-        return null;
-    }
+        => TryGetNamedParameter(name, out var value) ? value : (OpenIddictParameter?) null;
 
     /// <summary>
     /// Gets the child item corresponding to the specified index.
@@ -317,39 +449,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="index">The index of the child item.</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance containing the item value.</returns>
     public OpenIddictParameter? GetUnnamedParameter(int index)
-    {
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID0193));
-        }
-
-        if (Value is string?[] array)
-        {
-            // If the specified index goes beyond the
-            // number of items in the array, return null.
-            if (index >= array.Length)
-            {
-                return null;
-            }
-
-            return new OpenIddictParameter(array[index]);
-        }
-
-        if (Value is JsonElement { ValueKind: JsonValueKind.Array } element)
-        {
-            // If the specified index goes beyond the
-            // number of items in the array, return null.
-            if (index >= element.GetArrayLength())
-            {
-                return null;
-            }
-
-            return new OpenIddictParameter(element[index]);
-        }
-
-        // If the value is not a JSON array, return null.
-        return null;
-    }
+        => TryGetUnnamedParameter(index, out var value) ? value : (OpenIddictParameter?) null;
 
     /// <summary>
     /// Gets the named child items associated with the current parameter, if it represents a JSON object.
@@ -358,19 +458,51 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <returns>A dictionary of all the parameters associated with the current instance.</returns>
     public IReadOnlyDictionary<string, OpenIddictParameter> GetNamedParameters()
     {
-        if (Value is JsonElement { ValueKind: JsonValueKind.Object } element)
+        return Value switch
+        {
+            // When the parameter is a JsonElement representing an object, return the requested item.
+            JsonElement { ValueKind: JsonValueKind.Object } value => GetParametersFromJsonElement(value),
+
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonObject, return the requested item.
+            JsonObject value => GetParametersFromJsonNode(value),
+
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode value when JsonSerializer.SerializeToElement(value)
+                is JsonElement { ValueKind: JsonValueKind.Object } element
+                => GetParametersFromJsonElement(element),
+#endif
+            _ => ImmutableDictionary.Create<string, OpenIddictParameter>(StringComparer.Ordinal)
+        };
+
+        static IReadOnlyDictionary<string, OpenIddictParameter> GetParametersFromJsonElement(JsonElement element)
         {
             var parameters = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
 
             foreach (var property in element.EnumerateObject())
             {
-                parameters[property.Name] = property.Value;
+                parameters[property.Name] = new(property.Value);
             }
 
             return parameters;
         }
 
-        return ImmutableDictionary.Create<string, OpenIddictParameter>(StringComparer.Ordinal);
+#if SUPPORTS_JSON_NODES
+
+        static IReadOnlyDictionary<string, OpenIddictParameter> GetParametersFromJsonNode(JsonObject node)
+        {
+            var parameters = new Dictionary<string, OpenIddictParameter>(node.Count, StringComparer.Ordinal);
+
+            foreach (var property in node)
+            {
+                parameters[property.Key] = new(property.Value);
+            }
+
+            return parameters;
+        }
+#endif
     }
 
     /// <summary>
@@ -380,31 +512,66 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <returns>An enumeration of all the unnamed parameters associated with the current instance.</returns>
     public IReadOnlyList<OpenIddictParameter> GetUnnamedParameters()
     {
-        if (Value is string?[] array)
+        return Value switch
         {
-            var parameters = new List<OpenIddictParameter>();
+            // When the parameter is an array of strings, return its items.
+            string?[] value => GetParametersFromArray(value),
+
+            // When the parameter is a JsonElement representing an array, return its children.
+            JsonElement { ValueKind: JsonValueKind.Array } value => GetParametersFromJsonElement(value),
+
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonArray, return its children.
+            JsonArray value => GetParametersFromJsonNode(value),
+
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode value when JsonSerializer.SerializeToElement(value)
+                is JsonElement { ValueKind: JsonValueKind.Array } element
+                => GetParametersFromJsonElement(element),
+#endif
+            _ => ImmutableList.Create<OpenIddictParameter>()
+        };
+
+        static IReadOnlyList<OpenIddictParameter> GetParametersFromArray(string?[] array)
+        {
+            var parameters = new OpenIddictParameter[array.Length];
 
             for (var index = 0; index < array.Length; index++)
             {
-                parameters.Add(array[index]);
+                parameters[index] = new(array[index]);
             }
 
             return parameters;
         }
 
-        else if (Value is JsonElement { ValueKind: JsonValueKind.Array } element)
+        static IReadOnlyList<OpenIddictParameter> GetParametersFromJsonElement(JsonElement element)
         {
-            var parameters = new List<OpenIddictParameter>();
+            var length = element.GetArrayLength();
+            var parameters = new OpenIddictParameter[length];
 
-            foreach (var value in element.EnumerateArray())
+            for (var index = 0; index < length; index++)
             {
-                parameters.Add(value);
+                parameters[index] = new(element[index]);
             }
 
             return parameters;
         }
 
-        return ImmutableList.Create<OpenIddictParameter>();
+#if SUPPORTS_JSON_NODES
+        static IReadOnlyList<OpenIddictParameter> GetParametersFromJsonNode(JsonArray node)
+        {
+            var parameters = new OpenIddictParameter[node.Count];
+
+            for (var index = 0; index < node.Count; index++)
+            {
+                parameters[index] = new(node[index]);
+            }
+
+            return parameters;
+        }
+#endif
     }
 
     /// <summary>
@@ -423,7 +590,28 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         JsonElement value => value.ToString(),
 
-        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0194))
+#if SUPPORTS_JSON_NODES
+        JsonValue value when value.TryGetValue(out JsonElement element)
+            => element.ToString(),
+        
+        JsonValue value when value.TryGetValue(out bool result)
+            => result ? bool.TrueString : bool.FalseString,
+        
+        JsonValue value when value.TryGetValue(out int result)
+            => result.ToString(CultureInfo.InvariantCulture),
+
+        JsonValue value when value.TryGetValue(out long result)
+            => result.ToString(CultureInfo.InvariantCulture),
+
+        JsonValue value when value.TryGetValue(out string? result) => result,
+
+        JsonNode value => value.ToJsonString(new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = false
+        }),
+#endif
+        _ => string.Empty
     };
 
     /// <summary>
@@ -439,17 +627,28 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             throw new ArgumentException(SR.GetResourceString(SR.ID0192), nameof(name));
         }
 
-        if (Value is JsonElement { ValueKind: JsonValueKind.Object } element &&
-            element.TryGetProperty(name, out JsonElement property))
+        var result = Value switch
         {
-            value = new OpenIddictParameter(property);
+            // When the parameter is a JsonElement representing an array, return the requested item.
+            JsonElement { ValueKind: JsonValueKind.Object } element =>
+                element.TryGetProperty(name, out JsonElement property) ? new(property) : null,
 
-            return true;
-        }
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonObject, return the requested item.
+            JsonObject node => node.TryGetPropertyValue(name, out JsonNode? property) ? new(property) : null,
 
-        value = default;
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode node when JsonSerializer.SerializeToElement(node)
+                is JsonElement { ValueKind: JsonValueKind.Object } element
+                => element.TryGetProperty(name, out JsonElement property) ? new(property) : null,
+#endif
+            _ => (OpenIddictParameter?) null
+        };
 
-        return false;
+        value = result.GetValueOrDefault();
+        return result.HasValue;
     }
 
     /// <summary>
@@ -465,37 +664,31 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID0193));
         }
 
-        if (Value is string?[] array)
+        var result = Value switch
         {
-            if (index >= array.Length)
-            {
-                value = default;
+            // When the parameter is an array of strings, return the requested item.
+            string?[] array => index < array.Length ? new(array[index]) : null,
 
-                return false;
-            }
+            // When the parameter is a JsonElement representing an array, return the requested item.
+            JsonElement { ValueKind: JsonValueKind.Array } element =>
+                index < element.GetArrayLength() ? new(element[index]) : null,
 
-            value = new OpenIddictParameter(array[index]);
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonArray, return the requested item.
+            JsonArray node => index < node.Count ? new(node[index]) : null,
 
-            return true;
-        }
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode node when JsonSerializer.SerializeToElement(node)
+                is JsonElement { ValueKind: JsonValueKind.Array } element
+                => index < element.GetArrayLength() ? new(element) : null,
+#endif
+            _ => (OpenIddictParameter?) null
+        };
 
-        if (Value is JsonElement { ValueKind: JsonValueKind.Array } element)
-        {
-            if (index >= element.GetArrayLength())
-            {
-                value = default;
-
-                return false;
-            }
-
-            value = new OpenIddictParameter(element[index]);
-
-            return true;
-        }
-
-        value = default;
-
-        return false;
+        value = result.GetValueOrDefault();
+        return result.HasValue;
     }
 
     /// <summary>
@@ -539,7 +732,15 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 value.WriteTo(writer);
                 break;
 
-            default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0194));
+#if SUPPORTS_JSON_NODES
+            case JsonNode value:
+                value.WriteTo(writer, new JsonSerializerOptions
+                {
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = false
+                });
+                break;
+#endif
         }
     }
 
@@ -572,28 +773,56 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="parameter">The parameter to convert.</param>
     /// <returns>The converted value.</returns>
-    public static explicit operator bool?(OpenIddictParameter? parameter) => parameter?.Value switch
+    public static explicit operator bool?(OpenIddictParameter? parameter)
     {
-        // When the parameter is a null value or a JsonElement representing null, return null.
-        null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
+        return parameter?.Value switch
+        {
+            // When the parameter is a null value or a JsonElement representing null, return null.
+            null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
-        // When the parameter is a boolean value, return it as-is.
-        bool value => value,
+            // When the parameter is a boolean value, return it as-is.
+            bool value => value,
 
-        // When the parameter is a string value, try to parse it.
-        string value => bool.TryParse(value, out var result) ? (bool?) result : null,
+            // When the parameter is a string value, try to parse it.
+            string value => bool.TryParse(value, out var result) ? result : null,
 
-        // When the parameter is a JsonElement representing a boolean, return it as-is.
-        JsonElement { ValueKind: JsonValueKind.False } => false,
-        JsonElement { ValueKind: JsonValueKind.True  } => true,
+            // When the parameter is a JsonElement, try to convert it if it's of a supported type.
+            JsonElement value => ConvertFromJsonElement(value),
 
-        // When the parameter is a JsonElement representing a string, try to parse it.
-        JsonElement { ValueKind: JsonValueKind.String } value
-            => bool.TryParse(value.GetString(), out var result) ? (bool?) result : null,
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonValue wrapping a JsonElement,
+            // apply the same logic as with direct JsonElement instances.
+            JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
 
-        // If the parameter is of a different type, return null to indicate the conversion failed.
-        _ => null
-    };
+            // When the parameter is a JsonValue wrapping a boolean, return it as-is.
+            JsonValue value when value.TryGetValue(out bool result) => result,
+
+            // When the parameter is a JsonValue wrapping a string, try to parse it.
+            JsonValue value when value.TryGetValue(out string? text) =>
+                bool.TryParse(text, out var result) ? result : null,
+
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
+                => ConvertFromJsonElement(element),
+#endif
+            // If the parameter is of a different type, return null to indicate the conversion failed.
+            _ => null
+        };
+
+        static bool? ConvertFromJsonElement(JsonElement element) => element.ValueKind switch
+        {
+            // When the parameter is a JsonElement representing a boolean, return it as-is.
+            JsonValueKind.True  => true,
+            JsonValueKind.False => false,
+
+            // When the parameter is a JsonElement representing a string, try to parse it.
+            JsonValueKind.String => bool.TryParse(element.GetString(), out var result) ? result : null,
+
+            _ => null
+        };
+    }
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a <see cref="JsonElement"/>.
@@ -604,20 +833,32 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     {
         return parameter?.Value switch
         {
-            // When the parameter is a null value, return default.
+            // When the parameter is a null value, return an undefined JsonElement.
             null => default,
 
             // When the parameter is already a JsonElement, return it as-is.
             JsonElement value => value,
 
+#if SUPPORTS_JSON_NODES
+            // When the parameter is JsonNode, serialize it as a JsonElement.
+            JsonNode value => JsonSerializer.SerializeToElement(value),
+#endif
             // When the parameter is a string starting with '{' or '[' (which would correspond
             // to a JSON object or array), try to deserialize it to get a JsonElement instance.
             string { Length: > 0 } value when value[0] is '{' or '[' =>
                 DeserializeElement(value) ??
-                DeserializeElement(SerializeObject(value)) ?? default,
+                DeserializeElement(JsonSerializer.Serialize(value)) ?? default,
 
             // Otherwise, serialize it to get a JsonElement instance.
-            var value => DeserializeElement(SerializeObject(value)) ?? default
+#if SUPPORTS_DIRECT_JSON_ELEMENT_SERIALIZATION
+            object value => JsonSerializer.SerializeToElement(value, value.GetType(), new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            })
+#else
+            object value => DeserializeElement(JsonSerializer.Serialize(value)) ?? default
+#endif
         };
 
         static JsonElement? DeserializeElement(string value)
@@ -633,49 +874,97 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 return null;
             }
         }
+    }
 
-        static string SerializeObject(object instance)
+#if SUPPORTS_JSON_NODES
+    /// <summary>
+    /// Converts an <see cref="OpenIddictParameter"/> instance to a <see cref="JsonNode"/>.
+    /// </summary>
+    /// <param name="parameter">The parameter to convert.</param>
+    /// <returns>The converted value.</returns>
+    public static explicit operator JsonNode?(OpenIddictParameter? parameter)
+    {
+        return parameter?.Value switch
         {
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+            // When the parameter is a null value or a JsonElement representing null, return null.
+            null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
+
+            // When the parameter is already a JsonNode, return it as-is.
+            JsonNode value => value,
+
+            // When the parameter is a boolean, return a JsonValue.
+            bool value => JsonValue.Create(value),
+
+            // When the parameter is an integer, return a JsonValue.
+            long value => JsonValue.Create(value),
+
+            // When the parameter is a string starting with '{' or '[' (which would correspond
+            // to a JSON object or array), try to deserialize it to get a JsonNode instance.
+            string { Length: > 0 } value when value[0] is '{' or '[' => DeserializeNode(value),
+
+            // When the parameter is a string, return a JsonValue.
+            string value => JsonValue.Create(value),
+
+            // When the parameter is an array of strings, return a JsonArray.
+            string?[] value => CreateArray(value),
+
+            // When the parameter is JsonElement, deserialize it as a JsonNode.
+            JsonElement value => JsonSerializer.Deserialize<JsonNode>(value),
+
+            // If the parameter is of a different type, return null to indicate the conversion failed.
+            _ => null
+        };
+
+        static JsonNode? DeserializeNode(string value)
+        {
+            try
             {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = false
-            });
-
-            switch (instance)
-            {
-                case bool value:
-                    writer.WriteBooleanValue(value);
-                    break;
-
-                case long value:
-                    writer.WriteNumberValue(value);
-                    break;
-
-                case string value:
-                    writer.WriteStringValue(value);
-                    break;
-
-                case string?[] value:
-                    writer.WriteStartArray();
-
-                    for (var index = 0; index < value.Length; index++)
-                    {
-                        writer.WriteStringValue(value[index]);
-                    }
-
-                    writer.WriteEndArray();
-                    break;
-
-                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0194));
+                return JsonNode.Parse(value);
             }
 
-            writer.Flush();
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
 
-            return Encoding.UTF8.GetString(stream.ToArray());
+        static JsonArray? CreateArray(string?[] values)
+        {
+            var array = new JsonArray();
+
+            for (var index = 0; index < values.Length; index++)
+            {
+                array.Add(values[index]);
+            }
+
+            return array;
         }
     }
+
+    /// <summary>
+    /// Converts an <see cref="OpenIddictParameter"/> instance to a <see cref="JsonArray"/>.
+    /// </summary>
+    /// <param name="parameter">The parameter to convert.</param>
+    /// <returns>The converted value.</returns>
+    public static explicit operator JsonArray?(OpenIddictParameter? parameter)
+        => ((JsonNode?) parameter) as JsonArray;
+
+    /// <summary>
+    /// Converts an <see cref="OpenIddictParameter"/> instance to a <see cref="JsonObject"/>.
+    /// </summary>
+    /// <param name="parameter">The parameter to convert.</param>
+    /// <returns>The converted value.</returns>
+    public static explicit operator JsonObject?(OpenIddictParameter? parameter)
+        => ((JsonNode?) parameter) as JsonObject;
+
+    /// <summary>
+    /// Converts an <see cref="OpenIddictParameter"/> instance to a <see cref="JsonValue"/>.
+    /// </summary>
+    /// <param name="parameter">The parameter to convert.</param>
+    /// <returns>The converted value.</returns>
+    public static explicit operator JsonValue?(OpenIddictParameter? parameter)
+        => ((JsonNode?) parameter) as JsonValue;
+#endif
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a long integer.
@@ -690,63 +979,120 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// </summary>
     /// <param name="parameter">The parameter to convert.</param>
     /// <returns>The converted value.</returns>
-    public static explicit operator long?(OpenIddictParameter? parameter) => parameter?.Value switch
+    public static explicit operator long?(OpenIddictParameter? parameter)
     {
-        // When the parameter is a null value or a JsonElement representing null, return null.
-        null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
+        return parameter?.Value switch
+        {
+            // When the parameter is a null value or a JsonElement representing null, return null.
+            null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
-        // When the parameter is an integer, return it as-is.
-        long value => value,
+            // When the parameter is an integer, return it as-is.
+            long value => value,
 
-        // When the parameter is a string value, try to parse it.
-        string value
-            => long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? (long?) result : null,
+            // When the parameter is a string value, try to parse it.
+            string value => long.TryParse(value, NumberStyles.Integer,
+                CultureInfo.InvariantCulture, out var result) ? result : null,
 
-        // When the parameter is a JsonElement representing a number, return it as-is.
-        JsonElement { ValueKind: JsonValueKind.Number } value
-            => value.TryGetInt64(out var result) ? (long?) result : null,
+            // When the parameter is a JsonElement, try to convert it if it's of a supported type.
+            JsonElement value => ConvertFromJsonElement(value),
 
-        // When the parameter is a JsonElement representing a string, try to parse it.
-        JsonElement { ValueKind: JsonValueKind.String } value
-            => long.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? (long?) result : null,
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonValue wrapping a JsonElement,
+            // apply the same logic as with direct JsonElement instances.
+            JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
 
-        // If the parameter is of a different type, return null to indicate the conversion failed.
-        _ => null
-    };
+            // When the parameter is a JsonValue wrapping an integer, return it as-is.
+            JsonValue value when value.TryGetValue(out int  result) => result,
+            JsonValue value when value.TryGetValue(out long result) => result,
+
+            // When the parameter is a JsonValue wrapping a string, return it as-is.
+            JsonValue value when value.TryGetValue(out string? text) =>
+                long.TryParse(text, NumberStyles.Integer,
+                    CultureInfo.InvariantCulture, out var result) ? result : null,
+
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
+                => ConvertFromJsonElement(element),
+#endif
+            // If the parameter is of a different type, return null to indicate the conversion failed.
+            _ => null
+        };
+
+        static long? ConvertFromJsonElement(JsonElement element) => element.ValueKind switch
+        {
+            // When the parameter is a JsonElement representing a number, return it as-is.
+            JsonValueKind.Number => element.TryGetInt64(out var result) ? result : null,
+
+            // When the parameter is a JsonElement representing a string, try to parse it.
+            JsonValueKind.String => long.TryParse(element.GetString(), NumberStyles.Integer,
+                CultureInfo.InvariantCulture, out var result) ? result : null,
+
+            _ => null
+        };
+    }
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to a string.
     /// </summary>
     /// <param name="parameter">The parameter to convert.</param>
     /// <returns>The converted value.</returns>
-    public static explicit operator string?(OpenIddictParameter? parameter) => parameter?.Value switch
+    public static explicit operator string?(OpenIddictParameter? parameter)
     {
-        // When the parameter is a null value or a JsonElement representing null, return null.
-        null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
+        return parameter?.Value switch
+        {
+            // When the parameter is a null value or a JsonElement representing null, return null.
+            null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
 
-        // When the parameter is a string value, return it as-is.
-        string value => value,
+            // When the parameter is a string value, return it as-is.
+            string value => value,
 
-        // When the parameter is a boolean value, use its string representation.
-        bool value => value.ToString(),
+            // When the parameter is a boolean value, use its string representation.
+            bool value => value ? bool.TrueString : bool.FalseString,
 
-        // When the parameter is an integer, use its string representation.
-        long value => value.ToString(CultureInfo.InvariantCulture),
+            // When the parameter is an integer, use its string representation.
+            long value => value.ToString(CultureInfo.InvariantCulture),
 
-        // When the parameter is a JsonElement representing a string, return it as-is.
-        JsonElement { ValueKind: JsonValueKind.String } value => value.GetString(),
+            // When the parameter is a JsonElement, try to convert it if it's of a supported type.
+            JsonElement value => ConvertFromJsonElement(value),
 
-        // When the parameter is a JsonElement representing a number, return its representation.
-        JsonElement { ValueKind: JsonValueKind.Number } value
-            => value.GetInt64().ToString(CultureInfo.InvariantCulture),
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonValue wrapping a JsonElement,
+            // apply the same logic as with direct JsonElement instances.
+            JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
 
-        // When the parameter is a JsonElement representing a boolean, return its representation.
-        JsonElement { ValueKind: JsonValueKind.False } => bool.FalseString,
-        JsonElement { ValueKind: JsonValueKind.True  } => bool.TrueString,
+            // When the parameter is a JsonValue wrapping a string, return it as-is.
+            JsonValue value when value.TryGetValue(out string? result) => result,
 
-        // If the parameter is of a different type, return null to indicate the conversion failed.
-        _ => null
-    };
+            // When the parameter is a JsonValue wrapping a boolean, return its representation.
+            JsonValue value when value.TryGetValue(out bool result) => result ? bool.TrueString : bool.FalseString,
+
+            // When the parameter is a JsonValue wrapping a boolean, return its representation.
+            JsonValue value when value.TryGetValue(out int result)  => result.ToString(CultureInfo.InvariantCulture),
+            JsonValue value when value.TryGetValue(out long result) => result.ToString(CultureInfo.InvariantCulture),
+
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
+                => ConvertFromJsonElement(element),
+#endif
+            // If the parameter is of a different type, return null to indicate the conversion failed.
+            _ => null
+        };
+
+        static string? ConvertFromJsonElement(JsonElement element) => element.ValueKind switch
+        {
+            // When the parameter is a JsonElement representing a string,
+            // a number or a boolean, return its string representation.
+            JsonValueKind.String or JsonValueKind.Number or
+            JsonValueKind.True   or JsonValueKind.False
+                => element.ToString()!,
+
+            _ => null
+        };
+    }
 
     /// <summary>
     /// Converts an <see cref="OpenIddictParameter"/> instance to an array of strings.
@@ -767,43 +1113,72 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
             string value => new string?[] { value },
 
             // When the parameter is a boolean value, return an array with its string representation.
-            bool value => new string?[] { value.ToString() },
+            bool value => new string?[] { value ? bool.TrueString : bool.FalseString },
 
             // When the parameter is an integer, return an array with its string representation.
             long value => new string?[] { value.ToString(CultureInfo.InvariantCulture) },
 
-            // When the parameter is a JsonElement representing a string, return an array with a single entry.
-            JsonElement { ValueKind: JsonValueKind.String } value => new string?[] { value.GetString() },
+            // When the parameter is a JsonElement, try to convert it if it's of a supported type.
+            JsonElement value => ConvertFromJsonElement(value),
 
-            // When the parameter is a JsonElement representing a number, return an array with a single entry.
-            JsonElement { ValueKind: JsonValueKind.Number } value
-                => new string?[] { value.GetInt64().ToString(CultureInfo.InvariantCulture) },
+#if SUPPORTS_JSON_NODES
+            // When the parameter is a JsonValue wrapping a JsonElement,
+            // apply the same logic as with direct JsonElement instances.
+            JsonValue value when value.TryGetValue(out JsonElement element) => ConvertFromJsonElement(element),
 
-            // When the parameter is a JsonElement representing a boolean, return an array with a single entry.
-            JsonElement { ValueKind: JsonValueKind.False } => new string?[] { bool.FalseString },
-            JsonElement { ValueKind: JsonValueKind.True  } => new string?[] { bool.TrueString  },
+            // When the parameter is a JsonValue wrapping a string, return an array with a single entry.
+            JsonValue value when value.TryGetValue(out string? result) => new string?[] { result },
 
-            // When the parameter is a JsonElement representing an array of strings, return it.
-            JsonElement { ValueKind: JsonValueKind.Array } value => CreateArray(value),
+            // When the parameter is a JsonValue wrapping a boolean, return an array with its string representation.
+            JsonValue value when value.TryGetValue(out bool result)
+                => new string?[] { result ? bool.TrueString : bool.FalseString },
 
+            // When the parameter is a JsonValue wrapping an integer, return an array with its string representation.
+            JsonValue value when value.TryGetValue(out int result)
+                => new string?[] { result.ToString(CultureInfo.InvariantCulture) },
+
+            JsonValue value when value.TryGetValue(out long result)
+                => new string?[] { result.ToString(CultureInfo.InvariantCulture) },
+
+            // When the parameter is a JsonNode (e.g a JsonValue wrapping a non-primitive type),
+            // serialize it to a JsonElement first to determine its actual JSON representation
+            // and apply the same logic as with non-wrapped JsonElement instances.
+            JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
+                => ConvertFromJsonElement(element),
+#endif
             // If the parameter is of a different type, return null to indicate the conversion failed.
             _ => null
         };
 
-        static string?[]? CreateArray(JsonElement value)
+        static string?[]? ConvertFromJsonElement(JsonElement element) => element.ValueKind switch
         {
-            var array = new string?[value.GetArrayLength()];
-            using var enumerator = value.EnumerateArray();
+            // When the parameter is a JsonElement representing a string, a number
+            // or a boolean, return an 1-item array with its string representation.
+            JsonValueKind.String or JsonValueKind.Number or
+            JsonValueKind.True   or JsonValueKind.False
+                => new string?[] { element.ToString()! },
 
-            for (var index = 0; enumerator.MoveNext(); index++)
+            // When the parameter is a JsonElement representing an array, return the elements as strings.
+            JsonValueKind.Array => CreateArrayFromJsonElement(element),
+
+            _ => null
+        };
+
+        static string?[]? CreateArrayFromJsonElement(JsonElement element)
+        {
+            var length = element.GetArrayLength();
+            var array = new string?[length];
+
+            for (var index = 0; index < length; index++)
             {
-                var element = enumerator.Current;
-                if (element.ValueKind is not JsonValueKind.String)
+                // Always return a null array if one of the items is a not string, a number or a boolean.
+                if (element[index] is not { ValueKind: JsonValueKind.String or JsonValueKind.Number or
+                                                       JsonValueKind.True   or JsonValueKind.False } item)
                 {
                     return null;
                 }
 
-                array[index] = element.GetString();
+                array[index] = item.ToString();
             }
 
             return array;
@@ -830,6 +1205,15 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// <param name="value">The value to convert</param>
     /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
     public static implicit operator OpenIddictParameter(JsonElement value) => new(value);
+
+#if SUPPORTS_JSON_NODES
+    /// <summary>
+    /// Converts a <see cref="JsonNode"/> to an <see cref="OpenIddictParameter"/> instance.
+    /// </summary>
+    /// <param name="value">The value to convert</param>
+    /// <returns>An <see cref="OpenIddictParameter"/> instance.</returns>
+    public static implicit operator OpenIddictParameter(JsonNode? value) => new(value);
+#endif
 
     /// <summary>
     /// Converts a long integer to an <see cref="OpenIddictParameter"/> instance.
@@ -870,20 +1254,45 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
         {
             null or JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => true,
 
-            string value    => string.IsNullOrEmpty(value),
-            string?[] value => value.Length == 0,
+            string value    => value.Length is 0,
+            string?[] value => value.Length is 0,
 
-            JsonElement { ValueKind: JsonValueKind.String } value => string.IsNullOrEmpty(value.GetString()),
-            JsonElement { ValueKind: JsonValueKind.Array  } value => value.GetArrayLength() == 0,
-            JsonElement { ValueKind: JsonValueKind.Object } value => IsEmptyNode(value),
+            JsonElement value => IsEmptyJsonElement(value),
 
+#if SUPPORTS_JSON_NODES
+            JsonArray  value => value.Count is 0,
+            JsonObject value => value.Count is 0,
+
+            JsonValue value when value.TryGetValue(out JsonElement element)
+                => IsEmptyJsonElement(element),
+
+            JsonValue value when value.TryGetValue(out string? result)
+                => string.IsNullOrEmpty(result),
+
+            JsonNode value when JsonSerializer.SerializeToElement(value) is JsonElement element
+                => IsEmptyJsonElement(element),
+#endif
             _ => false
         };
 
-        static bool IsEmptyNode(JsonElement value)
+        static bool IsEmptyJsonElement(JsonElement element)
         {
-            using var enumerator = value.EnumerateObject();
-            return !enumerator.MoveNext();
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return string.IsNullOrEmpty(element.GetString());
+
+                case JsonValueKind.Array:
+                    return element.GetArrayLength() is 0;
+
+                case JsonValueKind.Object:
+                    using (var enumerator = element.EnumerateObject())
+                    {
+                        return !enumerator.MoveNext();
+                    }
+
+                default: return false;
+            }
         }
     }
 }

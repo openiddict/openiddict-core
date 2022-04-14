@@ -40,7 +40,7 @@ public static partial class OpenIddictClientHandlers
             {
                 foreach (var parameter in context.Response.GetParameters())
                 {
-                    if (ValidateParameterType(parameter.Key, parameter.Value.Value))
+                    if (ValidateParameterType(parameter.Key, parameter.Value))
                     {
                         continue;
                     }
@@ -55,14 +55,21 @@ public static partial class OpenIddictClientHandlers
 
                 return default;
 
-                static bool ValidateParameterType(string name, object? value) => name switch
+                // Note: in the typical case, the response parameters should be deserialized from a
+                // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
+                //
+                // In the rare cases where the underlying value wouldn't be a JsonElement instance
+                // (e.g when custom parameters are manually added to the response), the static
+                // conversion operator would take care of converting the underlying value to a
+                // JsonElement instance using the same value type as the original parameter value.
+                static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
-                    // The 'expires_in' parameter MUST be formatted as a numeric date value.
-                    Parameters.ExpiresIn => value is long or JsonElement { ValueKind: JsonValueKind.Number },
-
                     // The 'access_token', 'id_token' and 'refresh_token' parameters MUST be formatted as unique strings.
                     Parameters.AccessToken or Parameters.IdToken or Parameters.RefreshToken
-                        => value is string or JsonElement { ValueKind: JsonValueKind.String },
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
+                    // The 'expires_in' parameter MUST be formatted as a numeric date value.
+                    Parameters.ExpiresIn => ((JsonElement) value).ValueKind is JsonValueKind.Number,
 
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true

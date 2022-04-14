@@ -506,7 +506,7 @@ This may indicate that the event handler responsible for processing OpenID Conne
     <value>The ASP.NET Core HTTP request cannot be resolved.</value>
   </data>
   <data name="ID0115" xml:space="preserve">
-    <value>Only strings, booleans, integers, arrays of strings and instances of type 'OpenIddictParameter' or 'JsonElement' can be returned as custom parameters.</value>
+    <value>Only strings, booleans, integers, arrays of strings and instances of type 'OpenIddictParameter' or 'JsonElement' can be returned as custom parameters. On .NET 6.0 and higher, instances of type 'JsonNode' (i.e 'JsonArray', 'JsonObject' and 'JsonValue') are also supported.</value>
   </data>
   <data name="ID0116" xml:space="preserve">
     <value>A distributed cache instance must be registered when enabling request caching.

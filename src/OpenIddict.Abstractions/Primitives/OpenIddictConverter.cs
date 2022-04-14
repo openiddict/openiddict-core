@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace OpenIddict.Abstractions;
 
 /// <summary>
-/// Represents a JSON.NET converter able to convert OpenIddict primitives.
+/// Represents a JSON converter able to convert OpenIddict primitives.
 /// </summary>
 public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
 {
@@ -20,11 +20,9 @@ public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// <param name="typeToConvert">The type to convert.</param>
     /// <returns><see langword="true"/> if the type is supported, <see langword="false"/> otherwise.</returns>
     public override bool CanConvert(Type typeToConvert!!)
-    {
-        return typeToConvert == typeof(OpenIddictMessage) ||
-               typeToConvert == typeof(OpenIddictRequest) ||
-               typeToConvert == typeof(OpenIddictResponse);
-    }
+        => typeToConvert == typeof(OpenIddictMessage) ||
+           typeToConvert == typeof(OpenIddictRequest) ||
+           typeToConvert == typeof(OpenIddictResponse);
 
     /// <summary>
     /// Deserializes an <see cref="OpenIddictMessage"/> instance.
@@ -50,7 +48,5 @@ public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// <param name="value">The instance.</param>
     /// <param name="options">The JSON serializer options.</param>
     public override void Write(Utf8JsonWriter writer!!, OpenIddictMessage value!!, JsonSerializerOptions options)
-    {
-        value.WriteTo(writer);
-    }
+        => value.WriteTo(writer);
 }

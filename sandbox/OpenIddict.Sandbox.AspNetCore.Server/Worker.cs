@@ -66,6 +66,22 @@ public class Worker : IHostedService
                 });
             }
 
+            // Note: when using introspection instead of local token validation,
+            // an application entry MUST be created to allow the resource server
+            // to communicate with OpenIddict's introspection endpoint.
+            if (await manager.FindByClientIdAsync("resource_server") is null)
+            {
+                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ClientId = "resource_server",
+                    ClientSecret = "80B552BB-4CD8-48DA-946E-0815E0147DD2",
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Introspection
+                    }
+                });
+            }
+
             // To test this sample with Postman, use the following settings:
             //
             // * Authorization URL: https://localhost:44395/connect/authorize

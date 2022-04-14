@@ -105,6 +105,7 @@ public static partial class OpenIddictClientHandlers
 
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Discovery.DefaultHandlers)
+        .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
 
