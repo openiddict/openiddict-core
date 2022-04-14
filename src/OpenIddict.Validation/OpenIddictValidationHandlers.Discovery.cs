@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation;
@@ -18,6 +19,7 @@ public static partial class OpenIddictValidationHandlers
              * Configuration response handling:
              */
             HandleErrorResponse<HandleConfigurationResponseContext>.Descriptor,
+            ValidateWellKnownConfigurationParameters.Descriptor,
             ValidateIssuer.Descriptor,
             ExtractCryptographyEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
@@ -27,7 +29,79 @@ public static partial class OpenIddictValidationHandlers
              * Cryptography response handling:
              */
             HandleErrorResponse<HandleCryptographyResponseContext>.Descriptor,
+            ValidateWellKnownCryptographyParameters.Descriptor,
             ExtractSigningKeys.Descriptor);
+
+        /// <summary>
+        /// Contains the logic responsible for validating the well-known parameters contained in the configuration response.
+        /// </summary>
+        public class ValidateWellKnownConfigurationParameters : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ValidateWellKnownConfigurationParameters>()
+                    .SetOrder(HandleErrorResponse<HandleConfigurationResponseContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            {
+                foreach (var parameter in context.Response.GetParameters())
+                {
+                    if (!ValidateParameterType(parameter.Key, parameter.Value))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2107(parameter.Key),
+                            uri: SR.FormatID8000(SR.ID2107));
+
+                        return default;
+                    }
+                }
+
+                return default;
+
+                // Note: in the typical case, the response parameters should be deserialized from a
+                // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
+                //
+                // In the rare cases where the underlying value wouldn't be a JsonElement instance
+                // (e.g when custom parameters are manually added to the response), the static
+                // conversion operator would take care of converting the underlying value to a
+                // JsonElement instance using the same value type as the original parameter value.
+                static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
+                {
+                    // The following parameters MUST be formatted as unique strings:
+                    Metadata.IntrospectionEndpoint or
+                    Metadata.Issuer
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
+                    // The following parameters MUST be formatted as arrays of strings:
+                    Metadata.IntrospectionEndpointAuthMethodsSupported
+                        => ((JsonElement) value) is JsonElement element &&
+                            element.ValueKind is JsonValueKind.Array && ValidateStringArray(element),
+
+                    // Parameters that are not in the well-known list can be of any type.
+                    _ => true
+                };
+
+                static bool ValidateStringArray(JsonElement element)
+                {
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        if (item.ValueKind is not JsonValueKind.String)
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for extracting the issuer from the discovery document.
@@ -40,7 +114,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ValidateIssuer>()
-                    .SetOrder(HandleErrorResponse<HandleConfigurationResponseContext>.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateWellKnownConfigurationParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -200,6 +274,71 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for validating the well-known parameters contained in the JWKS response.
+        /// </summary>
+        public class ValidateWellKnownCryptographyParameters : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                    .UseSingletonHandler<ValidateWellKnownCryptographyParameters>()
+                    .SetOrder(HandleErrorResponse<HandleCryptographyResponseContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleCryptographyResponseContext context!!)
+            {
+                foreach (var parameter in context.Response.GetParameters())
+                {
+                    if (!ValidateParameterType(parameter.Key, parameter.Value))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2107(parameter.Key),
+                            uri: SR.FormatID8000(SR.ID2107));
+
+                        return default;
+                    }
+                }
+
+                return default;
+
+                // Note: in the typical case, the response parameters should be deserialized from a
+                // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
+                //
+                // In the rare cases where the underlying value wouldn't be a JsonElement instance
+                // (e.g when custom parameters are manually added to the response), the static
+                // conversion operator would take care of converting the underlying value to a
+                // JsonElement instance using the same value type as the original parameter value.
+                static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
+                {
+                    // The following parameters MUST be formatted as arrays of objects:
+                    JsonWebKeySetParameterNames.Keys => ((JsonElement) value) is JsonElement element &&
+                        element.ValueKind is JsonValueKind.Array && ValidateObjectArray(element),
+
+                    // Parameters that are not in the well-known list can be of any type.
+                    _ => true
+                };
+
+                static bool ValidateObjectArray(JsonElement element)
+                {
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        if (item.ValueKind is not JsonValueKind.Object)
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the signing keys from the JWKS document.
         /// </summary>
         public class ExtractSigningKeys : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
@@ -210,7 +349,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
                     .UseSingletonHandler<ExtractSigningKeys>()
-                    .SetOrder(HandleErrorResponse<HandleCryptographyResponseContext>.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateWellKnownCryptographyParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
