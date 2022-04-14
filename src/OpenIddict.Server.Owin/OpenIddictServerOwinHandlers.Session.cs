@@ -127,16 +127,13 @@ public static partial class OpenIddictServerOwinHandlers
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0118));
                 }
 
-                // Restore the authorization request parameters from the serialized payload
+                // Restore the request parameters from the serialized payload.
                 foreach (var parameter in document.RootElement.EnumerateObject())
                 {
-                    // Avoid overriding the current request parameters.
-                    if (context.Request.HasParameter(parameter.Name))
+                    if (!context.Request.HasParameter(parameter.Name))
                     {
-                        continue;
+                        context.Request.AddParameter(parameter.Name, parameter.Value.Clone());
                     }
-
-                    context.Request.SetParameter(parameter.Name, parameter.Value.Clone());
                 }
             }
         }
@@ -197,17 +194,34 @@ public static partial class OpenIddictServerOwinHandlers
 
                 context.Request.RequestId = Base64UrlEncoder.Encode(data);
 
+                // Build a list of claims matching the parameters extracted from the request.
+                //
+                // Note: in most cases, parameters should be representated as strings as requests are
+                // typically resolved from the query string or the request form, where parameters
+                // are natively represented as strings. However, requests can also be extracted from
+                // different places where they can be represented as complex JSON representations
+                // (e.g requests extracted from a JSON Web Token that may be encrypted and/or signed).
+                var claims = from parameter in context.Request.GetParameters()
+                             let element = (JsonElement) parameter.Value
+                             let type = element.ValueKind switch
+                             {
+                                 JsonValueKind.String                          => ClaimValueTypes.String,
+                                 JsonValueKind.Number                          => ClaimValueTypes.Integer64,
+                                 JsonValueKind.True or JsonValueKind.False     => ClaimValueTypes.Boolean,
+                                 JsonValueKind.Null or JsonValueKind.Undefined => JsonClaimValueTypes.JsonNull,
+                                 JsonValueKind.Array                           => JsonClaimValueTypes.JsonArray,
+                                 JsonValueKind.Object or _                     => JsonClaimValueTypes.Json
+                             }
+                             select new Claim(parameter.Key, element.ToString()!, type);
+
                 // Store the serialized logout request parameters in the distributed cache.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
                 {
                     Audience = context.Issuer?.AbsoluteUri,
-                    Claims = context.Request.GetParameters().ToDictionary(
-                        parameter => parameter.Key,
-                        parameter => parameter.Value.Value),
                     EncryptingCredentials = context.Options.EncryptionCredentials.First(),
                     Issuer = context.Issuer?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
-                    Subject = new ClaimsIdentity(),
+                    Subject = new ClaimsIdentity(claims, TokenValidationParameters.DefaultAuthenticationType),
                     TokenType = JsonWebTokenTypes.Private.LogoutRequest
                 });
 

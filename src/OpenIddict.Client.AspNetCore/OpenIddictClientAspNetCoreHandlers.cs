@@ -17,6 +17,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
 
+#if SUPPORTS_JSON_NODES
+using System.Text.Json.Nodes;
+#endif
+
 namespace OpenIddict.Client.AspNetCore;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -447,6 +451,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     string              value => new OpenIddictParameter(value),
                     string[]            value => new OpenIddictParameter(value),
 
+#if SUPPORTS_JSON_NODES
+                    JsonNode            value => new OpenIddictParameter(value),
+#endif
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
                 };
             }

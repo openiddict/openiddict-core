@@ -9,6 +9,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Primitives;
 
+#if SUPPORTS_JSON_NODES
+using System.Text.Json.Nodes;
+#endif
+
 namespace OpenIddict.Abstractions;
 
 /// <summary>
@@ -40,6 +44,18 @@ public class OpenIddictResponse : OpenIddictMessage
         : base(parameters)
     {
     }
+
+#if SUPPORTS_JSON_NODES
+    /// <summary>
+    /// Initializes a new OpenIddict response.
+    /// </summary>
+    /// <param name="parameters">The response parameters.</param>
+    /// <remarks>Parameters with a null or empty key are always ignored.</remarks>
+    public OpenIddictResponse(JsonObject parameters)
+        : base(parameters)
+    {
+    }
+#endif
 
     /// <summary>
     /// Initializes a new OpenIddict response.

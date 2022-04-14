@@ -8,6 +8,10 @@ using System.Text;
 using System.Text.Json;
 using Xunit;
 
+#if SUPPORTS_JSON_NODES
+using System.Text.Json.Nodes;
+#endif
+
 namespace OpenIddict.Abstractions.Tests.Primitives;
 
 public class OpenIddictConverterTests
@@ -129,6 +133,11 @@ public class OpenIddictConverterTests
         Assert.Null((long?) message.GetParameter("long"));
         Assert.Equal(JsonValueKind.Null, ((JsonElement) message.GetParameter("array")).ValueKind);
         Assert.Equal(JsonValueKind.Null, ((JsonElement) message.GetParameter("object")).ValueKind);
+
+#if SUPPORTS_JSON_NODES
+        Assert.Null((JsonNode?) message.GetParameter("array"));
+        Assert.Null((JsonNode?) message.GetParameter("object"));
+#endif
     }
 
     [Fact]
@@ -149,6 +158,11 @@ public class OpenIddictConverterTests
         Assert.Empty((string?) message.GetParameter("string"));
         Assert.NotNull((JsonElement?) message.GetParameter("array"));
         Assert.NotNull((JsonElement?) message.GetParameter("object"));
+
+#if SUPPORTS_JSON_NODES
+        Assert.NotNull((JsonNode?) message.GetParameter("array"));
+        Assert.NotNull((JsonNode?) message.GetParameter("object"));
+#endif
     }
 
     [Fact]
@@ -213,7 +227,11 @@ public class OpenIddictConverterTests
         message.AddParameter("string", new OpenIddictParameter((string?) null));
         message.AddParameter("bool", new OpenIddictParameter((bool?) null));
         message.AddParameter("long", new OpenIddictParameter((long?) null));
-        message.AddParameter("node", new OpenIddictParameter(default(JsonElement)));
+        message.AddParameter("element", new OpenIddictParameter(default(JsonElement)));
+
+#if SUPPORTS_JSON_NODES
+        message.AddParameter("node", new OpenIddictParameter((JsonNode?) null));
+#endif
 
         // Act
         converter.Write(writer, value: message, options: null!);
@@ -221,7 +239,12 @@ public class OpenIddictConverterTests
         // Assert
         writer.Flush();
         stream.Seek(0L, SeekOrigin.Begin);
-        Assert.Equal(@"{""string"":null,""bool"":null,""long"":null,""node"":null}", reader.ReadToEnd());
+
+#if SUPPORTS_JSON_NODES
+        Assert.Equal(@"{""string"":null,""bool"":null,""long"":null,""element"":null,""node"":null}", reader.ReadToEnd());
+#else
+        Assert.Equal(@"{""string"":null,""bool"":null,""long"":null,""element"":null}", reader.ReadToEnd());
+#endif
     }
 
     [Fact]
@@ -235,8 +258,14 @@ public class OpenIddictConverterTests
 
         var message = new OpenIddictMessage();
         message.AddParameter("string", new OpenIddictParameter(string.Empty));
-        message.AddParameter("array", new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("[]")));
-        message.AddParameter("object", new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("{}")));
+        message.AddParameter("element_array", new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("[]")));
+        message.AddParameter("element_object", new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("{}")));
+
+#if SUPPORTS_JSON_NODES
+        message.AddParameter("node_array", new OpenIddictParameter(new JsonArray()));
+        message.AddParameter("node_object", new OpenIddictParameter(new JsonObject()));
+        message.AddParameter("node_value", new OpenIddictParameter(JsonValue.Create(new { })));
+#endif
 
         // Act
         converter.Write(writer, value: message, options: null!);
@@ -244,7 +273,12 @@ public class OpenIddictConverterTests
         // Assert
         writer.Flush();
         stream.Seek(0L, SeekOrigin.Begin);
-        Assert.Equal(@"{""string"":"""",""array"":[],""object"":{}}", reader.ReadToEnd());
+
+#if SUPPORTS_JSON_NODES
+        Assert.Equal(@"{""string"":"""",""element_array"":[],""element_object"":{},""node_array"":[],""node_object"":{},""node_value"":{}}", reader.ReadToEnd());
+#else
+        Assert.Equal(@"{""string"":"""",""element_array"":[],""element_object"":{}}", reader.ReadToEnd());
+#endif
     }
 
     [Fact]

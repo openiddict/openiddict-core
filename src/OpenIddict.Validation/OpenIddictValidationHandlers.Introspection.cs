@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -152,7 +151,7 @@ public static partial class OpenIddictValidationHandlers
             {
                 foreach (var parameter in context.Response.GetParameters())
                 {
-                    if (ValidateClaimType(parameter.Key, parameter.Value.Value))
+                    if (ValidateClaimType(parameter.Key, parameter.Value))
                     {
                         continue;
                     }
@@ -167,32 +166,39 @@ public static partial class OpenIddictValidationHandlers
 
                 return default;
 
-                static bool ValidateClaimType(string name, object? value) => name switch
+                // Note: in the typical case, the response parameters should be deserialized from a
+                // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
+                //
+                // In the rare cases where the underlying value wouldn't be a JsonElement instance
+                // (e.g when custom parameters are manually added to the response), the static
+                // conversion operator would take care of converting the underlying value to a
+                // JsonElement instance using the same value type as the original parameter value.
+                static bool ValidateClaimType(string name, OpenIddictParameter value) => name switch
                 {
-                    // The 'aud' claim MUST be represented either as a unique string or as an array of multiple strings.
-                    Claims.Audience when value is string or string[] => true,
-                    Claims.Audience when value is JsonElement { ValueKind: JsonValueKind.String } => true,
-                    Claims.Audience when value is JsonElement { ValueKind: JsonValueKind.Array } element &&
-                        ValidateArrayChildren(element, JsonValueKind.String) => true,
-                    Claims.Audience => false,
+                    // The 'jti', 'iss', 'scope' and 'token_usage' claims MUST be formatted as a unique string.
+                    Claims.JwtId or Claims.Issuer or Claims.Scope or Claims.TokenUsage
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
+                    // The 'aud' claim MUST be represented either as a unique string or as an array of strings.
+                    //
+                    // Note: empty arrays and arrays that contain a single value are also considered valid.
+                    Claims.Audience => ((JsonElement) value) is JsonElement element &&
+                        element.ValueKind is JsonValueKind.String ||
+                       (element.ValueKind is JsonValueKind.Array && ValidateStringArray(element)),
 
                     // The 'exp', 'iat' and 'nbf' claims MUST be formatted as numeric date values.
                     Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
-                        => value is long or JsonElement { ValueKind: JsonValueKind.Number },
-
-                    // The 'jti', 'iss', 'scope' and 'token_usage' claims MUST be formatted as a unique string.
-                    Claims.JwtId or Claims.Issuer or Claims.Scope or Claims.TokenUsage
-                        => value is string or JsonElement { ValueKind: JsonValueKind.String },
+                        => ((JsonElement) value).ValueKind is JsonValueKind.Number,
 
                     // Claims that are not in the well-known list can be of any type.
                     _ => true
                 };
 
-                static bool ValidateArrayChildren(JsonElement element, JsonValueKind kind)
+                static bool ValidateStringArray(JsonElement element)
                 {
-                    foreach (var child in element.EnumerateArray())
+                    foreach (var item in element.EnumerateArray())
                     {
-                        if (child.ValueKind != kind)
+                        if (item.ValueKind is not JsonValueKind.String)
                         {
                             return false;
                         }
@@ -348,8 +354,8 @@ public static partial class OpenIddictValidationHandlers
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
-                    // Always exclude null keys and values, as they can't be represented as valid claims.
-                    if (string.IsNullOrEmpty(parameter.Key) || OpenIddictParameter.IsNullOrEmpty(parameter.Value))
+                    // Always exclude null keys as they can't be represented as valid claims.
+                    if (string.IsNullOrEmpty(parameter.Key))
                     {
                         continue;
                     }
@@ -367,53 +373,40 @@ public static partial class OpenIddictValidationHandlers
                         continue;
                     }
 
-                    switch (parameter.Value.Value)
+                    // Note: in the typical case, the response parameters should be deserialized from a
+                    // JSON response and thus natively stored as System.Text.Json.JsonElement instances.
+                    //
+                    // In the rare cases where the underlying value wouldn't be a JsonElement instance
+                    // (e.g when custom parameters are manually added to the response), the static
+                    // conversion operator would take care of converting the underlying value to a
+                    // JsonElement instance using the same value type as the original parameter value.
+                    switch ((JsonElement) parameter.Value)
                     {
-                        // Claims represented as arrays are split and mapped to multiple CLR claims.
-                        case JsonElement { ValueKind: JsonValueKind.Array } value:
-                            foreach (var element in value.EnumerateArray())
+                        // Top-level claims represented as arrays are split and mapped to multiple CLR claims
+                        // to match the logic implemented by IdentityModel for JWT token deserialization.
+                        case { ValueKind: JsonValueKind.Array } value:
+                            foreach (var item in value.EnumerateArray())
                             {
-                                var item = element.GetString();
-                                if (string.IsNullOrEmpty(item))
-                                {
-                                    continue;
-                                }
-
-                                identity.AddClaim(new Claim(parameter.Key, item,
-                                    GetClaimValueType(value.ValueKind), issuer, issuer, identity));
+                                identity.AddClaim(new Claim(
+                                    type          : parameter.Key,
+                                    value         : item.ToString()!,
+                                    valueType     : GetClaimValueType(item.ValueKind),
+                                    issuer        : issuer,
+                                    originalIssuer: issuer,
+                                    subject       : identity));
                             }
                             break;
 
-                        case JsonElement value:
-                            identity.AddClaim(new Claim(parameter.Key, value.ToString()!,
-                                GetClaimValueType(value.ValueKind), issuer, issuer, identity));
-                            break;
-
-                        // Note: in the typical case, the introspection parameters should be deserialized from
-                        // a JSON response and thus represented as System.Text.Json.JsonElement instances.
-                        // However, to support responses resolved from custom locations and parameters manually added
-                        // by the application using the events model, the CLR primitive types are also supported.
-
-                        case bool value:
-                            identity.AddClaim(new Claim(parameter.Key, value.ToString(),
-                                ClaimValueTypes.Boolean, issuer, issuer, identity));
-                            break;
-
-                        case long value:
-                            identity.AddClaim(new Claim(parameter.Key, value.ToString(CultureInfo.InvariantCulture),
-                                ClaimValueTypes.Integer64, issuer, issuer, identity));
-                            break;
-
-                        case string value:
-                            identity.AddClaim(new Claim(parameter.Key, value, ClaimValueTypes.String, issuer, issuer, identity));
-                            break;
-
-                        // Claims represented as arrays are split and mapped to multiple CLR claims.
-                        case string[] value:
-                            for (var index = 0; index < value.Length; index++)
-                            {
-                                identity.AddClaim(new Claim(parameter.Key, value[index], ClaimValueTypes.String, issuer, issuer, identity));
-                            }
+                        // Note: JsonElement.ToString() returns string.Empty for JsonValueKind.Null and
+                        // JsonValueKind.Undefined, which, unlike null strings, is a valid claim value.
+                        case { ValueKind: _ } value:
+                            identity.AddClaim(new Claim(
+                                type          : parameter.Key,
+                                value         : value.ToString()!,
+                                valueType     : GetClaimValueType(value.ValueKind),
+                                issuer        : issuer,
+                                originalIssuer: issuer,
+                                subject       : identity));
                             break;
                     }
                 }
@@ -422,13 +415,12 @@ public static partial class OpenIddictValidationHandlers
 
                 static string GetClaimValueType(JsonValueKind kind) => kind switch
                 {
-                    JsonValueKind.True or JsonValueKind.False => ClaimValueTypes.Boolean,
-
-                    JsonValueKind.String => ClaimValueTypes.String,
-                    JsonValueKind.Number => ClaimValueTypes.Integer64,
-
-                    JsonValueKind.Array       => JsonClaimValueTypes.JsonArray,
-                    JsonValueKind.Object or _ => JsonClaimValueTypes.Json
+                    JsonValueKind.String                          => ClaimValueTypes.String,
+                    JsonValueKind.Number                          => ClaimValueTypes.Integer64,
+                    JsonValueKind.True or JsonValueKind.False     => ClaimValueTypes.Boolean,
+                    JsonValueKind.Null or JsonValueKind.Undefined => JsonClaimValueTypes.JsonNull,
+                    JsonValueKind.Array                           => JsonClaimValueTypes.JsonArray,
+                    JsonValueKind.Object or _                     => JsonClaimValueTypes.Json
                 };
             }
         }

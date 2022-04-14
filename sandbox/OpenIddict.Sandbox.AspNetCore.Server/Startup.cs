@@ -79,9 +79,11 @@ public class Startup
             // Register the OpenIddict server components.
             .AddServer(options =>
             {
-                // Enable the authorization, device, logout, token, userinfo and verification endpoints.
+                // Enable the authorization, device, introspection,
+                // logout, token, userinfo and verification endpoints.
                 options.SetAuthorizationEndpointUris("/connect/authorize")
                        .SetDeviceEndpointUris("/connect/device")
+                       .SetIntrospectionEndpointUris("/connect/introspect")
                        .SetLogoutEndpointUris("/connect/logout")
                        .SetTokenEndpointUris("/connect/token")
                        .SetUserinfoEndpointUris("/connect/userinfo")
@@ -148,6 +150,19 @@ public class Startup
 
                 // Import the configuration from the local OpenIddict server instance.
                 options.UseLocalServer();
+
+                // Instead of validating the token locally by reading it directly,
+                // introspection can be used to ask a remote authorization server
+                // to validate the token (and its attached database entry).
+                //
+                // options.UseIntrospection()
+                //        .SetIssuer("https://localhost:44395/")
+                //        .SetClientId("resource_server")
+                //        .SetClientSecret("80B552BB-4CD8-48DA-946E-0815E0147DD2");
+                //
+                // When introspection is used, System.Net.Http integration must be enabled.
+                //
+                // options.UseSystemNetHttp();
 
                 // Register the ASP.NET Core host.
                 options.UseAspNetCore();
