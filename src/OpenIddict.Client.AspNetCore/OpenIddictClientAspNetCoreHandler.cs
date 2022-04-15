@@ -101,7 +101,7 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
 
         // Note: in many cases, the authentication token was already validated by the time this action is called
         // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -306,7 +306,7 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
                 // delegation scenarios where the identity of the user is not needed. In this case,
                 // since no principal can be resolved from a token or a userinfo response to construct
                 // a user identity, a fake one containing an "unauthenticated" identity (i.e with its
-                // AuthenticationType property deliberately left to null) is used to allow ASP.NET Core
+                // AuthenticationType property deliberately left to null) is used to allow the host
                 // to return a "successful" authentication result for these delegation-only scenarios.
                 if (!principals.Any(principal => principal?.Identity is ClaimsIdentity { IsAuthenticated: true }))
                 {
@@ -345,7 +345,7 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
     protected override async Task HandleChallengeAsync(AuthenticationProperties? properties)
     {
         var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
 
         transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
 

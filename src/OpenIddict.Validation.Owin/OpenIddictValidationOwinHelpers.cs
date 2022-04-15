@@ -30,19 +30,9 @@ public static class OpenIddictValidationOwinHelpers
     /// <param name="transaction">The transaction instance.</param>
     /// <returns>The <see cref="IOwinRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
     public static IOwinRequest? GetOwinRequest(this OpenIddictValidationTransaction transaction!!)
-    {
-        if (!transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property))
-        {
-            return null;
-        }
-
-        if (property is WeakReference<IOwinRequest> reference && reference.TryGetTarget(out IOwinRequest? request))
-        {
-            return request;
-        }
-
-        return null;
-    }
+        => transaction.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property) &&
+           property is WeakReference<IOwinRequest> reference &&
+           reference.TryGetTarget(out IOwinRequest? request) ? request : null;
 
     /// <summary>
     /// Retrieves the <see cref="OpenIddictValidationEndpointType"/> instance stored in <see cref="BaseContext"/>.

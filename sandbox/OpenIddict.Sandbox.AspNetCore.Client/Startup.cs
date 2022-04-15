@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using OpenIddict.Abstractions;
 using OpenIddict.Client;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -37,7 +36,7 @@ public class Startup
                 });
 
                 // Enable the redirection endpoint needed to handle the callback stage.
-                options.SetRedirectionEndpointUris(new Uri("/signin-oidc", UriKind.Relative));
+                options.SetRedirectionEndpointUris("/signin-oidc");
 
                 // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                 options.UseAspNetCore()

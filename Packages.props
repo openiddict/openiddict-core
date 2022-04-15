@@ -2,21 +2,39 @@
 
   <ItemGroup>
     <PackageReference Update="AngleSharp" Version="1.0.0-alpha-844" />
+    <PackageReference Update="Antlr" Version="3.5.0.2" />
+    <PackageReference Update="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
+    <PackageReference Update="Autofac.Mvc5" Version="6.0.0" />
+    <PackageReference Update="Autofac.Owin" Version="6.0.1" />
     <PackageReference Update="EntityFramework" Version="6.4.4" />
     <PackageReference Update="MartinCostello.Logging.XUnit" Version="0.1.0" />
+    <PackageReference Update="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.3" />
+    <PackageReference Update="Microsoft.AspNet.Identity.Owin" Version="2.2.3" />
+    <PackageReference Update="Microsoft.AspNet.Mvc" Version="5.2.7" />
+    <PackageReference Update="Microsoft.AspNet.Web.Optimization" Version="1.1.3" />
     <PackageReference Update="Microsoft.Bcl.HashCode" Version="1.1.1" />
+    <PackageReference Update="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="3.6.0" />
     <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.16.0" />
     <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.16.0" />
     <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.16.0" />
     <PackageReference Update="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
+    <PackageReference Update="Microsoft.Owin.Diagnostics" Version="4.2.0" />
+    <PackageReference Update="Microsoft.Owin.Host.HttpListener" Version="4.2.0" />
+    <PackageReference Update="Microsoft.Owin.Host.SystemWeb" Version="4.2.0" />
+    <PackageReference Update="Microsoft.Owin.Hosting" Version="4.2.0" />
     <PackageReference Update="Microsoft.Owin.Security" Version="4.2.0" />
+    <PackageReference Update="Microsoft.Owin.Security.Cookies" Version="4.2.0" />
+    <PackageReference Update="Microsoft.Owin.Security.OAuth" Version="4.2.0" />
     <PackageReference Update="Microsoft.Owin.Testing" Version="4.2.0" />
+    <PackageReference Update="Microsoft.Web.Infrastructure" Version="1.0.0.0" />
     <PackageReference Update="MongoDB.Bson" Version="2.10.4" />
     <PackageReference Update="MongoDB.Driver" Version="2.10.4" />
     <PackageReference Update="Moq" Version="4.16.1" />
+    <PackageReference Update="Newtonsoft.Json" Version="10.0.1" />
     <PackageReference Update="Portable.BouncyCastle" Version="1.8.10" />
     <PackageReference Update="Quartz.Extensions.DependencyInjection" Version="3.2.4" />
     <PackageReference Update="Quartz.Extensions.Hosting" Version="3.2.4" />
+    <PackageReference Update="WebGrease" Version="1.6.0" />
   </ItemGroup>
 
   <ItemGroup

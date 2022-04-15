@@ -49,6 +49,6 @@ public class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOptions
         IsEssential = true,
         Name = "OpenIddict.Client.RequestForgeryProtection",
         SameSite = SameSiteMode.None,
-        SecurePolicy = CookieSecurePolicy.SameAsRequest
+        SecurePolicy = CookieSecurePolicy.Always // Note: same-site=none requires using HTTPS.
     };
 }

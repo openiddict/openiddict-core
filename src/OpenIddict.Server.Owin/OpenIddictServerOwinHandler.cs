@@ -6,6 +6,7 @@
 
 using System.Security.Claims;
 using Microsoft.Owin.Security.Infrastructure;
+using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
 using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
 
 namespace OpenIddict.Server.Owin;
@@ -192,37 +193,37 @@ public class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddictServe
                 IssuedUtc = principal.GetCreationDate()
             };
 
-            // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
+            // Attach the tokens to allow any OWIN component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
 
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
+                properties.Dictionary[Tokens.AccessToken] = context.AccessToken;
             }
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                properties.Dictionary[TokenTypeHints.AuthorizationCode] = context.AuthorizationCode;
+                properties.Dictionary[Tokens.AuthorizationCode] = context.AuthorizationCode;
             }
 
             if (!string.IsNullOrEmpty(context.DeviceCode))
             {
-                properties.Dictionary[TokenTypeHints.DeviceCode] = context.DeviceCode;
+                properties.Dictionary[Tokens.DeviceCode] = context.DeviceCode;
             }
 
             if (!string.IsNullOrEmpty(context.IdentityToken))
             {
-                properties.Dictionary[TokenTypeHints.IdToken] = context.IdentityToken;
+                properties.Dictionary[Tokens.IdentityToken] = context.IdentityToken;
             }
 
             if (!string.IsNullOrEmpty(context.RefreshToken))
             {
-                properties.Dictionary[TokenTypeHints.RefreshToken] = context.RefreshToken;
+                properties.Dictionary[Tokens.RefreshToken] = context.RefreshToken;
             }
 
             if (!string.IsNullOrEmpty(context.UserCode))
             {
-                properties.Dictionary[TokenTypeHints.UserCode] = context.UserCode;
+                properties.Dictionary[Tokens.UserCode] = context.UserCode;
             }
 
             return new AuthenticationTicket((ClaimsIdentity) principal.Identity, properties);

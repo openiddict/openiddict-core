@@ -21,7 +21,6 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              */
             PrepareGetHttpRequest<PrepareUserinfoRequestContext>.Descriptor,
             AttachBearerAccessToken.Descriptor,
-            AttachFormParameters<PrepareUserinfoRequestContext>.Descriptor,
             SendHttpRequest<ApplyUserinfoRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyUserinfoRequestContext>.Descriptor,
 

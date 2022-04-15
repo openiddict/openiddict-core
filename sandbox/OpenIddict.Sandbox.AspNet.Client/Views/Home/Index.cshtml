@@ -1,27 +1,34 @@
-﻿@model string
+﻿@using System.Security.Claims
+@model string
 
 <div class="jumbotron">
-    @if (User?.Identity?.IsAuthenticated ?? false) {
+    @if (User?.Identity is { IsAuthenticated: true })
+    {
         <h1>Welcome, @User.Identity.Name</h1>
 
         <p>
-            @foreach (var claim in Context.User.Claims) {
+            @foreach (var claim in ((ClaimsPrincipal) Context.User).Claims)
+            {
                 <div>@claim.Type: <b>@claim.Value</b></div>
             }
         </p>
 
-        if (!string.IsNullOrEmpty(Model)) {
+        if (!string.IsNullOrEmpty(Model))
+        {
             <h3>Message received from the resource controller: @Model</h3>
         }
 
         <form action="~/" method="post">
+            @Html.AntiForgeryToken()
+
             <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
         </form>
 
         <a class="btn btn-lg btn-danger" href="/logout">Sign out</a>
     }
 
-    else {
+    else
+    {
         <h1>Welcome, anonymous</h1>
         <a class="btn btn-lg btn-success" href="/login">Sign in</a>
     }

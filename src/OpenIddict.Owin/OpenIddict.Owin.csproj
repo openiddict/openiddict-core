@@ -8,11 +8,12 @@
 
   <PropertyGroup>
     <Description>Versatile OpenID Connect stack for OWIN/Katana 4.1 (compatible with ASP.NET 4.6.1 and newer).</Description>
-    <PackageTags>$(PackageTags);aspnet;katana;owin;server;validation</PackageTags>
+    <PackageTags>$(PackageTags);aspnet;katana;owin;client;server;validation</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OpenIddict\OpenIddict.csproj" />
+    <ProjectReference Include="..\OpenIddict.Client.Owin\OpenIddict.Client.Owin.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.Owin\OpenIddict.Server.Owin.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation.Owin\OpenIddict.Validation.Owin.csproj" />
   </ItemGroup>

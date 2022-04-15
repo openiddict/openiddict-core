@@ -36,7 +36,6 @@
     <Using Include="OpenIddict.Client.OpenIddictClientEvents" Static="true" />
     <Using Include="OpenIddict.Client.OpenIddictClientHandlers" Static="true" />
     <Using Include="OpenIddict.Client.OpenIddictClientHandlerFilters" Static="true" />
-    <Using Include="OpenIddict.Client.OpenIddictClientEvents" Static="true" />
     <Using Include="OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreHandlers" Static="true" />
     <Using Include="OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreHandlerFilters" Static="true" />
   </ItemGroup>

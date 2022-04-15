@@ -50,4 +50,14 @@ public static class OpenIddictServerOwinConstants
         public const string Scope = ".scope";
         public const string UserCodePrincipal = ".user_code_principal";
     }
+
+    public static class Tokens
+    {
+        public const string AccessToken = "access_token";
+        public const string AuthorizationCode = "authorization_code";
+        public const string DeviceCode = "device_code";
+        public const string IdentityToken = "id_token";
+        public const string RefreshToken = "refresh_token";
+        public const string UserCode = "user_code";
+    }
 }
