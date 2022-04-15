@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 
 #if SUPPORTS_JSON_NODES
@@ -605,11 +604,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         JsonValue value when value.TryGetValue(out string? result) => result,
 
-        JsonNode value => value.ToJsonString(new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            WriteIndented = false
-        }),
+        JsonNode value => value.ToJsonString(),
 #endif
         _ => string.Empty
     };
@@ -734,11 +729,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
 #if SUPPORTS_JSON_NODES
             case JsonNode value:
-                value.WriteTo(writer, new JsonSerializerOptions
-                {
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = false
-                });
+                value.WriteTo(writer);
                 break;
 #endif
         }
@@ -851,11 +842,7 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
             // Otherwise, serialize it to get a JsonElement instance.
 #if SUPPORTS_DIRECT_JSON_ELEMENT_SERIALIZATION
-            object value => JsonSerializer.SerializeToElement(value, value.GetType(), new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
-            })
+            object value => JsonSerializer.SerializeToElement(value, value.GetType())
 #else
             object value => DeserializeElement(JsonSerializer.Serialize(value)) ?? default
 #endif
