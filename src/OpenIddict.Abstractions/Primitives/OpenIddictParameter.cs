@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 #if SUPPORTS_JSON_NODES
@@ -252,6 +253,8 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         static bool DeepEquals(JsonElement left, JsonElement right)
         {
+            RuntimeHelpers.EnsureSufficientExecutionStack();
+
             switch ((left.ValueKind, right.ValueKind))
             {
                 case (JsonValueKind.Undefined, JsonValueKind.Undefined):
@@ -383,6 +386,8 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
 
         static int GetHashCodeFromJsonElement(JsonElement element)
         {
+            RuntimeHelpers.EnsureSufficientExecutionStack();
+
             switch (element.ValueKind)
             {
                 case JsonValueKind.Undefined:
