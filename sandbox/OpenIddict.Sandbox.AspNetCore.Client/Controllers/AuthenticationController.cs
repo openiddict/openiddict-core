@@ -39,7 +39,7 @@ public class AuthenticationController : Controller
         //     for applications that don't need a long-term access to the user's resources or don't want to store
         //     access/refresh tokens in a database or in an authentication cookie (which has security implications).
         //     It is also suitable for applications that don't need to authenticate users but only need to perform
-        //     action(s) on their behalf by making API calls using the access tokens returned by the remote server.
+        //     action(s) on their behalf by making API calls using the access token returned by the remote server.
         //
         //   * Storing the external claims/tokens in a database (and optionally keeping the essentials claims in an
         //     authentication cookie so that cookie size limits are not hit). For the applications that use ASP.NET
@@ -121,7 +121,7 @@ public class AuthenticationController : Controller
         // For more information about this restriction, visit https://github.com/dotnet/aspnetcore/issues/36934.
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), properties);
 
-        return Redirect(properties.RedirectUri ?? "/");
+        return Redirect(properties.RedirectUri);
     }
 
     [HttpGet("~/logout"), HttpPost("~/logout")]

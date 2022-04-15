@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>OWIN/Katana integration package for the OpenIddict client services (compatible with ASP.NET 4.6.1 and newer).</Description>
+    <PackageTags>$(PackageTags);client;aspnet;katana;owin</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Client\OpenIddict.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" />
+    <PackageReference Include="Microsoft.Owin.Security" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.Owin" />
+    <Using Include="Microsoft.Owin.Infrastructure" />
+    <Using Include="Microsoft.Owin.Security" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Client.OpenIddictClientEvents" Static="true" />
+    <Using Include="OpenIddict.Client.OpenIddictClientHandlers" Static="true" />
+    <Using Include="OpenIddict.Client.OpenIddictClientHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Client.Owin.OpenIddictClientOwinHandlers" Static="true" />
+    <Using Include="OpenIddict.Client.Owin.OpenIddictClientOwinHandlerFilters" Static="true" />
+  </ItemGroup>
+
+</Project>

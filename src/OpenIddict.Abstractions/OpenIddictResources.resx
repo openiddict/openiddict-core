@@ -1205,6 +1205,22 @@ This may indicate that it was not properly registered in the dependency injectio
     <value>A discovery client must be registered when using server discovery.
 Reference the 'OpenIddict.Client.SystemNetHttp' package and call 'services.AddOpenIddict().AddClient().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
   </data>
+  <data name="ID0314" xml:space="preserve">
+    <value>The OpenIddict OWIN client handler cannot be used as an active authentication handler.
+Make sure that 'OpenIddictClientOwinOptions.AuthenticationMode' is not set to 'Active'.</value>
+  </data>
+  <data name="ID0315" xml:space="preserve">
+    <value>An error occurred while retrieving the OpenIddict client context. On ASP.NET Core, this may indicate that the authentication middleware was not registered early enough in the request pipeline. Make sure that 'app.UseAuthentication()' is registered before 'app.UseAuthorization()' and 'app.UseEndpoints()' (or 'app.UseMvc()') and try again.</value>
+  </data>
+  <data name="ID0316" xml:space="preserve">
+    <value>No service provider was found in the OWIN context.
+For the OpenIddict client services to work correctly, a per-request 'IServiceProvider' must be attached to the OWIN environment with the dictionary key 'System.IServiceProvider'.
+Note: when using a dependency injection container supporting middleware resolution (like Autofac), the 'app.UseOpenIddictClient()' extension MUST NOT be called.</value>
+  </data>
+  <data name="ID0317" xml:space="preserve">
+    <value>The OpenIddict client services cannot be resolved from the DI container.
+To register the server services, use 'services.AddOpenIddict().AddClient()'.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

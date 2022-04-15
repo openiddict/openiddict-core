@@ -1,0 +1,38 @@
+﻿<Project Sdk="MSBuild.SDK.SystemWeb/4.0.77">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AppConfig>Web.config</AppConfig>
+    <GeneratedBindingRedirectsAction>Overwrite</GeneratedBindingRedirectsAction>
+    <VSToolsPath>$(NuGetPackageRoot)msbuild.microsoft.visualstudio.web.targets\14.0.0.3\tools\VSToolsPath</VSToolsPath>
+    <MvcBuildViews>false</MvcBuildViews>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NoWarn>CA3147</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict.Client.Owin\OpenIddict.Client.Owin.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Client.SystemNetHttp\OpenIddict.Client.SystemNetHttp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Antlr" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" />
+    <PackageReference Include="Autofac.Mvc5" />
+    <PackageReference Include="Autofac.Owin" />
+    <PackageReference Include="Microsoft.AspNet.Mvc" />
+    <PackageReference Include="Microsoft.AspNet.Web.Optimization" />
+    <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Owin.Host.SystemWeb" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" />
+    <PackageReference Include="Microsoft.Web.Infrastructure" PrivateAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="WebGrease" />
+  </ItemGroup>
+
+</Project>

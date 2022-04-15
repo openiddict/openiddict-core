@@ -1,0 +1,8 @@
+<Project>
+
+  <ItemGroup>
+    <PackageReference Include="MSBuild.Microsoft.VisualStudio.Web.targets" Version="14.0.0.3" IsImplicitlyDefined="true" />
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.10.0" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+</Project>

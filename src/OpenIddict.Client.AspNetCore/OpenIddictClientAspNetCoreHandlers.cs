@@ -128,52 +128,6 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for extracting OpenID Connect requests from GET HTTP requests.
-    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-    /// </summary>
-    public class ExtractGetRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<ExtractGetRequest<TContext>>()
-                .SetOrder(int.MinValue + 100_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
-        {
-            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another server stack.
-            var request = context.Transaction.GetHttpRequest() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-
-            if (HttpMethods.IsGet(request.Method))
-            {
-                context.Transaction.Request = new OpenIddictRequest(request.Query);
-            }
-
-            else
-            {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.Method);
-
-                context.Reject(
-                    error: Errors.InvalidRequest,
-                    description: SR.GetResourceString(SR.ID2084),
-                    uri: SR.FormatID8000(SR.ID2084));
-
-                return default;
-            }
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for extracting OpenID Connect requests from GET or POST HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
@@ -186,7 +140,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ExtractGetOrPostRequest<TContext>>()
-                .SetOrder(ExtractGetRequest<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(int.MinValue + 100_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -204,76 +158,6 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             }
 
             else if (HttpMethods.IsPost(request.Method))
-            {
-                // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
-                if (string.IsNullOrEmpty(request.ContentType))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6138), HeaderNames.ContentType);
-
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2081(HeaderNames.ContentType),
-                        uri: SR.FormatID8000(SR.ID2081));
-
-                    return;
-                }
-
-                // May have media/type; charset=utf-8, allow partial match.
-                if (!request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
-                {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6139), HeaderNames.ContentType, request.ContentType);
-
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2082(HeaderNames.ContentType),
-                        uri: SR.FormatID8000(SR.ID2082));
-
-                    return;
-                }
-
-                context.Transaction.Request = new OpenIddictRequest(await request.ReadFormAsync(request.HttpContext.RequestAborted));
-            }
-
-            else
-            {
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6137), request.Method);
-
-                context.Reject(
-                    error: Errors.InvalidRequest,
-                    description: SR.GetResourceString(SR.ID2084),
-                    uri: SR.FormatID8000(SR.ID2084));
-
-                return;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for extracting OpenID Connect requests from POST HTTP requests.
-    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-    /// </summary>
-    public class ExtractPostRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<ExtractPostRequest<TContext>>()
-                .SetOrder(ExtractGetOrPostRequest<TContext>.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
-        {
-            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another server stack.
-            var request = context.Transaction.GetHttpRequest() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-
-            if (HttpMethods.IsPost(request.Method))
             {
                 // See http://openid.net/specs/openid-connect-core-1_0.html#FormSerialization
                 if (string.IsNullOrEmpty(request.ContentType))
@@ -360,9 +244,12 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 return default;
             }
 
+            // Resolve the cookie builder from the OWIN integration options.
+            var builder = _options.CurrentValue.CookieBuilder;
+
             // Compute the name of the cookie name based on the prefix set in the options
             // and the random request forgery protection claim restored from the state.
-            var name = new StringBuilder(_options.CurrentValue.CookieBuilder.Name)
+            var name = new StringBuilder(builder.Name)
                 .Append(Separators.Dot)
                 .Append(claim)
                 .ToString();
@@ -384,11 +271,10 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 return default;
             }
 
-            // Note: when deleting a cookie, the same options used when creating it MUST be specified.
-            var options = _options.CurrentValue.CookieBuilder.Build(request.HttpContext);
-
             // Return a response header asking the browser to delete the state cookie.
-            request.HttpContext.Response.Cookies.Delete(name, options);
+            //
+            // Note: when deleting a cookie, the same options used when creating it MUST be specified.
+            request.HttpContext.Response.Cookies.Delete(name, builder.Build(request.HttpContext));
 
             return default;
         }
@@ -508,15 +394,17 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            var options = _options.CurrentValue.CookieBuilder.Build(response.HttpContext);
+            // Resolve the cookie builder from the OWIN integration options.
+            var builder = _options.CurrentValue.CookieBuilder;
 
             // Unless a value was explicitly set in the options, use the expiration date
             // of the state token principal as the expiration date of the correlation cookie.
+            var options = builder.Build(response.HttpContext);
             options.Expires ??= context.StateTokenPrincipal.GetExpirationDate();
 
             // Compute a collision-resistant and hard-to-guess cookie name based on the prefix set
             // in the options and the random request forgery protection claim generated earlier.
-            var name = new StringBuilder(_options.CurrentValue.CookieBuilder.Name)
+            var name = new StringBuilder(builder.Name)
                 .Append(Separators.Dot)
                 .Append(context.RequestForgeryProtection)
                 .ToString();

@@ -15,7 +15,7 @@ public class HomeController : Controller
         => _httpClientFactory = httpClientFactory;
 
     [HttpGet("~/")]
-    public ActionResult Index() => View("Home");
+    public ActionResult Index() => View();
 
     [Authorize, HttpPost("~/")]
     public async Task<ActionResult> Index(CancellationToken cancellationToken)
@@ -31,6 +31,6 @@ public class HomeController : Controller
         using var response = await client.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return View("Home", model: await response.Content.ReadAsStringAsync(cancellationToken));
+        return View(model: await response.Content.ReadAsStringAsync(cancellationToken));
     }
 }
