@@ -112,8 +112,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 
             // The antiforgery components require both the nameidentifier and identityprovider claims
             // so the latter is manually added using the issuer identity resolved from the remote server.
-            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
-                result.Identity.FindFirst(Claims.Subject).Issuer));
+            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", claims[0].Issuer));
 
             var identity = new ClaimsIdentity(claims,
                 authenticationType: CookieAuthenticationDefaults.AuthenticationType,
@@ -133,8 +132,8 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             context.Authentication.SignIn(properties, identity);
             return Redirect(properties.RedirectUri);
 
-            static string? GetProperty(AuthenticationProperties properties, string name)
-                => properties.Dictionary.TryGetValue(name, out var value) ? value : null;
+            static string GetProperty(AuthenticationProperties properties, string name)
+                => properties.Dictionary.TryGetValue(name, out var value) ? value : string.Empty;
         }
 
         [AcceptVerbs("GET", "POST"), Route("~/logout")]
