@@ -149,19 +149,19 @@ public partial class OpenIddictClientWebIntegrationBuilder
                                     GrantTypesSupported = configuration.Attribute("GrantTypesSupported")?.Value switch
                                     {
                                         string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                                        _ => null
+                                        _ => new[] { "authorization_code" } // Assume the provider supports the code flow.
                                     },
 
                                     ResponseTypesSupported = configuration.Attribute("ResponseTypesSupported")?.Value switch
                                     {
                                         string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                                        _ => null
+                                        _ => new[] { "code" } // Assume the provider supports the code flow.
                                     },
 
                                     ResponseModesSupported = configuration.Attribute("ResponseModesSupported")?.Value switch
                                     {
                                         string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                                        _ => null
+                                        _ => new[] { "query" } // Assume the provider supports the query response mode.
                                     },
                                 },
                                 _ => null

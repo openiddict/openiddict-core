@@ -4,10 +4,7 @@
   <Provider Name="GitHub" Issuer="https://github.com/">
     <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
                    TokenEndpoint="https://github.com/login/oauth/access_token"
-                   UserinfoEndpoint="https://api.github.com/user"
-                   GrantTypesSupported="authorization_code"
-                   ResponseTypesSupported="code"
-                   ResponseModesSupported="query" />
+                   UserinfoEndpoint="https://api.github.com/user" />
   </Provider>
 
   <Provider Name="Google" Issuer="https://accounts.google.com/" />
@@ -15,10 +12,7 @@
   <Provider Name="Reddit" Issuer="https://www.reddit.com/">
     <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
                    TokenEndpoint="https://www.reddit.com/api/v1/access_token"
-                   UserinfoEndpoint="https://oauth.reddit.com/api/v1/me"
-                   GrantTypesSupported="authorization_code"
-                   ResponseTypesSupported="code"
-                   ResponseModesSupported="query" />
+                   UserinfoEndpoint="https://oauth.reddit.com/api/v1/me" />
 
     <Setting Type="string" Name="ProductName" Property=".product_name"
               Description="Gets or sets the product name, used to build the user agent header." />
