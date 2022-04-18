@@ -52,6 +52,7 @@ public static partial class OpenIddictClientHandlers
 
         EvaluateValidatedBackchannelTokens.Descriptor,
 
+        ResolveTokenEndpoint.Descriptor,
         AttachTokenRequestParameters.Descriptor,
         SendTokenRequest.Descriptor,
         ValidateTokenErrorParameters.Descriptor,
@@ -69,6 +70,7 @@ public static partial class OpenIddictClientHandlers
         ValidateBackchannelAccessToken.Descriptor,
         ValidateRefreshToken.Descriptor,
 
+        ResolveUserinfoEndpoint.Descriptor,
         EvaluateValidatedUserinfoToken.Descriptor,
         AttachUserinfoRequestParameters.Descriptor,
         SendUserinfoRequest.Descriptor,
@@ -1407,6 +1409,37 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the address of the token endpoint.
+    /// </summary>
+    public class ResolveTokenEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ResolveTokenEndpoint>()
+                .SetOrder(EvaluateValidatedBackchannelTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        {
+            var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+            if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
+               !configuration.TokenEndpoint.IsWellFormedOriginalString())
+            {
+                throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+            }
+
+            context.TokenEndpoint = configuration.TokenEndpoint;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the parameters to the token request, if applicable.
     /// </summary>
     public class AttachTokenRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -1417,7 +1450,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<AttachTokenRequestParameters>()
-                .SetOrder(EvaluateValidatedBackchannelTokens.Descriptor.Order + 1_000)
+                .SetOrder(ResolveTokenEndpoint.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -1429,7 +1462,7 @@ public static partial class OpenIddictClientHandlers
             {
                 return default;
             }
-            
+
             // Attach a new request instance if necessary.
             context.TokenRequest ??= new OpenIddictRequest();
 
@@ -1501,9 +1534,12 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
+            Debug.Assert(context.TokenEndpoint is { IsAbsoluteUri: true } endpoint &&
+                endpoint.IsWellFormedOriginalString(), SR.GetResourceString(SR.ID4014));
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            context.TokenResponse = await _service.SendTokenRequestAsync(context.Registration, context.TokenRequest);
+            context.TokenResponse = await _service.SendTokenRequestAsync(
+                context.Registration, context.TokenEndpoint, context.TokenRequest);
         }
     }
 
@@ -2180,6 +2216,37 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the address of the userinfo endpoint.
+    /// </summary>
+    public class ResolveUserinfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ResolveUserinfoEndpoint>()
+                .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        {
+            var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+            if (configuration.UserinfoEndpoint is not { IsAbsoluteUri: true } ||
+               !configuration.UserinfoEndpoint.IsWellFormedOriginalString())
+            {
+                throw new InvalidOperationException(SR.FormatID0301(Metadata.UserinfoEndpoint));
+            }
+
+            context.UserinfoEndpoint = configuration.UserinfoEndpoint;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for determining whether a userinfo token should be validated.
     /// </summary>
     public class EvaluateValidatedUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -2190,7 +2257,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateValidatedUserinfoToken>()
-                .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
+                .SetOrder(ResolveUserinfoEndpoint.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2219,7 +2286,7 @@ public static partial class OpenIddictClientHandlers
                  // or responses will be extracted and validated if the userinfo endpoint and either
                  // a frontchannel or backchannel access token was extracted and is available.
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken
-                     when configuration.UserinfoEndpoint is not null && context switch
+                     when context.UserinfoEndpoint is not null && context switch
                      {
                          { ExtractBackchannelAccessToken:  true, BackchannelAccessToken.Length:  > 0 } => true,
                          { ExtractFrontchannelAccessToken: true, FrontchannelAccessToken.Length: > 0 } => true,
@@ -2293,6 +2360,8 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
+            Debug.Assert(context.UserinfoEndpoint is { IsAbsoluteUri: true } endpoint &&
+                endpoint.IsWellFormedOriginalString(), SR.GetResourceString(SR.ID4015));
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
             // Note: userinfo responses can be of two types:
@@ -2300,7 +2369,7 @@ public static partial class OpenIddictClientHandlers
             //  - application/jwt responses containing a signed/encrypted JSON Web Token containing the user claims.
 
             (context.UserinfoResponse, (context.UserinfoTokenPrincipal, context.UserinfoToken)) =
-                await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoRequest);
+                await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoEndpoint, context.UserinfoRequest);
         }
     }
 

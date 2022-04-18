@@ -295,6 +295,16 @@ public static partial class OpenIddictClientEvents
         public string? ResponseType { get; set; }
 
         /// <summary>
+        /// Gets or sets the address of the token endpoint, if applicable.
+        /// </summary>
+        public Uri? TokenEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the address of the userinfo endpoint, if applicable.
+        /// </summary>
+        public Uri? UserinfoEndpoint { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
         /// code should be extracted from the current context.
         /// Note: overriding the value of this property is generally not

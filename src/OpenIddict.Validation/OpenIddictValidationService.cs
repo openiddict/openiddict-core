@@ -311,7 +311,7 @@ public class OpenIddictValidationService
     public async ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
         Uri address!!, string token, string? hint, CancellationToken cancellationToken = default)
     {
-        if (!address.IsAbsoluteUri)
+        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }
