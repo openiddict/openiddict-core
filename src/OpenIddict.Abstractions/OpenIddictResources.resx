@@ -1668,12 +1668,6 @@ To register the server services, use 'services.AddOpenIddict().AddClient()'.</va
   <data name="ID4013" xml:space="preserve">
     <value>The issuer should be a valid absolute URL at this point.</value>
   </data>
-  <data name="ID4014" xml:space="preserve">
-    <value>The token endpoint should be a valid absolute URL at this point.</value>
-  </data>
-  <data name="ID4015" xml:space="preserve">
-    <value>The userinfo endpoint should be a valid absolute URL at this point.</value>
-  </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
   </data>

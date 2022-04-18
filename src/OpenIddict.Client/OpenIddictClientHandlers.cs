@@ -1426,16 +1426,27 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
+            if (!context.ExtractBackchannelAccessToken &&
+                !context.ExtractBackchannelIdentityToken &&
+                !context.ExtractRefreshToken)
+            {
+                return;
+            }
+
             var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
-            if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
-               !configuration.TokenEndpoint.IsWellFormedOriginalString())
+            // Ensure the issuer resolved from the configuration matches the expected value.
+            if (configuration.Issuer != context.Issuer)
             {
-                throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
             }
 
-            context.TokenEndpoint = configuration.TokenEndpoint;
+            // Try to extract the address of the token endpoint from the server configuration.
+            if (configuration.TokenEndpoint is { IsAbsoluteUri: true })
+            {
+                context.TokenEndpoint = configuration.TokenEndpoint;
+            }
         }
     }
 
@@ -1534,9 +1545,14 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            Debug.Assert(context.TokenEndpoint is { IsAbsoluteUri: true } endpoint &&
-                endpoint.IsWellFormedOriginalString(), SR.GetResourceString(SR.ID4014));
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Ensure the token endpoint is present and is a valid absolute URL.
+            if (context.TokenEndpoint is not { IsAbsoluteUri: true } ||
+               !context.TokenEndpoint.IsWellFormedOriginalString())
+            {
+                throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+            }
 
             context.TokenResponse = await _service.SendTokenRequestAsync(
                 context.Registration, context.TokenEndpoint, context.TokenRequest);
@@ -2236,13 +2252,17 @@ public static partial class OpenIddictClientHandlers
             var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
-            if (configuration.UserinfoEndpoint is not { IsAbsoluteUri: true } ||
-               !configuration.UserinfoEndpoint.IsWellFormedOriginalString())
+            // Ensure the issuer resolved from the configuration matches the expected value.
+            if (configuration.Issuer != context.Issuer)
             {
-                throw new InvalidOperationException(SR.FormatID0301(Metadata.UserinfoEndpoint));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
             }
 
-            context.UserinfoEndpoint = configuration.UserinfoEndpoint;
+            // Try to extract the address of the userinfo endpoint from the server configuration.
+            if (configuration.UserinfoEndpoint is { IsAbsoluteUri: true })
+            {
+                context.UserinfoEndpoint = configuration.UserinfoEndpoint;
+            }
         }
     }
 
@@ -2360,9 +2380,14 @@ public static partial class OpenIddictClientHandlers
         /// <inheritdoc/>
         public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
         {
-            Debug.Assert(context.UserinfoEndpoint is { IsAbsoluteUri: true } endpoint &&
-                endpoint.IsWellFormedOriginalString(), SR.GetResourceString(SR.ID4015));
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Ensure the userinfo endpoint is present and is a valid absolute URL.
+            if (context.UserinfoEndpoint is not { IsAbsoluteUri: true } ||
+               !context.UserinfoEndpoint.IsWellFormedOriginalString())
+            {
+                throw new InvalidOperationException(SR.FormatID0301(Metadata.UserinfoEndpoint));
+            }
 
             // Note: userinfo responses can be of two types:
             //  - application/json responses containing a JSON object listing the user claims as-is.
