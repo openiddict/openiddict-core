@@ -41,6 +41,7 @@ namespace OpenIddict.Client.WebIntegration.Generators
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationSettings;
 using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -53,62 +54,77 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// </summary>
     /// <param name=""settings"">The provider settings.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/>.</returns>
-    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(
-        OpenIddictClientWebIntegrationSettings.{{ provider.name }}Settings settings!!)
+    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(OpenIddictClientWebIntegrationSettings.{{ provider.name }}Settings settings!!)
     {
         Services.Configure<OpenIddictClientOptions>(options =>
         {
             var registration = new OpenIddictClientRegistration
             {
-                Issuer = new Uri(""{{ provider.issuer }}"", UriKind.Absolute),
+                Issuer = settings.Environment switch
+                {
+                    {{~ for environment in provider.environments ~}}
+                    {{ provider.name }}Settings.{{ provider.name }}Environment.{{ environment.name }} => new Uri(""{{ environment.issuer }}"", UriKind.Absolute),
+                    {{~ end ~}}
+
+                    _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
+                },
 
                 ClientId = settings.ClientId,
                 ClientSecret = settings.ClientSecret,
                 RedirectUri = settings.RedirectUri,
 
-                {{~ if provider.configuration ~}}
-                Configuration = new OpenIddictConfiguration
+                Configuration = settings.Environment switch
                 {
-                    {{~ if provider.configuration.authorization_endpoint ~}}
-                    AuthorizationEndpoint = new Uri(""{{ provider.configuration.authorization_endpoint }}"", UriKind.Absolute),
-                    {{~ end ~}}
-
-                    {{~ if provider.configuration.token_endpoint ~}}
-                    TokenEndpoint = new Uri(""{{ provider.configuration.token_endpoint }}"", UriKind.Absolute),
-                    {{~ end ~}}
-
-                    {{~ if provider.configuration.userinfo_endpoint ~}}
-                    UserinfoEndpoint = new Uri(""{{ provider.configuration.userinfo_endpoint }}"", UriKind.Absolute),
-                    {{~ end ~}}
-
-                    {{~ if provider.configuration.grant_types_supported ~}}
-                    GrantTypesSupported =
+                    {{~ for environment in provider.environments ~}}
+                    {{~ if environment.configuration ~}}
+                    {{ provider.name }}Settings.{{ provider.name }}Environment.{{ environment.name }} => new OpenIddictConfiguration
                     {
-                        {{~ for type in provider.configuration.grant_types_supported ~}}
-                        ""{{ type }}""
+                        {{~ if environment.configuration.authorization_endpoint ~}}
+                        AuthorizationEndpoint = new Uri(""{{ environment.configuration.authorization_endpoint }}"", UriKind.Absolute),
+                        {{~ end ~}}
+
+                        {{~ if environment.configuration.token_endpoint ~}}
+                        TokenEndpoint = new Uri(""{{ environment.configuration.token_endpoint }}"", UriKind.Absolute),
+                        {{~ end ~}}
+
+                        {{~ if environment.configuration.userinfo_endpoint ~}}
+                        UserinfoEndpoint = new Uri(""{{ environment.configuration.userinfo_endpoint }}"", UriKind.Absolute),
+                        {{~ end ~}}
+
+                        {{~ if environment.configuration.grant_types_supported ~}}
+                        GrantTypesSupported =
+                        {
+                            {{~ for type in environment.configuration.grant_types_supported ~}}
+                            ""{{ type }}""
+                            {{~ end ~}}
+                        },
+                        {{~ end ~}}
+
+                        {{~ if environment.configuration.response_types_supported ~}}
+                        ResponseTypesSupported =
+                        {
+                            {{~ for type in environment.configuration.response_types_supported ~}}
+                            ""{{ type }}""
+                            {{~ end ~}}
+                        },
+                        {{~ end ~}}
+
+                        {{~ if environment.configuration.response_modes_supported ~}}
+                        ResponseModesSupported =
+                        {
+                            {{~ for mode in environment.configuration.response_modes_supported ~}}
+                            ""{{ mode }}""
+                            {{~ end ~}}
+                        },
                         {{~ end ~}}
                     },
+                    {{~ else ~}}
+                    {{ provider.name }}Settings.{{ provider.name }}Environment.{{ environment.name }} => null,
+                    {{~ end ~}}
                     {{~ end ~}}
 
-                    {{~ if provider.configuration.response_types_supported ~}}
-                    ResponseTypesSupported =
-                    {
-                        {{~ for type in provider.configuration.response_types_supported ~}}
-                        ""{{ type }}""
-                        {{~ end ~}}
-                    },
-                    {{~ end ~}}
-
-                    {{~ if provider.configuration.response_modes_supported ~}}
-                    ResponseModesSupported =
-                    {
-                        {{~ for mode in provider.configuration.response_modes_supported ~}}
-                        ""{{ mode }}""
-                        {{~ end ~}}
-                    },
-                    {{~ end ~}}
+                    _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
                 },
-                {{~ end ~}}
 
                 Properties =
                 {
@@ -136,42 +152,55 @@ public partial class OpenIddictClientWebIntegrationBuilder
                     Providers = document.Root.Descendants("Provider")
                         .Select(provider => new
                         {
-                            Issuer = provider.Attribute("Issuer")?.Value,
                             Name = provider.Attribute("Name")?.Value,
-                            Configuration = provider.Element("Configuration") switch
+
+                            Environments = provider.Descendants("Environment").Select(environment => new
                             {
-                                XElement configuration => new
+                                Name = environment.Attribute("Name")?.Value,
+                                Issuer = environment.Attribute("Issuer")?.Value,
+                                Configuration = environment.Element("Configuration") switch
                                 {
-                                    AuthorizationEndpoint = configuration.Attribute("AuthorizationEndpoint")?.Value,
-                                    TokenEndpoint = configuration.Attribute("TokenEndpoint")?.Value,
-                                    UserinfoEndpoint = configuration.Attribute("UserinfoEndpoint")?.Value,
-
-                                    GrantTypesSupported = configuration.Attribute("GrantTypesSupported")?.Value switch
+                                    XElement configuration => new
                                     {
-                                        string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                                        _ => new[] { "authorization_code" } // Assume the provider supports the code flow.
-                                    },
+                                        AuthorizationEndpoint = configuration.Attribute("AuthorizationEndpoint")?.Value,
+                                        TokenEndpoint = configuration.Attribute("TokenEndpoint")?.Value,
+                                        UserinfoEndpoint = configuration.Attribute("UserinfoEndpoint")?.Value,
 
-                                    ResponseTypesSupported = configuration.Attribute("ResponseTypesSupported")?.Value switch
-                                    {
-                                        string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                                        _ => new[] { "code" } // Assume the provider supports the code flow.
-                                    },
+                                        GrantTypesSupported = configuration.Attribute("GrantTypesSupported")?.Value switch
+                                        {
+                                            string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
 
-                                    ResponseModesSupported = configuration.Attribute("ResponseModesSupported")?.Value switch
-                                    {
-                                        string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
-                                        _ => new[] { "query" } // Assume the provider supports the query response mode.
+                                            // If no explicit grant type was set, assume the provider supports the code flow.
+                                            _ => new[] { GrantTypes.AuthorizationCode }
+                                        },
+
+                                        ResponseTypesSupported = configuration.Attribute("ResponseTypesSupported")?.Value switch
+                                        {
+                                            string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
+
+                                            // If no explicit response type was set, assume the provider supports the code flow.
+                                            _ => new[] { ResponseTypes.Code }
+                                        },
+
+                                        ResponseModesSupported = configuration.Attribute("ResponseModesSupported")?.Value switch
+                                        {
+                                            string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
+
+                                            // If no explicit response mode was set, assume the provider supports the query response mode.
+                                            _ => new[] { ResponseModes.Query }
+                                        },
                                     },
-                                },
-                                _ => null
-                            },
+                                    _ => null
+                                }
+                            })
+                            .ToList(),
 
                             Settings = provider.Descendants("Setting").Select(setting => new
                             {
                                 Name = setting.Attribute("Name")?.Value,
                                 Property = setting.Attribute("Property")?.Value
                             })
+                            .ToList()
                         })
                         .ToList()
                 });
@@ -224,6 +253,22 @@ public partial class OpenIddictClientWebIntegrationSettings
         public {{ setting.type }}? {{ setting.name }} { get; set; }
 
         {{~ end ~}}
+
+        /// <summary>
+        /// Gets or sets the environment that determines the endpoints to use.
+        /// </summary>
+        public {{ provider.name }}Environment Environment { get; set; }
+
+        /// <summary>
+        /// Exposes the environments supported by the provider.
+        /// </summary>
+        public enum {{ provider.name }}Environment
+        {
+            {{~ for environment in provider.environments ~}}
+            {{ environment.name }},
+
+            {{~ end ~}}
+        }
     }
     {{~ end ~}}
 }
@@ -235,6 +280,12 @@ public partial class OpenIddictClientWebIntegrationSettings
                         {
                             Name = provider.Attribute("Name")?.Value,
 
+                            Environments = provider.Descendants("Environment").Select(environment => new
+                            {
+                                Name = environment.Attribute("Name")?.Value
+                            })
+                            .ToList(),
+
                             Settings = provider.Descendants("Setting").Select(setting => new
                             {
                                 Type = setting.Attribute("Type")?.Value,
@@ -242,6 +293,7 @@ public partial class OpenIddictClientWebIntegrationSettings
                                 Property = setting.Attribute("Property")?.Value,
                                 Description = setting.Attribute("Description")?.Value
                             })
+                            .ToList()
                         })
                         .ToList()
                 });

@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="OpenIddictClientWebIntegrationProviders.xml" />
+    <AdditionalFiles Include="**\*.xml" />
   </ItemGroup>
 
   <ItemGroup>

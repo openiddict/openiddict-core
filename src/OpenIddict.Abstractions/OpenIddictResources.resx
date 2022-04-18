@@ -800,7 +800,7 @@ To register the validation services, use 'services.AddOpenIddict().AddValidation
     <value>The item index cannot be negative.</value>
   </data>
   <data name="ID0194" xml:space="preserve">
-    <value>The type of the parameter value is not supported.</value>
+    <value>The specified '{0}' setting is not valid.</value>
   </data>
   <data name="ID0195" xml:space="preserve">
     <value>The identifier cannot be null or empty.</value>

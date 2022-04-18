@@ -9,7 +9,7 @@ namespace OpenIddict.Client.WebIntegration;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict client Web providers.
 /// </summary>
-public partial class OpenIddictClientWebIntegrationSettings
+public abstract partial class OpenIddictClientWebIntegrationSettings
 {
     /// <summary>
     /// Gets or sets the client identifier.
