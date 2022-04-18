@@ -31,6 +31,10 @@ namespace OpenIddict.Client.WebIntegration.Generators
                 SourceText.From(GenerateConstants(document), Encoding.UTF8));
 
             context.AddSource(
+                "OpenIddictClientWebIntegrationEnvironments.generated.cs",
+                SourceText.From(GenerateEnvironments(document), Encoding.UTF8));
+
+            context.AddSource(
                 "OpenIddictClientWebIntegrationSettings.generated.cs",
                 SourceText.From(GenerateSettings(document), Encoding.UTF8));
 
@@ -40,8 +44,6 @@ namespace OpenIddict.Client.WebIntegration.Generators
 
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
-using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationSettings;
 using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -54,7 +56,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// </summary>
     /// <param name=""settings"">The provider settings.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/>.</returns>
-    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(OpenIddictClientWebIntegrationSettings.{{ provider.name }}Settings settings!!)
+    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings!!)
     {
         Services.Configure<OpenIddictClientOptions>(options =>
         {
@@ -63,7 +65,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                 Issuer = settings.Environment switch
                 {
                     {{~ for environment in provider.environments ~}}
-                    {{ provider.name }}Settings.{{ provider.name }}Environment.{{ environment.name }} => new Uri(""{{ environment.issuer }}"", UriKind.Absolute),
+                    OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }} => new Uri(""{{ environment.issuer }}"", UriKind.Absolute),
                     {{~ end ~}}
 
                     _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
@@ -77,7 +79,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                 {
                     {{~ for environment in provider.environments ~}}
                     {{~ if environment.configuration ~}}
-                    {{ provider.name }}Settings.{{ provider.name }}Environment.{{ environment.name }} => new OpenIddictConfiguration
+                    OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }} => new OpenIddictConfiguration
                     {
                         {{~ if environment.configuration.authorization_endpoint ~}}
                         AuthorizationEndpoint = new Uri(""{{ environment.configuration.authorization_endpoint }}"", UriKind.Absolute),
@@ -119,7 +121,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                         {{~ end ~}}
                     },
                     {{~ else ~}}
-                    {{ provider.name }}Settings.{{ provider.name }}Environment.{{ environment.name }} => null,
+                    OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }} => null,
                     {{~ end ~}}
                     {{~ end ~}}
 
@@ -128,7 +130,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                 Properties =
                 {
-                    [Properties.ProviderName] = Providers.{{ provider.name }},
+                    [Properties.ProviderName] = OpenIddictClientWebIntegrationConstants.Providers.{{ provider.name }},
 
                     {{~ for setting in provider.settings ~}}
                     [""{{ setting.property }}""] = settings.{{ setting.name }},
@@ -230,45 +232,23 @@ public static partial class OpenIddictClientWebIntegrationConstants
                 });
             }
 
-            static string GenerateSettings(XDocument document)
+            static string GenerateEnvironments(XDocument document)
             {
                 var template = Template.Parse(@"#nullable enable
 
 namespace OpenIddict.Client.WebIntegration;
 
-public partial class OpenIddictClientWebIntegrationSettings
+public partial class OpenIddictClientWebIntegrationEnvironments
 {
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Provides various settings needed to configure the {{ provider.name }} integration.
+    /// Exposes the environments supported by the {{ provider.name }} provider.
     /// </summary>
-    public class {{ provider.name }}Settings : OpenIddictClientWebIntegrationSettings
+    public enum {{ provider.name }}
     {
-        {{~ for setting in provider.settings ~}}
-        {{~ if setting.description ~}}
-        /// <summary>
-        /// {{ setting.description }}
-        /// </summary>
+        {{~ for environment in provider.environments ~}}
+        {{ environment.name }},
         {{~ end ~}}
-        public {{ setting.type }}? {{ setting.name }} { get; set; }
-
-        {{~ end ~}}
-
-        /// <summary>
-        /// Gets or sets the environment that determines the endpoints to use.
-        /// </summary>
-        public {{ provider.name }}Environment Environment { get; set; }
-
-        /// <summary>
-        /// Exposes the environments supported by the provider.
-        /// </summary>
-        public enum {{ provider.name }}Environment
-        {
-            {{~ for environment in provider.environments ~}}
-            {{ environment.name }},
-
-            {{~ end ~}}
-        }
     }
     {{~ end ~}}
 }
@@ -284,7 +264,50 @@ public partial class OpenIddictClientWebIntegrationSettings
                             {
                                 Name = environment.Attribute("Name")?.Value
                             })
-                            .ToList(),
+                            .ToList()
+                        })
+                        .ToList()
+                });
+            }
+
+            static string GenerateSettings(XDocument document)
+            {
+                var template = Template.Parse(@"#nullable enable
+
+namespace OpenIddict.Client.WebIntegration;
+
+public partial class OpenIddictClientWebIntegrationSettings
+{
+    {{~ for provider in providers ~}}
+    /// <summary>
+    /// Provides various settings needed to configure the {{ provider.name }} integration.
+    /// </summary>
+    public class {{ provider.name }} : OpenIddictClientWebIntegrationSettings
+    {
+        {{~ for setting in provider.settings ~}}
+        {{~ if setting.description ~}}
+        /// <summary>
+        /// {{ setting.description }}
+        /// </summary>
+        {{~ end ~}}
+        public {{ setting.type }}? {{ setting.name }} { get; set; }
+
+        {{~ end ~}}
+
+        /// <summary>
+        /// Gets or sets the environment that determines the endpoints to use.
+        /// </summary>
+        public OpenIddictClientWebIntegrationEnvironments.{{ provider.name }} Environment { get; set; }
+    }
+    {{~ end ~}}
+}
+");
+                return template.Render(new
+                {
+                    Providers = document.Root.Descendants("Provider")
+                        .Select(provider => new
+                        {
+                            Name = provider.Attribute("Name")?.Value,
 
                             Settings = provider.Descendants("Setting").Select(setting => new
                             {

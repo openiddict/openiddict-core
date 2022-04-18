@@ -27,4 +27,22 @@
     </Environment>
   </Provider>
 
+  <Provider Name="Salesforce">
+    <!--
+      Note: no static userinfo endpoint is specified here because Salesforce uses a user-specific endpoint
+      whose address is dynamically returned as part of the token response. To deal with that, a dedicated
+      event handler is responsible of resolving its address and setting it per authentication demand.
+    -->
+
+    <Environment Name="Production" Issuer="https://login.salesforce.com/">
+      <Configuration AuthorizationEndpoint="https://login.salesforce.com/services/oauth2/authorize"
+                     TokenEndpoint="https://login.salesforce.com/services/oauth2/token" />
+    </Environment>
+
+    <Environment Name="Development" Issuer="https://test.salesforce.com/">
+      <Configuration AuthorizationEndpoint="https://test.salesforce.com/services/oauth2/authorize"
+                     TokenEndpoint="https://test.salesforce.com/services/oauth2/token" />
+    </Environment>
+  </Provider>
+
 </Providers>
