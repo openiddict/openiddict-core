@@ -413,19 +413,16 @@ public class OpenIddictClientService
     /// Sends the token request and retrieves the corresponding response.
     /// </summary>
     /// <param name="registration">The client registration.</param>
+    /// <param name="address">The address of the token endpoint.</param>
     /// <param name="request">The token request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     public async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
-        OpenIddictClientRegistration registration!!, OpenIddictRequest request, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration!!, Uri address!!, OpenIddictRequest request, CancellationToken cancellationToken = default)
     {
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
-           !configuration.TokenEndpoint.IsWellFormedOriginalString())
+        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
         {
-            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -454,7 +451,7 @@ public class OpenIddictClientService
             {
                 var context = new PrepareTokenRequestContext(transaction)
                 {
-                    Address = configuration.TokenEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -476,7 +473,7 @@ public class OpenIddictClientService
             {
                 var context = new ApplyTokenRequestContext(transaction)
                 {
-                    Address = configuration.TokenEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -498,7 +495,7 @@ public class OpenIddictClientService
             {
                 var context = new ExtractTokenResponseContext(transaction)
                 {
-                    Address = configuration.TokenEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -522,7 +519,7 @@ public class OpenIddictClientService
             {
                 var context = new HandleTokenResponseContext(transaction)
                 {
-                    Address = configuration.TokenEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,
@@ -560,19 +557,16 @@ public class OpenIddictClientService
     /// Sends the userinfo request and retrieves the corresponding response.
     /// </summary>
     /// <param name="registration">The client registration.</param>
+    /// <param name="address">The address of the userinfo endpoint.</param>
     /// <param name="request">The userinfo request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
     public async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserinfoRequestAsync(
-        OpenIddictClientRegistration registration!!, OpenIddictRequest request, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration!!, Uri address!!, OpenIddictRequest request, CancellationToken cancellationToken = default)
     {
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-        if (configuration.UserinfoEndpoint is not { IsAbsoluteUri: true } ||
-           !configuration.UserinfoEndpoint.IsWellFormedOriginalString())
+        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
         {
-            throw new InvalidOperationException(SR.FormatID0301(Metadata.UserinfoEndpoint));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -601,7 +595,7 @@ public class OpenIddictClientService
             {
                 var context = new PrepareUserinfoRequestContext(transaction)
                 {
-                    Address = configuration.UserinfoEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -623,7 +617,7 @@ public class OpenIddictClientService
             {
                 var context = new ApplyUserinfoRequestContext(transaction)
                 {
-                    Address = configuration.UserinfoEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -645,7 +639,7 @@ public class OpenIddictClientService
             {
                 var context = new ExtractUserinfoResponseContext(transaction)
                 {
-                    Address = configuration.UserinfoEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -669,7 +663,7 @@ public class OpenIddictClientService
             {
                 var context = new HandleUserinfoResponseContext(transaction)
                 {
-                    Address = configuration.UserinfoEndpoint,
+                    Address = address,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,
