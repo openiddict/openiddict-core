@@ -19,8 +19,8 @@ public class OpenIddictClientSystemNetHttpBuilder
     /// Initializes a new instance of <see cref="OpenIddictClientBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictClientSystemNetHttpBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictClientSystemNetHttpBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -34,8 +34,13 @@ public class OpenIddictClientSystemNetHttpBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/>.</returns>
-    public OpenIddictClientSystemNetHttpBuilder Configure(Action<OpenIddictClientSystemNetHttpOptions> configuration!!)
+    public OpenIddictClientSystemNetHttpBuilder Configure(Action<OpenIddictClientSystemNetHttpOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;

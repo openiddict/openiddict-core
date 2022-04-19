@@ -22,8 +22,13 @@ public static class OpenIddictValidationAspNetCoreExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
-    public static OpenIddictValidationAspNetCoreBuilder UseAspNetCore(this OpenIddictValidationBuilder builder!!)
+    public static OpenIddictValidationAspNetCoreBuilder UseAspNetCore(this OpenIddictValidationBuilder builder)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
         builder.Services.AddAuthentication();
 
         builder.Services.TryAddScoped<OpenIddictValidationAspNetCoreHandler>();
@@ -56,8 +61,18 @@ public static class OpenIddictValidationAspNetCoreExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     public static OpenIddictValidationBuilder UseAspNetCore(
-        this OpenIddictValidationBuilder builder!!, Action<OpenIddictValidationAspNetCoreBuilder> configuration!!)
+        this OpenIddictValidationBuilder builder, Action<OpenIddictValidationAspNetCoreBuilder> configuration)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         configuration(builder.UseAspNetCore());
 
         return builder;

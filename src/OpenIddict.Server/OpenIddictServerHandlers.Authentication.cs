@@ -66,8 +66,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ExtractAuthorizationRequest(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ExtractAuthorizationRequest(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -81,8 +81,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ExtractAuthorizationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -123,8 +128,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateAuthorizationRequest(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ValidateAuthorizationRequest(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -138,8 +143,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ValidateAuthorizationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -184,8 +194,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public HandleAuthorizationRequest(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public HandleAuthorizationRequest(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -199,8 +209,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new HandleAuthorizationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -276,8 +291,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ApplyAuthorizationResponse(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ApplyAuthorizationResponse(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -291,8 +306,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(TContext context!!)
+            public async ValueTask HandleAsync(TContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ApplyAuthorizationResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -328,8 +348,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Reject requests using the unsupported request parameter.
                 if (!string.IsNullOrEmpty(context.Request.Request))
                 {
@@ -363,8 +388,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Reject requests using the unsupported request_uri parameter.
                 if (!string.IsNullOrEmpty(context.Request.RequestUri))
                 {
@@ -398,8 +428,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // client_id is a required parameter and MUST cause an error when missing.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                 if (string.IsNullOrEmpty(context.ClientId))
@@ -434,8 +469,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // While redirect_uri was not mandatory in OAuth 2.0, this parameter
                 // is now declared as REQUIRED and MUST cause an error when missing.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
@@ -534,8 +574,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Reject requests missing the mandatory response_type parameter.
                 if (string.IsNullOrEmpty(context.Request.ResponseType))
                 {
@@ -624,8 +669,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // response_mode=query (explicit or not) and a response_type containing id_token
                 // or token are not considered as a safe combination and MUST be rejected.
                 // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security.
@@ -701,8 +751,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Reject authorization requests containing the id_token response_type if no openid scope has been received.
                 if (context.Request.HasResponseType(ResponseTypes.IdToken) && !context.Request.HasScope(Scopes.OpenId))
                 {
@@ -747,8 +802,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Reject OpenID Connect implicit/hybrid requests missing the mandatory nonce parameter.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest,
                 // http://openid.net/specs/openid-connect-implicit-1_0.html#RequestParameters
@@ -791,8 +851,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Reject requests specifying prompt=none with consent/login or select_account.
                 if (context.Request.HasPrompt(Prompts.None) && (context.Request.HasPrompt(Prompts.Consent) ||
                                                                 context.Request.HasPrompt(Prompts.Login) ||
@@ -828,8 +893,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // If OpenIddict was configured to require PKCE, reject the request if the code challenge
                 // is missing and if an authorization code was requested by the client application.
                 if (context.Options.RequireProofKeyForCodeExchange &&
@@ -936,8 +1006,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -951,8 +1021,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
@@ -982,8 +1057,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientType(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateClientType(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -997,8 +1072,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -1039,8 +1119,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientRedirectUri(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateClientRedirectUri(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1054,8 +1134,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -1131,8 +1216,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // If all the specified scopes are registered in the options, avoid making a database lookup.
                 var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
                 scopes.ExceptWith(context.Options.Scopes);
@@ -1182,8 +1272,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1198,8 +1288,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -1230,8 +1325,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1246,8 +1341,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -1323,8 +1423,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateResponseTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateResponseTypePermissions(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateResponseTypePermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1339,8 +1439,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -1398,8 +1503,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateScopePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateScopePermissions(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateScopePermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1414,8 +1519,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -1457,8 +1567,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateProofKeyForCodeExchangeRequirement(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateProofKeyForCodeExchangeRequirement(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1472,8 +1582,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 // If a code_challenge was provided or if no authorization code is requested, the request is always
@@ -1517,8 +1632,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 if (context.Request is null)
                 {
                     return default;
@@ -1555,8 +1675,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 if (context.Request is null)
                 {
                     return default;
@@ -1592,8 +1717,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // If the user agent is expected to be redirected to the client application, attach the request
                 // state to the authorization response to help the client mitigate CSRF/session fixation attacks.
                 //
@@ -1624,8 +1754,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // If the user agent is expected to be redirected to the client application, attach the
                 // issuer address to the authorization response to help the client detect mix-up attacks.
                 //

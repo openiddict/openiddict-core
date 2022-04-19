@@ -9,8 +9,8 @@ public class OpenIddictTokenStoreResolver : IOpenIddictTokenStoreResolver
 {
     private readonly IServiceProvider _provider;
 
-    public OpenIddictTokenStoreResolver(IServiceProvider provider!!)
-        => _provider = provider;
+    public OpenIddictTokenStoreResolver(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Returns a token store compatible with the specified token type or throws an

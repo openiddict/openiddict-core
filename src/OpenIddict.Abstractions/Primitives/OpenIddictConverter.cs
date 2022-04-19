@@ -19,10 +19,17 @@ public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// </summary>
     /// <param name="typeToConvert">The type to convert.</param>
     /// <returns><see langword="true"/> if the type is supported, <see langword="false"/> otherwise.</returns>
-    public override bool CanConvert(Type typeToConvert!!)
-        => typeToConvert == typeof(OpenIddictMessage) ||
-           typeToConvert == typeof(OpenIddictRequest) ||
-           typeToConvert == typeof(OpenIddictResponse);
+    public override bool CanConvert(Type typeToConvert)
+    {
+        if (typeToConvert is null)
+        {
+            throw new ArgumentNullException(nameof(typeToConvert));
+        }
+
+        return typeToConvert == typeof(OpenIddictMessage) ||
+               typeToConvert == typeof(OpenIddictRequest) ||
+               typeToConvert == typeof(OpenIddictResponse);
+    }
 
     /// <summary>
     /// Deserializes an <see cref="OpenIddictMessage"/> instance.
@@ -31,8 +38,13 @@ public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// <param name="typeToConvert">The type of the deserialized instance.</param>
     /// <param name="options">The JSON serializer options.</param>
     /// <returns>The deserialized <see cref="OpenIddictMessage"/> instance.</returns>
-    public override OpenIddictMessage Read(ref Utf8JsonReader reader, Type typeToConvert!!, JsonSerializerOptions options)
+    public override OpenIddictMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
+        if (typeToConvert is null)
+        {
+            throw new ArgumentNullException(nameof(typeToConvert));
+        }
+
         using var document = JsonDocument.ParseValue(ref reader);
 
         return typeToConvert == typeof(OpenIddictMessage)  ? new OpenIddictMessage(document.RootElement.Clone()) :
@@ -47,6 +59,18 @@ public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     /// <param name="writer">The JSON writer.</param>
     /// <param name="value">The instance.</param>
     /// <param name="options">The JSON serializer options.</param>
-    public override void Write(Utf8JsonWriter writer!!, OpenIddictMessage value!!, JsonSerializerOptions options)
-        => value.WriteTo(writer);
+    public override void Write(Utf8JsonWriter writer, OpenIddictMessage value, JsonSerializerOptions options)
+    {
+        if (writer is null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
+
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        value.WriteTo(writer);
+    }
 }

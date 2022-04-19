@@ -39,8 +39,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoResponseContext context!!)
+            public ValueTask HandleAsync(HandleUserinfoResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Ignore the response instance if a userinfo token was extracted.
                 if (!string.IsNullOrEmpty(context.UserinfoToken))
                 {
@@ -96,8 +101,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(HandleUserinfoResponseContext context!!)
+            public async ValueTask HandleAsync(HandleUserinfoResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Ignore the response instance if a userinfo token was extracted.
                 if (!string.IsNullOrEmpty(context.UserinfoToken))
                 {

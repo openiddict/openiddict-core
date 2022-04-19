@@ -24,21 +24,26 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     private readonly IOpenIddictTokenStore<TToken> _store;
 
     public OpenIddictTokenCache(
-        IOptionsMonitor<OpenIddictCoreOptions> options!!,
-        IOpenIddictTokenStoreResolver resolver!!)
+        IOptionsMonitor<OpenIddictCoreOptions> options,
+        IOpenIddictTokenStoreResolver resolver)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
-            SizeLimit = options.CurrentValue.EntityCacheLimit
+            SizeLimit = (options ?? throw new ArgumentNullException(nameof(options))).CurrentValue.EntityCacheLimit
         });
 
         _signals = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
-        _store = resolver.Get<TToken>();
+        _store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TToken>();
     }
 
     /// <inheritdoc/>
-    public async ValueTask AddAsync(TToken token!!, CancellationToken cancellationToken)
+    public async ValueTask AddAsync(TToken token, CancellationToken cancellationToken)
     {
+        if (token is null)
+        {
+            throw new ArgumentNullException(nameof(token));
+        }
+
         _cache.Remove(new
         {
             Method = nameof(FindAsync),
@@ -472,8 +477,13 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     }
 
     /// <inheritdoc/>
-    public async ValueTask RemoveAsync(TToken token!!, CancellationToken cancellationToken)
+    public async ValueTask RemoveAsync(TToken token, CancellationToken cancellationToken)
     {
+        if (token is null)
+        {
+            throw new ArgumentNullException(nameof(token));
+        }
+
         var identifier = await _store.GetIdAsync(token, cancellationToken);
         if (string.IsNullOrEmpty(identifier))
         {
@@ -494,8 +504,13 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     /// <param name="token">The token to store in the cache entry, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(object key!!, TToken? token, CancellationToken cancellationToken)
+    protected virtual async ValueTask CreateEntryAsync(object key, TToken? token, CancellationToken cancellationToken)
     {
+        if (key is null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
         using var entry = _cache.CreateEntry(key);
 
         if (token is not null)
@@ -516,8 +531,13 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     protected virtual async ValueTask CreateEntryAsync(
-        object key!!, ImmutableArray<TToken> tokens, CancellationToken cancellationToken)
+        object key, ImmutableArray<TToken> tokens, CancellationToken cancellationToken)
     {
+        if (key is null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
         using var entry = _cache.CreateEntry(key);
 
         foreach (var token in tokens)
@@ -540,8 +560,13 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified token.
     /// </returns>
-    protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TToken token!!, CancellationToken cancellationToken)
+    protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TToken token, CancellationToken cancellationToken)
     {
+        if (token is null)
+        {
+            throw new ArgumentNullException(nameof(token));
+        }
+
         var identifier = await _store.GetIdAsync(token, cancellationToken);
         if (string.IsNullOrEmpty(identifier))
         {

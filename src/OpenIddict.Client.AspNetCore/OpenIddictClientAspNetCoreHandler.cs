@@ -27,16 +27,16 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
     /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreHandler"/> class.
     /// </summary>
     public OpenIddictClientAspNetCoreHandler(
-        IOpenIddictClientDispatcher dispatcher!!,
-        IOpenIddictClientFactory factory!!,
-        IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options!!,
-        ILoggerFactory logger!!,
-        UrlEncoder encoder!!,
-        ISystemClock clock!!)
+        IOpenIddictClientDispatcher dispatcher,
+        IOpenIddictClientFactory factory,
+        IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock)
         : base(options, logger, encoder, clock)
     {
-        _dispatcher = dispatcher;
-        _factory = factory;
+        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
     /// <inheritdoc/>

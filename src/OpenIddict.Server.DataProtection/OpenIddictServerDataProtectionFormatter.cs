@@ -15,8 +15,13 @@ namespace OpenIddict.Server.DataProtection;
 
 public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProtectionFormatter
 {
-    public ClaimsPrincipal ReadToken(BinaryReader reader!!)
+    public ClaimsPrincipal ReadToken(BinaryReader reader)
     {
+        if (reader is null)
+        {
+            throw new ArgumentNullException(nameof(reader));
+        }
+
         var (principal, properties) = Read(reader);
 
         // Tokens serialized using the ASP.NET Core Data Protection stack are compound
@@ -186,8 +191,18 @@ public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProt
         }
     }
 
-    public void WriteToken(BinaryWriter writer!!, ClaimsPrincipal principal!!)
+    public void WriteToken(BinaryWriter writer, ClaimsPrincipal principal)
     {
+        if (writer is null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
+
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         var properties = new Dictionary<string, string>();
 
         // Unlike ASP.NET Core Data Protection-based tokens, tokens serialized using the new format
@@ -303,8 +318,18 @@ public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProt
             }
         }
 
-        static void WriteClaim(BinaryWriter writer!!, Claim claim!!)
+        static void WriteClaim(BinaryWriter writer, Claim claim)
         {
+            if (writer is null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (claim is null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             WriteWithDefault(writer, claim.Type, claim.Subject?.NameClaimType ?? ClaimsIdentity.DefaultNameClaimType);
             writer.Write(claim.Value);
             WriteWithDefault(writer, claim.ValueType, ClaimValueTypes.String);

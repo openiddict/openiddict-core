@@ -114,8 +114,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             switch (context.EndpointType)
             {
                 case OpenIddictServerEndpointType.Authorization:
@@ -153,8 +158,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             (context.ExtractAccessToken,
              context.RequireAccessToken,
              context.ValidateAccessToken) = context.EndpointType switch
@@ -248,8 +258,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.AccessToken = context.EndpointType switch
             {
                 OpenIddictServerEndpointType.Userinfo when context.ExtractAccessToken
@@ -328,8 +343,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if ((context.RequireAccessToken       && string.IsNullOrEmpty(context.AccessToken))       ||
                 (context.RequireAuthorizationCode && string.IsNullOrEmpty(context.AuthorizationCode)) ||
                 (context.RequireDeviceCode        && string.IsNullOrEmpty(context.DeviceCode))        ||
@@ -357,8 +377,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public ValidateAccessToken(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateAccessToken(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -372,8 +392,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.AccessTokenPrincipal is not null || string.IsNullOrEmpty(context.AccessToken))
             {
                 return;
@@ -419,8 +444,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public ValidateAuthorizationCode(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateAuthorizationCode(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -434,8 +459,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.AuthorizationCodePrincipal is not null || string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 return;
@@ -481,8 +511,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public ValidateDeviceCode(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateDeviceCode(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -496,8 +526,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.DeviceCodePrincipal is not null || string.IsNullOrEmpty(context.DeviceCode))
             {
                 return;
@@ -543,8 +578,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public ValidateGenericToken(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateGenericToken(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -558,8 +593,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.GenericTokenPrincipal is not null || string.IsNullOrEmpty(context.GenericToken))
             {
                 return;
@@ -612,8 +652,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public ValidateIdentityToken(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateIdentityToken(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -627,8 +667,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.IdentityTokenPrincipal is not null || string.IsNullOrEmpty(context.IdentityToken))
             {
                 return;
@@ -677,8 +722,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public ValidateRefreshToken(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateRefreshToken(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -692,8 +737,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.RefreshTokenPrincipal is not null || string.IsNullOrEmpty(context.RefreshToken))
             {
                 return;
@@ -739,8 +789,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public ValidateUserCode(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateUserCode(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -754,8 +804,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.UserCodePrincipal is not null || string.IsNullOrEmpty(context.UserCode))
             {
                 return;
@@ -810,8 +865,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
                                              OpenIddictServerEndpointType.Token         or
                                              OpenIddictServerEndpointType.Userinfo      or
@@ -840,8 +900,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (!context.Parameters.ContainsKey(Parameters.Error))
             {
                 context.Parameters[Parameters.Error] = context.EndpointType switch
@@ -898,8 +963,8 @@ public static partial class OpenIddictServerHandlers
 
         public RejectDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-        public RejectDeviceCodeEntry(IOpenIddictTokenManager tokenManager!!)
-            => _tokenManager = tokenManager;
+        public RejectDeviceCodeEntry(IOpenIddictTokenManager tokenManager)
+            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -914,9 +979,14 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public async ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context.EndpointType != OpenIddictServerEndpointType.Verification)
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.EndpointType is not OpenIddictServerEndpointType.Verification)
             {
                 return;
             }
@@ -952,8 +1022,8 @@ public static partial class OpenIddictServerHandlers
 
         public RejectUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-        public RejectUserCodeEntry(IOpenIddictTokenManager tokenManager!!)
-            => _tokenManager = tokenManager;
+        public RejectUserCodeEntry(IOpenIddictTokenManager tokenManager)
+            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -968,9 +1038,14 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public async ValueTask HandleAsync(ProcessChallengeContext context)
         {
-            if (context.EndpointType != OpenIddictServerEndpointType.Verification)
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.EndpointType is not OpenIddictServerEndpointType.Verification)
             {
                 return;
             }
@@ -1012,8 +1087,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.Parameters.Count > 0)
             {
                 foreach (var parameter in context.Parameters)
@@ -1043,8 +1123,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization or
                                              OpenIddictServerEndpointType.Device        or
                                              OpenIddictServerEndpointType.Token         or
@@ -1107,8 +1192,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             switch (context.EndpointType)
@@ -1190,8 +1280,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Always include the "openid" scope when the developer doesn't explicitly call SetScopes.
@@ -1222,8 +1317,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Add the validated client_id to the list of authorized presenters,
@@ -1253,8 +1353,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // When a "resources" property cannot be found in the ticket, infer it from the "audiences" property.
@@ -1288,8 +1393,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             (context.GenerateAccessToken, context.IncludeAccessToken) = context.EndpointType switch
@@ -1377,11 +1487,11 @@ public static partial class OpenIddictServerHandlers
         public AttachAuthorization() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
         public AttachAuthorization(
-            IOpenIddictApplicationManager applicationManager!!,
-            IOpenIddictAuthorizationManager authorizationManager!!)
+            IOpenIddictApplicationManager applicationManager,
+            IOpenIddictAuthorizationManager authorizationManager)
         {
-            _applicationManager = applicationManager;
-            _authorizationManager = authorizationManager;
+            _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+            _authorizationManager = authorizationManager ?? throw new ArgumentNullException(nameof(authorizationManager));
         }
 
         /// <summary>
@@ -1397,8 +1507,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // If no authorization code, device code or refresh token is returned, don't create an authorization.
@@ -1472,8 +1587,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Create a new principal containing only the filtered claims.
@@ -1585,8 +1705,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Create a new principal containing only the filtered claims.
@@ -1666,8 +1791,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Create a new principal containing only the filtered claims.
@@ -1734,8 +1864,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Create a new principal containing only the filtered claims.
@@ -1813,8 +1948,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Replace the principal by a new one containing only the filtered claims.
@@ -1921,8 +2061,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // Create a new principal containing only the filtered claims.
@@ -1978,8 +2123,8 @@ public static partial class OpenIddictServerHandlers
 
         public RedeemTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-        public RedeemTokenEntry(IOpenIddictTokenManager tokenManager!!)
-            => _tokenManager = tokenManager;
+        public RedeemTokenEntry(IOpenIddictTokenManager tokenManager)
+            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1994,8 +2139,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             switch (context.EndpointType)
             {
                 case OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType():
@@ -2035,8 +2185,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public GenerateAccessToken(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public GenerateAccessToken(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2050,8 +2200,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 ClientId = context.ClientId,
@@ -2097,8 +2252,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public GenerateAuthorizationCode(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public GenerateAuthorizationCode(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2112,8 +2267,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 ClientId = context.ClientId,
@@ -2157,8 +2317,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public GenerateDeviceCode(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public GenerateDeviceCode(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2172,8 +2332,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 ClientId = context.ClientId,
@@ -2224,8 +2389,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public GenerateRefreshToken(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public GenerateRefreshToken(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2239,8 +2404,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 ClientId = context.ClientId,
@@ -2297,8 +2467,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.UserCodePrincipal is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
@@ -2324,8 +2499,8 @@ public static partial class OpenIddictServerHandlers
 
         public UpdateReferenceDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-        public UpdateReferenceDeviceCodeEntry(IOpenIddictTokenManager tokenManager!!)
-            => _tokenManager = tokenManager;
+        public UpdateReferenceDeviceCodeEntry(IOpenIddictTokenManager tokenManager)
+            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2341,9 +2516,14 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
-            if (context.EndpointType != OpenIddictServerEndpointType.Verification || string.IsNullOrEmpty(context.DeviceCode))
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.EndpointType is not OpenIddictServerEndpointType.Verification || string.IsNullOrEmpty(context.DeviceCode))
             {
                 return;
             }
@@ -2401,8 +2581,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.IdentityTokenPrincipal is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0022));
@@ -2510,8 +2695,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public GenerateUserCode(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public GenerateUserCode(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2525,8 +2710,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 ClientId = context.ClientId,
@@ -2570,8 +2760,8 @@ public static partial class OpenIddictServerHandlers
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
-        public GenerateIdentityToken(IOpenIddictServerDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public GenerateIdentityToken(IOpenIddictServerDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2585,8 +2775,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context!!)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 ClientId = context.ClientId,
@@ -2640,8 +2835,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context!!)
+        public ValueTask HandleAsync(ProcessSignInContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.IncludeAccessToken)
             {
                 context.Response.AccessToken = context.AccessToken;
@@ -2782,9 +2982,14 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignOutContext context!!)
+        public ValueTask HandleAsync(ProcessSignOutContext context)
         {
-            if (context.EndpointType != OpenIddictServerEndpointType.Logout)
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.EndpointType is not OpenIddictServerEndpointType.Logout)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
             }
@@ -2809,8 +3014,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignOutContext context!!)
+        public ValueTask HandleAsync(ProcessSignOutContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.Parameters.Count > 0)
             {
                 foreach (var parameter in context.Parameters)
@@ -2839,8 +3049,13 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessErrorContext context!!)
+        public ValueTask HandleAsync(ProcessErrorContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Response.Error = context.Error;
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;

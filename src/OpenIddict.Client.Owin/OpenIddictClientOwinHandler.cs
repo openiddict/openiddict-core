@@ -26,11 +26,11 @@ public class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClien
     /// <param name="dispatcher">The OpenIddict client dispatcher used by this instance.</param>
     /// <param name="factory">The OpenIddict client factory used by this instance.</param>
     public OpenIddictClientOwinHandler(
-        IOpenIddictClientDispatcher dispatcher!!,
-        IOpenIddictClientFactory factory!!)
+        IOpenIddictClientDispatcher dispatcher,
+        IOpenIddictClientFactory factory)
     {
-        _dispatcher = dispatcher;
-        _factory = factory;
+        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
     /// <inheritdoc/>

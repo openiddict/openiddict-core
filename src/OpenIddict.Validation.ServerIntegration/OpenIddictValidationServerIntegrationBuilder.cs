@@ -18,8 +18,8 @@ public class OpenIddictValidationServerIntegrationBuilder
     /// Initializes a new instance of <see cref="OpenIddictValidationServerIntegrationBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictValidationServerIntegrationBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictValidationServerIntegrationBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -33,9 +33,13 @@ public class OpenIddictValidationServerIntegrationBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationServerIntegrationBuilder"/>.</returns>
-    public OpenIddictValidationServerIntegrationBuilder Configure(
-        Action<OpenIddictValidationServerIntegrationOptions> configuration!!)
+    public OpenIddictValidationServerIntegrationBuilder Configure(Action<OpenIddictValidationServerIntegrationOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;

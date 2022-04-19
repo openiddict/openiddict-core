@@ -18,8 +18,8 @@ public class OpenIddictMongoDbAuthorizationStoreResolver : IOpenIddictAuthorizat
     private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
     private readonly IServiceProvider _provider;
 
-    public OpenIddictMongoDbAuthorizationStoreResolver(IServiceProvider provider!!)
-        => _provider = provider;
+    public OpenIddictMongoDbAuthorizationStoreResolver(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Returns an authorization store compatible with the specified authorization type or throws an

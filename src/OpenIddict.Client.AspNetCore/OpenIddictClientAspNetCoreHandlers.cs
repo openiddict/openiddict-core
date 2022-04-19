@@ -61,8 +61,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRequestContext context!!)
+        public ValueTask HandleAsync(ProcessRequestContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetHttpRequest() ??
@@ -145,8 +150,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetHttpRequest() ??
@@ -210,8 +220,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     {
         private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
 
-        public ValidateCorrelationCookie(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options!!)
-            => _options = options;
+        public ValidateCorrelationCookie(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -226,8 +236,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -299,8 +314,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is null)
             {
@@ -356,8 +376,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     {
         private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
 
-        public GenerateCorrelationCookie(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options!!)
-            => _options = options;
+        public GenerateCorrelationCookie(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -372,8 +392,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Note: using a correlation cookie serves as an antiforgery protection as the request will
             // always be rejected if a cookie corresponding to the request forgery protection claim
             // persisted in the state token cannot be found. This protection is considered essential
@@ -437,8 +462,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.SkipRequest();
 
             return default;
@@ -463,8 +493,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
@@ -501,8 +536,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
@@ -540,8 +580,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
@@ -575,8 +620,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
@@ -626,8 +676,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
@@ -695,8 +750,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Logger.LogInformation(SR.GetResourceString(SR.ID6145));
             context.HandleRequest();
 

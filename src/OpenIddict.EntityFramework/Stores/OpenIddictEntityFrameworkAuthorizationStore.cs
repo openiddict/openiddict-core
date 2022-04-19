@@ -31,7 +31,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TContext> :
     public OpenIddictEntityFrameworkAuthorizationStore(
         IMemoryCache cache,
         TContext context,
-        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options!!)
+        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
         : base(cache, context, options)
     {
     }
@@ -53,13 +53,13 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkAuthorizationStore(
-        IMemoryCache cache!!,
-        TContext context!!,
-        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options!!)
+        IMemoryCache cache,
+        TContext context,
+        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
     {
-        Cache = cache;
-        Context = context;
-        Options = options;
+        Cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        Context = context ?? throw new ArgumentNullException(nameof(context));
+        Options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>
@@ -97,20 +97,37 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
         => await Authorizations.LongCountAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TAuthorization>, IQueryable<TResult>> query!!, CancellationToken cancellationToken)
-        => await query(Authorizations).LongCountAsync(cancellationToken);
+    public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+    {
+        if (query is null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        return await query(Authorizations).LongCountAsync(cancellationToken);
+    }
 
     /// <inheritdoc/>
-    public virtual async ValueTask CreateAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
+    public virtual async ValueTask CreateAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         Authorizations.Add(authorization);
 
         await Context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask DeleteAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
+    public virtual async ValueTask DeleteAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         DbContextTransaction? CreateTransaction()
         {
             try
@@ -344,8 +361,13 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<string?> GetApplicationIdAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
+    public virtual async ValueTask<string?> GetApplicationIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         // If the application is not attached to the authorization, try to load it manually.
         if (authorization.Application is null)
         {
@@ -368,22 +390,53 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
 
     /// <inheritdoc/>
     public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
-        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query!!,
+        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
-        => await query(
-            Authorizations.Include(authorization => authorization.Application), state).FirstOrDefaultAsync(cancellationToken);
-
-    /// <inheritdoc/>
-    public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
-        => new(authorization.CreationDate is DateTime date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null);
-
-    /// <inheritdoc/>
-    public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
-        => new(ConvertIdentifierToString(authorization.Id));
-
-    /// <inheritdoc/>
-    public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
     {
+        if (query is null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        return await query(
+            Authorizations.Include(authorization => authorization.Application), state).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<DateTimeOffset?> GetCreationDateAsync(TAuthorization authorization, CancellationToken cancellationToken)
+    {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
+        if (authorization.CreationDate is null)
+        {
+            return new(result: null);
+        }
+
+        return new(DateTime.SpecifyKind(authorization.CreationDate.Value, DateTimeKind.Utc));
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<string?> GetIdAsync(TAuthorization authorization, CancellationToken cancellationToken)
+    {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
+        return new(ConvertIdentifierToString(authorization.Id));
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TAuthorization authorization, CancellationToken cancellationToken)
+    {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         if (string.IsNullOrEmpty(authorization.Properties))
         {
             return new(ImmutableDictionary.Create<string, JsonElement>());
@@ -412,8 +465,13 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
+    public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         if (string.IsNullOrEmpty(authorization.Scopes))
         {
             return new(ImmutableArray.Create<string>());
@@ -448,16 +506,37 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<string?> GetStatusAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
-        => new(authorization.Status);
+    public virtual ValueTask<string?> GetStatusAsync(TAuthorization authorization, CancellationToken cancellationToken)
+    {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
+        return new(authorization.Status);
+    }
 
     /// <inheritdoc/>
-    public virtual ValueTask<string?> GetSubjectAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
-        => new(authorization.Subject);
+    public virtual ValueTask<string?> GetSubjectAsync(TAuthorization authorization, CancellationToken cancellationToken)
+    {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
+        return new(authorization.Subject);
+    }
 
     /// <inheritdoc/>
-    public virtual ValueTask<string?> GetTypeAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
-        => new(authorization.Type);
+    public virtual ValueTask<string?> GetTypeAsync(TAuthorization authorization, CancellationToken cancellationToken)
+    {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
+        return new(authorization.Type);
+    }
 
     /// <inheritdoc/>
     public virtual ValueTask<TAuthorization> InstantiateAsync(CancellationToken cancellationToken)
@@ -496,9 +575,16 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query!!,
+        Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
-        => query(Authorizations.Include(authorization => authorization.Application), state).AsAsyncEnumerable(cancellationToken);
+    {
+        if (query is null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        return query(Authorizations.Include(authorization => authorization.Application), state).AsAsyncEnumerable(cancellationToken);
+    }
 
     /// <inheritdoc/>
     public virtual async ValueTask PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
@@ -582,9 +668,14 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask SetApplicationIdAsync(TAuthorization authorization!!,
+    public virtual async ValueTask SetApplicationIdAsync(TAuthorization authorization,
         string? identifier, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         if (!string.IsNullOrEmpty(identifier))
         {
             authorization.Application = await Applications.FindAsync(
@@ -611,18 +702,28 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetCreationDateAsync(TAuthorization authorization!!,
+    public virtual ValueTask SetCreationDateAsync(TAuthorization authorization,
         DateTimeOffset? date, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         authorization.CreationDate = date?.UtcDateTime;
 
         return default;
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetPropertiesAsync(TAuthorization authorization!!,
+    public virtual ValueTask SetPropertiesAsync(TAuthorization authorization,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         if (properties is not { Count: > 0 })
         {
             authorization.Properties = null;
@@ -654,9 +755,14 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetScopesAsync(TAuthorization authorization!!,
+    public virtual ValueTask SetScopesAsync(TAuthorization authorization,
         ImmutableArray<string> scopes, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         if (scopes.IsDefaultOrEmpty)
         {
             authorization.Scopes = null;
@@ -687,32 +793,52 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetStatusAsync(TAuthorization authorization!!, string? status, CancellationToken cancellationToken)
+    public virtual ValueTask SetStatusAsync(TAuthorization authorization, string? status, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         authorization.Status = status;
 
         return default;
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetSubjectAsync(TAuthorization authorization!!, string? subject, CancellationToken cancellationToken)
+    public virtual ValueTask SetSubjectAsync(TAuthorization authorization, string? subject, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         authorization.Subject = subject;
 
         return default;
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetTypeAsync(TAuthorization authorization!!, string? type, CancellationToken cancellationToken)
+    public virtual ValueTask SetTypeAsync(TAuthorization authorization, string? type, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         authorization.Type = type;
 
         return default;
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask UpdateAsync(TAuthorization authorization!!, CancellationToken cancellationToken)
+    public virtual async ValueTask UpdateAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
+        if (authorization is null)
+        {
+            throw new ArgumentNullException(nameof(authorization));
+        }
+
         Authorizations.Attach(authorization);
 
         // Generate a new concurrency token and attach it

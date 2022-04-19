@@ -63,8 +63,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ExtractIntrospectionRequest(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ExtractIntrospectionRequest(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -78,8 +78,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ExtractIntrospectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -120,8 +125,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateIntrospectionRequest(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ValidateIntrospectionRequest(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -135,8 +140,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ValidateIntrospectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -176,8 +186,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public HandleIntrospectionRequest(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public HandleIntrospectionRequest(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -191,8 +201,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new HandleIntrospectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -274,8 +289,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ApplyIntrospectionResponse(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ApplyIntrospectionResponse(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -289,8 +304,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(TContext context!!)
+            public async ValueTask HandleAsync(TContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ApplyIntrospectionResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -326,8 +346,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Reject introspection requests missing the mandatory token parameter.
                 if (string.IsNullOrEmpty(context.Request.Token))
                 {
@@ -361,8 +386,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // At this stage, reject the introspection request unless the client identification requirement was disabled.
                 if (!context.Options.AcceptAnonymousClients && string.IsNullOrEmpty(context.ClientId))
                 {
@@ -390,8 +420,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientId(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateClientId(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -406,8 +436,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 // Retrieve the application details corresponding to the requested client_id.
@@ -438,8 +473,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientType(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateClientType(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -454,8 +489,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -504,8 +544,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -520,8 +560,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -560,8 +605,8 @@ public static partial class OpenIddictServerHandlers
 
             public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -577,8 +622,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
@@ -606,8 +656,8 @@ public static partial class OpenIddictServerHandlers
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
-            public ValidateToken(IOpenIddictServerDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -620,8 +670,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ProcessAuthenticationContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -671,8 +726,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
@@ -713,8 +773,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context!!)
+            public ValueTask HandleAsync(ValidateIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -774,8 +839,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleIntrospectionRequestContext context!!)
+            public ValueTask HandleAsync(HandleIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = context.Transaction.GetProperty<ValidateIntrospectionRequestContext>(
                     typeof(ValidateIntrospectionRequestContext).FullName!) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
@@ -804,8 +874,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleIntrospectionRequestContext context!!)
+            public ValueTask HandleAsync(HandleIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 context.TokenId = context.Principal.GetClaim(Claims.JwtId);
@@ -842,8 +917,8 @@ public static partial class OpenIddictServerHandlers
 
             public AttachApplicationClaims() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            public AttachApplicationClaims(IOpenIddictApplicationManager applicationManager!!)
-                => _applicationManager = applicationManager;
+            public AttachApplicationClaims(IOpenIddictApplicationManager applicationManager)
+                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -858,8 +933,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(HandleIntrospectionRequestContext context!!)
+            public async ValueTask HandleAsync(HandleIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), SR.FormatID4000(Parameters.ClientId));
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -1011,8 +1091,13 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyIntrospectionResponseContext context!!)
+            public ValueTask HandleAsync(ApplyIntrospectionResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 if (string.IsNullOrEmpty(context.Error))
                 {
                     return default;

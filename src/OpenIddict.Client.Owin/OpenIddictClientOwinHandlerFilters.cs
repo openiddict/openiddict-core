@@ -24,11 +24,18 @@ public static class OpenIddictClientOwinHandlerFilters
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
-        public RequireRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options!!)
-            => _options = options;
+        public RequireRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
 
-        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
-            => new(_options.CurrentValue.EnableRedirectionEndpointPassthrough);
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnableRedirectionEndpointPassthrough);
+        }
     }
 
     /// <summary>
@@ -38,11 +45,18 @@ public static class OpenIddictClientOwinHandlerFilters
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
-        public RequireErrorPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options!!)
-            => _options = options;
+        public RequireErrorPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
 
-        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
-            => new(_options.CurrentValue.EnableErrorPassthrough);
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnableErrorPassthrough);
+        }
     }
 
     /// <summary>
@@ -50,7 +64,14 @@ public static class OpenIddictClientOwinHandlerFilters
     /// </summary>
     public class RequireOwinRequest : IOpenIddictClientHandlerFilter<BaseContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
-            => new(context.Transaction.GetOwinRequest() is not null);
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.Transaction.GetOwinRequest() is not null);
+        }
     }
 }

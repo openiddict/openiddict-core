@@ -29,7 +29,7 @@ public class OpenIddictEntityFrameworkScopeStore<TContext> :
     public OpenIddictEntityFrameworkScopeStore(
         IMemoryCache cache,
         TContext context,
-        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options!!)
+        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
         : base(cache, context, options)
     {
     }
@@ -47,13 +47,13 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkScopeStore(
-        IMemoryCache cache!!,
-        TContext context!!,
-        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options!!)
+        IMemoryCache cache,
+        TContext context,
+        IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
     {
-        Cache = cache;
-        Context = context;
-        Options = options;
+        Cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        Context = context ?? throw new ArgumentNullException(nameof(context));
+        Options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>
@@ -81,20 +81,37 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
         => await Scopes.LongCountAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TScope>, IQueryable<TResult>> query!!, CancellationToken cancellationToken)
-        => await query(Scopes).LongCountAsync(cancellationToken);
+    public virtual async ValueTask<long> CountAsync<TResult>(Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+    {
+        if (query is null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        return await query(Scopes).LongCountAsync(cancellationToken);
+    }
 
     /// <inheritdoc/>
-    public virtual async ValueTask CreateAsync(TScope scope!!, CancellationToken cancellationToken)
+    public virtual async ValueTask CreateAsync(TScope scope, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         Scopes.Add(scope);
 
         await Context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask DeleteAsync(TScope scope!!, CancellationToken cancellationToken)
+    public virtual async ValueTask DeleteAsync(TScope scope, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         Scopes.Remove(scope);
 
         try
@@ -143,7 +160,7 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     public virtual IAsyncEnumerable<TScope> FindByNamesAsync(
         ImmutableArray<string> names, CancellationToken cancellationToken)
     {
-        if (names.Any(string.IsNullOrEmpty))
+        if (names.Any(name => string.IsNullOrEmpty(name)))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0203), nameof(names));
         }
@@ -191,17 +208,36 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
 
     /// <inheritdoc/>
     public virtual async ValueTask<TResult?> GetAsync<TState, TResult>(
-        Func<IQueryable<TScope>, TState, IQueryable<TResult>> query!!,
+        Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
-        => await query(Scopes, state).FirstOrDefaultAsync(cancellationToken);
-
-    /// <inheritdoc/>
-    public virtual ValueTask<string?> GetDescriptionAsync(TScope scope!!, CancellationToken cancellationToken)
-        => new(scope.Description);
-
-    /// <inheritdoc/>
-    public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(TScope scope!!, CancellationToken cancellationToken)
     {
+        if (query is null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        return await query(Scopes, state).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<string?> GetDescriptionAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        return new(scope.Description);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDescriptionsAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (string.IsNullOrEmpty(scope.Descriptions))
         {
             return new(ImmutableDictionary.Create<CultureInfo, string>());
@@ -236,14 +272,24 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope!!, CancellationToken cancellationToken)
+    public virtual ValueTask<string?> GetDisplayNameAsync(TScope scope, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         return new(scope.DisplayName);
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TScope scope!!, CancellationToken cancellationToken)
+    public virtual ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync(TScope scope, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (string.IsNullOrEmpty(scope.DisplayNames))
         {
             return new(ImmutableDictionary.Create<CultureInfo, string>());
@@ -278,16 +324,35 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<string?> GetIdAsync(TScope scope!!, CancellationToken cancellationToken)
-        => new(ConvertIdentifierToString(scope.Id));
-
-    /// <inheritdoc/>
-    public virtual ValueTask<string?> GetNameAsync(TScope scope!!, CancellationToken cancellationToken)
-        => new(scope.Name);
-
-    /// <inheritdoc/>
-    public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TScope scope!!, CancellationToken cancellationToken)
+    public virtual ValueTask<string?> GetIdAsync(TScope scope, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        return new(ConvertIdentifierToString(scope.Id));
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<string?> GetNameAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
+        return new(scope.Name);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TScope scope, CancellationToken cancellationToken)
+    {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (string.IsNullOrEmpty(scope.Properties))
         {
             return new(ImmutableDictionary.Create<string, JsonElement>());
@@ -316,8 +381,13 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(TScope scope!!, CancellationToken cancellationToken)
+    public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(TScope scope, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (string.IsNullOrEmpty(scope.Resources))
         {
             return new(ImmutableArray.Create<string>());
@@ -386,22 +456,39 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
-        Func<IQueryable<TScope>, TState, IQueryable<TResult>> query!!,
+        Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken)
-        => query(Scopes, state).AsAsyncEnumerable(cancellationToken);
+    {
+        if (query is null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        return query(Scopes, state).AsAsyncEnumerable(cancellationToken);
+    }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetDescriptionAsync(TScope scope!!, string? description, CancellationToken cancellationToken)
+    public virtual ValueTask SetDescriptionAsync(TScope scope, string? description, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         scope.Description = description;
 
         return default;
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetDescriptionsAsync(TScope scope!!,
+    public virtual ValueTask SetDescriptionsAsync(TScope scope,
         ImmutableDictionary<CultureInfo, string> descriptions, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (descriptions is not { Count: > 0 })
         {
             scope.Descriptions = null;
@@ -433,17 +520,27 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetDisplayNameAsync(TScope scope!!, string? name, CancellationToken cancellationToken)
+    public virtual ValueTask SetDisplayNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         scope.DisplayName = name;
 
         return default;
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetDisplayNamesAsync(TScope scope!!,
+    public virtual ValueTask SetDisplayNamesAsync(TScope scope,
         ImmutableDictionary<CultureInfo, string> names, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (names is not { Count: > 0 })
         {
             scope.DisplayNames = null;
@@ -475,17 +572,27 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetNameAsync(TScope scope!!, string? name, CancellationToken cancellationToken)
+    public virtual ValueTask SetNameAsync(TScope scope, string? name, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         scope.Name = name;
 
         return default;
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetPropertiesAsync(TScope scope!!,
+    public virtual ValueTask SetPropertiesAsync(TScope scope,
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (properties is not { Count: > 0 })
         {
             scope.Properties = null;
@@ -517,8 +624,13 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     }
 
     /// <inheritdoc/>
-    public virtual ValueTask SetResourcesAsync(TScope scope!!, ImmutableArray<string> resources, CancellationToken cancellationToken)
+    public virtual ValueTask SetResourcesAsync(TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         if (resources.IsDefaultOrEmpty)
         {
             scope.Resources = null;
@@ -549,8 +661,13 @@ public class OpenIddictEntityFrameworkScopeStore<TScope, TContext, TKey> : IOpen
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask UpdateAsync(TScope scope!!, CancellationToken cancellationToken)
+    public virtual async ValueTask UpdateAsync(TScope scope, CancellationToken cancellationToken)
     {
+        if (scope is null)
+        {
+            throw new ArgumentNullException(nameof(scope));
+        }
+
         Scopes.Attach(scope);
 
         // Generate a new concurrency token and attach it

@@ -19,8 +19,8 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictValidationSystemNetHttpBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictValidationSystemNetHttpBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -34,8 +34,13 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
-    public OpenIddictValidationSystemNetHttpBuilder Configure(Action<OpenIddictValidationSystemNetHttpOptions> configuration!!)
+    public OpenIddictValidationSystemNetHttpBuilder Configure(Action<OpenIddictValidationSystemNetHttpOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;

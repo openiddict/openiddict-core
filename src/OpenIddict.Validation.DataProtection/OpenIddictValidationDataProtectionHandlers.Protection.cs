@@ -33,8 +33,8 @@ public static partial class OpenIddictValidationDataProtectionHandlers
         {
             private readonly IOptionsMonitor<OpenIddictValidationDataProtectionOptions> _options;
 
-            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options!!)
-                => _options = options;
+            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictValidationDataProtectionOptions> options)
+                => _options = options ?? throw new ArgumentNullException(nameof(options));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

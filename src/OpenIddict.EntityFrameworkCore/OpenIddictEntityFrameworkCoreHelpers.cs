@@ -56,14 +56,21 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// <param name="builder">The builder used to configure the Entity Framework context.</param>
     /// <returns>The Entity Framework context builder.</returns>
     public static DbContextOptionsBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(
-        this DbContextOptionsBuilder builder!!)
+        this DbContextOptionsBuilder builder)
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
-        => builder.ReplaceService<IModelCustomizer, OpenIddictEntityFrameworkCoreCustomizer<
+    {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        return builder.ReplaceService<IModelCustomizer, OpenIddictEntityFrameworkCoreCustomizer<
             TApplication, TAuthorization, TScope, TToken, TKey>>();
+    }
 
     /// <summary>
     /// Registers the OpenIddict entity sets in the Entity Framework Core context
@@ -103,17 +110,24 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// </remarks>
     /// <param name="builder">The builder used to configure the Entity Framework context.</param>
     /// <returns>The Entity Framework context builder.</returns>
-    public static ModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this ModelBuilder builder!!)
+    public static ModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(this ModelBuilder builder)
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
         where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
         where TKey : notnull, IEquatable<TKey>
-        => builder
+    {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        return builder
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
+    }
 
 #if SUPPORTS_BCL_ASYNC_ENUMERABLE
     /// <summary>
@@ -132,8 +146,13 @@ public static class OpenIddictEntityFrameworkCoreHelpers
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The non-streamed async enumeration containing the results.</returns>
 #endif
-    internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source!!, CancellationToken cancellationToken)
+    internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
     {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
         return ExecuteAsync(source, cancellationToken);
 
         static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)

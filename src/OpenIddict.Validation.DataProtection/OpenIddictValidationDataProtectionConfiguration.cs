@@ -21,11 +21,16 @@ public class OpenIddictValidationDataProtectionConfiguration : IConfigureOptions
     /// Creates a new instance of the <see cref="OpenIddictValidationDataProtectionConfiguration"/> class.
     /// </summary>
     /// <param name="dataProtectionProvider">The ASP.NET Core Data Protection provider.</param>
-    public OpenIddictValidationDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider!!)
+    public OpenIddictValidationDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
         => _dataProtectionProvider = dataProtectionProvider;
 
-    public void Configure(OpenIddictValidationOptions options!!)
+    public void Configure(OpenIddictValidationOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         // Register the built-in event handlers used by the OpenIddict Data Protection validation components.
         options.Handlers.AddRange(OpenIddictValidationDataProtectionHandlers.DefaultHandlers);
     }
@@ -36,6 +41,13 @@ public class OpenIddictValidationDataProtectionConfiguration : IConfigureOptions
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictValidationDataProtectionOptions options!!)
-        => options.DataProtectionProvider ??= _dataProtectionProvider;
+    public void PostConfigure(string name, OpenIddictValidationDataProtectionOptions options)
+    {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        options.DataProtectionProvider ??= _dataProtectionProvider;
+    }
 }

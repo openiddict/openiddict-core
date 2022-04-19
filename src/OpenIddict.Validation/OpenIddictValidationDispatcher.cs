@@ -19,17 +19,22 @@ public class OpenIddictValidationDispatcher : IOpenIddictValidationDispatcher
     /// Creates a new instance of the <see cref="OpenIddictValidationDispatcher"/> class.
     /// </summary>
     public OpenIddictValidationDispatcher(
-        ILogger<OpenIddictValidationDispatcher> logger!!,
-        IOptionsMonitor<OpenIddictValidationOptions> options!!,
-        IServiceProvider provider!!)
+        ILogger<OpenIddictValidationDispatcher> logger,
+        IOptionsMonitor<OpenIddictValidationOptions> options,
+        IServiceProvider provider)
     {
-        _logger = logger;
-        _options = options;
-        _provider = provider;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
-    public async ValueTask DispatchAsync<TContext>(TContext context!!) where TContext : BaseContext
+    public async ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext
     {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
         await foreach (var handler in GetHandlersAsync())
         {
             try

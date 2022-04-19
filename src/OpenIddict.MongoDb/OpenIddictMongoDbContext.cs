@@ -16,11 +16,11 @@ public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
     private readonly IServiceProvider _provider;
 
     public OpenIddictMongoDbContext(
-        IOptionsMonitor<OpenIddictMongoDbOptions> options!!,
-        IServiceProvider provider!!)
+        IOptionsMonitor<OpenIddictMongoDbOptions> options,
+        IServiceProvider provider)
     {
-        _options = options;
-        _provider = provider;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
     /// <inheritdoc/>

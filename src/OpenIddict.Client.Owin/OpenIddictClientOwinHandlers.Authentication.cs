@@ -55,8 +55,13 @@ public static partial class OpenIddictClientOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // This handler only applies to OWIN requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response ??

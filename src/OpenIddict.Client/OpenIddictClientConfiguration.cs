@@ -19,7 +19,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
     private readonly OpenIddictClientService _service;
 
     public OpenIddictClientConfiguration(OpenIddictClientService service)
-        => _service = service;
+        => _service = service ?? throw new ArgumentNullException(nameof(service));
 
     /// <summary>
     /// Populates the default OpenIddict client options and ensures
@@ -27,8 +27,13 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
     /// </summary>
     /// <param name="name">The authentication scheme associated with the handler instance.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictClientOptions options!!)
+    public void PostConfigure(string name, OpenIddictClientOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         if (options.JsonWebTokenHandler is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0075));

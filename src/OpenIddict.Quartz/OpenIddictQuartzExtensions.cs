@@ -21,8 +21,13 @@ public static class OpenIddictQuartzExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
-    public static OpenIddictQuartzBuilder UseQuartz(this OpenIddictCoreBuilder builder!!)
+    public static OpenIddictQuartzBuilder UseQuartz(this OpenIddictCoreBuilder builder)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
         builder.Services.AddQuartz();
 
         // The OpenIddict job is registered as a service to allow
@@ -44,8 +49,18 @@ public static class OpenIddictQuartzExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
     public static OpenIddictCoreBuilder UseQuartz(
-        this OpenIddictCoreBuilder builder!!, Action<OpenIddictQuartzBuilder> configuration!!)
+        this OpenIddictCoreBuilder builder, Action<OpenIddictQuartzBuilder> configuration)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         configuration(builder.UseQuartz());
 
         return builder;

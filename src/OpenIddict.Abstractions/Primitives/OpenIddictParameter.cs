@@ -695,8 +695,13 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     /// Writes the parameter value to the specified JSON writer.
     /// </summary>
     /// <param name="writer">The UTF-8 JSON writer.</param>
-    public void WriteTo(Utf8JsonWriter writer!!)
+    public void WriteTo(Utf8JsonWriter writer)
     {
+        if (writer is null)
+        {
+            throw new ArgumentNullException(nameof(writer));
+        }
+
         switch (Value)
         {
             // Note: undefined JsonElement values are assimilated to null values.

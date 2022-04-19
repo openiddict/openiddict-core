@@ -21,11 +21,16 @@ public class OpenIddictServerDataProtectionConfiguration : IConfigureOptions<Ope
     /// Creates a new instance of the <see cref="OpenIddictServerDataProtectionConfiguration"/> class.
     /// </summary>
     /// <param name="dataProtectionProvider">The ASP.NET Core Data Protection provider.</param>
-    public OpenIddictServerDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider!!)
+    public OpenIddictServerDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
         => _dataProtectionProvider = dataProtectionProvider;
 
-    public void Configure(OpenIddictServerOptions options!!)
+    public void Configure(OpenIddictServerOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         // Register the built-in event handlers used by the OpenIddict Data Protection server components.
         options.Handlers.AddRange(OpenIddictServerDataProtectionHandlers.DefaultHandlers);
     }
@@ -36,8 +41,13 @@ public class OpenIddictServerDataProtectionConfiguration : IConfigureOptions<Ope
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictServerDataProtectionOptions options!!)
+    public void PostConfigure(string name, OpenIddictServerDataProtectionOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         options.DataProtectionProvider ??= _dataProtectionProvider;
     }
 }

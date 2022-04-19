@@ -25,37 +25,70 @@ public static class OpenIddictExtensions
     /// Extracts the authentication context class values from an <see cref="OpenIddictRequest"/>.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    public static ImmutableArray<string> GetAcrValues(this OpenIddictRequest request!!)
-        => GetValues(request.AcrValues, Separators.Space);
+    public static ImmutableArray<string> GetAcrValues(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return GetValues(request.AcrValues, Separators.Space);
+    }
 
     /// <summary>
     /// Extracts the prompt values from an <see cref="OpenIddictRequest"/>.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    public static ImmutableArray<string> GetPrompts(this OpenIddictRequest request!!)
-        => GetValues(request.Prompt, Separators.Space);
+    public static ImmutableArray<string> GetPrompts(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return GetValues(request.Prompt, Separators.Space);
+    }
 
     /// <summary>
     /// Extracts the response types from an <see cref="OpenIddictRequest"/>.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    public static ImmutableArray<string> GetResponseTypes(this OpenIddictRequest request!!)
-        => GetValues(request.ResponseType, Separators.Space);
+    public static ImmutableArray<string> GetResponseTypes(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return GetValues(request.ResponseType, Separators.Space);
+    }
 
     /// <summary>
     /// Extracts the scopes from an <see cref="OpenIddictRequest"/>.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
-    public static ImmutableArray<string> GetScopes(this OpenIddictRequest request!!)
-        => GetValues(request.Scope, Separators.Space);
+    public static ImmutableArray<string> GetScopes(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return GetValues(request.Scope, Separators.Space);
+    }
 
     /// <summary>
     /// Determines whether the requested authentication context class values contain the specified item.
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <param name="value">The component to look for in the parameter.</param>
-    public static bool HasAcrValue(this OpenIddictRequest request!!, string value)
+    public static bool HasAcrValue(this OpenIddictRequest request, string value)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(value))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0177), nameof(value));
@@ -69,8 +102,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <param name="prompt">The component to look for in the parameter.</param>
-    public static bool HasPrompt(this OpenIddictRequest request!!, string prompt)
+    public static bool HasPrompt(this OpenIddictRequest request, string prompt)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(prompt))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0178), nameof(prompt));
@@ -84,8 +122,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <param name="type">The component to look for in the parameter.</param>
-    public static bool HasResponseType(this OpenIddictRequest request!!, string type)
+    public static bool HasResponseType(this OpenIddictRequest request, string type)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0179), nameof(type));
@@ -99,8 +142,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <param name="scope">The component to look for in the parameter.</param>
-    public static bool HasScope(this OpenIddictRequest request!!, string scope)
+    public static bool HasScope(this OpenIddictRequest request, string scope)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(scope))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0180), nameof(scope));
@@ -115,8 +163,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is a response_type=none request, <see langword="false"/> otherwise.</returns>
-    public static bool IsNoneFlow(this OpenIddictRequest request!!)
+    public static bool IsNoneFlow(this OpenIddictRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(request.ResponseType))
         {
             return false;
@@ -137,8 +190,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is a code flow request, <see langword="false"/> otherwise.</returns>
-    public static bool IsAuthorizationCodeFlow(this OpenIddictRequest request!!)
+    public static bool IsAuthorizationCodeFlow(this OpenIddictRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(request.ResponseType))
         {
             return false;
@@ -160,8 +218,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is an implicit flow request, <see langword="false"/> otherwise.</returns>
-    public static bool IsImplicitFlow(this OpenIddictRequest request!!)
+    public static bool IsImplicitFlow(this OpenIddictRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(request.ResponseType))
         {
             return false;
@@ -209,8 +272,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is an hybrid flow request, <see langword="false"/> otherwise.</returns>
-    public static bool IsHybridFlow(this OpenIddictRequest request!!)
+    public static bool IsHybridFlow(this OpenIddictRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.IsNullOrEmpty(request.ResponseType))
         {
             return false;
@@ -271,8 +339,13 @@ public static class OpenIddictExtensions
     /// <see langword="true"/> if the request specified the fragment response mode or if
     /// it's the default value for the requested flow, <see langword="false"/> otherwise.
     /// </returns>
-    public static bool IsFragmentResponseMode(this OpenIddictRequest request!!)
+    public static bool IsFragmentResponseMode(this OpenIddictRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.Equals(request.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))
         {
             return true;
@@ -299,8 +372,13 @@ public static class OpenIddictExtensions
     /// <see langword="true"/> if the request specified the query response mode or if
     /// it's the default value for the requested flow, <see langword="false"/> otherwise.
     /// </returns>
-    public static bool IsQueryResponseMode(this OpenIddictRequest request!!)
+    public static bool IsQueryResponseMode(this OpenIddictRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
         if (string.Equals(request.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
         {
             return true;
@@ -326,8 +404,15 @@ public static class OpenIddictExtensions
     /// <see langword="true"/> if the request specified the form post response mode or if
     /// it's the default value for the requested flow, <see langword="false"/> otherwise.
     /// </returns>
-    public static bool IsFormPostResponseMode(this OpenIddictRequest request!!)
-        => string.Equals(request.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal);
+    public static bool IsFormPostResponseMode(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return string.Equals(request.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal);
+    }
 
     /// <summary>
     /// Determines whether the "grant_type" parameter corresponds to the authorization code grant.
@@ -335,8 +420,15 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is a code grant request, <see langword="false"/> otherwise.</returns>
-    public static bool IsAuthorizationCodeGrantType(this OpenIddictRequest request!!)
-        => string.Equals(request.GrantType, GrantTypes.AuthorizationCode, StringComparison.Ordinal);
+    public static bool IsAuthorizationCodeGrantType(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return string.Equals(request.GrantType, GrantTypes.AuthorizationCode, StringComparison.Ordinal);
+    }
 
     /// <summary>
     /// Determines whether the "grant_type" parameter corresponds to the client credentials grant.
@@ -344,8 +436,15 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is a client credentials grant request, <see langword="false"/> otherwise.</returns>
-    public static bool IsClientCredentialsGrantType(this OpenIddictRequest request!!)
-        => string.Equals(request.GrantType, GrantTypes.ClientCredentials, StringComparison.Ordinal);
+    public static bool IsClientCredentialsGrantType(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return string.Equals(request.GrantType, GrantTypes.ClientCredentials, StringComparison.Ordinal);
+    }
 
     /// <summary>
     /// Determines whether the "grant_type" parameter corresponds to the device code grant.
@@ -353,8 +452,15 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is a device code grant request, <see langword="false"/> otherwise.</returns>
-    public static bool IsDeviceCodeGrantType(this OpenIddictRequest request!!)
-        => string.Equals(request.GrantType, GrantTypes.DeviceCode, StringComparison.Ordinal);
+    public static bool IsDeviceCodeGrantType(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return string.Equals(request.GrantType, GrantTypes.DeviceCode, StringComparison.Ordinal);
+    }
 
     /// <summary>
     /// Determines whether the "grant_type" parameter corresponds to the password grant.
@@ -362,8 +468,15 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is a password grant request, <see langword="false"/> otherwise.</returns>
-    public static bool IsPasswordGrantType(this OpenIddictRequest request!!)
-        => string.Equals(request.GrantType, GrantTypes.Password, StringComparison.Ordinal);
+    public static bool IsPasswordGrantType(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return string.Equals(request.GrantType, GrantTypes.Password, StringComparison.Ordinal);
+    }
 
     /// <summary>
     /// Determines whether the "grant_type" parameter corresponds to the refresh token grant.
@@ -371,16 +484,28 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
     /// <returns><see langword="true"/> if the request is a refresh token grant request, <see langword="false"/> otherwise.</returns>
-    public static bool IsRefreshTokenGrantType(this OpenIddictRequest request!!)
-        => string.Equals(request.GrantType, GrantTypes.RefreshToken, StringComparison.Ordinal);
+    public static bool IsRefreshTokenGrantType(this OpenIddictRequest request)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        return string.Equals(request.GrantType, GrantTypes.RefreshToken, StringComparison.Ordinal);
+    }
 
     /// <summary>
     /// Gets the destinations associated with a claim.
     /// </summary>
     /// <param name="claim">The <see cref="Claim"/> instance.</param>
     /// <returns>The destinations associated with the claim.</returns>
-    public static ImmutableArray<string> GetDestinations(this Claim claim!!)
+    public static ImmutableArray<string> GetDestinations(this Claim claim)
     {
+        if (claim is null)
+        {
+            throw new ArgumentNullException(nameof(claim));
+        }
+
         claim.Properties.TryGetValue(Properties.Destinations, out string? destinations);
 
         if (string.IsNullOrEmpty(destinations))
@@ -410,8 +535,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="claim">The <see cref="Claim"/> instance.</param>
     /// <param name="destination">The required destination.</param>
-    public static bool HasDestination(this Claim claim!!, string destination)
+    public static bool HasDestination(this Claim claim, string destination)
     {
+        if (claim is null)
+        {
+            throw new ArgumentNullException(nameof(claim));
+        }
+
         if (string.IsNullOrEmpty(destination))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0181), nameof(destination));
@@ -443,8 +573,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="claim">The <see cref="Claim"/> instance.</param>
     /// <param name="destinations">The destinations.</param>
-    public static Claim SetDestinations(this Claim claim!!, ImmutableArray<string> destinations)
+    public static Claim SetDestinations(this Claim claim, ImmutableArray<string> destinations)
     {
+        if (claim is null)
+        {
+            throw new ArgumentNullException(nameof(claim));
+        }
+
         if (destinations.IsDefaultOrEmpty)
         {
             claim.Properties.Remove(Properties.Destinations);
@@ -452,7 +587,7 @@ public static class OpenIddictExtensions
             return claim;
         }
 
-        if (destinations.Any(string.IsNullOrEmpty))
+        if (destinations.Any(destination => string.IsNullOrEmpty(destination)))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0182), nameof(destinations));
         }
@@ -500,8 +635,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The principal.</param>
     /// <returns>The destinations, returned as a flattened dictionary.</returns>
-    public static ImmutableDictionary<string, string[]> GetDestinations(this ClaimsPrincipal principal!!)
+    public static ImmutableDictionary<string, string[]> GetDestinations(this ClaimsPrincipal principal)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         var builder = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
 
         foreach (var group in principal.Claims.GroupBy(claim => claim.Type))
@@ -533,8 +673,18 @@ public static class OpenIddictExtensions
     /// <param name="principal">The principal.</param>
     /// <param name="destinations">The destinations, as a flattened dictionary.</param>
     /// <returns>The principal.</returns>
-    public static ClaimsPrincipal SetDestinations(this ClaimsPrincipal principal!!, ImmutableDictionary<string, string[]> destinations!!)
+    public static ClaimsPrincipal SetDestinations(this ClaimsPrincipal principal, ImmutableDictionary<string, string[]> destinations)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (destinations is null)
+        {
+            throw new ArgumentNullException(nameof(destinations));
+        }
+
         foreach (var destination in destinations)
         {
             foreach (var claim in principal.Claims.Where(claim => claim.Type == destination.Key))
@@ -554,8 +704,18 @@ public static class OpenIddictExtensions
     /// The delegate filtering the claims: return <see langword="true"/>
     /// to accept the claim, <see langword="false"/> to remove it.
     /// </param>
-    public static ClaimsIdentity Clone(this ClaimsIdentity identity!!, Func<Claim, bool> filter!!)
+    public static ClaimsIdentity Clone(this ClaimsIdentity identity, Func<Claim, bool> filter)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (filter is null)
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+
         var clone = identity.Clone();
 
         // Note: make sure to call ToList() to avoid modifying
@@ -584,8 +744,18 @@ public static class OpenIddictExtensions
     /// The delegate filtering the claims: return <see langword="true"/>
     /// to accept the claim, <see langword="false"/> to remove it.
     /// </param>
-    public static ClaimsPrincipal Clone(this ClaimsPrincipal principal!!, Func<Claim, bool> filter!!)
+    public static ClaimsPrincipal Clone(this ClaimsPrincipal principal, Func<Claim, bool> filter)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (filter is null)
+        {
+            throw new ArgumentNullException(nameof(filter));
+        }
+
         var clone = new ClaimsPrincipal();
 
         foreach (var identity in principal.Identities)
@@ -602,8 +772,13 @@ public static class OpenIddictExtensions
     /// <param name="identity">The identity.</param>
     /// <param name="type">The type associated with the claim.</param>
     /// <param name="value">The value associated with the claim.</param>
-    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity!!, string type, string value)
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, string value)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -625,8 +800,13 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claim.</param>
     /// <param name="value">The value associated with the claim.</param>
     /// <param name="destinations">The destinations associated with the claim.</param>
-    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity!!, string type, string value, ImmutableArray<string> destinations)
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, string value, ImmutableArray<string> destinations)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -657,8 +837,13 @@ public static class OpenIddictExtensions
     /// <param name="identity">The identity.</param>
     /// <param name="type">The type associated with the claim.</param>
     /// <returns>The claim value.</returns>
-    public static string? GetClaim(this ClaimsIdentity identity!!, string type)
+    public static string? GetClaim(this ClaimsIdentity identity, string type)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -673,8 +858,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The principal.</param>
     /// <param name="type">The type associated with the claim.</param>
     /// <returns>The claim value.</returns>
-    public static string? GetClaim(this ClaimsPrincipal principal!!, string type)
+    public static string? GetClaim(this ClaimsPrincipal principal, string type)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -689,8 +879,13 @@ public static class OpenIddictExtensions
     /// <param name="identity">The identity.</param>
     /// <param name="type">The type associated with the claims.</param>
     /// <returns>The claim values.</returns>
-    public static ImmutableArray<string> GetClaims(this ClaimsIdentity identity!!, string type)
+    public static ImmutableArray<string> GetClaims(this ClaimsIdentity identity, string type)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -705,8 +900,13 @@ public static class OpenIddictExtensions
     /// <param name="identity">The claims identity.</param>
     /// <param name="type">The claim type.</param>
     /// <returns><see langword="true"/> if the identity contains at least one claim of the specified type.</returns>
-    public static bool HasClaim(this ClaimsIdentity identity!!, string type)
+    public static bool HasClaim(this ClaimsIdentity identity, string type)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -721,8 +921,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The principal.</param>
     /// <param name="type">The type associated with the claims.</param>
     /// <returns>The claim values.</returns>
-    public static ImmutableArray<string> GetClaims(this ClaimsPrincipal principal!!, string type)
+    public static ImmutableArray<string> GetClaims(this ClaimsPrincipal principal, string type)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -737,8 +942,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="type">The claim type.</param>
     /// <returns><see langword="true"/> if the principal contains at least one claim of the specified type.</returns>
-    public static bool HasClaim(this ClaimsPrincipal principal!!, string type)
+    public static bool HasClaim(this ClaimsPrincipal principal, string type)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -753,8 +963,13 @@ public static class OpenIddictExtensions
     /// <param name="identity">The identity.</param>
     /// <param name="type">The type associated with the claims.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity RemoveClaims(this ClaimsIdentity identity!!, string type)
+    public static ClaimsIdentity RemoveClaims(this ClaimsIdentity identity, string type)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -774,8 +989,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The principal.</param>
     /// <param name="type">The type associated with the claims.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsPrincipal RemoveClaims(this ClaimsPrincipal principal!!, string type)
+    public static ClaimsPrincipal RemoveClaims(this ClaimsPrincipal principal, string type)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -799,8 +1019,13 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="value">The claim value.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetClaims(this ClaimsIdentity identity!!, string type, string? value)
+    public static ClaimsIdentity SetClaims(this ClaimsIdentity identity, string type, string? value)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -823,8 +1048,13 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="value">The claim value.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal!!, string type, string? value)
+    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, string? value)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (principal.Identity is not ClaimsIdentity identity)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
@@ -852,8 +1082,13 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The claim values.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsIdentity SetClaims(this ClaimsIdentity identity!!, string type, ImmutableArray<string> values)
+    public static ClaimsIdentity SetClaims(this ClaimsIdentity identity, string type, ImmutableArray<string> values)
     {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
@@ -876,8 +1111,13 @@ public static class OpenIddictExtensions
     /// <param name="type">The type associated with the claims.</param>
     /// <param name="values">The claim values.</param>
     /// <returns>The claims identity.</returns>
-    public static ClaimsPrincipal SetClaims(this ClaimsPrincipal principal!!, string type, ImmutableArray<string> values)
+    public static ClaimsPrincipal SetClaims(this ClaimsPrincipal principal, string type, ImmutableArray<string> values)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (principal.Identity is not ClaimsIdentity identity)
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
@@ -903,8 +1143,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <returns>The creation date or <see langword="null"/> if the claim cannot be found.</returns>
-    public static DateTimeOffset? GetCreationDate(this ClaimsPrincipal principal!!)
+    public static DateTimeOffset? GetCreationDate(this ClaimsPrincipal principal)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         var claim = principal.FindFirst(Claims.Private.CreationDate);
         if (claim is null)
         {
@@ -924,8 +1169,13 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="principal">The claims principal.</param>
     /// <returns>The expiration date or <see langword="null"/> if the claim cannot be found.</returns>
-    public static DateTimeOffset? GetExpirationDate(this ClaimsPrincipal principal!!)
+    public static DateTimeOffset? GetExpirationDate(this ClaimsPrincipal principal)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         var claim = principal.FindFirst(Claims.Private.ExpirationDate);
         if (claim is null)
         {
@@ -1058,8 +1308,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="audience">The audience.</param>
     /// <returns><see langword="true"/> if the principal contains the given audience.</returns>
-    public static bool HasAudience(this ClaimsPrincipal principal!!, string audience)
+    public static bool HasAudience(this ClaimsPrincipal principal, string audience)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(audience))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0186), nameof(audience));
@@ -1074,8 +1329,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="presenter">The presenter.</param>
     /// <returns><see langword="true"/> if the principal contains the given presenter.</returns>
-    public static bool HasPresenter(this ClaimsPrincipal principal!!, string presenter)
+    public static bool HasPresenter(this ClaimsPrincipal principal, string presenter)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(presenter))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0187), nameof(presenter));
@@ -1090,8 +1350,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="resource">The resource.</param>
     /// <returns><see langword="true"/> if the principal contains the given resource.</returns>
-    public static bool HasResource(this ClaimsPrincipal principal!!, string resource)
+    public static bool HasResource(this ClaimsPrincipal principal, string resource)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(resource))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
@@ -1106,8 +1371,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="scope">The scope.</param>
     /// <returns><see langword="true"/> if the principal contains the given scope.</returns>
-    public static bool HasScope(this ClaimsPrincipal principal!!, string scope)
+    public static bool HasScope(this ClaimsPrincipal principal, string scope)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(scope))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0180), nameof(scope));
@@ -1122,8 +1392,13 @@ public static class OpenIddictExtensions
     /// <param name="principal">The claims principal.</param>
     /// <param name="type">The token type.</param>
     /// <returns><see langword="true"/> if the token type matches the specified type.</returns>
-    public static bool HasTokenType(this ClaimsPrincipal principal!!, string type)
+    public static bool HasTokenType(this ClaimsPrincipal principal, string type)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         if (string.IsNullOrEmpty(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0188), nameof(type));
@@ -1477,8 +1752,13 @@ public static class OpenIddictExtensions
         return false;
     }
 
-    private static TimeSpan? GetLifetime(ClaimsPrincipal principal!!, string type)
+    private static TimeSpan? GetLifetime(ClaimsPrincipal principal, string type)
     {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
         var value = principal.GetClaim(type);
         if (string.IsNullOrEmpty(value))
         {

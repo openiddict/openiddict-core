@@ -21,8 +21,8 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Initializes a new instance of <see cref="OpenIddictServerAspNetCoreBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictServerAspNetCoreBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictServerAspNetCoreBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -36,8 +36,13 @@ public class OpenIddictServerAspNetCoreBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-    public OpenIddictServerAspNetCoreBuilder Configure(Action<OpenIddictServerAspNetCoreOptions> configuration!!)
+    public OpenIddictServerAspNetCoreBuilder Configure(Action<OpenIddictServerAspNetCoreOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;
@@ -162,8 +167,15 @@ public class OpenIddictServerAspNetCoreBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-    public OpenIddictServerAspNetCoreBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy!!)
-        => Configure(options => options.AuthorizationRequestCachingPolicy = policy);
+    public OpenIddictServerAspNetCoreBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
+    {
+        if (policy is null)
+        {
+            throw new ArgumentNullException(nameof(policy));
+        }
+
+        return Configure(options => options.AuthorizationRequestCachingPolicy = policy);
+    }
 
     /// <summary>
     /// Sets the caching policy used by the logout endpoint.
@@ -171,8 +183,15 @@ public class OpenIddictServerAspNetCoreBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
-    public OpenIddictServerAspNetCoreBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy!!)
-        => Configure(options => options.LogoutRequestCachingPolicy = policy);
+    public OpenIddictServerAspNetCoreBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy)
+    {
+        if (policy is null)
+        {
+            throw new ArgumentNullException(nameof(policy));
+        }
+
+        return Configure(options => options.LogoutRequestCachingPolicy = policy);
+    }
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]

@@ -20,8 +20,8 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// Initializes a new instance of <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictEntityFrameworkCoreBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictEntityFrameworkCoreBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -35,8 +35,13 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
-    public OpenIddictEntityFrameworkCoreBuilder Configure(Action<OpenIddictEntityFrameworkCoreOptions> configuration!!)
+    public OpenIddictEntityFrameworkCoreBuilder Configure(Action<OpenIddictEntityFrameworkCoreOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;
@@ -91,8 +96,13 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// </summary>
     /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
     /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
-    public OpenIddictEntityFrameworkCoreBuilder UseDbContext(Type type!!)
+    public OpenIddictEntityFrameworkCoreBuilder UseDbContext(Type type)
     {
+        if (type is null)
+        {
+            throw new ArgumentNullException(nameof(type));
+        }
+
         if (!typeof(DbContext).IsAssignableFrom(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));

@@ -20,8 +20,8 @@ public class OpenIddictMongoDbBuilder
     /// Initializes a new instance of <see cref="OpenIddictMongoDbBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictMongoDbBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictMongoDbBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -35,8 +35,13 @@ public class OpenIddictMongoDbBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-    public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration!!)
+    public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;
@@ -156,8 +161,13 @@ public class OpenIddictMongoDbBuilder
     /// </summary>
     /// <param name="database">The <see cref="IMongoDatabase"/>.</param>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-    public OpenIddictMongoDbBuilder UseDatabase(IMongoDatabase database!!)
+    public OpenIddictMongoDbBuilder UseDatabase(IMongoDatabase database)
     {
+        if (database is null)
+        {
+            throw new ArgumentNullException(nameof(database));
+        }
+
         return Configure(options => options.Database = database);
     }
 

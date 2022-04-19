@@ -22,8 +22,13 @@ public static class OpenIddictServerOwinExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-    public static OpenIddictServerOwinBuilder UseOwin(this OpenIddictServerBuilder builder!!)
+    public static OpenIddictServerOwinBuilder UseOwin(this OpenIddictServerBuilder builder)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
         builder.Services.AddWebEncoders();
 
         // Note: unlike regular OWIN middleware, the OpenIddict server middleware is registered
@@ -66,8 +71,18 @@ public static class OpenIddictServerOwinExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
     public static OpenIddictServerBuilder UseOwin(
-        this OpenIddictServerBuilder builder!!, Action<OpenIddictServerOwinBuilder> configuration!!)
+        this OpenIddictServerBuilder builder, Action<OpenIddictServerOwinBuilder> configuration)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         configuration(builder.UseOwin());
 
         return builder;

@@ -18,8 +18,8 @@ public class OpenIddictValidationHandler<TContext> : IOpenIddictValidationHandle
     /// Creates a new event using the specified handler delegate.
     /// </summary>
     /// <param name="handler">The event handler delegate.</param>
-    public OpenIddictValidationHandler(Func<TContext, ValueTask> handler!!)
-        => _handler = handler;
+    public OpenIddictValidationHandler(Func<TContext, ValueTask> handler)
+        => _handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
     /// <summary>
     /// Processes the event.
@@ -28,5 +28,6 @@ public class OpenIddictValidationHandler<TContext> : IOpenIddictValidationHandle
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
-    public ValueTask HandleAsync(TContext context!!) => _handler(context);
+    public ValueTask HandleAsync(TContext context)
+        => _handler(context ?? throw new ArgumentNullException(nameof(context)));
 }

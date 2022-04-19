@@ -64,8 +64,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
-            public RestoreCachedRequestParameters(IDistributedCache cache!!)
-                => _cache = cache;
+            public RestoreCachedRequestParameters(IDistributedCache cache)
+                => _cache = cache ?? throw new ArgumentNullException(nameof(cache));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -80,8 +80,13 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // If a request_id parameter can be found in the authorization request,
@@ -156,10 +161,10 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             public CacheRequestParameters(
                 IDistributedCache cache,
-                IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options!!)
+                IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             {
-                _cache = cache;
-                _options = options;
+                _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+                _options = options ?? throw new ArgumentNullException(nameof(options));
             }
 
             /// <summary>
@@ -175,14 +180,22 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ExtractAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var request = context.Transaction.GetHttpRequest() ??
+                var request = context.Transaction.GetHttpRequest();
+                if (request is null)
+                {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+                }
 
                 // Don't cache the request if the request doesn't include any parameter.
                 // If a request_id parameter can be found in the authorization request,
@@ -263,8 +276,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
-            public RemoveCachedRequest(IDistributedCache cache!!)
-                => _cache = cache;
+            public RemoveCachedRequest(IDistributedCache cache)
+                => _cache = cache ?? throw new ArgumentNullException(nameof(cache));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -279,8 +292,13 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 if (string.IsNullOrEmpty(context.Request?.RequestId))
                 {
                     return default;
@@ -319,8 +337,13 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public async ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
@@ -400,8 +423,13 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
@@ -466,8 +494,13 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context!!)
+            public ValueTask HandleAsync(ApplyAuthorizationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??

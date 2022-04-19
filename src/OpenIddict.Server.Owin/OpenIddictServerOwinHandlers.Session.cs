@@ -59,8 +59,8 @@ public static partial class OpenIddictServerOwinHandlers
 
             public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
-            public RestoreCachedRequestParameters(IDistributedCache cache!!)
-                => _cache = cache;
+            public RestoreCachedRequestParameters(IDistributedCache cache)
+                => _cache = cache ?? throw new ArgumentNullException(nameof(cache));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -75,8 +75,13 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractLogoutRequestContext context!!)
+            public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // If a request_id parameter can be found in the logout request,
@@ -151,10 +156,10 @@ public static partial class OpenIddictServerOwinHandlers
 
             public CacheRequestParameters(
                 IDistributedCache cache,
-                IOptionsMonitor<OpenIddictServerOwinOptions> options!!)
+                IOptionsMonitor<OpenIddictServerOwinOptions> options)
             {
-                _cache = cache;
-                _options = options;
+                _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+                _options = options ?? throw new ArgumentNullException(nameof(options));
             }
 
             /// <summary>
@@ -170,8 +175,13 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractLogoutRequestContext context!!)
+            public async ValueTask HandleAsync(ExtractLogoutRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -253,8 +263,8 @@ public static partial class OpenIddictServerOwinHandlers
 
             public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0116));
 
-            public RemoveCachedRequest(IDistributedCache cache!!)
-                => _cache = cache;
+            public RemoveCachedRequest(IDistributedCache cache)
+                => _cache = cache ?? throw new ArgumentNullException(nameof(cache));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -269,8 +279,13 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context!!)
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 if (string.IsNullOrEmpty(context.Request?.RequestId))
                 {
                     return default;
@@ -304,12 +319,20 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context!!)
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response is null)
+                {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+                }
 
                 if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                 {
@@ -359,12 +382,20 @@ public static partial class OpenIddictServerOwinHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ApplyLogoutResponseContext context!!)
+            public ValueTask HandleAsync(ApplyLogoutResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response ??
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response is null)
+                {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+                }
 
                 // Note: this handler only executes if no post_logout_redirect_uri was specified
                 // and if the response doesn't correspond to an error, that must be handled locally.

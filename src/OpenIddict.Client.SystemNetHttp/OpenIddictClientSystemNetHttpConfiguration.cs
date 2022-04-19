@@ -21,12 +21,17 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
     private readonly IServiceProvider _serviceProvider;
 
-    public OpenIddictClientSystemNetHttpConfiguration(IServiceProvider serviceProvider!!)
-        => _serviceProvider = serviceProvider;
+    public OpenIddictClientSystemNetHttpConfiguration(IServiceProvider serviceProvider)
+        => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 #endif
 
-    public void Configure(OpenIddictClientOptions options!!)
+    public void Configure(OpenIddictClientOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         // Register the built-in event handlers used by the OpenIddict System.Net.Http client components.
         options.Handlers.AddRange(OpenIddictClientSystemNetHttpHandlers.DefaultHandlers);
     }
@@ -34,8 +39,13 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
     public void Configure(HttpClientFactoryOptions options)
         => Debug.Fail("This infrastructure method shouldn't be called.");
 
-    public void Configure(string name, HttpClientFactoryOptions options!!)
+    public void Configure(string name, HttpClientFactoryOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
 
         if (!string.Equals(name, assembly.Name, StringComparison.Ordinal))
