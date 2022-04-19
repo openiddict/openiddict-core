@@ -18,13 +18,13 @@
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
                      TokenEndpoint="https://www.reddit.com/api/v1/access_token"
                      UserinfoEndpoint="https://oauth.reddit.com/api/v1/me" />
-
-      <Setting Type="string" Name="ProductName" Property=".product_name"
-               Description="Gets or sets the product name, used to build the user agent header." />
-
-      <Setting Type="string" Name="ProductVersion" Property=".product_version"
-               Description="Gets or sets the product version, used to build the user agent header." />
     </Environment>
+
+    <Setting Type="string" Name="ProductName" Property=".product_name"
+             Description="Gets or sets the product name, used to build the user agent header." />
+
+    <Setting Type="string" Name="ProductVersion" Property=".product_version"
+             Description="Gets or sets the product version, used to build the user agent header." />
   </Provider>
 
   <Provider Name="Salesforce">
