@@ -23,8 +23,13 @@ public static class OpenIddictServerDataProtectionExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-    public static OpenIddictServerDataProtectionBuilder UseDataProtection(this OpenIddictServerBuilder builder!!)
+    public static OpenIddictServerDataProtectionBuilder UseDataProtection(this OpenIddictServerBuilder builder)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
         builder.Services.AddDataProtection();
 
         // Register the built-in server event handlers used by the OpenIddict Data Protection components.
@@ -50,8 +55,18 @@ public static class OpenIddictServerDataProtectionExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
     public static OpenIddictServerBuilder UseDataProtection(
-        this OpenIddictServerBuilder builder!!, Action<OpenIddictServerDataProtectionBuilder> configuration!!)
+        this OpenIddictServerBuilder builder, Action<OpenIddictServerDataProtectionBuilder> configuration)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         configuration(builder.UseDataProtection());
 
         return builder;

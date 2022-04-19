@@ -28,16 +28,16 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
     /// Creates a new instance of the <see cref="OpenIddictServerAspNetCoreHandler"/> class.
     /// </summary>
     public OpenIddictServerAspNetCoreHandler(
-        IOpenIddictServerDispatcher dispatcher!!,
-        IOpenIddictServerFactory factory!!,
-        IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options!!,
-        ILoggerFactory logger!!,
-        UrlEncoder encoder!!,
-        ISystemClock clock!!)
+        IOpenIddictServerDispatcher dispatcher,
+        IOpenIddictServerFactory factory,
+        IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock)
         : base(options, logger, encoder, clock)
     {
-        _dispatcher = dispatcher;
-        _factory = factory;
+        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
     /// <inheritdoc/>
@@ -338,8 +338,13 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
         => HandleChallengeAsync(properties);
 
     /// <inheritdoc/>
-    public async Task SignInAsync(ClaimsPrincipal user!!, AuthenticationProperties? properties)
+    public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
     {
+        if (user is null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
         var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
 

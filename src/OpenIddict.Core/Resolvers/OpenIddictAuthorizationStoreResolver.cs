@@ -9,8 +9,8 @@ public class OpenIddictAuthorizationStoreResolver : IOpenIddictAuthorizationStor
 {
     private readonly IServiceProvider _provider;
 
-    public OpenIddictAuthorizationStoreResolver(IServiceProvider provider!!)
-        => _provider = provider;
+    public OpenIddictAuthorizationStoreResolver(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Returns an authorization store compatible with the specified authorization type or throws an

@@ -50,8 +50,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context!!)
+            public async ValueTask HandleAsync(ValidateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // The OpenIddict client is expected to validate tokens it creates (e.g state tokens) and
                 // tokens that are created by one or multiple authorization servers (e.g identity tokens).
                 //
@@ -157,8 +162,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context!!)
+            public async ValueTask HandleAsync(ValidateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal is not null)
                 {
@@ -268,8 +278,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context!!)
+            public ValueTask HandleAsync(ValidateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Note: only map the private claims from fully trusted tokens.
                 if (context.Principal is null || !context.Principal.HasTokenType(TokenTypeHints.StateToken))
                 {
@@ -320,8 +335,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context!!)
+            public ValueTask HandleAsync(ValidateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 if (context.Principal is null)
                 {
                     context.Reject(
@@ -367,8 +387,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context!!)
+            public ValueTask HandleAsync(ValidateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var date = context.Principal.GetExpirationDate();
@@ -402,8 +427,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(GenerateTokenContext context!!)
+            public ValueTask HandleAsync(GenerateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
 
                 context.EncryptionCredentials = context.Options.EncryptionCredentials.First();
@@ -429,8 +459,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(GenerateTokenContext context!!)
+            public ValueTask HandleAsync(GenerateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // If a token was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Token))
                 {

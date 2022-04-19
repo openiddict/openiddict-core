@@ -24,21 +24,26 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     private readonly IOpenIddictApplicationStore<TApplication> _store;
 
     public OpenIddictApplicationCache(
-        IOptionsMonitor<OpenIddictCoreOptions> options!!,
-        IOpenIddictApplicationStoreResolver resolver!!)
+        IOptionsMonitor<OpenIddictCoreOptions> options,
+        IOpenIddictApplicationStoreResolver resolver)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
-            SizeLimit = options.CurrentValue.EntityCacheLimit
+            SizeLimit = (options ?? throw new ArgumentNullException(nameof(options))).CurrentValue.EntityCacheLimit
         });
 
         _signals = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
-        _store = resolver.Get<TApplication>();
+        _store = (resolver ?? throw new ArgumentNullException(nameof(resolver))).Get<TApplication>();
     }
 
     /// <inheritdoc/>
-    public async ValueTask AddAsync(TApplication application!!, CancellationToken cancellationToken)
+    public async ValueTask AddAsync(TApplication application, CancellationToken cancellationToken)
     {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
         _cache.Remove(new
         {
             Method = nameof(FindByClientIdAsync),
@@ -244,8 +249,13 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     }
 
     /// <inheritdoc/>
-    public async ValueTask RemoveAsync(TApplication application!!, CancellationToken cancellationToken)
+    public async ValueTask RemoveAsync(TApplication application, CancellationToken cancellationToken)
     {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
         var identifier = await _store.GetIdAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(identifier))
         {
@@ -266,8 +276,13 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     /// <param name="application">The application to store in the cache entry, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(object key!!, TApplication? application, CancellationToken cancellationToken)
+    protected virtual async ValueTask CreateEntryAsync(object key, TApplication? application, CancellationToken cancellationToken)
     {
+        if (key is null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
         using var entry = _cache.CreateEntry(key);
 
         if (application is not null)
@@ -288,8 +303,13 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     protected virtual async ValueTask CreateEntryAsync(
-        object key!!, ImmutableArray<TApplication> applications, CancellationToken cancellationToken)
+        object key, ImmutableArray<TApplication> applications, CancellationToken cancellationToken)
     {
+        if (key is null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
         using var entry = _cache.CreateEntry(key);
 
         foreach (var application in applications)
@@ -313,8 +333,13 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     /// whose result returns an expiration signal for the specified application.
     /// </returns>
     protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(
-        TApplication application!!, CancellationToken cancellationToken)
+        TApplication application, CancellationToken cancellationToken)
     {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
         var identifier = await _store.GetIdAsync(application, cancellationToken);
         if (string.IsNullOrEmpty(identifier))
         {

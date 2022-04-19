@@ -9,8 +9,8 @@ public class OpenIddictScopeStoreResolver : IOpenIddictScopeStoreResolver
 {
     private readonly IServiceProvider _provider;
 
-    public OpenIddictScopeStoreResolver(IServiceProvider provider!!)
-        => _provider = provider;
+    public OpenIddictScopeStoreResolver(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Returns a scope store compatible with the specified scope type or throws an

@@ -47,8 +47,13 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareUserinfoRequestContext context!!)
+            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
@@ -83,8 +88,13 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ExtractUserinfoResponseContext context!!)
+            public async ValueTask HandleAsync(ExtractUserinfoResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another client stack.
                 var response = context.Transaction.GetHttpResponseMessage() ??

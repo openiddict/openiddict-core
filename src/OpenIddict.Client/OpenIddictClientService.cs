@@ -19,8 +19,8 @@ public class OpenIddictClientService
     /// Creates a new instance of the <see cref="OpenIddictClientService"/> class.
     /// </summary>
     /// <param name="provider">The service provider.</param>
-    public OpenIddictClientService(IServiceProvider provider!!)
-        => _provider = provider;
+    public OpenIddictClientService(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified address.
@@ -28,9 +28,14 @@ public class OpenIddictClientService
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    public async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(Uri address!!, CancellationToken cancellationToken = default)
+    public async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
     {
-        if (!address.IsAbsoluteUri)
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
+        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }
@@ -162,9 +167,14 @@ public class OpenIddictClientService
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The security keys retrieved from the remote server.</returns>
-    public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri address!!, CancellationToken cancellationToken = default)
+    public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri address, CancellationToken cancellationToken = default)
     {
-        if (!address.IsAbsoluteUri)
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
+        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }
@@ -299,8 +309,13 @@ public class OpenIddictClientService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
     public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> RefreshTokensAsync(
-        OpenIddictClientRegistration registration!!, string token, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration, string token, CancellationToken cancellationToken = default)
     {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
         if (string.IsNullOrEmpty(token))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0156), nameof(token));
@@ -418,8 +433,18 @@ public class OpenIddictClientService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     public async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
-        OpenIddictClientRegistration registration!!, Uri address!!, OpenIddictRequest request, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration, Uri address, OpenIddictRequest request, CancellationToken cancellationToken = default)
     {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
         if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
@@ -562,8 +587,18 @@ public class OpenIddictClientService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
     public async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserinfoRequestAsync(
-        OpenIddictClientRegistration registration!!, Uri address!!, OpenIddictRequest request, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration, Uri address, OpenIddictRequest request, CancellationToken cancellationToken = default)
     {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
         if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));

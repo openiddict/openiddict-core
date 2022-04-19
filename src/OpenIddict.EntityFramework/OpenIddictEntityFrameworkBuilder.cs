@@ -21,8 +21,8 @@ public class OpenIddictEntityFrameworkBuilder
     /// Initializes a new instance of <see cref="OpenIddictEntityFrameworkBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictEntityFrameworkBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictEntityFrameworkBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -36,8 +36,13 @@ public class OpenIddictEntityFrameworkBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-    public OpenIddictEntityFrameworkBuilder Configure(Action<OpenIddictEntityFrameworkOptions> configuration!!)
+    public OpenIddictEntityFrameworkBuilder Configure(Action<OpenIddictEntityFrameworkOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;
@@ -89,8 +94,13 @@ public class OpenIddictEntityFrameworkBuilder
     /// </summary>
     /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
     /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-    public OpenIddictEntityFrameworkBuilder UseDbContext(Type type!!)
+    public OpenIddictEntityFrameworkBuilder UseDbContext(Type type)
     {
+        if (type is null)
+        {
+            throw new ArgumentNullException(nameof(type));
+        }
+
         if (!typeof(DbContext).IsAssignableFrom(type))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0232), nameof(type));

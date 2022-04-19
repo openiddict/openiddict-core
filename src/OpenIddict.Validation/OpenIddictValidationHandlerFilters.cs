@@ -16,8 +16,15 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public class RequireAccessTokenExtracted : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
-            => new(context.ExtractAccessToken);
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ExtractAccessToken);
+        }
     }
 
     /// <summary>
@@ -25,8 +32,15 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public class RequireAccessTokenValidated : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
     {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context!!)
-            => new(context.ValidateAccessToken);
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.ValidateAccessToken);
+        }
     }
 
     /// <summary>
@@ -34,8 +48,15 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public class RequireAuthorizationEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
-            => new(context.Options.EnableAuthorizationEntryValidation);
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.Options.EnableAuthorizationEntryValidation);
+        }
     }
 
     /// <summary>
@@ -43,8 +64,15 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public class RequireLocalValidation : IOpenIddictValidationHandlerFilter<BaseContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
-            => new(context.Options.ValidationType is OpenIddictValidationType.Direct);
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.Options.ValidationType == OpenIddictValidationType.Direct);
+        }
     }
 
     /// <summary>
@@ -52,8 +80,15 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public class RequireIntrospectionValidation : IOpenIddictValidationHandlerFilter<BaseContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
-            => new(context.Options.ValidationType is OpenIddictValidationType.Introspection);
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.Options.ValidationType == OpenIddictValidationType.Introspection);
+        }
     }
 
     /// <summary>
@@ -61,7 +96,14 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public class RequireTokenEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseContext context!!)
-            => new(context.Options.EnableTokenEntryValidation);
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.Options.EnableTokenEntryValidation);
+        }
     }
 }

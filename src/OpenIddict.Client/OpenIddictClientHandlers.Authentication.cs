@@ -51,8 +51,8 @@ public static partial class OpenIddictClientHandlers
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public PrepareAuthorizationRequest(IOpenIddictClientDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public PrepareAuthorizationRequest(IOpenIddictClientDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -65,8 +65,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessChallengeContext context!!)
+            public async ValueTask HandleAsync(ProcessChallengeContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new PrepareAuthorizationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -91,8 +96,8 @@ public static partial class OpenIddictClientHandlers
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public ApplyAuthorizationRequest(IOpenIddictClientDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ApplyAuthorizationRequest(IOpenIddictClientDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -105,8 +110,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessChallengeContext context!!)
+            public async ValueTask HandleAsync(ProcessChallengeContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ApplyAuthorizationRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -139,8 +149,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context!!)
+            public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
@@ -168,8 +183,8 @@ public static partial class OpenIddictClientHandlers
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public ExtractRedirectionRequest(IOpenIddictClientDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ExtractRedirectionRequest(IOpenIddictClientDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -182,8 +197,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ExtractRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -224,8 +244,8 @@ public static partial class OpenIddictClientHandlers
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public ValidateRedirectionRequest(IOpenIddictClientDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ValidateRedirectionRequest(IOpenIddictClientDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -239,8 +259,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ValidateRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -276,8 +301,8 @@ public static partial class OpenIddictClientHandlers
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public HandleRedirectionRequest(IOpenIddictClientDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public HandleRedirectionRequest(IOpenIddictClientDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -290,8 +315,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ProcessRequestContext context!!)
+            public async ValueTask HandleAsync(ProcessRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new HandleRedirectionRequestContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -327,8 +357,8 @@ public static partial class OpenIddictClientHandlers
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public ApplyRedirectionResponse(IOpenIddictClientDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ApplyRedirectionResponse(IOpenIddictClientDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -342,8 +372,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(TContext context!!)
+            public async ValueTask HandleAsync(TContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ApplyRedirectionResponseContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 
@@ -379,8 +414,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(PrepareAuthorizationRequestContext context!!)
+            public ValueTask HandleAsync(PrepareAuthorizationRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // When the response mode corresponds to the default mode assigned to the selected
                 // response type, the specification explicitly recommends omitting the response mode.
                 // As such, this handler is expected to remove the mode parameter in the following cases:
@@ -411,8 +451,8 @@ public static partial class OpenIddictClientHandlers
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
-            public ValidateTokens(IOpenIddictClientDispatcher dispatcher!!)
-                => _dispatcher = dispatcher;
+            public ValidateTokens(IOpenIddictClientDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -425,8 +465,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateRedirectionRequestContext context!!)
+            public async ValueTask HandleAsync(ValidateRedirectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var notification = new ProcessAuthenticationContext(context.Transaction);
                 await _dispatcher.DispatchAsync(notification);
 

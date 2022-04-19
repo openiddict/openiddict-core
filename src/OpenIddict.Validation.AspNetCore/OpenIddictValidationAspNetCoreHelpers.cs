@@ -19,32 +19,68 @@ public static class OpenIddictValidationAspNetCoreHelpers
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
     /// <returns>The <see cref="HttpRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    public static HttpRequest? GetHttpRequest(this OpenIddictValidationTransaction transaction!!)
-        => transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property) &&
-           property is WeakReference<HttpRequest> reference &&
-           reference.TryGetTarget(out HttpRequest? request) ? request : null;
+    public static HttpRequest? GetHttpRequest(this OpenIddictValidationTransaction transaction)
+    {
+        if (transaction is null)
+        {
+            throw new ArgumentNullException(nameof(transaction));
+        }
+
+        if (!transaction.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property))
+        {
+            return null;
+        }
+
+        if (property is WeakReference<HttpRequest> reference && reference.TryGetTarget(out HttpRequest? request))
+        {
+            return request;
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Retrieves the <see cref="OpenIddictValidationEndpointType"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <returns>The <see cref="OpenIddictValidationEndpointType"/>.</returns>
-    public static OpenIddictValidationEndpointType GetOpenIddictValidationEndpointType(this HttpContext context!!)
-        => context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.EndpointType ?? default;
+    public static OpenIddictValidationEndpointType GetOpenIddictValidationEndpointType(this HttpContext context)
+    {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        return context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.EndpointType ?? default;
+    }
 
     /// <summary>
     /// Retrieves the <see cref="OpenIddictRequest"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    public static OpenIddictRequest? GetOpenIddictValidationRequest(this HttpContext context!!)
-        => context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.Request;
+    /// <returns>The <see cref="OpenIddictRequest"/> instance or <c>null</c> if it couldn't be found.</returns>
+    public static OpenIddictRequest? GetOpenIddictValidationRequest(this HttpContext context)
+    {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        return context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.Request;
+    }
 
     /// <summary>
     /// Retrieves the <see cref="OpenIddictResponse"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The <see cref="OpenIddictResponse"/> instance or <see langword="null"/> if it couldn't be found.</returns>
-    public static OpenIddictResponse? GetOpenIddictValidationResponse(this HttpContext context!!)
-        => context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.Response;
+    /// <returns>The <see cref="OpenIddictResponse"/> instance or <c>null</c> if it couldn't be found.</returns>
+    public static OpenIddictResponse? GetOpenIddictValidationResponse(this HttpContext context)
+    {
+        if (context is null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        return context.Features.Get<OpenIddictValidationAspNetCoreFeature>()?.Transaction?.Response;
+    }
 }

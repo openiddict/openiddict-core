@@ -22,8 +22,13 @@ public static class OpenIddictValidationOwinExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
-    public static OpenIddictValidationOwinBuilder UseOwin(this OpenIddictValidationBuilder builder!!)
+    public static OpenIddictValidationOwinBuilder UseOwin(this OpenIddictValidationBuilder builder)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
         // Note: unlike regular OWIN middleware, the OpenIddict validation middleware is registered
         // as a scoped service in the DI container. This allows containers that support middleware
         // resolution (like Autofac) to use it without requiring additional configuration.
@@ -54,8 +59,18 @@ public static class OpenIddictValidationOwinExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
     public static OpenIddictValidationBuilder UseOwin(
-        this OpenIddictValidationBuilder builder!!, Action<OpenIddictValidationOwinBuilder> configuration!!)
+        this OpenIddictValidationBuilder builder, Action<OpenIddictValidationOwinBuilder> configuration)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         configuration(builder.UseOwin());
 
         return builder;

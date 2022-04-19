@@ -22,13 +22,13 @@ public class OpenIddictEntityFrameworkCoreApplicationStoreResolver : IOpenIddict
     private readonly IServiceProvider _provider;
 
     public OpenIddictEntityFrameworkCoreApplicationStoreResolver(
-        TypeResolutionCache cache!!,
-        IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options!!,
-        IServiceProvider provider!!)
+        TypeResolutionCache cache,
+        IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options,
+        IServiceProvider provider)
     {
-        _cache = cache;
-        _options = options;
-        _provider = provider;
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
     /// <summary>

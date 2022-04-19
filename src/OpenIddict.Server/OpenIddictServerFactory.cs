@@ -18,11 +18,11 @@ public class OpenIddictServerFactory : IOpenIddictServerFactory
     /// Creates a new instance of the <see cref="OpenIddictServerDispatcher"/> class.
     /// </summary>
     public OpenIddictServerFactory(
-        ILogger<OpenIddictServerDispatcher> logger!!,
-        IOptionsMonitor<OpenIddictServerOptions> options!!)
+        ILogger<OpenIddictServerDispatcher> logger,
+        IOptionsMonitor<OpenIddictServerOptions> options)
     {
-        _logger = logger;
-        _options = options;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     public ValueTask<OpenIddictServerTransaction> CreateTransactionAsync()

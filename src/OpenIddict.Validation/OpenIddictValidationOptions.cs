@@ -44,7 +44,7 @@ public class OpenIddictValidationOptions
     /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
     /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
     /// </summary>
-    public List<OpenIddictValidationHandlerDescriptor> Handlers { get; } = new(DefaultHandlers);
+    public List<OpenIddictValidationHandlerDescriptor> Handlers { get; } = new(OpenIddictValidationHandlers.DefaultHandlers);
 
     /// <summary>
     /// Gets or sets the type of validation used by the OpenIddict validation services.

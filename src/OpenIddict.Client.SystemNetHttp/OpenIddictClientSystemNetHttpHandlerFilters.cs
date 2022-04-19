@@ -16,8 +16,16 @@ public static class OpenIddictClientSystemNetHttpHandlerFilters
     /// </summary>
     public class RequireHttpMetadataAddress : IOpenIddictClientHandlerFilter<BaseExternalContext>
     {
-        public ValueTask<bool> IsActiveAsync(BaseExternalContext context!!)
-            => new(string.Equals(context.Address?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(context.Address?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+        public ValueTask<bool> IsActiveAsync(BaseExternalContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(
+                string.Equals(context.Address?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(context.Address?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }

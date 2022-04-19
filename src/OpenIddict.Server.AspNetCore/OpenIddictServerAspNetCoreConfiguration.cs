@@ -20,8 +20,13 @@ public class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<Authent
     /// Registers the OpenIddict server handler in the global authentication options.
     /// </summary>
     /// <param name="options">The options instance to initialize.</param>
-    public void Configure(AuthenticationOptions options!!)
+    public void Configure(AuthenticationOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
         if (options.SchemeMap.TryGetValue(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
             builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler))
@@ -33,8 +38,13 @@ public class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<Authent
             OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
-    public void Configure(OpenIddictServerOptions options!!)
+    public void Configure(OpenIddictServerOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         // Register the built-in event handlers used by the OpenIddict ASP.NET Core server components.
         options.Handlers.AddRange(OpenIddictServerAspNetCoreHandlers.DefaultHandlers);
     }
@@ -44,8 +54,13 @@ public class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<Authent
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, AuthenticationOptions options!!)
+    public void PostConfigure(string name, AuthenticationOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         if (!TryValidate(options.SchemeMap, options.DefaultAuthenticateScheme) ||
             !TryValidate(options.SchemeMap, options.DefaultChallengeScheme) ||
             !TryValidate(options.SchemeMap, options.DefaultForbidScheme) ||
@@ -74,8 +89,13 @@ public class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<Authent
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictServerAspNetCoreOptions options!!)
+    public void PostConfigure(string name, OpenIddictServerAspNetCoreOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         if (options.EnableErrorPassthrough && options.EnableStatusCodePagesIntegration)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0110));

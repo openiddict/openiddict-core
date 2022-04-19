@@ -23,8 +23,13 @@ public static class OpenIddictClientSystemNetHttpExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
-    public static OpenIddictClientSystemNetHttpBuilder UseSystemNetHttp(this OpenIddictClientBuilder builder!!)
+    public static OpenIddictClientSystemNetHttpBuilder UseSystemNetHttp(this OpenIddictClientBuilder builder)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
         builder.Services.AddHttpClient();
 
         // Register the built-in validation event handlers used by the OpenIddict System.Net.Http components.
@@ -52,8 +57,18 @@ public static class OpenIddictClientSystemNetHttpExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
     public static OpenIddictClientBuilder UseSystemNetHttp(
-        this OpenIddictClientBuilder builder!!, Action<OpenIddictClientSystemNetHttpBuilder> configuration!!)
+        this OpenIddictClientBuilder builder, Action<OpenIddictClientSystemNetHttpBuilder> configuration)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         configuration(builder.UseSystemNetHttp());
 
         return builder;

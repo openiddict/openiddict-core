@@ -29,13 +29,13 @@ public class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<OpenIddic
     /// <param name="factory">The OpenIddict client factory.</param>
     public OpenIddictClientOwinMiddleware(
         OwinMiddleware? next,
-        IOptionsMonitor<OpenIddictClientOwinOptions> options!!,
-        IOpenIddictClientDispatcher dispatcher!!,
-        IOpenIddictClientFactory factory!!)
+        IOptionsMonitor<OpenIddictClientOwinOptions> options,
+        IOpenIddictClientDispatcher dispatcher,
+        IOpenIddictClientFactory factory)
         : base(next, options.CurrentValue)
     {
-        _dispatcher = dispatcher;
-        _factory = factory;
+        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
     /// <summary>

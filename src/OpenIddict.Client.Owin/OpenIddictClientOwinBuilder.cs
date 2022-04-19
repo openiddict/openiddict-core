@@ -20,8 +20,8 @@ public class OpenIddictClientOwinBuilder
     /// Initializes a new instance of <see cref="OpenIddictClientOwinBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictClientOwinBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictClientOwinBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -35,8 +35,13 @@ public class OpenIddictClientOwinBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientOwinBuilder"/>.</returns>
-    public OpenIddictClientOwinBuilder Configure(Action<OpenIddictClientOwinOptions> configuration!!)
+    public OpenIddictClientOwinBuilder Configure(Action<OpenIddictClientOwinOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;

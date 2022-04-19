@@ -45,8 +45,13 @@ public static partial class OpenIddictValidationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             (context.ExtractAccessToken, context.RequireAccessToken, context.ValidateAccessToken) = context.EndpointType switch
             {
                 // The validation handler is responsible for validating access tokens for endpoints
@@ -85,8 +90,13 @@ public static partial class OpenIddictValidationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.RequireAccessToken && string.IsNullOrEmpty(context.AccessToken))
             {
                 context.Reject(
@@ -108,8 +118,8 @@ public static partial class OpenIddictValidationHandlers
     {
         private readonly IOpenIddictValidationDispatcher _dispatcher;
 
-        public ValidateAccessToken(IOpenIddictValidationDispatcher dispatcher!!)
-            => _dispatcher = dispatcher;
+        public ValidateAccessToken(IOpenIddictValidationDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -123,8 +133,13 @@ public static partial class OpenIddictValidationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (context.AccessTokenPrincipal is not null || string.IsNullOrEmpty(context.AccessToken))
             {
                 return;
@@ -179,8 +194,13 @@ public static partial class OpenIddictValidationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // If an error was explicitly set by the application, don't override it.
             if (!string.IsNullOrEmpty(context.Response.Error) ||
                 !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
@@ -233,8 +253,13 @@ public static partial class OpenIddictValidationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessErrorContext context!!)
+        public ValueTask HandleAsync(ProcessErrorContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Response.Error = context.Error;
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;
@@ -267,8 +292,13 @@ public static partial class OpenIddictValidationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (!string.IsNullOrEmpty(context.Transaction.Response?.Error))
             {
                 context.Reject(

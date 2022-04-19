@@ -18,8 +18,8 @@ public class OpenIddictMongoDbScopeStoreResolver : IOpenIddictScopeStoreResolver
     private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
     private readonly IServiceProvider _provider;
 
-    public OpenIddictMongoDbScopeStoreResolver(IServiceProvider provider!!)
-        => _provider = provider;
+    public OpenIddictMongoDbScopeStoreResolver(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Returns a scope store compatible with the specified scope type or throws an

@@ -38,8 +38,8 @@ public static partial class OpenIddictServerDataProtectionHandlers
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options!!)
-                => _options = options;
+            public ValidateDataProtectionToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+                => _options = options ?? throw new ArgumentNullException(nameof(options));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -238,8 +238,8 @@ public static partial class OpenIddictServerDataProtectionHandlers
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public GenerateDataProtectionToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options!!)
-                => _options = options;
+            public GenerateDataProtectionToken(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+                => _options = options ?? throw new ArgumentNullException(nameof(options));
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -252,8 +252,13 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(GenerateTokenContext context!!)
+            public ValueTask HandleAsync(GenerateTokenContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // If an access token was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Token))
                 {

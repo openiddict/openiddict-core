@@ -62,8 +62,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRequestContext context!!)
+        public ValueTask HandleAsync(ProcessRequestContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetOwinRequest() ??
@@ -82,7 +87,7 @@ public static partial class OpenIddictServerOwinHandlers
                 Matches(request, context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
                                                                               OpenIddictServerEndpointType.Unknown;
 
-            if (context.EndpointType != OpenIddictServerEndpointType.Unknown)
+            if (context.EndpointType is not OpenIddictServerEndpointType.Unknown)
             {
                 context.Logger.LogInformation(SR.GetResourceString(SR.ID6053), context.EndpointType);
             }
@@ -160,8 +165,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRequestContext context!!)
+        public ValueTask HandleAsync(ProcessRequestContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetOwinRequest() ??
@@ -220,8 +230,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessRequestContext context!!)
+        public ValueTask HandleAsync(ProcessRequestContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetOwinRequest() ??
@@ -267,8 +282,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is null)
             {
@@ -321,8 +341,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetOwinRequest() ??
@@ -367,8 +392,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetOwinRequest() ??
@@ -442,8 +472,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var request = context.Transaction.GetOwinRequest() ??
@@ -513,8 +548,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -607,8 +647,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -650,8 +695,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.SkipRequest();
 
             return default;
@@ -676,8 +726,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -725,8 +780,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetOwinRequest()?.Context.Response ??
@@ -749,8 +809,8 @@ public static partial class OpenIddictServerOwinHandlers
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-        public AttachWwwAuthenticateHeader(IOptionsMonitor<OpenIddictServerOwinOptions> options!!)
-            => _options = options;
+        public AttachWwwAuthenticateHeader(IOptionsMonitor<OpenIddictServerOwinOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -764,8 +824,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -870,8 +935,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetOwinRequest()?.Context.Response ??
@@ -908,8 +978,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -962,8 +1037,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
             if (string.IsNullOrEmpty(context.Transaction.Response.Error))
@@ -999,8 +1079,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
 
             // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -1068,8 +1153,13 @@ public static partial class OpenIddictServerOwinHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Logger.LogInformation(SR.GetResourceString(SR.ID6145));
             context.HandleRequest();
 

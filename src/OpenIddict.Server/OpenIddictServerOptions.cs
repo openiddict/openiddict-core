@@ -240,7 +240,7 @@ public class OpenIddictServerOptions
     /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
     /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
     /// </summary>
-    public List<OpenIddictServerHandlerDescriptor> Handlers { get; } = new(DefaultHandlers);
+    public List<OpenIddictServerHandlerDescriptor> Handlers { get; } = new(OpenIddictServerHandlers.DefaultHandlers);
 
     /// <summary>
     /// Gets or sets a boolean determining whether client identification is optional.

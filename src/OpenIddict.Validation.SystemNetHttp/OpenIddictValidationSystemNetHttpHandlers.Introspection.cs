@@ -48,8 +48,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(PrepareIntrospectionRequestContext context!!)
+            public async ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 Debug.Assert(context.Request is not null, SR.GetResourceString(SR.ID4008));
 
                 // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,

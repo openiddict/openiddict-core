@@ -56,8 +56,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 foreach (var parameter in context.Response.GetParameters())
                 {
                     if (!ValidateParameterType(parameter.Key, parameter.Value))
@@ -139,8 +144,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // The issuer returned in the discovery document must exactly match the URL used to access it.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient.
                 var issuer = (string?) context.Response[Metadata.Issuer];
@@ -186,8 +196,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Note: the authorization_endpoint node is required by the OpenID Connect discovery specification
                 // but is optional in the OAuth 2.0 authorization server metadata specification. To make OpenIddict
                 // compatible with the newer OAuth 2.0 specification, null/empty and missing values are allowed here.
@@ -233,8 +248,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Note: the jwks_uri node is required by the OpenID Connect discovery specification.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient.
                 var address = (string?) context.Response[Metadata.JwksUri];
@@ -280,8 +300,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var address = (string?) context.Response[Metadata.TokenEndpoint];
                 if (!string.IsNullOrEmpty(address))
                 {
@@ -318,8 +343,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var address = (string?) context.Response[Metadata.UserinfoEndpoint];
                 if (!string.IsNullOrEmpty(address))
                 {
@@ -356,8 +386,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Resolve the grant types supported by the authorization endpoint, if available.
                 var types = context.Response[Metadata.GrantTypesSupported]?.GetUnnamedParameters();
                 if (types is { Count: > 0 })
@@ -393,8 +428,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Resolve the response modes supported by the authorization endpoint, if available.
                 var modes = context.Response[Metadata.ResponseModesSupported]?.GetUnnamedParameters();
                 if (modes is { Count: > 0 })
@@ -430,8 +470,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Resolve the response types supported by the authorization endpoint, if available.
                 var types = context.Response[Metadata.ResponseTypesSupported]?.GetUnnamedParameters();
                 if (types is { Count: > 0 })
@@ -467,8 +512,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Resolve the code challenge methods supported by the authorization endpoint, if available.
                 var methods = context.Response[Metadata.CodeChallengeMethodsSupported]?.GetUnnamedParameters();
                 if (methods is { Count: > 0 })
@@ -504,8 +554,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Resolve the scopes supported by the remote server, if available.
                 var scopes = context.Response[Metadata.ScopesSupported]?.GetUnnamedParameters();
                 if (scopes is { Count: > 0 })
@@ -542,8 +597,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 context.Configuration.AuthorizationResponseIssParameterSupported = (bool?)
                     context.Response[Metadata.AuthorizationResponseIssParameterSupported];
 
@@ -568,8 +628,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationResponseContext context!!)
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 // Resolve the client authentication methods supported by the token endpoint, if available.
                 var methods = context.Response[Metadata.TokenEndpointAuthMethodsSupported]?.GetUnnamedParameters();
                 if (methods is { Count: > 0 })
@@ -605,8 +670,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context!!)
+            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 foreach (var parameter in context.Response.GetParameters())
                 {
                     if (!ValidateParameterType(parameter.Key, parameter.Value))
@@ -670,8 +740,13 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleCryptographyResponseContext context!!)
+            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
             {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
                 var keys = context.Response[JsonWebKeySetParameterNames.Keys]?.GetUnnamedParameters();
                 if (keys is not { Count: > 0 })
                 {

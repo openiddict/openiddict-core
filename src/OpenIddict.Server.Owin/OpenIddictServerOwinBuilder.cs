@@ -21,8 +21,8 @@ public class OpenIddictServerOwinBuilder
     /// Initializes a new instance of <see cref="OpenIddictServerOwinBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictServerOwinBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictServerOwinBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -36,8 +36,13 @@ public class OpenIddictServerOwinBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-    public OpenIddictServerOwinBuilder Configure(Action<OpenIddictServerOwinOptions> configuration!!)
+    public OpenIddictServerOwinBuilder Configure(Action<OpenIddictServerOwinOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;
@@ -151,8 +156,15 @@ public class OpenIddictServerOwinBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-    public OpenIddictServerOwinBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy!!)
-        => Configure(options => options.AuthorizationRequestCachingPolicy = policy);
+    public OpenIddictServerOwinBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
+    {
+        if (policy is null)
+        {
+            throw new ArgumentNullException(nameof(policy));
+        }
+
+        return Configure(options => options.AuthorizationRequestCachingPolicy = policy);
+    }
 
     /// <summary>
     /// Sets the caching policy used by the logout endpoint.
@@ -160,8 +172,15 @@ public class OpenIddictServerOwinBuilder
     /// </summary>
     /// <param name="policy">The caching policy.</param>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-    public OpenIddictServerOwinBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy!!)
-        => Configure(options => options.LogoutRequestCachingPolicy = policy);
+    public OpenIddictServerOwinBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy)
+    {
+        if (policy is null)
+        {
+            throw new ArgumentNullException(nameof(policy));
+        }
+
+        return Configure(options => options.LogoutRequestCachingPolicy = policy);
+    }
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]

@@ -9,8 +9,8 @@ public class OpenIddictApplicationStoreResolver : IOpenIddictApplicationStoreRes
 {
     private readonly IServiceProvider _provider;
 
-    public OpenIddictApplicationStoreResolver(IServiceProvider provider!!)
-        => _provider = provider;
+    public OpenIddictApplicationStoreResolver(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Returns an application store compatible with the specified application type or throws an

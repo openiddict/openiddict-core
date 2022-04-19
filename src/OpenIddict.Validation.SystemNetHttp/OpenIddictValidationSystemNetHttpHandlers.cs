@@ -40,8 +40,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// <inheritdoc/>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The HTTP request message is disposed later by a dedicated handler.")]
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var request = new HttpRequestMessage(HttpMethod.Get, context.Address)
             {
                 Headers =
@@ -77,8 +82,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// <inheritdoc/>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "The HTTP request message is disposed later by a dedicated handler.")]
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var request = new HttpRequestMessage(HttpMethod.Post, context.Address)
             {
                 Headers =
@@ -112,8 +122,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
@@ -170,8 +185,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
@@ -199,7 +219,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         private readonly IHttpClientFactory _factory;
 
         public SendHttpRequest(IHttpClientFactory factory)
-            => _factory = factory;
+            => _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -213,8 +233,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
             var request = context.Transaction.GetHttpRequestMessage() ??
@@ -253,8 +278,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
             var request = context.Transaction.GetHttpRequestMessage() ??
@@ -286,8 +316,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public async ValueTask HandleAsync(TContext context!!)
+        public async ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
             var response = context.Transaction.GetHttpResponseMessage() ??
@@ -319,8 +354,13 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
             var response = context.Transaction.GetHttpResponseMessage() ??
