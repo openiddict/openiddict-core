@@ -47,8 +47,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context!!)
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // The following providers are known to use dynamic userinfo endpoints:
             context.UserinfoEndpoint = context.Registration.GetProviderName() switch
             {
@@ -80,8 +85,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // Note: Reddit requires sending at least one scope element. If no scope parameter
             // is set, a misleading "invalid client identifier" error is returned to the caller.
             // To prevent that, the "identity" scope is always added by default.
@@ -111,8 +121,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context!!)
+        public ValueTask HandleAsync(ProcessChallengeContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             context.Request.Scope = context.Registration.GetProviderName() switch
             {
                 // The following providers are known to use comma-separated scopes instead of
@@ -147,8 +162,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context!!)
+        public ValueTask HandleAsync(TContext context)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
             var request = context.Transaction.GetHttpRequestMessage() ??

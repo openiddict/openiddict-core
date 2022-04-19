@@ -18,8 +18,8 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// Initializes a new instance of <see cref="OpenIddictClientWebIntegrationBuilder"/>.
     /// </summary>
     /// <param name="services">The services collection.</param>
-    public OpenIddictClientWebIntegrationBuilder(IServiceCollection services!!)
-        => Services = services;
+    public OpenIddictClientWebIntegrationBuilder(IServiceCollection services)
+        => Services = services ?? throw new ArgumentNullException(nameof(services));
 
     /// <summary>
     /// Gets the services collection.
@@ -33,8 +33,13 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/>.</returns>
-    public OpenIddictClientWebIntegrationBuilder Configure(Action<OpenIddictClientWebIntegrationOptions> configuration!!)
+    public OpenIddictClientWebIntegrationBuilder Configure(Action<OpenIddictClientWebIntegrationOptions> configuration)
     {
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         Services.Configure(configuration);
 
         return this;

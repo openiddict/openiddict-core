@@ -56,8 +56,13 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// </summary>
     /// <param name=""settings"">The provider settings.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/>.</returns>
-    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings!!)
+    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
     {
+        if (settings is null)
+        {
+            throw new ArgumentNullException(nameof(settings));
+        }
+
         Services.Configure<OpenIddictClientOptions>(options =>
         {
             var registration = new OpenIddictClientRegistration

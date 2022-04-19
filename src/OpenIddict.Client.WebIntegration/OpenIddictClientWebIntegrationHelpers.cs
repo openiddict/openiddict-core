@@ -13,7 +13,14 @@ namespace OpenIddict.Client.WebIntegration;
 /// </summary>
 public static class OpenIddictClientWebIntegrationHelpers
 {
-    public static string? GetProviderName(this OpenIddictClientRegistration registration!!)
-        => registration.Properties.TryGetValue(Properties.ProviderName, out var provider)
+    public static string? GetProviderName(this OpenIddictClientRegistration registration)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        return registration.Properties.TryGetValue(Properties.ProviderName, out var provider)
             && provider is string value ? value : null;
+    }
 }

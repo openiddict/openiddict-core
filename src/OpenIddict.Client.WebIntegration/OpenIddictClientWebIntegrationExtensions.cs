@@ -22,8 +22,13 @@ public static class OpenIddictClientWebIntegrationExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/>.</returns>
-    public static OpenIddictClientWebIntegrationBuilder UseWebProviders(this OpenIddictClientBuilder builder!!)
+    public static OpenIddictClientWebIntegrationBuilder UseWebProviders(this OpenIddictClientBuilder builder)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
         // Register the built-in event handlers used by the OpenIddict client Web components.
         // Note: the order used here is not important, as the actual order is set in the options.
         builder.Services.TryAdd(OpenIddictClientWebIntegrationHandlers.DefaultHandlers
@@ -46,8 +51,18 @@ public static class OpenIddictClientWebIntegrationExtensions
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     public static OpenIddictClientBuilder UseWebProviders(
-        this OpenIddictClientBuilder builder!!, Action<OpenIddictClientWebIntegrationBuilder> configuration!!)
+        this OpenIddictClientBuilder builder, Action<OpenIddictClientWebIntegrationBuilder> configuration)
     {
+        if (builder is null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configuration is null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
         configuration(builder.UseWebProviders());
 
         return builder;

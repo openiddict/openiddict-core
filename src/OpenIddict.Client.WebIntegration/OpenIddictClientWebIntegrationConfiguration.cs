@@ -18,8 +18,13 @@ public class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<Ope
     /// and ensures that the configuration is in a consistent and valid state.
     /// </summary>
     /// <param name="options">The options instance to initialize.</param>
-    public void Configure(OpenIddictClientOptions options!!)
+    public void Configure(OpenIddictClientOptions options)
     {
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         // Register the built-in event handlers used by the OpenIddict client Web components.
         options.Handlers.AddRange(OpenIddictClientWebIntegrationHandlers.DefaultHandlers);
     }
