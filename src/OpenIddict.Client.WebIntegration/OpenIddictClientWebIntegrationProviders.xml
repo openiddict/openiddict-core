@@ -45,4 +45,21 @@
     </Environment>
   </Provider>
 
+  <Provider Name="Zendesk">
+    <!--
+      Note: Zendesk is a multitenant provider that relies on subdomains to identify instances.
+      As such, the following URLs all include a {tenant} placeholder that will be dynamically
+      replaced by OpenIddict at runtime by the tenant configured in the Zendesk settings.
+    -->
+
+    <Environment Name="Production" Issuer="https://{tenant}.zendesk.com/">
+      <Configuration AuthorizationEndpoint="https://{tenant}.zendesk.com/oauth/authorizations/new"
+                     TokenEndpoint="https://{tenant}.zendesk.com/oauth/tokens"
+                     UserinfoEndpoint="https://{tenant}.zendesk.com/api/v2/users/me" />
+    </Environment>
+
+    <Setting Type="string" Name="Tenant" Property=".tenant"
+             Description="Gets or sets the tenant used to identify the Zendesk instance." />
+  </Provider>
+
 </Providers>

@@ -44,6 +44,8 @@ namespace OpenIddict.Client.WebIntegration.Generators
 
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
+using SmartFormat;
+using SmartFormat.Core.Settings;
 using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -65,12 +67,18 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
         Services.Configure<OpenIddictClientOptions>(options =>
         {
+            var formatter = Smart.CreateDefaultSmartFormat(new SmartSettings
+            {
+                CaseSensitivity = CaseSensitivityType.CaseInsensitive
+            });
+
             var registration = new OpenIddictClientRegistration
             {
                 Issuer = settings.Environment switch
                 {
                     {{~ for environment in provider.environments ~}}
-                    OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }} => new Uri(""{{ environment.issuer }}"", UriKind.Absolute),
+                    OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }}
+                        => new Uri(formatter.Format(""{{ environment.issuer }}"", settings), UriKind.Absolute),
                     {{~ end ~}}
 
                     _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
@@ -87,15 +95,15 @@ public partial class OpenIddictClientWebIntegrationBuilder
                     OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }} => new OpenIddictConfiguration
                     {
                         {{~ if environment.configuration.authorization_endpoint ~}}
-                        AuthorizationEndpoint = new Uri(""{{ environment.configuration.authorization_endpoint }}"", UriKind.Absolute),
+                        AuthorizationEndpoint = new Uri(formatter.Format(""{{ environment.configuration.authorization_endpoint }}"", settings), UriKind.Absolute),
                         {{~ end ~}}
 
                         {{~ if environment.configuration.token_endpoint ~}}
-                        TokenEndpoint = new Uri(""{{ environment.configuration.token_endpoint }}"", UriKind.Absolute),
+                        TokenEndpoint = new Uri(formatter.Format(""{{ environment.configuration.token_endpoint }}"", settings), UriKind.Absolute),
                         {{~ end ~}}
 
                         {{~ if environment.configuration.userinfo_endpoint ~}}
-                        UserinfoEndpoint = new Uri(""{{ environment.configuration.userinfo_endpoint }}"", UriKind.Absolute),
+                        UserinfoEndpoint = new Uri(formatter.Format(""{{ environment.configuration.userinfo_endpoint }}"", settings), UriKind.Absolute),
                         {{~ end ~}}
 
                         {{~ if environment.configuration.grant_types_supported ~}}
@@ -159,21 +167,21 @@ public partial class OpenIddictClientWebIntegrationBuilder
                     Providers = document.Root.Elements("Provider")
                         .Select(provider => new
                         {
-                            Name = provider.Attribute("Name")?.Value,
+                            Name = (string?) provider.Attribute("Name"),
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
-                                Name = environment.Attribute("Name")?.Value,
-                                Issuer = environment.Attribute("Issuer")?.Value,
+                                Name = (string?) environment.Attribute("Name"),
+                                Issuer = (string?) environment.Attribute("Issuer"),
                                 Configuration = environment.Element("Configuration") switch
                                 {
                                     XElement configuration => new
                                     {
-                                        AuthorizationEndpoint = configuration.Attribute("AuthorizationEndpoint")?.Value,
-                                        TokenEndpoint = configuration.Attribute("TokenEndpoint")?.Value,
-                                        UserinfoEndpoint = configuration.Attribute("UserinfoEndpoint")?.Value,
+                                        AuthorizationEndpoint = (string?) configuration.Attribute("AuthorizationEndpoint"),
+                                        TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
+                                        UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
 
-                                        GrantTypesSupported = configuration.Attribute("GrantTypesSupported")?.Value switch
+                                        GrantTypesSupported = (string?) configuration.Attribute("GrantTypesSupported") switch
                                         {
                                             string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
 
@@ -181,7 +189,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                                             _ => new[] { GrantTypes.AuthorizationCode }
                                         },
 
-                                        ResponseTypesSupported = configuration.Attribute("ResponseTypesSupported")?.Value switch
+                                        ResponseTypesSupported = (string?) configuration.Attribute("ResponseTypesSupported") switch
                                         {
                                             string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
 
@@ -189,7 +197,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                                             _ => new[] { ResponseTypes.Code }
                                         },
 
-                                        ResponseModesSupported = configuration.Attribute("ResponseModesSupported")?.Value switch
+                                        ResponseModesSupported = (string?) configuration.Attribute("ResponseModesSupported") switch
                                         {
                                             string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
 
@@ -204,8 +212,8 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Name = setting.Attribute("Name")?.Value,
-                                Property = setting.Attribute("Property")?.Value
+                                Name = (string?) setting.Attribute("Name"),
+                                Property = (string?) setting.Attribute("Property")
                             })
                             .ToList()
                         })
@@ -232,7 +240,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
                 return template.Render(new
                 {
                     Providers = document.Root.Elements("Provider")
-                        .Select(provider => new { Name = provider.Attribute("Name")?.Value })
+                        .Select(provider => new { Name = (string?) provider.Attribute("Name") })
                         .ToList()
                 });
             }
@@ -263,11 +271,11 @@ public partial class OpenIddictClientWebIntegrationEnvironments
                     Providers = document.Root.Elements("Provider")
                         .Select(provider => new
                         {
-                            Name = provider.Attribute("Name")?.Value,
+                            Name = (string?) provider.Attribute("Name"),
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
-                                Name = environment.Attribute("Name")?.Value
+                                Name = (string?) environment.Attribute("Name")
                             })
                             .ToList()
                         })
@@ -312,14 +320,14 @@ public partial class OpenIddictClientWebIntegrationSettings
                     Providers = document.Root.Elements("Provider")
                         .Select(provider => new
                         {
-                            Name = provider.Attribute("Name")?.Value,
+                            Name = (string?) provider.Attribute("Name"),
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Type = setting.Attribute("Type")?.Value,
-                                Name = setting.Attribute("Name")?.Value,
-                                Property = setting.Attribute("Property")?.Value,
-                                Description = setting.Attribute("Description")?.Value
+                                Type = (string?) setting.Attribute("Type"),
+                                Name = (string?) setting.Attribute("Name"),
+                                Property = (string?) setting.Attribute("Property"),
+                                Description = (string?) setting.Attribute("Description")
                             })
                             .ToList()
                         })
