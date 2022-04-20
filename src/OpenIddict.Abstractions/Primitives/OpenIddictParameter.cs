@@ -110,6 +110,18 @@ public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
                 // If the parameter is a JsonObject, return its length.
                 JsonObject value => value.Count,
 
+                // If the parameter is a JsonValue wrapping a JsonElement,
+                // apply the same logic as with direct JsonElement instances.
+                JsonValue value when value.TryGetValue(out JsonElement element)
+                    => element.ValueKind is JsonValueKind.Array or JsonValueKind.Object ? Count(element) : 0,
+
+                // If the parameter is a JsonValue wrapping a well-known primitive type
+                // (e.g int or string), always return 0 as these types can't have a length.
+                JsonValue value when value.TryGetValue(out bool   _) ||
+                                     value.TryGetValue(out int    _) ||
+                                     value.TryGetValue(out long   _) ||
+                                     value.TryGetValue(out string _) => 0,
+
                 // If the parameter is any other JsonNode (e.g a JsonValue), serialize it
                 // to a JsonElement first to determine its actual JSON representation
                 // and extract the number of items if the element is a JSON array or object.
