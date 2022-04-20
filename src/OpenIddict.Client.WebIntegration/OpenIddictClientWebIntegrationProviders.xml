@@ -1,8 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Providers>
 
+  <Provider Name="Fitbit">
+    <Environment Issuer="https://www.fitbit.com/">
+      <Configuration AuthorizationEndpoint="https://www.fitbit.com/oauth2/authorize"
+                     TokenEndpoint="https://api.fitbit.com/oauth2/token"
+                     UserinfoEndpoint="https://api.fitbit.com/1/user/-/profile.json">
+        <CodeChallengeMethod Value="S256" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+    </Environment>
+  </Provider>
+
   <Provider Name="GitHub">
-    <Environment Name="Production" Issuer="https://github.com/">
+    <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
                      TokenEndpoint="https://github.com/login/oauth/access_token"
                      UserinfoEndpoint="https://api.github.com/user" />
@@ -10,11 +22,11 @@
   </Provider>
 
   <Provider Name="Google">
-    <Environment Name="Production" Issuer="https://accounts.google.com/" />
+    <Environment Issuer="https://accounts.google.com/" />
   </Provider>
 
   <Provider Name="Reddit">
-    <Environment Name="Production" Issuer="https://www.reddit.com/">
+    <Environment Issuer="https://www.reddit.com/">
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
                      TokenEndpoint="https://www.reddit.com/api/v1/access_token"
                      UserinfoEndpoint="https://oauth.reddit.com/api/v1/me" />
@@ -52,7 +64,7 @@
       replaced by OpenIddict at runtime by the tenant configured in the Zendesk settings.
     -->
 
-    <Environment Name="Production" Issuer="https://{tenant}.zendesk.com/">
+    <Environment Issuer="https://{tenant}.zendesk.com/">
       <Configuration AuthorizationEndpoint="https://{tenant}.zendesk.com/oauth/authorizations/new"
                      TokenEndpoint="https://{tenant}.zendesk.com/oauth/tokens"
                      UserinfoEndpoint="https://{tenant}.zendesk.com/api/v2/users/me" />

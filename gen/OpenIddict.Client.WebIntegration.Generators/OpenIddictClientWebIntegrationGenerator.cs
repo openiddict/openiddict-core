@@ -106,32 +106,47 @@ public partial class OpenIddictClientWebIntegrationBuilder
                         UserinfoEndpoint = new Uri(formatter.Format(""{{ environment.configuration.userinfo_endpoint }}"", settings), UriKind.Absolute),
                         {{~ end ~}}
 
-                        {{~ if environment.configuration.grant_types_supported ~}}
+                        CodeChallengeMethodsSupported =
+                        {
+                            {{~ for method in environment.configuration.code_challenge_methods_supported ~}}
+                            ""{{ method }}"",
+                            {{~ end ~}}
+                        },
+
                         GrantTypesSupported =
                         {
                             {{~ for type in environment.configuration.grant_types_supported ~}}
-                            ""{{ type }}""
+                            ""{{ type }}"",
                             {{~ end ~}}
                         },
-                        {{~ end ~}}
 
-                        {{~ if environment.configuration.response_types_supported ~}}
-                        ResponseTypesSupported =
-                        {
-                            {{~ for type in environment.configuration.response_types_supported ~}}
-                            ""{{ type }}""
-                            {{~ end ~}}
-                        },
-                        {{~ end ~}}
-
-                        {{~ if environment.configuration.response_modes_supported ~}}
                         ResponseModesSupported =
                         {
                             {{~ for mode in environment.configuration.response_modes_supported ~}}
-                            ""{{ mode }}""
+                            ""{{ mode }}"",
                             {{~ end ~}}
                         },
-                        {{~ end ~}}
+
+                        ResponseTypesSupported =
+                        {
+                            {{~ for type in environment.configuration.response_types_supported ~}}
+                            ""{{ type }}"",
+                            {{~ end ~}}
+                        },
+
+                        ScopesSupported =
+                        {
+                            {{~ for scope in environment.configuration.scopes_supported ~}}
+                            ""{{ scope }}"",
+                            {{~ end ~}}
+                        },
+
+                        TokenEndpointAuthMethodsSupported =
+                        {
+                            {{~ for method in environment.configuration.token_endpoint_auth_methods_supported ~}}
+                            ""{{ method }}"",
+                            {{~ end ~}}
+                        }
                     },
                     {{~ else ~}}
                     OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }} => null,
@@ -171,7 +186,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
-                                Name = (string?) environment.Attribute("Name"),
+                                Name = (string?) environment.Attribute("Name") ?? "Production",
                                 Issuer = (string?) environment.Attribute("Issuer"),
                                 Configuration = environment.Element("Configuration") switch
                                 {
@@ -181,30 +196,54 @@ public partial class OpenIddictClientWebIntegrationBuilder
                                         TokenEndpoint = (string?) configuration.Attribute("TokenEndpoint"),
                                         UserinfoEndpoint = (string?) configuration.Attribute("UserinfoEndpoint"),
 
-                                        GrantTypesSupported = (string?) configuration.Attribute("GrantTypesSupported") switch
+                                        CodeChallengeMethodsSupported = configuration.Elements("CodeChallengeMethod").ToList() switch
                                         {
-                                            string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
+                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
 
-                                            // If no explicit grant type was set, assume the provider supports the code flow.
-                                            _ => new[] { GrantTypes.AuthorizationCode }
+                                            _ => (IList<string>) Array.Empty<string>()
                                         },
 
-                                        ResponseTypesSupported = (string?) configuration.Attribute("ResponseTypesSupported") switch
+                                        GrantTypesSupported = configuration.Elements("GrantType").ToList() switch
                                         {
-                                            string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
+                                            { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
 
-                                            // If no explicit response type was set, assume the provider supports the code flow.
-                                            _ => new[] { ResponseTypes.Code }
+                                            // If no explicit grant type was set, assume the provider only supports the code flow.
+                                            _ => (IList<string>) new[] { GrantTypes.AuthorizationCode }
                                         },
 
-                                        ResponseModesSupported = (string?) configuration.Attribute("ResponseModesSupported") switch
+                                        ResponseModesSupported = configuration.Elements("ResponseMode").ToList() switch
                                         {
-                                            string value => value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries),
+                                            { Count: > 0 } modes => modes.Select(type => (string?) type.Attribute("Value")).ToList(),
 
-                                            // If no explicit response mode was set, assume the provider supports the query response mode.
-                                            _ => new[] { ResponseModes.Query }
+                                            // If no explicit response mode was set, assume the provider only supports the query response mode.
+                                            _ => (IList<string>) new[] { ResponseModes.Query }
                                         },
+
+                                        ResponseTypesSupported = configuration.Elements("ResponseType").ToList() switch
+                                        {
+                                            { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                            // If no explicit response type was set, assume the provider only supports the code flow.
+                                            _ => (IList<string>) new[] { ResponseTypes.Code }
+                                        },
+
+                                        ScopesSupported = configuration.Elements("Scope").ToList() switch
+                                        {
+                                            { Count: > 0 } types => types.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                            _ => (IList<string>) Array.Empty<string>()
+                                        },
+
+                                        TokenEndpointAuthMethodsSupported = configuration.Elements("TokenEndpointAuthMethod").ToList() switch
+                                        {
+                                            { Count: > 0 } methods => methods.Select(type => (string?) type.Attribute("Value")).ToList(),
+
+                                            // If no explicit response type was set, assume the provider only supports
+                                            // flowing the client credentials as part of the token request payload.
+                                            _ => (IList<string>) new[] { ClientAuthenticationMethods.ClientSecretPost }
+                                        }
                                     },
+
                                     _ => null
                                 }
                             })
@@ -275,7 +314,7 @@ public partial class OpenIddictClientWebIntegrationEnvironments
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
-                                Name = (string?) environment.Attribute("Name")
+                                Name = (string?) environment.Attribute("Name") ?? "Production"
                             })
                             .ToList()
                         })
