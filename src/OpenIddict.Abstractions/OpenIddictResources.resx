@@ -1626,6 +1626,12 @@ To register the server services, use 'services.AddOpenIddict().AddClient()'.</va
   <data name="ID2135" xml:space="preserve">
     <value>The '{0}' parameter must not include a '{1}' component.</value>
   </data>
+  <data name="ID2136" xml:space="preserve">
+    <value>An error occurred while communicating with the remote HTTP server.</value>
+  </data>
+  <data name="ID2137" xml:space="preserve">
+    <value>An invalid JSON response was returned by the remote HTTP server.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -2173,6 +2179,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6181" xml:space="preserve">
     <value>The authorization request was rejected because the '{Parameter}' contained a forbidden parameter: {Name}.</value>
+  </data>
+  <data name="ID6182" xml:space="preserve">
+    <value>A network error occured while communicating with the remote HTTP server.</value>
+  </data>
+  <data name="ID6183" xml:space="preserve">
+    <value>An invalid JSON response was returned by the remote HTTP server: {Payload}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
