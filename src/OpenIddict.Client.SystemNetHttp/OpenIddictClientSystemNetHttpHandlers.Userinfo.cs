@@ -7,6 +7,8 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
 namespace OpenIddict.Client.SystemNetHttp;
@@ -115,13 +117,45 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 {
                     context.Response = new OpenIddictResponse();
                     context.UserinfoToken = await response.Content.ReadAsStringAsync();
+
+                    return;
                 }
 
-                else
+                try
                 {
-                    // Note: ReadFromJsonAsync() automatically validates the content type and the content encoding
-                    // and transcode the response stream if a non-UTF-8 response is returned by the remote server.
-                    context.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
+                    try
+                    {
+                        // Note: ReadFromJsonAsync() automatically validates the content encoding and transparently
+                        // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
+                        context.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
+                    }
+
+                    // Initial versions of System.Net.Http.Json were known to eagerly validate the media type returned
+                    // as part of the HTTP Content-Type header and throw a NotSupportedException. If such an exception
+                    // is caught, try to extract the response using the less efficient string-based deserialization,
+                    // that will also take care of handling non-UTF-8 encodings but won't validate the media type.
+                    catch (NotSupportedException)
+                    {
+                        context.Response = JsonSerializer.Deserialize<OpenIddictResponse>(
+                            await response.Content.ReadAsStringAsync());
+                    }
+                }
+
+                // If an exception is thrown at this stage, this likely means the returned response was not a valid
+                // JSON response or was not correctly formatted as a JSON object. This typically happens when
+                // a server error occurs and a default error page is returned by the remote HTTP server.
+                // In this case, log the error details and return a generic error to stop processing the event.
+                catch (Exception exception)
+                {
+                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6183),
+                        await response.Content.ReadAsStringAsync());
+
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2137),
+                        uri: SR.FormatID8000(SR.ID2137));
+
+                    return;
                 }
             }
         }

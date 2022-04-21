@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Validation.SystemNetHttp;
 
@@ -253,11 +255,30 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // If supported, import the HTTP version from the client instance.
             request.Version = client.DefaultRequestVersion;
 #endif
-            var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0175));
+            HttpResponseMessage response;
+
+            try
+            {
+                response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
+            }
+
+            // If an exception is thrown at this stage, this likely means a persistent network error occurred.
+            // In this case, log the error details and return a generic error to stop processing the event.
+            catch (Exception exception)
+            {
+                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6182));
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2136),
+                    uri: SR.FormatID8000(SR.ID2136));
+
+                return;
+            }
 
             // Store the HttpResponseMessage in the transaction properties.
-            context.Transaction.SetProperty(typeof(HttpResponseMessage).FullName!, response);
+            context.Transaction.SetProperty(typeof(HttpResponseMessage).FullName!, response ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0175)));
         }
     }
 
@@ -331,9 +352,42 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // The status code is deliberately not validated to ensure even errored responses
             // (typically in the 4xx range) can be deserialized and handled by the event handlers.
 
-            // Note: ReadFromJsonAsync() automatically validates the content type and the content encoding
-            // and transcode the response stream if a non-UTF-8 response is returned by the remote server.
-            context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
+            try
+            {
+                try
+                {
+                    // Note: ReadFromJsonAsync() automatically validates the content encoding and transparently
+                    // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
+                    context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
+                }
+
+                // Initial versions of System.Net.Http.Json were known to eagerly validate the media type returned
+                // as part of the HTTP Content-Type header and throw a NotSupportedException. If such an exception
+                // is caught, try to extract the response using the less efficient string-based deserialization,
+                // that will also take care of handling non-UTF-8 encodings but won't validate the media type.
+                catch (NotSupportedException)
+                {
+                    context.Transaction.Response = JsonSerializer.Deserialize<OpenIddictResponse>(
+                        await response.Content.ReadAsStringAsync());
+                }
+            }
+
+            // If an exception is thrown at this stage, this likely means the returned response was not a valid
+            // JSON response or was not correctly formatted as a JSON object. This typically happens when
+            // a server error occurs and a default error page is returned by the remote HTTP server.
+            // In this case, log the error details and return a generic error to stop processing the event.
+            catch (Exception exception)
+            {
+                context.Logger.LogError(exception, SR.GetResourceString(SR.ID6183),
+                    await response.Content.ReadAsStringAsync());
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2137),
+                    uri: SR.FormatID8000(SR.ID2137));
+
+                return;
+            }
         }
     }
 
