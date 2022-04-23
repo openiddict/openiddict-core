@@ -1221,6 +1221,41 @@ Note: when using a dependency injection container supporting middleware resoluti
     <value>The OpenIddict client services cannot be resolved from the DI container.
 To register the server services, use 'services.AddOpenIddict().AddClient()'.</value>
   </data>
+  <data name="ID0318" xml:space="preserve">
+    <value>The core services must be registered when enabling the OpenIddict client feature.
+To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.
+Alternatively, you can disable the token storage feature by calling 'services.AddOpenIddict().AddClient().DisableTokenStorage()'.</value>
+  </data>
+  <data name="ID0319" xml:space="preserve">
+    <value>An error occurred while refreshing tokens.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0320" xml:space="preserve">
+    <value>An error occurred while preparing the token request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0321" xml:space="preserve">
+    <value>An error occurred while sending the token request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0322" xml:space="preserve">
+    <value>An error occurred while extracting the token response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0323" xml:space="preserve">
+    <value>An error occurred while handling the token response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

@@ -9,11 +9,11 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using Properties = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Properties;
+using Properties = OpenIddict.Client.DataProtection.OpenIddictClientDataProtectionConstants.Properties;
 
-namespace OpenIddict.Server.DataProtection;
+namespace OpenIddict.Client.DataProtection;
 
-public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProtectionFormatter
+public class OpenIddictClientDataProtectionFormatter : IOpenIddictClientDataProtectionFormatter
 {
     public ClaimsPrincipal ReadToken(BinaryReader reader)
     {
@@ -34,21 +34,13 @@ public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProt
             .SetResources(GetArrayProperty(properties, Properties.Resources))
             .SetScopes(GetArrayProperty(properties, Properties.Scopes))
 
-            .SetClaim(Claims.Private.AccessTokenLifetime,       GetProperty(properties, Properties.AccessTokenLifetime))
-            .SetClaim(Claims.Private.AuthorizationCodeLifetime, GetProperty(properties, Properties.AuthorizationCodeLifetime))
-            .SetClaim(Claims.Private.AuthorizationId,           GetProperty(properties, Properties.InternalAuthorizationId))
-            .SetClaim(Claims.Private.CodeChallenge,             GetProperty(properties, Properties.CodeChallenge))
-            .SetClaim(Claims.Private.CodeChallengeMethod,       GetProperty(properties, Properties.CodeChallengeMethod))
-            .SetClaim(Claims.Private.CreationDate,              GetProperty(properties, Properties.Issued))
-            .SetClaim(Claims.Private.DeviceCodeId,              GetProperty(properties, Properties.DeviceCodeId))
-            .SetClaim(Claims.Private.DeviceCodeLifetime,        GetProperty(properties, Properties.DeviceCodeLifetime))
-            .SetClaim(Claims.Private.IdentityTokenLifetime,     GetProperty(properties, Properties.IdentityTokenLifetime))
-            .SetClaim(Claims.Private.ExpirationDate,            GetProperty(properties, Properties.Expires))
-            .SetClaim(Claims.Private.Nonce,                     GetProperty(properties, Properties.Nonce))
-            .SetClaim(Claims.Private.RedirectUri,               GetProperty(properties, Properties.OriginalRedirectUri))
-            .SetClaim(Claims.Private.RefreshTokenLifetime,      GetProperty(properties, Properties.RefreshTokenLifetime))
-            .SetClaim(Claims.Private.TokenId,                   GetProperty(properties, Properties.InternalTokenId))
-            .SetClaim(Claims.Private.UserCodeLifetime,          GetProperty(properties, Properties.UserCodeLifetime));
+            .SetClaim(Claims.Private.CodeVerifier,       GetProperty(properties, Properties.CodeVerifier))
+            .SetClaim(Claims.Private.CreationDate,       GetProperty(properties, Properties.Issued))
+            .SetClaim(Claims.Private.ExpirationDate,     GetProperty(properties, Properties.Expires))
+            .SetClaim(Claims.Private.Nonce,              GetProperty(properties, Properties.Nonce))
+            .SetClaim(Claims.Private.RedirectUri,        GetProperty(properties, Properties.OriginalRedirectUri))
+            .SetClaim(Claims.Private.StateTokenLifetime, GetProperty(properties, Properties.StateTokenLifetime))
+            .SetClaim(Claims.Private.TokenId,            GetProperty(properties, Properties.InternalTokenId));
 
         static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
         {
@@ -212,20 +204,11 @@ public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProt
         SetProperty(properties, Properties.Issued,  principal.GetClaim(Claims.Private.CreationDate));
         SetProperty(properties, Properties.Expires, principal.GetClaim(Claims.Private.ExpirationDate));
 
-        SetProperty(properties, Properties.AccessTokenLifetime,       principal.GetClaim(Claims.Private.AccessTokenLifetime));
-        SetProperty(properties, Properties.AuthorizationCodeLifetime, principal.GetClaim(Claims.Private.AuthorizationCodeLifetime));
-        SetProperty(properties, Properties.DeviceCodeLifetime,        principal.GetClaim(Claims.Private.DeviceCodeLifetime));
-        SetProperty(properties, Properties.IdentityTokenLifetime,     principal.GetClaim(Claims.Private.IdentityTokenLifetime));
-        SetProperty(properties, Properties.RefreshTokenLifetime,      principal.GetClaim(Claims.Private.RefreshTokenLifetime));
-        SetProperty(properties, Properties.UserCodeLifetime,          principal.GetClaim(Claims.Private.UserCodeLifetime));
+        SetProperty(properties, Properties.StateTokenLifetime, principal.GetClaim(Claims.Private.StateTokenLifetime));
 
-        SetProperty(properties, Properties.CodeChallenge,       principal.GetClaim(Claims.Private.CodeChallenge));
-        SetProperty(properties, Properties.CodeChallengeMethod, principal.GetClaim(Claims.Private.CodeChallengeMethod));
+        SetProperty(properties, Properties.InternalTokenId, principal.GetTokenId());
 
-        SetProperty(properties, Properties.InternalAuthorizationId, principal.GetAuthorizationId());
-        SetProperty(properties, Properties.InternalTokenId,         principal.GetTokenId());
-
-        SetProperty(properties, Properties.DeviceCodeId,        principal.GetClaim(Claims.Private.DeviceCodeId));
+        SetProperty(properties, Properties.CodeVerifier,        principal.GetClaim(Claims.Private.CodeVerifier));
         SetProperty(properties, Properties.Nonce,               principal.GetClaim(Claims.Private.Nonce));
         SetProperty(properties, Properties.OriginalRedirectUri, principal.GetClaim(Claims.Private.RedirectUri));
 
@@ -236,25 +219,17 @@ public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProt
 
         // Copy the principal and exclude the claim that were mapped to authentication properties.
         principal = principal.Clone(claim => claim.Type is not (
-            Claims.Private.AccessTokenLifetime       or
-            Claims.Private.Audience                  or
-            Claims.Private.AuthorizationCodeLifetime or
-            Claims.Private.AuthorizationId           or
-            Claims.Private.CodeChallenge             or
-            Claims.Private.CodeChallengeMethod       or
-            Claims.Private.CreationDate              or
-            Claims.Private.DeviceCodeId              or
-            Claims.Private.DeviceCodeLifetime        or
-            Claims.Private.ExpirationDate            or
-            Claims.Private.IdentityTokenLifetime     or
-            Claims.Private.Nonce                     or
-            Claims.Private.Presenter                 or
-            Claims.Private.RedirectUri               or
-            Claims.Private.RefreshTokenLifetime      or
-            Claims.Private.Resource                  or
-            Claims.Private.Scope                     or
-            Claims.Private.TokenId                   or
-            Claims.Private.UserCodeLifetime));
+            Claims.Private.Audience           or
+            Claims.Private.CodeVerifier       or
+            Claims.Private.CreationDate       or
+            Claims.Private.ExpirationDate     or
+            Claims.Private.Nonce              or
+            Claims.Private.Presenter          or
+            Claims.Private.RedirectUri        or
+            Claims.Private.Resource           or
+            Claims.Private.Scope              or
+            Claims.Private.StateTokenLifetime or
+            Claims.Private.TokenId));
 
         Write(writer, principal.Identity?.AuthenticationType, principal, properties);
         writer.Flush();

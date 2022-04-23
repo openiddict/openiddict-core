@@ -35,6 +35,18 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a token entry
+        /// should be created to persist token metadata in a database.
+        /// </summary>
+        public bool CreateTokenEntry { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the token payload
+        /// should be persisted alongside the token metadata in the database.
+        /// </summary>
+        public bool PersistTokenPayload { get; set; }
+
+        /// <summary>
         /// Gets or sets the security principal used to create the token.
         /// </summary>
         public ClaimsPrincipal Principal { get; set; } = default!;

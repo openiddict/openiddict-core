@@ -221,6 +221,38 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no token entry is created in the database.
+    /// </summary>
+    public class RequireTokenEntryCreated : IOpenIddictClientHandlerFilter<GenerateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.CreateTokenEntry);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the token payload is not persisted in the database.
+    /// </summary>
+    public class RequireTokenPayloadPersisted : IOpenIddictClientHandlerFilter<GenerateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.PersistTokenPayload);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no token request is expected to be sent.
     /// </summary>
     public class RequireTokenRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
@@ -249,6 +281,22 @@ public static class OpenIddictClientHandlerFilters
             }
 
             return new(context.TokenResponse is not null);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if token storage was not enabled.
+    /// </summary>
+    public class RequireTokenStorageEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!context.Options.DisableTokenStorage);
         }
     }
 
