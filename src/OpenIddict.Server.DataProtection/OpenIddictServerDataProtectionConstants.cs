@@ -15,7 +15,6 @@ public static class OpenIddictServerDataProtectionConstants
         public const string Audiences = ".audiences";
         public const string CodeChallenge = ".code_challenge";
         public const string CodeChallengeMethod = ".code_challenge_method";
-        public const string DataProtector = ".data_protector";
         public const string DeviceCodeId = ".device_code_id";
         public const string DeviceCodeLifetime = ".device_code_lifetime";
         public const string Expires = ".expires";

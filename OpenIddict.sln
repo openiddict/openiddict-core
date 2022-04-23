@@ -124,6 +124,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.AspNet.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Sandbox.AspNet.Client", "sandbox\OpenIddict.Sandbox.AspNet.Client\OpenIddict.Sandbox.AspNet.Client.csproj", "{BFF5B862-D5FB-4019-8647-C43E5E7EF97D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.DataProtection", "src\OpenIddict.Client.DataProtection\OpenIddict.Client.DataProtection.csproj", "{E4D77737-4C73-4520-99E8-8A9E586C69A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -294,6 +296,10 @@ Global
 		{BFF5B862-D5FB-4019-8647-C43E5E7EF97D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFF5B862-D5FB-4019-8647-C43E5E7EF97D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFF5B862-D5FB-4019-8647-C43E5E7EF97D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4D77737-4C73-4520-99E8-8A9E586C69A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4D77737-4C73-4520-99E8-8A9E586C69A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4D77737-4C73-4520-99E8-8A9E586C69A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4D77737-4C73-4520-99E8-8A9E586C69A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -340,6 +346,7 @@ Global
 		{3385BC80-7EBF-4581-8FC8-E18E05EECFA2} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{0DFA4EC2-035A-46D3-AAF6-4BF1DFBC1040} = {F47D1283-0EE9-4728-8026-58405C29B786}
 		{BFF5B862-D5FB-4019-8647-C43E5E7EF97D} = {F47D1283-0EE9-4728-8026-58405C29B786}
+		{E4D77737-4C73-4520-99E8-8A9E586C69A1} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}

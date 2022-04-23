@@ -961,6 +961,16 @@ public class OpenIddictClientBuilder
     }
 
     /// <summary>
+    /// Disables token storage, so that no database entry is created
+    /// for the tokens and codes returned by the OpenIddict client.
+    /// Using this option is generally NOT recommended as it prevents
+    /// the tokens from being revoked (if needed).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
+    public OpenIddictClientBuilder DisableTokenStorage()
+        => Configure(options => options.DisableTokenStorage = true);
+
+    /// <summary>
     /// Sets the relative or absolute URLs associated to the redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first address will be returned as part of the discovery document.

@@ -49,8 +49,11 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireStateTokenGenerated>();
         builder.Services.TryAddSingleton<RequireStateTokenPrincipal>();
         builder.Services.TryAddSingleton<RequireStateTokenValidated>();
+        builder.Services.TryAddSingleton<RequireTokenEntryCreated>();
+        builder.Services.TryAddSingleton<RequireTokenPayloadPersisted>();
         builder.Services.TryAddSingleton<RequireTokenRequest>();
         builder.Services.TryAddSingleton<RequireTokenResponse>();
+        builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
         builder.Services.TryAddSingleton<RequireUserinfoRequest>();
         builder.Services.TryAddSingleton<RequireUserinfoResponse>();
         builder.Services.TryAddSingleton<RequireUserinfoTokenExtracted>();

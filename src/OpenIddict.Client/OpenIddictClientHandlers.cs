@@ -80,6 +80,8 @@ public static partial class OpenIddictClientHandlers
         ValidateUserinfoTokenWellknownClaims.Descriptor,
         ValidateUserinfoTokenSubject.Descriptor,
 
+        RedeemStateTokenEntry.Descriptor,
+
         /*
          * Challenge processing:
          */
@@ -1191,7 +1193,8 @@ public static partial class OpenIddictClientHandlers
 
             // Resolve the hash algorithm corresponding to the signing algorithm. If an
             // instance of the BCL hash algorithm cannot be resolved, throw an exception.
-            var algorithm = GetHashAlgorithm(name) ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0293));
+            using var algorithm = GetHashAlgorithm(name) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0293));
 
             // If a frontchannel access token was returned in the authorization response,
             // ensure the at_hash claim matches the hash of the actual access token.
@@ -2204,7 +2207,8 @@ public static partial class OpenIddictClientHandlers
 
             // Resolve the hash algorithm corresponding to the signing algorithm. If an
             // instance of the BCL hash algorithm cannot be resolved, throw an exception.
-            var algorithm = GetHashAlgorithm(name) ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
+            using var algorithm = GetHashAlgorithm(name) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
 
             var hash = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.AccessTokenHash);
             if (string.IsNullOrEmpty(hash))
@@ -2896,6 +2900,55 @@ public static partial class OpenIddictClientHandlers
                         uri: SR.FormatID8000(SR.ID2133));
 
                     return;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for redeeming the token entry corresponding to the received state token.
+    /// Note: this handler is not used when the degraded mode is enabled.
+    /// </summary>
+    public class RedeemStateTokenEntry : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly IOpenIddictTokenManager _tokenManager;
+
+        public RedeemStateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0318));
+
+        public RedeemStateTokenEntry(IOpenIddictTokenManager tokenManager)
+            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenStorageEnabled>()
+                .UseScopedHandler<RedeemStateTokenEntry>()
+                .SetOrder(ValidateUserinfoTokenSubject.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Extract the token identifier from the state token principal.
+            // If no token identifier can be found, this indicates that the token has no backing database entry.
+            var identifier = context.StateTokenPrincipal.GetTokenId();
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                // Mark the token as redeemed to prevent future reuses.
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token is not null)
+                {
+                    await _tokenManager.TryRedeemAsync(token);
                 }
             }
         }
@@ -3870,6 +3923,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new GenerateTokenContext(context.Transaction)
             {
+                CreateTokenEntry = !context.Options.DisableTokenStorage,
+                PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.StateTokenPrincipal!,
                 TokenType = TokenTypeHints.StateToken
             };
