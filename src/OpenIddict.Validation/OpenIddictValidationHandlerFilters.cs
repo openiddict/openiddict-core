@@ -71,7 +71,7 @@ public static class OpenIddictValidationHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.Options.ValidationType == OpenIddictValidationType.Direct);
+            return new(context.Options.ValidationType is OpenIddictValidationType.Direct);
         }
     }
 
@@ -87,7 +87,7 @@ public static class OpenIddictValidationHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.Options.ValidationType == OpenIddictValidationType.Introspection);
+            return new(context.Options.ValidationType is OpenIddictValidationType.Introspection);
         }
     }
 

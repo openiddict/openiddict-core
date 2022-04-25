@@ -16,6 +16,7 @@ public static partial class OpenIddictValidationHandlers
         /*
          * Authentication processing:
          */
+        ResolveServerConfiguration.Descriptor,
         EvaluateValidatedTokens.Descriptor,
         ValidateRequiredTokens.Descriptor,
         ValidateAccessToken.Descriptor,
@@ -30,6 +31,42 @@ public static partial class OpenIddictValidationHandlers
         .AddRange(Protection.DefaultHandlers);
 
     /// <summary>
+    /// Contains the logic responsible for resolving the server configuration.
+    /// </summary>
+    public class ResolveServerConfiguration : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ResolveServerConfiguration>()
+                .SetOrder(int.MinValue + 100_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+            // Ensure the issuer resolved from the configuration matches the expected value.
+            if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+            }
+
+            context.Configuration = configuration;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for selecting the token types that should be validated.
     /// </summary>
     public class EvaluateValidatedTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -40,7 +77,7 @@ public static partial class OpenIddictValidationHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateValidatedTokens>()
-                .SetOrder(int.MinValue + 100_000)
+                .SetOrder(ResolveServerConfiguration.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -52,7 +89,9 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            (context.ExtractAccessToken, context.RequireAccessToken, context.ValidateAccessToken) = context.EndpointType switch
+            (context.ExtractAccessToken,
+             context.RequireAccessToken,
+             context.ValidateAccessToken) = context.EndpointType switch
             {
                 // The validation handler is responsible for validating access tokens for endpoints
                 // it doesn't manage (typically, API endpoints using token authentication).

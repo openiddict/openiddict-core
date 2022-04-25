@@ -90,7 +90,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
                     }
 
                     registration.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
-                        registration.MetadataAddress.AbsoluteUri, new OpenIddictClientRetriever(_service))
+                        registration.MetadataAddress.AbsoluteUri, new OpenIddictClientRetriever(_service, registration))
                     {
                         AutomaticRefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultAutomaticRefreshInterval,
                         RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval

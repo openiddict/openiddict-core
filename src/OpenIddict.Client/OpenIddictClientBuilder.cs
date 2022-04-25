@@ -1019,6 +1019,17 @@ public class OpenIddictClientBuilder
     }
 
     /// <summary>
+    /// Sets the client assertion token lifetime, after which backchannel requests
+    /// using an expired state token should be automatically rejected by the server.
+    /// Using long-lived state tokens or tokens that never expire is not recommended.
+    /// While discouraged, <see langword="null"/> can be specified to issue tokens that never expire.
+    /// </summary>
+    /// <param name="lifetime">The access token lifetime.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
+    public OpenIddictClientBuilder SetClientAssertionTokenLifetime(TimeSpan? lifetime)
+        => Configure(options => options.ClientAssertionTokenLifetime = lifetime);
+
+    /// <summary>
     /// Sets the state token lifetime, after which authorization callbacks
     /// using an expired state token will be automatically rejected by OpenIddict.
     /// Using long-lived state tokens or tokens that never expire is not recommended.

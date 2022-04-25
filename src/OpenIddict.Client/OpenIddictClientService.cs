@@ -25,11 +25,18 @@ public class OpenIddictClientService
     /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified address.
     /// </summary>
+    /// <param name="registration">The client registration.</param>
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    public async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
+    public async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(
+        OpenIddictClientRegistration registration, Uri address, CancellationToken cancellationToken = default)
     {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
         if (address is null)
         {
             throw new ArgumentNullException(nameof(address));
@@ -68,6 +75,7 @@ public class OpenIddictClientService
                 var context = new PrepareConfigurationRequestContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request
                 };
 
@@ -88,6 +96,7 @@ public class OpenIddictClientService
                 var context = new ApplyConfigurationRequestContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request
                 };
 
@@ -108,6 +117,7 @@ public class OpenIddictClientService
                 var context = new ExtractConfigurationResponseContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request
                 };
 
@@ -130,6 +140,7 @@ public class OpenIddictClientService
                 var context = new HandleConfigurationResponseContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request,
                     Response = response
                 };
@@ -164,11 +175,18 @@ public class OpenIddictClientService
     /// <summary>
     /// Retrieves the security keys exposed by the specified JWKS endpoint.
     /// </summary>
+    /// <param name="registration">The client registration.</param>
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The security keys retrieved from the remote server.</returns>
-    public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri address, CancellationToken cancellationToken = default)
+    public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(
+        OpenIddictClientRegistration registration, Uri address, CancellationToken cancellationToken = default)
     {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
         if (address is null)
         {
             throw new ArgumentNullException(nameof(address));
@@ -208,6 +226,7 @@ public class OpenIddictClientService
                 var context = new PrepareCryptographyRequestContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request
                 };
 
@@ -228,6 +247,7 @@ public class OpenIddictClientService
                 var context = new ApplyCryptographyRequestContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request
                 };
 
@@ -248,6 +268,7 @@ public class OpenIddictClientService
                 var context = new ExtractCryptographyResponseContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request
                 };
 
@@ -270,6 +291,7 @@ public class OpenIddictClientService
                 var context = new HandleCryptographyResponseContext(transaction)
                 {
                     Address = address,
+                    Registration = registration,
                     Request = request,
                     Response = response
                 };
@@ -347,6 +369,7 @@ public class OpenIddictClientService
 
             var context = new ProcessAuthenticationContext(transaction)
             {
+                Configuration = configuration,
                 GrantType = GrantTypes.RefreshToken,
                 Issuer = registration.Issuer,
                 RefreshToken = token,
@@ -450,6 +473,15 @@ public class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }
 
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
+           !configuration.TokenEndpoint.IsWellFormedOriginalString())
+        {
+            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
@@ -477,6 +509,7 @@ public class OpenIddictClientService
                 var context = new PrepareTokenRequestContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -499,6 +532,7 @@ public class OpenIddictClientService
                 var context = new ApplyTokenRequestContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -521,6 +555,7 @@ public class OpenIddictClientService
                 var context = new ExtractTokenResponseContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -545,6 +580,7 @@ public class OpenIddictClientService
                 var context = new HandleTokenResponseContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,
@@ -604,6 +640,15 @@ public class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
         }
 
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
+           !configuration.TokenEndpoint.IsWellFormedOriginalString())
+        {
+            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
 
         // Note: this service is registered as a singleton service. As such, it cannot
@@ -631,6 +676,7 @@ public class OpenIddictClientService
                 var context = new PrepareUserinfoRequestContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -653,6 +699,7 @@ public class OpenIddictClientService
                 var context = new ApplyUserinfoRequestContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -675,6 +722,7 @@ public class OpenIddictClientService
                 var context = new ExtractUserinfoResponseContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
@@ -699,6 +747,7 @@ public class OpenIddictClientService
                 var context = new HandleUserinfoResponseContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,

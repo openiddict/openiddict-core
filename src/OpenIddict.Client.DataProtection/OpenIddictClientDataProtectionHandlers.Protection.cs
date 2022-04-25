@@ -77,7 +77,8 @@ public static partial class OpenIddictClientDataProtectionHandlers
                     _ when context.ValidTokenTypes.Contains(TokenTypeHints.StateToken)
                         => ValidateToken(TokenTypeHints.StateToken),
 
-                    _ => null // The token type is not supported by the Data Protection integration (e.g identity tokens).
+                    // The token type is not supported by the Data Protection integration (e.g client assertion tokens).
+                    _ => null
                 };
 
                 if (principal is null)
@@ -167,7 +168,8 @@ public static partial class OpenIddictClientDataProtectionHandlers
                 {
                     TokenTypeHints.StateToken => _options.CurrentValue.PreferDefaultStateTokenFormat,
 
-                    _ => true // The token type is not supported by the Data Protection integration (e.g identity tokens).
+                    // The token type is not supported by the Data Protection integration (e.g client assertion tokens).
+                    _ => true
                 })
                 {
                     return default;

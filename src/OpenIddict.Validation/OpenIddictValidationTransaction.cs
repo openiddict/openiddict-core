@@ -39,6 +39,11 @@ public class OpenIddictValidationTransaction
     public Dictionary<string, object?> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// Gets or sets the server configuration used for the current request.
+    /// </summary>
+    public OpenIddictConfiguration Configuration { get; set; } = default!;
+
+    /// <summary>
     /// Gets or sets the current OpenID Connect request.
     /// </summary>
     public OpenIddictRequest? Request { get; set; }

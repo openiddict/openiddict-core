@@ -58,6 +58,15 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets or sets the server configuration used for the current request.
+        /// </summary>
+        public OpenIddictConfiguration Configuration
+        {
+            get => Transaction.Configuration;
+            set => Transaction.Configuration = value;
+        }
+
+        /// <summary>
         /// Gets or sets the client registration used for the current request.
         /// </summary>
         public OpenIddictClientRegistration Registration
@@ -303,6 +312,16 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the address of the userinfo endpoint, if applicable.
         /// </summary>
         public Uri? UserinfoEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a token request should be sent.
+        /// </summary>
+        public bool SendTokenRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a token request should be sent.
+        /// </summary>
+        public bool SendUserinfoRequest { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an authorization
@@ -595,6 +614,42 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the response returned by the userinfo endpoint, if applicable.
         /// </summary>
         public OpenIddictResponse? UserinfoResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a client assertion
+        /// token should be generated (and optionally included in the request).
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool GenerateClientAssertionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the generated client
+        /// assertion token should be included as part of the request.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool IncludeClientAssertionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generated client assertion token, if applicable.
+        /// The client assertion token will only be returned if
+        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertionToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets type of the generated client assertion token, if applicable.
+        /// The client assertion token type will only be returned if
+        /// <see cref="IncludeClientAssertionToken"/> is set to <see langword="true"/>.
+        /// </summary>
+        public string? ClientAssertionTokenType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that will be
+        /// used to create the client assertion token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? ClientAssertionTokenPrincipal { get; set; }
     }
 
     /// <summary>
@@ -718,7 +773,7 @@ public static partial class OpenIddictClientEvents
 
         /// <summary>
         /// Gets or sets the generated state token, if applicable.
-        /// The access token will only be returned if
+        /// The state token will only be returned if
         /// <see cref="IncludeStateToken"/> is set to <see langword="true"/>.
         /// </summary>
         public string? StateToken { get; set; }

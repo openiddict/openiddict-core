@@ -30,6 +30,20 @@ public class OpenIddictClientRegistration
     public Uri? RedirectUri { get; set; }
 
     /// <summary>
+    /// Gets the list of encryption credentials used to create tokens for this client.
+    /// Multiple credentials can be added to support key rollover, but if X.509 keys
+    /// are used, at least one of them must have a valid creation/expiration date.
+    /// </summary>
+    public List<EncryptingCredentials> EncryptionCredentials { get; } = new();
+
+    /// <summary>
+    /// Gets the list of signing credentials used to create tokens for this client.
+    /// Multiple credentials can be added to support key rollover, but if X.509 keys
+    /// are used, at least one of them must have a valid creation/expiration date.
+    /// </summary>
+    public List<SigningCredentials> SigningCredentials { get; } = new();
+
+    /// <summary>
     /// Gets the code challenge methods allowed by the client instance.
     /// If no value is explicitly set, the default code challenge methods are automatically used.
     /// </summary>

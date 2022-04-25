@@ -44,6 +44,11 @@ public class OpenIddictClientTransaction
     public OpenIddictClientRegistration Registration { get; set; } = default!;
 
     /// <summary>
+    /// Gets or sets the server configuration used for the current request.
+    /// </summary>
+    public OpenIddictConfiguration Configuration { get; set; } = default!;
+
+    /// <summary>
     /// Gets or sets the current OpenID Connect request.
     /// </summary>
     public OpenIddictRequest? Request { get; set; }

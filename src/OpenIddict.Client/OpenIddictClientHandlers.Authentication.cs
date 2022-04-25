@@ -149,30 +149,23 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
+            public ValueTask HandleAsync(ApplyAuthorizationRequestContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-                // Ensure the issuer resolved from the configuration matches the expected value.
-                if (configuration.Issuer != context.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-                }
-
                 // Ensure the authorization endpoint is present and is a valid absolute URL.
-                if (configuration.AuthorizationEndpoint is not { IsAbsoluteUri: true } ||
-                   !configuration.AuthorizationEndpoint.IsWellFormedOriginalString())
+                if (context.Configuration.AuthorizationEndpoint is not { IsAbsoluteUri: true } ||
+                   !context.Configuration.AuthorizationEndpoint.IsWellFormedOriginalString())
                 {
                     throw new InvalidOperationException(SR.FormatID0301(Metadata.AuthorizationEndpoint));
                 }
 
-                context.AuthorizationEndpoint = configuration.AuthorizationEndpoint.AbsoluteUri;
+                context.AuthorizationEndpoint = context.Configuration.AuthorizationEndpoint.AbsoluteUri;
+
+                return default;
             }
         }
 
