@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Providers>
 
-  <Provider Name="Fitbit">
+  <Provider Name="Fitbit" Documentation="https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/">
     <Environment Issuer="https://www.fitbit.com/">
       <Configuration AuthorizationEndpoint="https://www.fitbit.com/oauth2/authorize"
                      TokenEndpoint="https://api.fitbit.com/oauth2/token"
@@ -13,7 +13,7 @@
     </Environment>
   </Provider>
 
-  <Provider Name="GitHub">
+  <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
                      TokenEndpoint="https://github.com/login/oauth/access_token"
@@ -21,11 +21,11 @@
     </Environment>
   </Provider>
 
-  <Provider Name="Google">
+  <Provider Name="Google" Documentation="https://developers.google.com/identity/protocols/oauth2/openid-connect">
     <Environment Issuer="https://accounts.google.com/" />
   </Provider>
 
-  <Provider Name="Reddit">
+  <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
     <Environment Issuer="https://www.reddit.com/">
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
                      TokenEndpoint="https://www.reddit.com/api/v1/access_token"
@@ -41,7 +41,7 @@
              Description="Gets or sets the product version, used to build the user agent header." />
   </Provider>
 
-  <Provider Name="Salesforce">
+  <Provider Name="Salesforce" Documentation="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_flows.htm">
     <!--
       Note: no static userinfo endpoint is specified here because Salesforce uses a user-specific endpoint
       whose address is dynamically returned as part of the token response. To deal with that, a dedicated
@@ -59,7 +59,7 @@
     </Environment>
   </Provider>
 
-  <Provider Name="Zendesk">
+  <Provider Name="Zendesk" Documentation="https://developer.zendesk.com/documentation/live-chat/getting-started/auth/">
     <!--
       Note: Zendesk is a multitenant provider that relies on subdomains to identify instances.
       As such, the following URLs all include a {tenant} placeholder that will be dynamically

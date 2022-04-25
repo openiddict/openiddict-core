@@ -56,6 +56,11 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// <summary>
     /// Enables {{ provider.name }} integration using the specified settings.
     /// </summary>
+    {{~ if provider.documentation ~}}
+    /// <remarks>
+    /// For more information about {{ provider.name }} integration, visit <see href=""{{ provider.documentation }}"">the official website</see>.
+    /// </remarks>
+    {{~ end ~}}
     /// <param name=""settings"">The provider settings.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/>.</returns>
     public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
@@ -179,6 +184,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                         .Select(provider => new
                         {
                             Name = (string?) provider.Attribute("Name"),
+                            Documentation = (string?) provider.Attribute("Documentation"),
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
