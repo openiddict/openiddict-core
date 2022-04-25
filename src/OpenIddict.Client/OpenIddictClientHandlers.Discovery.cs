@@ -151,8 +151,9 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // The issuer returned in the discovery document must exactly match the URL used to access it.
-                // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient.
+                // Note: the issuer returned in the discovery document must exactly match the URL used to access it.
+                // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
+
                 var issuer = (string?) context.Response[Metadata.Issuer];
                 if (string.IsNullOrEmpty(issuer))
                 {
@@ -170,6 +171,16 @@ public static partial class OpenIddictClientHandlers
                         error: Errors.ServerError,
                         description: SR.GetResourceString(SR.ID2097),
                         uri: SR.FormatID8000(SR.ID2097));
+
+                    return default;
+                }
+
+                if (context.Issuer is not null && context.Issuer != address)
+                {
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2098),
+                        uri: SR.FormatID8000(SR.ID2098));
 
                     return default;
                 }
