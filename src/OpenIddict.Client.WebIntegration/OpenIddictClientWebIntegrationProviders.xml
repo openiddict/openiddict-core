@@ -34,10 +34,10 @@
       </Configuration>
     </Environment>
 
-    <Setting Type="string" Name="ProductName" Property=".product_name"
+    <Setting Type="string" Name="ProductName"
              Description="Gets or sets the product name, used to build the user agent header." />
 
-    <Setting Type="string" Name="ProductVersion" Property=".product_version"
+    <Setting Type="string" Name="ProductVersion"
              Description="Gets or sets the product version, used to build the user agent header." />
   </Provider>
 
@@ -72,7 +72,7 @@
                      UserinfoEndpoint="https://{tenant}.zendesk.com/api/v2/users/me" />
     </Environment>
 
-    <Setting Type="string" Name="Tenant" Property=".tenant"
+    <Setting Type="string" Name="Tenant"
              Description="Gets or sets the tenant used to identify the Zendesk instance." />
   </Provider>
 

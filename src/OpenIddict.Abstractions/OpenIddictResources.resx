@@ -1286,6 +1286,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0329" xml:space="preserve">
     <value>An unsupported response was returned by the remote authorization server.</value>
   </data>
+  <data name="ID0330" xml:space="preserve">
+    <value>The '{0}' provider settings cannot be resolved from the event context. Make sure the provider was correctly registered using 'services.AddOpenIddict().AddClient().UseWebProviders().Add{0}()'.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

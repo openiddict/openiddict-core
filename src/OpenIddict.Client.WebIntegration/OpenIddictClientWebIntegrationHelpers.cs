@@ -23,4 +23,16 @@ public static class OpenIddictClientWebIntegrationHelpers
         return registration.Properties.TryGetValue(Properties.ProviderName, out var provider)
             && provider is string value ? value : null;
     }
+
+    public static TSettings? GetProviderSettings<TSettings>(this OpenIddictClientRegistration registration)
+        where TSettings : OpenIddictClientWebIntegrationSettings
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        return registration.Properties.TryGetValue(Properties.ProviderSettings, out var value)
+            && value is TSettings settings ? settings : null;
+    }
 }

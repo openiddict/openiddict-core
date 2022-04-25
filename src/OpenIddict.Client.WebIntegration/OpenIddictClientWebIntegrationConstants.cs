@@ -15,8 +15,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
 
     public static class Properties
     {
-        public const string ProductName = ".product_name";
-        public const string ProductVersion = ".product_version";
         public const string ProviderName = ".provider_name";
+        public const string ProviderSettings = ".provider_settings";
     }
 }

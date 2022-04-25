@@ -159,11 +159,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                 Properties =
                 {
                     [Properties.ProviderName] = OpenIddictClientWebIntegrationConstants.Providers.{{ provider.name }},
-
-                    {{~ for setting in provider.settings ~}}
-                    [""{{ setting.property }}""] = settings.{{ setting.name }},
-
-                    {{~ end ~}}
+                    [Properties.ProviderSettings] = settings
                 }
             };
 
@@ -252,7 +248,6 @@ public partial class OpenIddictClientWebIntegrationBuilder
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
                                 Name = (string?) setting.Attribute("Name"),
-                                Property = (string?) setting.Attribute("Property")
                             })
                             .ToList()
                         })

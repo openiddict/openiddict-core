@@ -9,7 +9,6 @@ using System.ComponentModel;
 using System.Net.Http.Headers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
-using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 
 namespace OpenIddict.Client.WebIntegration;
 
@@ -181,18 +180,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // containing the product name and version set by the user or by the client identifier.
             if (context.Registration.GetProviderName() is Providers.Reddit)
             {
-                var (name, version) = (
-                    GetProductName(context.Registration.Properties) ?? context.Registration.ClientId!,
-                    GetProductVersion(context.Registration.Properties));
+                var settings = context.Registration.GetProviderSettings<OpenIddictClientWebIntegrationSettings.Reddit>() ??
+                    throw new InvalidOperationException(SR.FormatID0330(Providers.Reddit));
 
-                request.Headers.UserAgent.Add(new ProductInfoHeaderValue(name, version));
+                request.Headers.UserAgent.Add(new ProductInfoHeaderValue(
+                    productName: settings.ProductName ?? context.Registration.ClientId!,
+                    productVersion: settings.ProductVersion));
             }
-
-            static string? GetProductName(IReadOnlyDictionary<string, object?> properties)
-                => properties.TryGetValue(Properties.ProductName, out object? value) && value is string name ? name : null;
-
-            static string? GetProductVersion(IReadOnlyDictionary<string, object?> properties)
-                => properties.TryGetValue(Properties.ProductVersion, out object? value) && value is string version ? version : null;
 
             return default;
         }
