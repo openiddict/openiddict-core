@@ -56,7 +56,7 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public ValueTask HandleAsync(ValidateTokenContext context)
             {
                 if (context is null)
                 {
@@ -85,11 +85,13 @@ public static partial class OpenIddictClientHandlers
                         => GetClientTokenValidationParameters(context.Options),
 
                     // Otherwise, use the token validation parameters of the authorization server.
-                    _ => await GetServerTokenValidationParametersAsync(context.Registration)
+                    _ => GetServerTokenValidationParameters(context.Registration, context.Configuration)
                 };
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
                 context.TokenValidationParameters = parameters;
+
+                return default;
 
                 static TokenValidationParameters GetClientTokenValidationParameters(OpenIddictClientOptions options)
                 {
@@ -102,18 +104,9 @@ public static partial class OpenIddictClientHandlers
                     return parameters;
                 }
 
-                static async Task<TokenValidationParameters> GetServerTokenValidationParametersAsync(
-                    OpenIddictClientRegistration registration)
+                static TokenValidationParameters GetServerTokenValidationParameters(
+                    OpenIddictClientRegistration registration, OpenIddictConfiguration configuration)
                 {
-                    var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-                    // Ensure the issuer resolved from the configuration matches the expected value.
-                    if (configuration.Issuer != registration!.Issuer)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-                    }
-
                     var parameters = registration!.TokenValidationParameters.Clone();
 
                     parameters.ValidIssuers ??= configuration.Issuer switch
@@ -621,8 +614,26 @@ public static partial class OpenIddictClientHandlers
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
 
-                context.EncryptionCredentials = context.Options.EncryptionCredentials.First();
-                context.SigningCredentials = context.Options.SigningCredentials.First();
+                context.EncryptionCredentials = context.TokenType switch
+                {
+                    // For client assertions, use the encryption credentials
+                    // configured for the client registration, if available.
+                    TokenTypeHints.ClientAssertionToken
+                        => context.Registration.EncryptionCredentials.FirstOrDefault(),
+
+                    // For other types of tokens, use the global encryption credentials.
+                    _ => context.Options.EncryptionCredentials.First()
+                };
+
+                context.SigningCredentials = context.TokenType switch
+                {
+                    // For client assertions, use the signing credentials configured for the client registration.
+                    TokenTypeHints.ClientAssertionToken
+                        => context.Registration.SigningCredentials.First(),
+
+                    // For other types of tokens, use the global signing credentials.
+                    _ => context.Options.SigningCredentials.First()
+                };
 
                 return default;
             }
@@ -723,9 +734,11 @@ public static partial class OpenIddictClientHandlers
                 // Clone the principal and exclude the private claims mapped to standard JWT claims.
                 var principal = context.Principal.Clone(claim => claim.Type switch
                 {
-                    Claims.Private.CreationDate or Claims.Private.ExpirationDate or Claims.Private.TokenType => false,
+                    Claims.Private.CreationDate or Claims.Private.ExpirationDate or
+                    Claims.Private.Issuer       or Claims.Private.TokenType => false,
 
-                    Claims.Private.Audience when context.TokenType is TokenTypeHints.StateToken => false,
+                    Claims.Private.Audience when context.TokenType is
+                        TokenTypeHints.ClientAssertionToken or TokenTypeHints.StateToken => false,
 
                     _ => true
                 });
@@ -734,9 +747,9 @@ public static partial class OpenIddictClientHandlers
 
                 var claims = new Dictionary<string, object>(StringComparer.Ordinal);
 
-                // For state tokens, set the public audience claims using
-                // the private audience claims from the security principal.
-                if (context.TokenType is TokenTypeHints.StateToken)
+                // For client assertion tokens, set the public audience claims
+                // using the private audience claims from the security principal.
+                if (context.TokenType is TokenTypeHints.ClientAssertionToken)
                 {
                     var audiences = context.Principal.GetAudiences();
                     if (audiences.Any())
@@ -755,12 +768,17 @@ public static partial class OpenIddictClientHandlers
                     EncryptingCredentials = context.EncryptionCredentials,
                     Expires = context.Principal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.Principal.GetCreationDate()?.UtcDateTime,
+                    Issuer = context.Principal.GetClaim(Claims.Private.Issuer),
                     SigningCredentials = context.SigningCredentials,
                     Subject = (ClaimsIdentity) principal.Identity,
                     TokenType = context.TokenType switch
                     {
                         null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
+                        // For client assertion tokens, use the generic "JWT" type.
+                        TokenTypeHints.ClientAssertionToken => JsonWebTokenTypes.JsonWebToken,
+
+                        // For state tokens, use its private representation.
                         TokenTypeHints.StateToken => JsonWebTokenTypes.Private.StateToken,
 
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))

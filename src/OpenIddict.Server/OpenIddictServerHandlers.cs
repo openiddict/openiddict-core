@@ -1663,6 +1663,9 @@ public static partial class OpenIddictServerHandlers
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
 
+            // Use the server identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+
             // Set the audiences based on the resource claims stored in the principal.
             principal.SetAudiences(context.Principal.GetResources());
 
@@ -1746,6 +1749,9 @@ public static partial class OpenIddictServerHandlers
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
+
+            // Use the server identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
 
             // Attach the redirect_uri to allow for later comparison when
             // receiving a grant_type=authorization_code token request.
@@ -1832,6 +1838,9 @@ public static partial class OpenIddictServerHandlers
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
+
+            // Use the server identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
 
             // Restore the device code internal token identifier from the principal
             // resolved from the user code used in the user code verification request.
@@ -1923,6 +1932,9 @@ public static partial class OpenIddictServerHandlers
                     principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
                 }
             }
+
+            // Use the server identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
 
             context.RefreshTokenPrincipal = principal;
 
@@ -2017,14 +2029,16 @@ public static partial class OpenIddictServerHandlers
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
 
+            // Use the server identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+
+            // If available, use the client_id as both the audience and the authorized party.
+            // See https://openid.net/specs/openid-connect-core-1_0.html#IDToken for more information.
             if (!string.IsNullOrEmpty(context.ClientId))
             {
                 principal.SetAudiences(context.ClientId);
+                principal.SetClaim(Claims.AuthorizedParty, context.ClientId);
             }
-
-            // Use the client_id as the authorized party, if available.
-            // See https://openid.net/specs/openid-connect-core-1_0.html#IDToken for more information.
-            principal.SetClaim(Claims.AuthorizedParty, context.ClientId);
 
             // If a nonce was present in the authorization request, it MUST be included in the id_token generated
             // by the token endpoint. For that, OpenIddict simply flows the nonce as an authorization code claim.
@@ -2102,6 +2116,9 @@ public static partial class OpenIddictServerHandlers
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
+
+            // Use the server identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
 
             // Store the client_id as a public client_id claim.
             principal.SetClaim(Claims.ClientId, context.Request.ClientId);

@@ -135,7 +135,7 @@ public class OpenIddictServerOptions
         // were issued with the generic "typ": "JWT" header. To prevent confused deputy and token substitution
         // attacks, a special "token_usage" claim was added to the JWT payload to convey the actual token type.
         // This validator overrides the default logic used by IdentityModel to resolve the type from this claim.
-        TypeValidator = (type, token, parameters) =>
+        TypeValidator = static (type, token, parameters) =>
         {
             // If available, try to resolve the actual type from the "token_usage" claim.
             if (((JsonWebToken) token).TryGetPayloadValue(OpenIddictConstants.Claims.TokenUsage, out string usage))
@@ -143,7 +143,7 @@ public class OpenIddictServerOptions
                 type = usage switch
                 {
                     TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
-                    TokenTypeHints.IdToken     => JsonWebTokenTypes.IdentityToken,
+                    TokenTypeHints.IdToken     => JsonWebTokenTypes.JsonWebToken,
 
                     _ => throw new NotSupportedException(SR.GetResourceString(SR.ID0269))
                 };

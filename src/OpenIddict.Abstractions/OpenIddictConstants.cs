@@ -128,6 +128,7 @@ public static class OpenIddictConstants
             public const string ExpirationDate = "oi_exp_dt";
             public const string GrantType = "oi_grt_typ";
             public const string IdentityTokenLifetime = "oi_idt_lft";
+            public const string Issuer = "oi_iss";
             public const string Nonce = "oi_nce";
             public const string Presenter = "oi_prst";
             public const string RedirectUri = "oi_reduri";
@@ -143,10 +144,18 @@ public static class OpenIddictConstants
         }
     }
 
+    public static class ClientAssertionTypes
+    {
+        public const string JwtBearer = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
+        public const string Saml2Bearer = "urn:ietf:params:oauth:client-assertion-type:saml2-bearer";
+    }
+
     public static class ClientAuthenticationMethods
     {
         public const string ClientSecretBasic = "client_secret_basic";
+        public const string ClientSecretJwt = "client_secret_jwt";
         public const string ClientSecretPost = "client_secret_post";
+        public const string PrivateKeyJwt = "private_key_jwt";
     }
 
     public static class ClientTypes
@@ -219,7 +228,7 @@ public static class OpenIddictConstants
     public static class JsonWebTokenTypes
     {
         public const string AccessToken = "at+jwt";
-        public const string IdentityToken = "JWT";
+        public const string JsonWebToken = "JWT";
 
         public static class Prefixes
         {
@@ -482,6 +491,7 @@ public static class OpenIddictConstants
     {
         public const string AccessToken = "access_token";
         public const string AuthorizationCode = "authorization_code";
+        public const string ClientAssertionToken = "client_assertion_token";
         public const string DeviceCode = "device_code";
         public const string IdToken = "id_token";
         public const string RefreshToken = "refresh_token";

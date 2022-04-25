@@ -90,8 +90,8 @@ public static partial class OpenIddictServerHandlers
                         // For identity tokens, both "JWT" and "application/jwt" are valid.
                         TokenTypeHints.IdToken => new[]
                         {
-                            JsonWebTokenTypes.IdentityToken,
-                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IdentityToken
+                            JsonWebTokenTypes.JsonWebToken,
+                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.JsonWebToken
                         },
 
                         // For authorization codes, only the short "oi_auc+jwt" form is valid.
@@ -369,7 +369,7 @@ public static partial class OpenIddictServerHandlers
                         => TokenTypeHints.AccessToken,
 
                     // Both JWT and application/JWT are supported for identity tokens.
-                    JsonWebTokenTypes.IdentityToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IdentityToken
+                    JsonWebTokenTypes.JsonWebToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.JsonWebToken
                         => TokenTypeHints.IdToken,
 
                     JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeHints.AuthorizationCode,
@@ -1172,7 +1172,8 @@ public static partial class OpenIddictServerHandlers
                 // Clone the principal and exclude the private claims mapped to standard JWT claims.
                 var principal = context.Principal.Clone(claim => claim.Type switch
                 {
-                    Claims.Private.CreationDate or Claims.Private.ExpirationDate or Claims.Private.TokenType => false,
+                    Claims.Private.CreationDate or Claims.Private.ExpirationDate or
+                    Claims.Private.Issuer       or Claims.Private.TokenType => false,
 
                     Claims.Private.Audience
                         when context.TokenType is TokenTypeHints.AccessToken or TokenTypeHints.IdToken => false,
@@ -1232,7 +1233,7 @@ public static partial class OpenIddictServerHandlers
                     EncryptingCredentials = context.EncryptionCredentials,
                     Expires = context.Principal.GetExpirationDate()?.UtcDateTime,
                     IssuedAt = context.Principal.GetCreationDate()?.UtcDateTime,
-                    Issuer = context.Issuer?.AbsoluteUri,
+                    Issuer = context.Principal.GetClaim(Claims.Private.Issuer),
                     SigningCredentials = context.SigningCredentials,
                     Subject = (ClaimsIdentity) principal.Identity,
                     TokenType = context.TokenType switch
@@ -1240,7 +1241,7 @@ public static partial class OpenIddictServerHandlers
                         null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
                         TokenTypeHints.AccessToken       => JsonWebTokenTypes.AccessToken,
-                        TokenTypeHints.IdToken           => JsonWebTokenTypes.IdentityToken,
+                        TokenTypeHints.IdToken           => JsonWebTokenTypes.JsonWebToken,
                         TokenTypeHints.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
                         TokenTypeHints.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
                         TokenTypeHints.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,

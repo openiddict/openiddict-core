@@ -48,6 +48,15 @@ public static partial class OpenIddictValidationEvents
         }
 
         /// <summary>
+        /// Gets or sets the server configuration used for the current request.
+        /// </summary>
+        public OpenIddictConfiguration Configuration
+        {
+            get => Transaction.Configuration;
+            set => Transaction.Configuration = value;
+        }
+
+        /// <summary>
         /// Gets the logger responsible for logging processed operations.
         /// </summary>
         public ILogger Logger => Transaction.Logger;

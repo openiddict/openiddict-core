@@ -101,7 +101,7 @@ public static partial class OpenIddictClientHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(HandleUserinfoResponseContext context)
+            public ValueTask HandleAsync(HandleUserinfoResponseContext context)
             {
                 if (context is null)
                 {
@@ -111,16 +111,7 @@ public static partial class OpenIddictClientHandlers
                 // Ignore the response instance if a userinfo token was extracted.
                 if (!string.IsNullOrEmpty(context.UserinfoToken))
                 {
-                    return;
-                }
-
-                var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-                // Ensure the issuer resolved from the configuration matches the expected value.
-                if (configuration.Issuer != context.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+                    return default;
                 }
 
                 // Create a new claims-based identity using the same authentication type
@@ -133,7 +124,7 @@ public static partial class OpenIddictClientHandlers
                 // Resolve the issuer that will be attached to the claims created by this handler.
                 // Note: at this stage, the optional issuer extracted from the response is assumed
                 // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
-                var issuer = (string?) context.Response[Claims.Issuer] ?? configuration.Issuer!.AbsoluteUri;
+                var issuer = (string?) context.Response[Claims.Issuer] ?? context.Configuration.Issuer!.AbsoluteUri;
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -195,6 +186,8 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 context.Principal = new ClaimsPrincipal(identity);
+
+                return default;
 
                 static string GetClaimValueType(JsonElement element) => element.ValueKind switch
                 {

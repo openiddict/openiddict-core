@@ -44,7 +44,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
         }
 
-        if (options.ValidationType == OpenIddictValidationType.Introspection)
+        if (options.ValidationType is OpenIddictValidationType.Introspection)
         {
             if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
             {

@@ -622,7 +622,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractTokenEndpoint>()
+                    .UseSingletonHandler<ExtractTokenEndpointClientAuthenticationMethods>()
                     .SetOrder(ExtractIssuerParameterRequirement.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();

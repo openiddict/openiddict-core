@@ -51,27 +51,18 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenContext context)
+            public ValueTask HandleAsync(ValidateTokenContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-                // Ensure the issuer resolved from the configuration matches the expected value.
-                if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-                }
-
                 // Clone the token validation parameters and set the issuer using the value found in the
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
                 var parameters = context.Options.TokenValidationParameters.Clone();
 
-                parameters.ValidIssuers ??= configuration.Issuer switch
+                parameters.ValidIssuers ??= context.Configuration.Issuer switch
                 {
                     null => null,
 
@@ -92,7 +83,7 @@ public static partial class OpenIddictValidationHandlers
                 // Combine the signing keys registered statically in the token validation parameters
                 // with the signing keys resolved from the OpenID Connect server configuration.
                 parameters.IssuerSigningKeys =
-                    parameters.IssuerSigningKeys?.Concat(configuration.SigningKeys) ?? configuration.SigningKeys;
+                    parameters.IssuerSigningKeys?.Concat(context.Configuration.SigningKeys) ?? context.Configuration.SigningKeys;
 
                 parameters.ValidTypes = context.ValidTokenTypes.Count switch
                 {
@@ -116,6 +107,8 @@ public static partial class OpenIddictValidationHandlers
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
                 context.TokenValidationParameters = parameters;
+
+                return default;
             }
         }
 
@@ -322,18 +315,9 @@ public static partial class OpenIddictValidationHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
 
-                var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-                // Ensure the issuer resolved from the configuration matches the expected value.
-                if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-                }
-
                 // Ensure the introspection endpoint is present and is a valid absolute URL.
-                if (configuration.IntrospectionEndpoint is not { IsAbsoluteUri: true } ||
-                   !configuration.IntrospectionEndpoint.IsWellFormedOriginalString())
+                if (context.Configuration.IntrospectionEndpoint is not { IsAbsoluteUri: true } ||
+                   !context.Configuration.IntrospectionEndpoint.IsWellFormedOriginalString())
                 {
                     throw new InvalidOperationException(SR.FormatID0301(Metadata.IntrospectionEndpoint));
                 }
@@ -342,7 +326,8 @@ public static partial class OpenIddictValidationHandlers
 
                 try
                 {
-                    principal = await _service.IntrospectTokenAsync(configuration.IntrospectionEndpoint, context.Token, context.ValidTokenTypes.Count switch
+                    principal = await _service.IntrospectTokenAsync(context.Configuration.IntrospectionEndpoint,
+                        context.Token, context.ValidTokenTypes.Count switch
                     {
                         // Infer the token type hint sent to the authorization server to help speed up
                         // the token resolution lookup. If multiple types are accepted, no hint is sent.

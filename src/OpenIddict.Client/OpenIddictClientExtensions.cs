@@ -41,6 +41,7 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireBackchannelAccessTokenValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelIdentityTokenPrincipal>();
+        builder.Services.TryAddSingleton<RequireClientAssertionTokenGenerated>();
         builder.Services.TryAddSingleton<RequireFrontchannelAccessTokenValidated>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenPrincipal>();
@@ -52,10 +53,8 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireTokenEntryCreated>();
         builder.Services.TryAddSingleton<RequireTokenPayloadPersisted>();
         builder.Services.TryAddSingleton<RequireTokenRequest>();
-        builder.Services.TryAddSingleton<RequireTokenResponse>();
         builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
         builder.Services.TryAddSingleton<RequireUserinfoRequest>();
-        builder.Services.TryAddSingleton<RequireUserinfoResponse>();
         builder.Services.TryAddSingleton<RequireUserinfoTokenExtracted>();
         builder.Services.TryAddSingleton<RequireUserinfoTokenPrincipal>();
 

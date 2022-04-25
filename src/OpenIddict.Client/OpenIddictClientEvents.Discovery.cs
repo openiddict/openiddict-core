@@ -101,8 +101,7 @@ public static partial class OpenIddictClientEvents
         /// </summary>
         public HandleConfigurationResponseContext(OpenIddictClientTransaction transaction)
             : base(transaction)
-        {
-        }
+            => Configuration = new();
 
         /// <summary>
         /// Gets or sets the request.
@@ -121,11 +120,6 @@ public static partial class OpenIddictClientEvents
             get => Transaction.Response!;
             set => Transaction.Response = value;
         }
-
-        /// <summary>
-        /// Gets the OpenID Connect configuration.
-        /// </summary>
-        public OpenIddictConfiguration Configuration { get; } = new OpenIddictConfiguration();
     }
 
     /// <summary>

@@ -93,6 +93,22 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no client assertion token is generated.
+    /// </summary>
+    public class RequireClientAssertionTokenGenerated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateClientAssertionToken);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no frontchannel access token is validated.
     /// </summary>
     public class RequireFrontchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
@@ -264,23 +280,7 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.TokenRequest is not null);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if no token response was received.
-    /// </summary>
-    public class RequireTokenResponse : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
-    {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.TokenResponse is not null);
+            return new(context.SendTokenRequest);
         }
     }
 
@@ -312,23 +312,7 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.UserinfoRequest is not null);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if no userinfo response was received.
-    /// </summary>
-    public class RequireUserinfoResponse : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
-    {
-        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.UserinfoResponse is not null);
+            return new(context.SendUserinfoRequest);
         }
     }
 

@@ -357,20 +357,11 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
             {
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-                // Ensure the issuer resolved from the configuration matches the expected value.
-                if (configuration is not null && configuration.Issuer != context.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
                 }
 
                 // Create a new claims-based identity using the same authentication type
@@ -384,7 +375,7 @@ public static partial class OpenIddictValidationHandlers
                 // Note: at this stage, the optional issuer extracted from the response is assumed
                 // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
                 var issuer = (string?) context.Response[Claims.Issuer] ??
-                    configuration?.Issuer?.AbsoluteUri ??
+                    context.Configuration.Issuer?.AbsoluteUri ??
                     context.Issuer?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
 
                 foreach (var parameter in context.Response.GetParameters())
@@ -447,6 +438,8 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 context.Principal = new ClaimsPrincipal(identity);
+
+                return default;
 
                 static string GetClaimValueType(JsonElement element) => element.ValueKind switch
                 {

@@ -11,13 +11,19 @@ namespace OpenIddict.Client;
 public class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddictConfiguration>
 {
     private readonly OpenIddictClientService _service;
+    private readonly OpenIddictClientRegistration _registration;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientRetriever"/> class.
     /// </summary>
     /// <param name="service">The validation service.</param>
-    public OpenIddictClientRetriever(OpenIddictClientService service)
-        => _service = service ?? throw new ArgumentNullException(nameof(service));
+    /// <param name="registration">The client registration.</param>
+    public OpenIddictClientRetriever(
+        OpenIddictClientService service, OpenIddictClientRegistration registration)
+    {
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+        _registration = registration ?? throw new ArgumentNullException(nameof(registration));
+    }
 
     /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified address.
@@ -40,7 +46,7 @@ public class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddictConfi
 
         cancel.ThrowIfCancellationRequested();
 
-        var configuration = await _service.GetConfigurationAsync(uri, cancel) ??
+        var configuration = await _service.GetConfigurationAsync(_registration, uri, cancel) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
 
         if (configuration.JwksUri is null)
@@ -48,7 +54,7 @@ public class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddictConfi
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0146));
         }
 
-        configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(configuration.JwksUri, cancel) ??
+        configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(_registration, configuration.JwksUri, cancel) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
         // Copy the signing keys found in the JSON Web Key Set to the SigningKeys collection.
