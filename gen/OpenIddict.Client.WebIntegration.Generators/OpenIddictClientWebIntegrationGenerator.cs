@@ -42,6 +42,8 @@ namespace OpenIddict.Client.WebIntegration.Generators
             {
                 var template = Template.Parse(@"#nullable enable
 
+using Microsoft.IdentityModel.Tokens;
+
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
 using SmartFormat;
@@ -161,6 +163,24 @@ public partial class OpenIddictClientWebIntegrationBuilder
                     _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
                 },
 
+                EncryptionCredentials =
+                {
+                    {{~ for setting in provider.settings ~}}
+                    {{~ if setting.encryption_algorithm ~}}
+                    new EncryptingCredentials(settings.{{ setting.name }}, ""{{ setting.encryption_algorithm }}"", SecurityAlgorithms.Aes256CbcHmacSha512),
+                    {{~ end ~}}
+                    {{~ end ~}}
+                },
+
+                SigningCredentials =
+                {
+                    {{~ for setting in provider.settings ~}}
+                    {{~ if setting.signing_algorithm ~}}
+                    new SigningCredentials(settings.{{ setting.name }}, ""{{ setting.signing_algorithm }}""),
+                    {{~ end ~}}
+                    {{~ end ~}}
+                },
+
                 Properties =
                 {
                     [Properties.ProviderName] = OpenIddictClientWebIntegrationConstants.Providers.{{ provider.name }},
@@ -254,6 +274,8 @@ public partial class OpenIddictClientWebIntegrationBuilder
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
                                 Name = (string?) setting.Attribute("Name"),
+                                EncryptionAlgorithm = (string?) setting.Attribute("EncryptionAlgorithm"),
+                                SigningAlgorithm = (string?) setting.Attribute("SigningAlgorithm")
                             })
                             .ToList()
                         })
@@ -326,6 +348,8 @@ public partial class OpenIddictClientWebIntegrationEnvironments
             static string GenerateSettings(XDocument document)
             {
                 var template = Template.Parse(@"#nullable enable
+
+using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client.WebIntegration;
 

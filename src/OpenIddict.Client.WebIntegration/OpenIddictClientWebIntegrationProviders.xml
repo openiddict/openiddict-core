@@ -1,5 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Providers>
+  <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
+    <Environment Issuer="https://appleid.apple.com/" />
+
+    <Setting Type="ECDsaSecurityKey" Name="SigningKey" SigningAlgorithm="ES256"
+             Description="Gets or sets the ECDSA signing key associated with the developer account." />
+
+    <Setting Type="string" Name="TeamId"
+             Description="Gets or sets the Team ID associated with the developer account." />
+  </Provider>
 
   <Provider Name="Fitbit" Documentation="https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/">
     <Environment Issuer="https://www.fitbit.com/">
