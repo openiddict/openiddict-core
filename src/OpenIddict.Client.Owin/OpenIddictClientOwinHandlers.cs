@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Owin;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 using Properties = OpenIddict.Client.Owin.OpenIddictClientOwinConstants.Properties;
@@ -30,6 +31,7 @@ public static partial class OpenIddictClientOwinHandlers
          * Authentication processing:
          */
         ValidateCorrelationCookie.Descriptor,
+        ValidateRedirectUri.Descriptor,
 
         /*
          * Challenge processing:
@@ -302,6 +304,102 @@ public static partial class OpenIddictClientOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for comparing the current request URL to the redirect_uri stored in the state token.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public class ValidateRedirectUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireOwinRequest>()
+                .AddFilter<RequireStateTokenValidated>()
+                .UseSingletonHandler<ValidateRedirectUri>()
+                .SetOrder(ValidateCorrelationCookie.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // This handler only applies to OWIN requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            // Try to resolve the original redirect_uri from the state token. If it cannot be resolved,
+            // this likely means the authorization request was sent without a redirect_uri attached.
+            if (!Uri.TryCreate(context.StateTokenPrincipal.GetClaim(Claims.Private.RedirectUri),
+                UriKind.Absolute, out Uri? address))
+            {
+                return default;
+            }
+
+            // Compute the absolute URL of the current request without the query string.
+            var uri = new Uri(request.Scheme + Uri.SchemeDelimiter + request.Host +
+                request.PathBase + request.Path, UriKind.Absolute);
+
+            // Compare the current HTTP request address to the original redirect_uri. If the two don't
+            // match, this may indicate a mix-up attack. While the authorization server is expected to
+            // abort the authorization flow by rejecting the token request that may be eventually sent
+            // with the original redirect_uri, many servers are known to incorrectly implement this
+            // redirect_uri validation logic. This check also offers limited protection as it cannot
+            // prevent the client credentials from being leaked to a malicious authorization server.
+            // By comparing the redirect_uri directly in the client, a first layer of protection is
+            // provided independently of whether the authorization server will enforce this check.
+            //
+            // See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-4.4.2.2
+            // for more information.
+            if (uri != new UriBuilder(address) { Query = null }.Uri)
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2138),
+                    uri: SR.FormatID8000(SR.ID2138));
+
+                return default;
+            }
+
+            // Ensure all the query string parameters that were part of the original redirect_uri
+            // are present in the current request (parameters that were not part of the original
+            // redirect_uri are assumed to be authorization response parameters and are ignored).
+            if (!string.IsNullOrEmpty(address.Query) && ParseQuery(address.Query)
+                .Any(parameter => request.Query[parameter.Key] != parameter.Value))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2138),
+                    uri: SR.FormatID8000(SR.ID2138));
+
+                return default;
+            }
+
+            return default;
+
+            static IReadOnlyDictionary<string, StringValues> ParseQuery(string query) =>
+                query.TrimStart(Separators.QuestionMark[0])
+                     .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
+                     .Select(parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
+                     .Select(parts => (
+                         Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
+                         Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
+                     // Note: ignore empty values to match the logic used by OWIN for IOwinRequest.Query.
+                     .Where(pair => !string.IsNullOrEmpty(pair.Key) && !string.IsNullOrEmpty(pair.Value))
+                     .GroupBy(pair => pair.Key)
+                     .ToDictionary(pair => pair.Key, pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the additional challenge parameters stored in the ASP.NET
     /// Core authentication properties specified by the application that triggered the challenge operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
@@ -430,7 +528,6 @@ public static partial class OpenIddictClientOwinHandlers
                 // Use the expiration date of the state token principal
                 // as the expiration date of the correlation cookie.
                 Expires = context.StateTokenPrincipal.GetExpirationDate()?.UtcDateTime
-
             });
 
             return default;
