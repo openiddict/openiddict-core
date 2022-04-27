@@ -1667,6 +1667,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID2137" xml:space="preserve">
     <value>An invalid JSON response was returned by the remote HTTP server.</value>
   </data>
+  <data name="ID2138" xml:space="preserve">
+    <value>The current address doesn't match the address of the redirection endpoint selected during the initial authorization request.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
