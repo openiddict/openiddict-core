@@ -23,6 +23,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              */
             PrepareGetHttpRequest<PrepareUserinfoRequestContext>.Descriptor,
             AttachBearerAccessToken.Descriptor,
+            AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor,
             SendHttpRequest<ApplyUserinfoRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyUserinfoRequestContext>.Descriptor,
 
@@ -44,7 +45,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<AttachBearerAccessToken>()
-                    .SetOrder(AttachFormParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 1000)
+                    .SetOrder(AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -95,6 +96,12 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 if (context is null)
                 {
                     throw new ArgumentNullException(nameof(context));
+                }
+
+                // Don't overwrite the response if one was already provided.
+                if (context.Response is not null || !string.IsNullOrEmpty(context.UserinfoToken))
+                {
+                    return;
                 }
 
                 // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,

@@ -40,14 +40,15 @@ public class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOptions
     public bool EnableStatusCodePagesIntegration { get; set; }
 
     /// <summary>
-    /// Gets or sets the cookie builder used to create the cookies that are
-    /// used to protect against forged requests/session fixation attacks.
+    /// Gets or sets the cookie builder used to create the cookies that are used to
+    /// bind authorization responses with their original request and help mitigate
+    /// authorization code injection, forged requests and session fixation attacks.
     /// </summary>
     public CookieBuilder CookieBuilder { get; set; } = new()
     {
         HttpOnly = true,
         IsEssential = true,
-        Name = "OpenIddict.Client.RequestForgeryProtection",
+        Name = "OpenIddict.Client.State",
         SameSite = SameSiteMode.None,
         SecurePolicy = CookieSecurePolicy.Always // Note: same-site=none requires using HTTPS.
     };

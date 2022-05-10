@@ -345,6 +345,12 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Don't overwrite the response if one was already provided.
+            if (context.Transaction.Response is not null)
+            {
+                return;
+            }
+
             // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
             var response = context.Transaction.GetHttpResponseMessage() ??

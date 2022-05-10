@@ -215,7 +215,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for validating the correlation cookie that serves as a CSRF protection.
+    /// Contains the logic responsible for validating the correlation cookie that serves as a
+    /// protection against state token injection, forged requests and session fixation attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
     public class ValidateCorrelationCookie : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -255,8 +256,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // Resolve the request forgery protection from the state token principal.
             // If the claim cannot be found, this means the protection was disabled
             // using a custom event handler. In this case, bypass the validation.
-            var claim = context.StateTokenPrincipal.GetClaim(Claims.RequestForgeryProtection);
-            if (string.IsNullOrEmpty(claim))
+            var identifier = context.StateTokenPrincipal.GetClaim(Claims.RequestForgeryProtection);
+            if (string.IsNullOrEmpty(identifier))
             {
                 return default;
             }
@@ -268,15 +269,19 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // and the random request forgery protection claim restored from the state.
             var name = new StringBuilder(builder.Name)
                 .Append(Separators.Dot)
-                .Append(claim)
+                .Append(identifier)
                 .ToString();
 
             // Try to find the cookie matching the request forgery protection stored in the state.
             //
             // If the cookie cannot be found, this may indicate that the authorization response
             // is unsolicited and potentially malicious. This may also be caused by an unadequate
-            // same-site configuration. In any case, the authentication demand MUST be rejected
-            // as it's impossible to ensure it's not a session fixation attack without the cookie.
+            // same-site configuration. The correlation cookie also serves as a binding mechanism 
+            // ensuring that a state token stolen from an authorization response with the other
+            // parameters cannot be validly used without sending the matching correlation identifier.
+            //
+            // In any case, the authentication demand MUST be rejected as it's impossible to ensure
+            // it's not an injection or session fixation attack without the correlation cookie.
             var value = request.Cookies[name];
             if (string.IsNullOrEmpty(value) || !string.Equals(value, "v1", StringComparison.Ordinal))
             {
@@ -347,7 +352,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // abort the authorization flow by rejecting the token request that may be eventually sent
             // with the original redirect_uri, many servers are known to incorrectly implement this
             // redirect_uri validation logic. This check also offers limited protection as it cannot
-            // prevent the client credentials from being leaked to a malicious authorization server.
+            // prevent the authorization code from being leaked to a malicious authorization server.
             // By comparing the redirect_uri directly in the client, a first layer of protection is
             // provided independently of whether the authorization server will enforce this check.
             //
@@ -455,7 +460,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for creating a correlation cookie that serves as a CSRF countermeasure.
+    /// Contains the logic responsible for creating a correlation cookie that serves as a
+    /// protection against state token injection, forged requests and session fixation attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
     public class GenerateCorrelationCookie : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -485,8 +491,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Note: using a correlation cookie serves as an antiforgery protection as the request will
-            // always be rejected if a cookie corresponding to the request forgery protection claim
+            // Note: using a correlation cookie serves as an injection/antiforgery protection as the request
+            // will always be rejected if a cookie corresponding to the request forgery protection claim
             // persisted in the state token cannot be found. This protection is considered essential
             // in OpenIddict and cannot be disabled via the options. Applications that prefer implementing
             // a different protection strategy can set the request forgery protection claim to null or
@@ -498,7 +504,6 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             }
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-            Debug.Assert(!string.IsNullOrEmpty(context.StateToken), SR.GetResourceString(SR.ID4010));
 
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
