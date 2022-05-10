@@ -45,13 +45,16 @@ public class OpenIddictClientOwinOptions : AuthenticationOptions
     public ICookieManager CookieManager { get; set; } = new CookieManager();
 
     /// <summary>
-    /// Gets or sets the name of the cookie used to protect against forged requests/session fixation attacks.
+    /// Gets or sets the name of the correlation cookie used to bind authorization
+    /// responses with their original request and help mitigate authorization
+    /// code injection, forged requests and session fixation attacks.
     /// </summary>
-    public string CookieName { get; set; } = "OpenIddict.Client.RequestForgeryProtection";
+    public string CookieName { get; set; } = "OpenIddict.Client.State";
 
     /// <summary>
-    /// Gets or sets the cookie options used to create the cookies that are
-    /// used to protect against forged requests/session fixation attacks.
+    /// Gets or sets the cookie options used to create the cookies that are used to
+    /// bind authorization responses with their original request and help mitigate
+    /// authorization code injection, forged requests and session fixation attacks.
     /// </summary>
     public CookieOptions CookieOptions { get; set; } = new()
     {
