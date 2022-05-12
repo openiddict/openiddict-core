@@ -33,6 +33,7 @@ public static partial class OpenIddictClientOwinHandlers
              * Redirection response handling:
              */
             AttachHttpResponseCode<ApplyRedirectionResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyRedirectionResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyRedirectionResponseContext>.Descriptor,
             ProcessPassthroughErrorResponse<ApplyRedirectionResponseContext, RequireRedirectionEndpointPassthroughEnabled>.Descriptor,
             ProcessLocalErrorResponse<ApplyRedirectionResponseContext>.Descriptor);

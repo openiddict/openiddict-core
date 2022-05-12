@@ -617,6 +617,58 @@ public static partial class OpenIddictClientOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching an OWIN response chalenge to the context, if necessary.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public class AttachOwinResponseChallenge<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<AttachOwinResponseChallenge<TContext>>()
+                .SetOrder(AttachHttpResponseCode<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var response = context.Transaction.GetOwinRequest()?.Context.Response ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            // OWIN authentication middleware configured to use active authentication (which is the default mode)
+            // are known to aggressively intercept 401 responses even if the request is already considered fully
+            // handled. In practice, this behavior is often seen with the cookies authentication middleware,
+            // that will rewrite the 401 responses returned by OpenIddict and try to redirect the user agent
+            // to the login page configured in the options. To prevent this undesirable behavior, a fake
+            // response challenge pointing to a non-existent middleware is manually added to the OWIN context
+            // to prevent the active authentication middleware from rewriting OpenIddict's 401 HTTP responses.
+            //
+            // Note: while 403 responses are generally not intercepted by the built-in OWIN authentication
+            // middleware, they are treated the same way as 401 responses to account for custom middleware
+            // that may potentially use the same interception logic for both 401 and 403 HTTP responses.
+            if (response.StatusCode is 401 or 403 &&
+                response.Context.Authentication.AuthenticationResponseChallenge is null)
+            {
+                response.Context.Authentication.AuthenticationResponseChallenge =
+                    new AuthenticationResponseChallenge(new[] { Guid.NewGuid().ToString() }, null);
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the appropriate HTTP response cache headers.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -629,7 +681,7 @@ public static partial class OpenIddictClientOwinHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
-                .SetOrder(AttachHttpResponseCode<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(AttachOwinResponseChallenge<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

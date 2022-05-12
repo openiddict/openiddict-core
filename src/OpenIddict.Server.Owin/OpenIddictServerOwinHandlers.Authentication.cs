@@ -44,6 +44,7 @@ public static partial class OpenIddictServerOwinHandlers
              */
             RemoveCachedRequest.Descriptor,
             AttachHttpResponseCode<ApplyAuthorizationResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyAuthorizationResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyAuthorizationResponseContext>.Descriptor,
             ProcessFormPostResponse.Descriptor,
             ProcessQueryResponse.Descriptor,

@@ -24,7 +24,8 @@ public static partial class OpenIddictValidationHandlers
         /*
          * Challenge processing:
          */
-        AttachDefaultChallengeError.Descriptor)
+        AttachDefaultChallengeError.Descriptor,
+        AttachChallengeParameters.Descriptor)
 
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Introspection.DefaultHandlers)
@@ -95,11 +96,7 @@ public static partial class OpenIddictValidationHandlers
             {
                 // The validation handler is responsible for validating access tokens for endpoints
                 // it doesn't manage (typically, API endpoints using token authentication).
-                //
-                // As such, sending an access token is not mandatory: API endpoints that require
-                // authentication can set up an authorization policy to reject such requests later
-                // in the request processing pipeline (typically, via the authorization middleware).
-                OpenIddictValidationEndpointType.Unknown => (true, false, true),
+                OpenIddictValidationEndpointType.Unknown => (true, true, true),
 
                 _ => (false, false, false)
             };
@@ -123,7 +120,7 @@ public static partial class OpenIddictValidationHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<EvaluateValidatedTokens>()
+                .UseSingletonHandler<ValidateRequiredTokens>()
                 .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
@@ -240,14 +237,6 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If an error was explicitly set by the application, don't override it.
-            if (!string.IsNullOrEmpty(context.Response.Error) ||
-                !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
-                !string.IsNullOrEmpty(context.Response.ErrorUri))
-            {
-                return default;
-            }
-
             // Try to retrieve the authentication context from the validation transaction and use
             // the error details returned during the authentication processing, if available.
             // If no error is attached to the authentication context, this likely means that
@@ -258,18 +247,43 @@ public static partial class OpenIddictValidationHandlers
             var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                 typeof(ProcessAuthenticationContext).FullName!);
 
-            if (!string.IsNullOrEmpty(notification?.Error))
+            context.Response.Error ??= notification?.Error ?? Errors.InsufficientAccess;
+            context.Response.ErrorDescription ??= notification?.ErrorDescription ?? SR.GetResourceString(SR.ID2095);
+            context.Response.ErrorUri ??= notification?.ErrorUri ?? SR.FormatID8000(SR.ID2095);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the appropriate parameters to the challenge response.
+    /// </summary>
+    public class AttachChallengeParameters : IOpenIddictValidationHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<AttachChallengeParameters>()
+                .SetOrder(AttachDefaultChallengeError.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
             {
-                context.Response.Error = notification.Error;
-                context.Response.ErrorDescription = notification.ErrorDescription;
-                context.Response.ErrorUri = notification.ErrorUri;
+                throw new ArgumentNullException(nameof(context));
             }
 
-            else
+            if (context.Parameters.Count > 0)
             {
-                context.Response.Error = Errors.InsufficientAccess;
-                context.Response.ErrorDescription = SR.GetResourceString(SR.ID2095);
-                context.Response.ErrorUri = SR.FormatID8000(SR.ID2095);
+                foreach (var parameter in context.Parameters)
+                {
+                    context.Response.SetParameter(parameter.Key, parameter.Value);
+                }
             }
 
             return default;
