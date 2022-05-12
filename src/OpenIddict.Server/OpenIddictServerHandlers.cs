@@ -907,47 +907,38 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!context.Parameters.ContainsKey(Parameters.Error))
+            context.Response.Error ??= context.EndpointType switch
             {
-                context.Parameters[Parameters.Error] = context.EndpointType switch
-                {
-                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
-                        => Errors.AccessDenied,
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                    => Errors.AccessDenied,
 
-                    OpenIddictServerEndpointType.Token    => Errors.InvalidGrant,
-                    OpenIddictServerEndpointType.Userinfo => Errors.InsufficientAccess,
+                OpenIddictServerEndpointType.Token    => Errors.InvalidGrant,
+                OpenIddictServerEndpointType.Userinfo => Errors.InsufficientAccess,
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
-                };
-            }
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
+            };
 
-            if (!context.Parameters.ContainsKey(Parameters.ErrorDescription))
+            context.Response.ErrorDescription ??= context.EndpointType switch
             {
-                context.Parameters[Parameters.ErrorDescription] = context.EndpointType switch
-                {
-                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
-                        => SR.GetResourceString(SR.ID2015),
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                    => SR.GetResourceString(SR.ID2015),
 
-                    OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
-                    OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2025),
+                OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
+                OpenIddictServerEndpointType.Userinfo => SR.GetResourceString(SR.ID2025),
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
-                };
-            }
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
+            };
 
-            if (!context.Parameters.ContainsKey(Parameters.ErrorUri))
+            context.Response.ErrorUri ??= context.EndpointType switch
             {
-                context.Parameters[Parameters.ErrorUri] = context.EndpointType switch
-                {
-                    OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
-                        => SR.FormatID8000(SR.ID2015),
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Verification
+                    => SR.FormatID8000(SR.ID2015),
 
-                    OpenIddictServerEndpointType.Token    => SR.FormatID8000(SR.ID2024),
-                    OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2025),
+                OpenIddictServerEndpointType.Token    => SR.FormatID8000(SR.ID2024),
+                OpenIddictServerEndpointType.Userinfo => SR.FormatID8000(SR.ID2025),
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
-                };
-            }
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0006))
+            };
 
             return default;
         }

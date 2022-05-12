@@ -37,6 +37,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /*
          * Challenge processing:
          */
+        AttachHostChallengeError.Descriptor,
         ResolveHostChallengeParameters.Descriptor,
 
         /*
@@ -277,6 +278,44 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the error details using the ASP.NET Core authentication properties.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public class AttachHostChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<AttachHostChallengeError>()
+                .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 500)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+            if (properties is not null)
+            {
+                context.Response.Error = properties.GetString(Properties.Error);
+                context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
+                context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
+                context.Response.Scope = properties.GetString(Properties.Scope);
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the additional sign-in parameters stored in the ASP.NET
     /// Core authentication properties specified by the application that triggered the sign-in operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
@@ -290,7 +329,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ResolveHostChallengeParameters>()
-                .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 500)
+                .SetOrder(AttachChallengeParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -306,30 +345,6 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             if (properties is null)
             {
                 return default;
-            }
-
-            if (properties.Items.TryGetValue(Properties.Error, out string? error) &&
-                !string.IsNullOrEmpty(error))
-            {
-                context.Parameters[Parameters.Error] = error;
-            }
-
-            if (properties.Items.TryGetValue(Properties.ErrorDescription, out string? description) &&
-                !string.IsNullOrEmpty(description))
-            {
-                context.Parameters[Parameters.ErrorDescription] = description;
-            }
-
-            if (properties.Items.TryGetValue(Properties.ErrorUri, out string? uri) &&
-                !string.IsNullOrEmpty(uri))
-            {
-                context.Parameters[Parameters.ErrorUri] = uri;
-            }
-
-            if (properties.Items.TryGetValue(Properties.Scope, out string? scope) &&
-                !string.IsNullOrEmpty(scope))
-            {
-                context.Parameters[Parameters.Scope] = scope;
             }
 
             foreach (var parameter in properties.Parameters)
@@ -875,29 +890,37 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
-
-            // When client authentication is made using basic authentication, the authorization server MUST return
-            // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
-            // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
-            // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
-            // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
-            // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
-            // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-            response.StatusCode = context.Transaction.Response.Error switch
+            response.StatusCode = (context.EndpointType, context.Transaction.Response.Error) switch
             {
-                null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
+                // Note: the default code may be replaced by another handler (e.g when doing redirects).
+                (_, null or { Length: 0 }) => 200,
 
-                Errors.InvalidClient or Errors.InvalidToken or Errors.MissingToken => 401,
+                // Unlike other server endpoints, errors returned by the userinfo endpoint follow the same logic as
+                // errors returned by API endpoints implementing bearer token authentication and MUST be returned
+                // as part of the standard WWW-Authenticate header. For more information, see
+                // https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
+                (OpenIddictServerEndpointType.Userinfo, Errors.InvalidToken       or Errors.MissingToken)      => 401,
+                (OpenIddictServerEndpointType.Userinfo, Errors.InsufficientAccess or Errors.InsufficientScope) => 403,
 
-                Errors.InsufficientAccess or Errors.InsufficientScope => 403,
+                // When client authentication is made using basic authentication, the authorization server
+                // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic
+                // authentication scheme. A similar error MAY be returned even when using client_secret_post.
+                // To simplify the logic, a 401 response with the Basic scheme is returned for invalid_client
+                // errors, even if credentials were specified in the form, as allowed by the specification.
+                (not OpenIddictServerEndpointType.Userinfo, Errors.InvalidClient) => 401,
 
-                _  => 400
+                (_, Errors.ServerError) => 500,
+
+                // Note: unless specified otherwise, errors are expected to result in 400 responses.
+                // See https://datatracker.ietf.org/doc/html/rfc6749#section-5.2 for more information.
+                _ => 400
             };
 
             return default;
@@ -973,29 +996,35 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
+
             // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
             // this may indicate that the request was incorrectly processed by another server stack.
             var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            Debug.Assert(context.Transaction.Response is not null, SR.GetResourceString(SR.ID4007));
-
-            // When client authentication is made using basic authentication, the authorization server MUST return
-            // a 401 response with a valid WWW-Authenticate header containing the HTTP Basic authentication scheme.
-            // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
-            // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
-            // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
-            // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
-            // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-            var scheme = context.Transaction.Response.Error switch
+            if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                Errors.InvalidClient => Schemes.Basic,
+                return default;
+            }
 
-                Errors.InvalidToken or
-                Errors.MissingToken or
-                Errors.InsufficientAccess or
-                Errors.InsufficientScope => Schemes.Bearer,
+            var scheme = (context.EndpointType, context.Transaction.Response.Error) switch
+            {
+                // Unlike other server endpoints, errors returned by the userinfo endpoint follow the same
+                // logic as errors returned by API endpoints implementing bearer token authentication and
+                // MUST be returned as part of the standard WWW-Authenticate header. For more information,
+                // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
+                (OpenIddictServerEndpointType.Userinfo, _) => Schemes.Bearer,
 
+                // When client authentication is made using basic authentication, the authorization server
+                // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic
+                // authentication scheme. A similar error MAY be returned even when using client_secret_post.
+                // To simplify the logic, a 401 response with the Basic scheme is returned for invalid_client
+                // errors, even if credentials were specified in the form, as allowed by the specification.
+                (_, Errors.InvalidClient) => Schemes.Basic,
+
+                // For all other errors, don't return a WWW-Authenticate header and return server errors
+                // as formatted JSON responses, as required by the OAuth 2.0 base specification.
                 _ => null
             };
 
@@ -1007,19 +1036,19 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
             // If a realm was configured in the options, attach it to the parameters.
-            if (!string.IsNullOrEmpty(_options.CurrentValue.Realm))
+            if (_options.CurrentValue.Realm is string { Length: > 0 } realm)
             {
-                parameters[Parameters.Realm] = _options.CurrentValue.Realm;
+                parameters[Parameters.Realm] = realm;
             }
 
             foreach (var parameter in context.Transaction.Response.GetParameters())
             {
                 // Note: the error details are only included if the error was not caused by a missing token, as recommended
                 // by the OAuth 2.0 bearer specification: https://tools.ietf.org/html/rfc6750#section-3.1.
-                if (string.Equals(context.Transaction.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
-                   (string.Equals(parameter.Key, Parameters.Error, StringComparison.Ordinal) ||
-                    string.Equals(parameter.Key, Parameters.ErrorDescription, StringComparison.Ordinal) ||
-                    string.Equals(parameter.Key, Parameters.ErrorUri, StringComparison.Ordinal)))
+                if (context.Transaction.Response.Error is Errors.MissingToken &&
+                    parameter.Key is Parameters.Error            or
+                                     Parameters.ErrorDescription or
+                                     Parameters.ErrorUri)
                 {
                     continue;
                 }

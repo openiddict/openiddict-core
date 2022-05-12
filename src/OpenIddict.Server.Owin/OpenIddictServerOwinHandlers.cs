@@ -32,7 +32,7 @@ public static partial class OpenIddictServerOwinHandlers
         /*
          * Challenge processing:
          */
-        ResolveHostChallengeParameters.Descriptor)
+        AttachHostChallengeError.Descriptor)
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Device.DefaultHandlers)
         .AddRange(Discovery.DefaultHandlers)
@@ -264,11 +264,10 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the additional sign-in parameters stored in the OWIN
-    /// authentication properties specified by the application that triggered the sign-in operation.
+    /// Contains the logic responsible for attaching the error details using the OWIN authentication properties.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ResolveHostChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
+    public class AttachHostChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -276,8 +275,8 @@ public static partial class OpenIddictServerOwinHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireOwinRequest>()
-                .UseSingletonHandler<ResolveHostChallengeParameters>()
-                .SetOrder(AttachChallengeParameters.Descriptor.Order - 500)
+                .UseSingletonHandler<AttachHostChallengeError>()
+                .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -290,36 +289,18 @@ public static partial class OpenIddictServerOwinHandlers
             }
 
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is null)
+            if (properties is not null)
             {
-                return default;
-            }
-
-            if (properties.Dictionary.TryGetValue(Properties.Error, out string? error) &&
-                !string.IsNullOrEmpty(error))
-            {
-                context.Parameters[Parameters.Error] = error;
-            }
-
-            if (properties.Dictionary.TryGetValue(Properties.ErrorDescription, out string? description) &&
-                !string.IsNullOrEmpty(description))
-            {
-                context.Parameters[Parameters.ErrorDescription] = description;
-            }
-
-            if (properties.Dictionary.TryGetValue(Properties.ErrorUri, out string? uri) &&
-                !string.IsNullOrEmpty(uri))
-            {
-                context.Parameters[Parameters.ErrorUri] = uri;
-            }
-
-            if (properties.Dictionary.TryGetValue(Properties.Scope, out string? scope) &&
-                !string.IsNullOrEmpty(scope))
-            {
-                context.Parameters[Parameters.Scope] = scope;
+                context.Response.Error = GetProperty(properties, Properties.Error);
+                context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
+                context.Response.ErrorUri = GetProperty(properties, Properties.ErrorUri);
+                context.Response.Scope = GetProperty(properties, Properties.Scope);
             }
 
             return default;
+
+            static string? GetProperty(AuthenticationProperties properties, string name)
+                => properties.Dictionary.TryGetValue(name, out string? value) ? value : null;
         }
     }
 
@@ -740,23 +721,83 @@ public static partial class OpenIddictServerOwinHandlers
             var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
-            // When client authentication is made using basic authentication, the authorization server MUST return
-            // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
-            // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
-            // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
-            // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
-            // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
-            // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-            response.StatusCode = context.Transaction.Response.Error switch
+            response.StatusCode = (context.EndpointType, context.Transaction.Response.Error) switch
             {
-                null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
+                // Note: the default code may be replaced by another handler (e.g when doing redirects).
+                (_, null or { Length: 0 }) => 200,
 
-                Errors.InvalidClient or Errors.InvalidToken or Errors.MissingToken => 401,
+                // Unlike other server endpoints, errors returned by the userinfo endpoint follow the same logic as
+                // errors returned by API endpoints implementing bearer token authentication and MUST be returned
+                // as part of the standard WWW-Authenticate header. For more information, see
+                // https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
+                (OpenIddictServerEndpointType.Userinfo, Errors.InvalidToken       or Errors.MissingToken)      => 401,
+                (OpenIddictServerEndpointType.Userinfo, Errors.InsufficientAccess or Errors.InsufficientScope) => 403,
 
-                Errors.InsufficientAccess or Errors.InsufficientScope => 403,
+                // When client authentication is made using basic authentication, the authorization server
+                // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic
+                // authentication scheme. A similar error MAY be returned even when using client_secret_post.
+                // To simplify the logic, a 401 response with the Basic scheme is returned for invalid_client
+                // errors, even if credentials were specified in the form, as allowed by the specification.
+                (not OpenIddictServerEndpointType.Userinfo, Errors.InvalidClient) => 401,
 
+                (_, Errors.ServerError) => 500,
+
+                // Note: unless specified otherwise, errors are expected to result in 400 responses.
+                // See https://datatracker.ietf.org/doc/html/rfc6749#section-5.2 for more information.
                 _ => 400
             };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching an OWIN response chalenge to the context, if necessary.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public class AttachOwinResponseChallenge<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<AttachOwinResponseChallenge<TContext>>()
+                .SetOrder(AttachHttpResponseCode<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var response = context.Transaction.GetOwinRequest()?.Context.Response ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            // OWIN authentication middleware configured to use active authentication (which is the default mode)
+            // are known to aggressively intercept 401 responses even if the request is already considered fully
+            // handled. In practice, this behavior is often seen with the cookies authentication middleware,
+            // that will rewrite the 401 responses returned by OpenIddict and try to redirect the user agent
+            // to the login page configured in the options. To prevent this undesirable behavior, a fake
+            // response challenge pointing to a non-existent middleware is manually added to the OWIN context
+            // to prevent the active authentication middleware from rewriting OpenIddict's 401 HTTP responses.
+            //
+            // Note: while 403 responses are generally not intercepted by the built-in OWIN authentication
+            // middleware, they are treated the same way as 401 responses to account for custom middleware
+            // that may potentially use the same interception logic for both 401 and 403 HTTP responses.
+            if (response.StatusCode is 401 or 403 &&
+                response.Context.Authentication.AuthenticationResponseChallenge is null)
+            {
+                response.Context.Authentication.AuthenticationResponseChallenge =
+                    new AuthenticationResponseChallenge(new[] { Guid.NewGuid().ToString() }, null);
+            }
 
             return default;
         }
@@ -775,7 +816,7 @@ public static partial class OpenIddictServerOwinHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
-                .SetOrder(AttachHttpResponseCode<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(AttachOwinResponseChallenge<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -838,22 +879,28 @@ public static partial class OpenIddictServerOwinHandlers
             var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
-            // When client authentication is made using basic authentication, the authorization server MUST return
-            // a 401 response with a valid WWW-Authenticate header containing the HTTP Basic authentication scheme.
-            // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
-            // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
-            // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
-            // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
-            // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-            var scheme = context.Transaction.Response.Error switch
+            if (string.IsNullOrEmpty(context.Transaction.Response.Error))
             {
-                Errors.InvalidClient => Schemes.Basic,
+                return default;
+            }
 
-                Errors.InvalidToken or
-                Errors.MissingToken or
-                Errors.InsufficientAccess or
-                Errors.InsufficientScope => Schemes.Bearer,
+            var scheme = (context.EndpointType, context.Transaction.Response.Error) switch
+            {
+                // Unlike other server endpoints, errors returned by the userinfo endpoint follow the same
+                // logic as errors returned by API endpoints implementing bearer token authentication and
+                // MUST be returned as part of the standard WWW-Authenticate header. For more information,
+                // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
+                (OpenIddictServerEndpointType.Userinfo, _) => Schemes.Bearer,
 
+                // When client authentication is made using basic authentication, the authorization server
+                // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic
+                // authentication scheme. A similar error MAY be returned even when using client_secret_post.
+                // To simplify the logic, a 401 response with the Basic scheme is returned for invalid_client
+                // errors, even if credentials were specified in the form, as allowed by the specification.
+                (_, Errors.InvalidClient) => Schemes.Basic,
+
+                // For all other errors, don't return a WWW-Authenticate header and return server errors
+                // as formatted JSON responses, as required by the OAuth 2.0 base specification.
                 _ => null
             };
 
@@ -865,19 +912,19 @@ public static partial class OpenIddictServerOwinHandlers
             var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
             // If a realm was configured in the options, attach it to the parameters.
-            if (!string.IsNullOrEmpty(_options.CurrentValue.Realm))
+            if (_options.CurrentValue.Realm is string { Length: > 0 } realm)
             {
-                parameters[Parameters.Realm] = _options.CurrentValue.Realm;
+                parameters[Parameters.Realm] = realm;
             }
 
             foreach (var parameter in context.Transaction.Response.GetParameters())
             {
                 // Note: the error details are only included if the error was not caused by a missing token, as recommended
                 // by the OAuth 2.0 bearer specification: https://tools.ietf.org/html/rfc6750#section-3.1.
-                if (string.Equals(context.Transaction.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
-                   (string.Equals(parameter.Key, Parameters.Error, StringComparison.Ordinal) ||
-                    string.Equals(parameter.Key, Parameters.ErrorDescription, StringComparison.Ordinal) ||
-                    string.Equals(parameter.Key, Parameters.ErrorUri, StringComparison.Ordinal)))
+                if (context.Transaction.Response.Error is Errors.MissingToken &&
+                    parameter.Key is Parameters.Error            or
+                                     Parameters.ErrorDescription or
+                                     Parameters.ErrorUri)
                 {
                     continue;
                 }

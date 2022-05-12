@@ -22,7 +22,7 @@ namespace OpenIddict.Sandbox.AspNet.Client
             // Register the Autofac scope injector middleware.
             app.UseAutofacLifetimeScopeInjector(container);
 
-            // Register the cookie middleware responsible of storing the user sessions.
+            // Register the cookie middleware responsible for storing the user sessions.
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 ExpireTimeSpan = TimeSpan.FromMinutes(50),

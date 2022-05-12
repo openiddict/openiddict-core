@@ -28,6 +28,7 @@ public static partial class OpenIddictServerOwinHandlers
              * Userinfo response processing:
              */
             AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyUserinfoResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
             ProcessChallengeErrorResponse<ApplyUserinfoResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor);

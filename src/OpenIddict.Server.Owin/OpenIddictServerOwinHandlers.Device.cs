@@ -25,6 +25,7 @@ public static partial class OpenIddictServerOwinHandlers
              * Device response processing:
              */
             AttachHttpResponseCode<ApplyDeviceResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyDeviceResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyDeviceResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyDeviceResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyDeviceResponseContext>.Descriptor,
@@ -43,6 +44,7 @@ public static partial class OpenIddictServerOwinHandlers
              * Verification response processing:
              */
             AttachHttpResponseCode<ApplyVerificationResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyVerificationResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyVerificationResponseContext>.Descriptor,
             ProcessHostRedirectionResponse.Descriptor,
             ProcessPassthroughErrorResponse<ApplyVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,

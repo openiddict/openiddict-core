@@ -23,6 +23,7 @@ public static partial class OpenIddictServerOwinHandlers
              * Revocation response processing:
              */
             AttachHttpResponseCode<ApplyRevocationResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyRevocationResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyRevocationResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyRevocationResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyRevocationResponseContext>.Descriptor);

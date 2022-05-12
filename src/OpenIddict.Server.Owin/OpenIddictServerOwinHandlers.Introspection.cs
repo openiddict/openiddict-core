@@ -23,6 +23,7 @@ public static partial class OpenIddictServerOwinHandlers
              * Introspection response processing:
              */
             AttachHttpResponseCode<ApplyIntrospectionResponseContext>.Descriptor,
+            AttachOwinResponseChallenge<ApplyIntrospectionResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyIntrospectionResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyIntrospectionResponseContext>.Descriptor);
     }
