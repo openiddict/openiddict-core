@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Mvc;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Integration.Mvc;
+using Autofac.Integration.WebApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using OpenIddict.Abstractions;
@@ -33,6 +35,19 @@ namespace OpenIddict.Sandbox.AspNet.Server
 
             // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances.
             DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
+
+            // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances
+            // and infer the Web API routes using the HTTP attributes used in the controllers.
+            var configuration = new HttpConfiguration
+            {
+                DependencyResolver = new AutofacWebApiDependencyResolver(container)
+            };
+
+            configuration.MapHttpAttributeRoutes();
+
+            // Register the Autofac Web API integration and Web API middleware.
+            app.UseAutofacWebApi(configuration);
+            app.UseWebApi(configuration);
 
             // Seed the database with the sample client using the OpenIddict application manager.
             // Note: in a real world application, this step should be part of a setup script.
@@ -156,6 +171,9 @@ namespace OpenIddict.Sandbox.AspNet.Server
 
             // Register the MVC controllers.
             builder.RegisterControllers(typeof(Startup).Assembly);
+
+            // Register the Web API controllers.
+            builder.RegisterApiControllers(typeof(Startup).Assembly);
 
             return builder.Build();
         }

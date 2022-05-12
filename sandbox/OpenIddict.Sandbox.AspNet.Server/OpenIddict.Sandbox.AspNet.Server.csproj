@@ -27,10 +27,12 @@
     <PackageReference Include="Autofac.Extensions.DependencyInjection" />
     <PackageReference Include="Autofac.Mvc5" />
     <PackageReference Include="Autofac.Owin" />
+    <PackageReference Include="Autofac.WebApi2.Owin" />
     <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" />
     <PackageReference Include="Microsoft.AspNet.Identity.Owin" />
     <PackageReference Include="Microsoft.AspNet.Mvc" />
     <PackageReference Include="Microsoft.AspNet.Web.Optimization" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Owin" />
     <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Owin.Host.SystemWeb" />

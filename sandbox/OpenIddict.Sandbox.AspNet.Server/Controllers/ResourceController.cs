@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Mvc;
+using System.Web.Http;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using OpenIddict.Validation.Owin;
@@ -9,24 +11,18 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Server.Controllers
 {
-    public class ResourceController : Controller
+    [HostAuthentication(OpenIddictValidationOwinDefaults.AuthenticationType)]
+    public class ResourceController : ApiController
     {
-        [HttpGet, Route("~/api/message")]
-        public async Task<ActionResult> GetMessage()
+        [Authorize, HttpGet, Route("~/api/message")]
+        public async Task<IHttpActionResult> GetMessage()
         {
-            var context = HttpContext.GetOwinContext();
-
-            var result = await context.Authentication.AuthenticateAsync(OpenIddictValidationOwinDefaults.AuthenticationType);
-            if (result is null)
-            {
-                context.Authentication.Challenge(OpenIddictValidationOwinDefaults.AuthenticationType);
-                return new EmptyResult();
-            }
+            var context = Request.GetOwinContext();
 
             // This demo action requires that the client application be granted the "demo_api" scope.
             // If it was not granted, a detailed error is returned to the client application to inform it
             // that the authorization process must be restarted with the specified scope to access this API.
-            if (!result.Identity.HasClaim(Claims.Private.Scope, "demo_api"))
+            if (!((ClaimsPrincipal) User).HasClaim(Claims.Private.Scope, "demo_api"))
             {
                 context.Authentication.Challenge(
                     authenticationTypes: OpenIddictValidationOwinDefaults.AuthenticationType,
@@ -37,12 +33,11 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                         [OpenIddictValidationOwinConstants.Properties.ErrorDescription] =
                             "The 'demo_api' scope is required to perform this action."
                     }));
-                return new EmptyResult();
+                return Unauthorized();
             }
 
-            var user = await context.GetUserManager<ApplicationUserManager>()
-                .FindByIdAsync(result.Identity.FindFirst(Claims.Subject).Value);
-
+            var user = await context.GetUserManager<ApplicationUserManager>().FindByIdAsync(
+                ((ClaimsPrincipal) User).FindFirst(Claims.Subject).Value);
             if (user is null)
             {
                 context.Authentication.Challenge(
@@ -53,10 +48,13 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                         [OpenIddictValidationOwinConstants.Properties.ErrorDescription] =
                             "The specified access token is bound to an account that no longer exists."
                     }));
-                return new EmptyResult();
+                return Unauthorized();
             }
 
-            return Content($"{user.UserName} has been successfully authenticated.");
+            return ResponseMessage(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent($"{user.UserName} has been successfully authenticated.")
+            });
         }
     }
 }
