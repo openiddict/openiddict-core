@@ -127,9 +127,9 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "audience" parameters.
     /// </summary>
-    public string[]? Audiences
+    public string?[]? Audiences
     {
-        get => (string[]?) GetParameter(OpenIddictConstants.Parameters.Audience);
+        get => (string?[]?) GetParameter(OpenIddictConstants.Parameters.Audience);
         set => SetParameter(OpenIddictConstants.Parameters.Audience, value);
     }
 
@@ -379,9 +379,9 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "resource" parameters.
     /// </summary>
-    public string[]? Resources
+    public string?[]? Resources
     {
-        get => (string[]?) GetParameter(OpenIddictConstants.Parameters.Resource);
+        get => (string?[]?) GetParameter(OpenIddictConstants.Parameters.Resource);
         set => SetParameter(OpenIddictConstants.Parameters.Resource, value);
     }
 
