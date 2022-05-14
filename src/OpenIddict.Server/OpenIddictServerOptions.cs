@@ -143,7 +143,7 @@ public class OpenIddictServerOptions
                 type = usage switch
                 {
                     TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
-                    TokenTypeHints.IdToken     => JsonWebTokenTypes.JsonWebToken,
+                    TokenTypeHints.IdToken     => JsonWebTokenTypes.Jwt,
 
                     _ => throw new NotSupportedException(SR.GetResourceString(SR.ID0269))
                 };

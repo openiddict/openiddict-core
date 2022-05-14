@@ -308,7 +308,7 @@ public class OpenIddictServerBuilder
                 => AddEncryptionCredentials(new EncryptingCredentials(CreateRsaSecurityKey(2048),
                     algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
-            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058)),
+            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
         };
 
         static SymmetricSecurityKey CreateSymmetricSecurityKey(int size)
@@ -750,7 +750,7 @@ public class OpenIddictServerBuilder
                 => throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID0069)),
 #endif
 
-            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058)),
+            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
         };
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",

@@ -36,6 +36,9 @@ public static class OpenIddictServerDataProtectionExtensions
         // Note: the order used here is not important, as the actual order is set in the options.
         builder.Services.TryAdd(OpenIddictServerDataProtectionHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
+        // Register the built-in filters used by the default OpenIddict Data Protection event handlers.
+        builder.Services.TryAddSingleton<RequireDataProtectionTokenFormat>();
+
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(new[]
         {

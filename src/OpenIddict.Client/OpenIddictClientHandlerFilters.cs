@@ -157,6 +157,22 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
+    /// </summary>
+    public class RequireJsonWebTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.TokenFormat is TokenFormats.Jwt);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a redirection request.
     /// </summary>
     public class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
