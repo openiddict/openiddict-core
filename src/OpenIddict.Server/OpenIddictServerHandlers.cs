@@ -1661,7 +1661,7 @@ public static partial class OpenIddictServerHandlers
             principal.SetAudiences(context.Principal.GetResources());
 
             // Store the client identifier in the public client_id claim, if available.
-            // See https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-04 for more information.
+            // See https://datatracker.ietf.org/doc/html/rfc9068 for more information.
             principal.SetClaim(Claims.ClientId, context.ClientId);
 
             // When receiving a grant_type=refresh_token request, determine whether the client application
@@ -2223,6 +2223,7 @@ public static partial class OpenIddictServerHandlers
                 // corresponding option was enabled in the server options.
                 PersistTokenPayload = context.Options.UseReferenceAccessTokens,
                 Principal = context.AccessTokenPrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.AccessToken
             };
 
@@ -2288,6 +2289,7 @@ public static partial class OpenIddictServerHandlers
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.AuthorizationCodePrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.AuthorizationCode
             };
 
@@ -2360,6 +2362,7 @@ public static partial class OpenIddictServerHandlers
                     _ => !context.Options.DisableTokenStorage
                 },
                 Principal = context.DeviceCodePrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.DeviceCode
             };
 
@@ -2427,6 +2430,7 @@ public static partial class OpenIddictServerHandlers
                 // corresponding option was enabled in the server options.
                 PersistTokenPayload = context.Options.UseReferenceRefreshTokens,
                 Principal = context.RefreshTokenPrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.RefreshToken
             };
 
@@ -2731,6 +2735,7 @@ public static partial class OpenIddictServerHandlers
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.UserCodePrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.UserCode
             };
 
@@ -2797,6 +2802,7 @@ public static partial class OpenIddictServerHandlers
                 // Identity tokens cannot never be reference tokens.
                 PersistTokenPayload = false,
                 Principal = context.IdentityTokenPrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.IdToken
             };
 

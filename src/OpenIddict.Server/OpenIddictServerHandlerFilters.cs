@@ -316,6 +316,22 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
+    /// </summary>
+    public class RequireJsonWebTokenFormat : IOpenIddictServerHandlerFilter<GenerateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.TokenFormat is TokenFormats.Jwt);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a logout request.
     /// </summary>
     public class RequireLogoutRequest : IOpenIddictServerHandlerFilter<BaseContext>

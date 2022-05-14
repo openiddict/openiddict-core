@@ -29,6 +29,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
             /*
              * Token generation:
              */
+            OverrideGeneratedTokenFormat.Descriptor,
             GenerateDataProtectionToken.Descriptor);
 
         /// <summary>
@@ -100,15 +101,18 @@ public static partial class OpenIddictClientDataProtectionHandlers
                 ClaimsPrincipal? ValidateToken(string type)
                 {
                     // Create a Data Protection protector using the provider registered in the options.
-                    var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
-                    {
-                        // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
-                        TokenTypeHints.StateToken when !string.IsNullOrEmpty(context.TokenId)
-                            => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
-                        TokenTypeHints.StateToken => new[] { Handlers.Client, Formats.StateToken, Schemes.Server },
+                    //
+                    // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
+                    var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
+                        (type, context.TokenId) switch
+                        {
+                            (TokenTypeHints.StateToken, { Length: not 0 })
+                                => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
+                            (TokenTypeHints.StateToken, null or { Length: 0 })
+                                => new[] { Handlers.Client, Formats.StateToken, Schemes.Server },
 
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                    });
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                        });
 
                     try
                     {
@@ -131,6 +135,53 @@ public static partial class OpenIddictClientDataProtectionHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for overriding the default token format
+        /// to generate ASP.NET Core Data Protection tokens instead of JSON Web Tokens.
+        /// </summary>
+        public class OverrideGeneratedTokenFormat : IOpenIddictClientHandler<GenerateTokenContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictClientDataProtectionOptions> _options;
+
+            public OverrideGeneratedTokenFormat(IOptionsMonitor<OpenIddictClientDataProtectionOptions> options)
+                => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .UseSingletonHandler<OverrideGeneratedTokenFormat>()
+                    .SetOrder(AttachSecurityCredentials.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // ASP.NET Core Data Protection can be used to format certain types of tokens in lieu
+                // of the default token format (typically, JSON Web Token). By default, Data Protection
+                // is automatically used for all the supported token types once the integration is enabled
+                // but the default token format can be re-enabled in the options. Alternatively, the token
+                // format can be overriden manually using a custom event handler registered after this one.
+
+                context.TokenFormat = context.TokenType switch
+                {
+                    TokenTypeHints.StateToken when !_options.CurrentValue.PreferDefaultStateTokenFormat
+                        => TokenFormats.Private.DataProtection,
+
+                    _ => context.TokenFormat // Don't override the format if the token type is not supported.
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for generating a token using Data Protection.
         /// </summary>
         public class GenerateDataProtectionToken : IOpenIddictClientHandler<GenerateTokenContext>
@@ -145,6 +196,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .AddFilter<RequireDataProtectionTokenFormat>()
                     .UseSingletonHandler<GenerateDataProtectionToken>()
                     .SetOrder(GenerateIdentityModelToken.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -164,27 +216,19 @@ public static partial class OpenIddictClientDataProtectionHandlers
                     return default;
                 }
 
-                if (context.TokenType switch
-                {
-                    TokenTypeHints.StateToken => _options.CurrentValue.PreferDefaultStateTokenFormat,
-
-                    // The token type is not supported by the Data Protection integration (e.g client assertion tokens).
-                    _ => true
-                })
-                {
-                    return default;
-                }
-
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(context.TokenType switch
-                {
-                    // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
-                    TokenTypeHints.StateToken when !context.Options.DisableTokenStorage
-                        => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
-                    TokenTypeHints.StateToken => new[] { Handlers.Client, Formats.StateToken, Schemes.Server },
+                //
+                // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
+                var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
+                    (context.TokenType, context.PersistTokenPayload) switch
+                    {
+                        (TokenTypeHints.StateToken, true)
+                            => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
+                        (TokenTypeHints.StateToken, false)
+                            => new[] { Handlers.Client, Formats.StateToken, Schemes.Server },
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                });
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                    });
 
                 using var buffer = new MemoryStream();
                 using var writer = new BinaryWriter(buffer);

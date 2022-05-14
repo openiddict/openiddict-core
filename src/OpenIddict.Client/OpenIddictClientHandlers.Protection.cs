@@ -707,6 +707,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .AddFilter<RequireJsonWebTokenFormat>()
                     .UseSingletonHandler<GenerateIdentityModelToken>()
                     .SetOrder(CreateTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -776,7 +777,7 @@ public static partial class OpenIddictClientHandlers
                         null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
 
                         // For client assertion tokens, use the generic "JWT" type.
-                        TokenTypeHints.ClientAssertionToken => JsonWebTokenTypes.JsonWebToken,
+                        TokenTypeHints.ClientAssertionToken => JsonWebTokenTypes.Jwt,
 
                         // For state tokens, use its private representation.
                         TokenTypeHints.StateToken => JsonWebTokenTypes.Private.StateToken,

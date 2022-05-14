@@ -33,6 +33,7 @@
     <Using Include="OpenIddict.Server.OpenIddictServerHandlers" Static="true" />
     <Using Include="OpenIddict.Server.OpenIddictServerHandlerFilters" Static="true" />
     <Using Include="OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlers" Static="true" />
+    <Using Include="OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlerFilters" Static="true" />
   </ItemGroup>
 
 </Project>

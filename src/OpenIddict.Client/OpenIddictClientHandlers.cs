@@ -1661,7 +1661,16 @@ public static partial class OpenIddictClientHandlers
             //
             // See https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
             // and https://datatracker.ietf.org/doc/html/rfc7523#section-3 for more information.
-            principal.SetAudiences(context.TokenEndpoint!.OriginalString);
+            if (!string.IsNullOrEmpty(context.TokenEndpoint?.OriginalString))
+            {
+                principal.SetAudiences(context.TokenEndpoint.OriginalString);
+            }
+
+            // If the token endpoint address is not available, use the issuer address as the audience.
+            else
+            {
+                principal.SetAudiences(context.Issuer.OriginalString);
+            }
 
             // Use the client_id as both the subject and the issuer, as required by the specifications.
             //
@@ -1714,6 +1723,7 @@ public static partial class OpenIddictClientHandlers
                 CreateTokenEntry = false,
                 PersistTokenPayload = false,
                 Principal = context.ClientAssertionTokenPrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.ClientAssertionToken
             };
 
@@ -1741,7 +1751,13 @@ public static partial class OpenIddictClientHandlers
             }
 
             context.ClientAssertionToken = notification.Token;
-            context.ClientAssertionTokenType = ClientAssertionTypes.JwtBearer;
+            context.ClientAssertionTokenType = notification.TokenFormat switch
+            {
+                TokenFormats.Jwt   => ClientAssertionTypes.JwtBearer,
+                TokenFormats.Saml2 => ClientAssertionTypes.Saml2Bearer,
+
+                _ => null
+            };
         }
     }
 
@@ -4124,6 +4140,7 @@ public static partial class OpenIddictClientHandlers
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.StateTokenPrincipal!,
+                TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.StateToken
             };
 

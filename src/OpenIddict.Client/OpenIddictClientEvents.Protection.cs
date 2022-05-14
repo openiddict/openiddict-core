@@ -72,6 +72,11 @@ public static partial class OpenIddictClientEvents
         public string? Token { get; set; }
 
         /// <summary>
+        /// Gets or sets the format of the token (e.g JWT or ASP.NET Core Data Protection) to create.
+        /// </summary>
+        public string TokenFormat { get; set; } = default!;
+
+        /// <summary>
         /// Gets or sets the type of the token to create.
         /// </summary>
         public string TokenType { get; set; } = default!;

@@ -228,7 +228,7 @@ public static class OpenIddictConstants
     public static class JsonWebTokenTypes
     {
         public const string AccessToken = "at+jwt";
-        public const string JsonWebToken = "JWT";
+        public const string Jwt = "JWT";
 
         public static class Prefixes
         {
@@ -487,6 +487,18 @@ public static class OpenIddictConstants
     {
         public const string Pairwise = "pairwise";
         public const string Public = "public";
+    }
+
+    public static class TokenFormats
+    {
+        public const string Jwt = "urn:ietf:params:oauth:token-type:jwt";
+        public const string Saml1 = "urn:ietf:params:oauth:token-type:saml1";
+        public const string Saml2 = "urn:ietf:params:oauth:token-type:saml2";
+
+        public static class Private
+        {
+            public const string DataProtection = "urn:openiddict:params:oauth:token-type:dp";
+        }
     }
 
     public static class TokenTypeHints

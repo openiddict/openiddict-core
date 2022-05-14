@@ -95,15 +95,18 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                 ClaimsPrincipal? ValidateToken(string type)
                 {
                     // Create a Data Protection protector using the provider registered in the options.
-                    var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
-                    {
-                        // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
-                        TokenTypeHints.AccessToken when !string.IsNullOrEmpty(context.TokenId)
-                            => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
-                        TokenTypeHints.AccessToken => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+                    //
+                    // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
+                    var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
+                        (type, context.TokenId) switch
+                        {
+                            (TokenTypeHints.AccessToken, { Length: not 0 })
+                                => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+                            (TokenTypeHints.AccessToken, null or { Length: 0 })
+                                => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
 
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                    });
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                        });
 
                     try
                     {

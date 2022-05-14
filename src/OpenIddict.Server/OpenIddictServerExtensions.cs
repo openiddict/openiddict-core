@@ -59,6 +59,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireIdentityTokenGenerated>();
         builder.Services.TryAddSingleton<RequireIdentityTokenValidated>();
         builder.Services.TryAddSingleton<RequireIntrospectionRequest>();
+        builder.Services.TryAddSingleton<RequireJsonWebTokenFormat>();
         builder.Services.TryAddSingleton<RequireLogoutRequest>();
         builder.Services.TryAddSingleton<RequirePostLogoutRedirectUriParameter>();
         builder.Services.TryAddSingleton<RequireReferenceAccessTokensEnabled>();

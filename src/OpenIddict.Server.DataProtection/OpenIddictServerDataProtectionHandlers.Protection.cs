@@ -29,6 +29,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
             /*
              * Token generation:
              */
+            OverrideGeneratedTokenFormat.Descriptor,
             GenerateDataProtectionToken.Descriptor);
 
         /// <summary>
@@ -185,31 +186,38 @@ public static partial class OpenIddictServerDataProtectionHandlers
                 ClaimsPrincipal? ValidateToken(string type)
                 {
                     // Create a Data Protection protector using the provider registered in the options.
-                    var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
-                    {
-                        // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
-                        TokenTypeHints.AccessToken when !string.IsNullOrEmpty(context.TokenId)
-                            => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
-                        TokenTypeHints.AccessToken => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+                    // 
+                    // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
+                    var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
+                        (type, context.TokenId) switch
+                        {
+                            (TokenTypeHints.AccessToken, { Length: not 0 })
+                                => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+                            (TokenTypeHints.AccessToken, null or { Length: 0 })
+                                => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
 
-                        TokenTypeHints.AuthorizationCode when !string.IsNullOrEmpty(context.TokenId)
-                            => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
-                        TokenTypeHints.AuthorizationCode => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },
+                            (TokenTypeHints.AuthorizationCode, { Length: not 0 })
+                                => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
+                            (TokenTypeHints.AuthorizationCode, null or { Length: 0 })
+                                => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },
 
-                        TokenTypeHints.DeviceCode when !string.IsNullOrEmpty(context.TokenId)
-                            => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server },
-                        TokenTypeHints.DeviceCode => new[] { Handlers.Server, Formats.DeviceCode, Schemes.Server },
+                            (TokenTypeHints.DeviceCode, { Length: not 0 })
+                                => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server },
+                            (TokenTypeHints.DeviceCode, null or { Length: 0 })
+                                => new[] { Handlers.Server, Formats.DeviceCode, Schemes.Server },
 
-                        TokenTypeHints.RefreshToken when !string.IsNullOrEmpty(context.TokenId)
-                            => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server },
-                        TokenTypeHints.RefreshToken => new[] { Handlers.Server, Formats.RefreshToken, Schemes.Server },
+                            (TokenTypeHints.RefreshToken, { Length: not 0 })
+                                => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server },
+                            (TokenTypeHints.RefreshToken, null or { Length: 0 })
+                                => new[] { Handlers.Server, Formats.RefreshToken, Schemes.Server },
 
-                        TokenTypeHints.UserCode when !string.IsNullOrEmpty(context.TokenId)
-                            => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server },
-                        TokenTypeHints.UserCode => new[] { Handlers.Server, Formats.UserCode, Schemes.Server },
+                            (TokenTypeHints.UserCode, { Length: not 0 })
+                                => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server },
+                            (TokenTypeHints.UserCode, null or { Length: 0 })
+                                => new[] { Handlers.Server, Formats.UserCode, Schemes.Server },
 
-                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                    });
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                        });
 
                     try
                     {
@@ -232,6 +240,65 @@ public static partial class OpenIddictServerDataProtectionHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for overriding the default token format
+        /// to generate ASP.NET Core Data Protection tokens instead of JSON Web Tokens.
+        /// </summary>
+        public class OverrideGeneratedTokenFormat : IOpenIddictServerHandler<GenerateTokenContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
+
+            public OverrideGeneratedTokenFormat(IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+                => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .UseSingletonHandler<OverrideGeneratedTokenFormat>()
+                    .SetOrder(AttachSecurityCredentials.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // ASP.NET Core Data Protection can be used to format certain types of tokens in lieu
+                // of the default token format (typically, JSON Web Token). By default, Data Protection
+                // is automatically used for all the supported token types once the integration is enabled
+                // but the default token format can be re-enabled in the options. Alternatively, the token
+                // format can be overriden manually using a custom event handler registered after this one.
+
+                context.TokenFormat = context.TokenType switch
+                {
+                    TokenTypeHints.AccessToken when !_options.CurrentValue.PreferDefaultAccessTokenFormat
+                        => TokenFormats.Private.DataProtection,
+
+                    TokenTypeHints.AuthorizationCode when !_options.CurrentValue.PreferDefaultAuthorizationCodeFormat
+                        => TokenFormats.Private.DataProtection,
+
+                    TokenTypeHints.DeviceCode when !_options.CurrentValue.PreferDefaultDeviceCodeFormat
+                        => TokenFormats.Private.DataProtection,
+
+                    TokenTypeHints.RefreshToken when !_options.CurrentValue.PreferDefaultRefreshTokenFormat
+                        => TokenFormats.Private.DataProtection,
+
+                    TokenTypeHints.UserCode when !_options.CurrentValue.PreferDefaultUserCodeFormat
+                        => TokenFormats.Private.DataProtection,
+
+                    _ => context.TokenFormat // Don't override the format if the token type is not supported.
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for generating a token using Data Protection.
         /// </summary>
         public class GenerateDataProtectionToken : IOpenIddictServerHandler<GenerateTokenContext>
@@ -246,6 +313,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .AddFilter<RequireDataProtectionTokenFormat>()
                     .UseSingletonHandler<GenerateDataProtectionToken>()
                     .SetOrder(GenerateIdentityModelToken.Descriptor.Order - 500)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -265,46 +333,39 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     return default;
                 }
 
-                if (context.TokenType switch
-                {
-                    TokenTypeHints.AccessToken       => _options.CurrentValue.PreferDefaultAccessTokenFormat,
-                    TokenTypeHints.AuthorizationCode => _options.CurrentValue.PreferDefaultAuthorizationCodeFormat,
-                    TokenTypeHints.DeviceCode        => _options.CurrentValue.PreferDefaultDeviceCodeFormat,
-                    TokenTypeHints.RefreshToken      => _options.CurrentValue.PreferDefaultRefreshTokenFormat,
-                    TokenTypeHints.UserCode          => _options.CurrentValue.PreferDefaultUserCodeFormat,
-
-                    _ => true // The token type is not supported by the Data Protection integration (e.g identity tokens).
-                })
-                {
-                    return default;
-                }
-
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(context.TokenType switch
-                {
-                    // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
-                    TokenTypeHints.AccessToken when context.Options.UseReferenceAccessTokens
-                        => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
-                    TokenTypeHints.AccessToken => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+                //
+                // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
+                var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
+                    (context.TokenType, context.PersistTokenPayload) switch
+                    {
+                        (TokenTypeHints.AccessToken, true)
+                            => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+                        (TokenTypeHints.AccessToken, false)
+                            => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
 
-                    TokenTypeHints.AuthorizationCode when !context.Options.DisableTokenStorage
-                        => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
-                    TokenTypeHints.AuthorizationCode => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },
+                        (TokenTypeHints.AuthorizationCode, true)
+                            => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
+                        (TokenTypeHints.AuthorizationCode, false)
+                            => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },
 
-                    TokenTypeHints.DeviceCode when !context.Options.DisableTokenStorage
-                        => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server },
-                    TokenTypeHints.DeviceCode => new[] { Handlers.Server, Formats.DeviceCode, Schemes.Server },
+                        (TokenTypeHints.DeviceCode, true)
+                            => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server },
+                        (TokenTypeHints.DeviceCode, false)
+                            => new[] { Handlers.Server, Formats.DeviceCode, Schemes.Server },
 
-                    TokenTypeHints.RefreshToken when context.Options.UseReferenceRefreshTokens
-                        => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server },
-                    TokenTypeHints.RefreshToken => new[] { Handlers.Server, Formats.RefreshToken, Schemes.Server },
+                        (TokenTypeHints.RefreshToken, true)
+                            => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server },
+                        (TokenTypeHints.RefreshToken, false)
+                            => new[] { Handlers.Server, Formats.RefreshToken, Schemes.Server },
 
-                    TokenTypeHints.UserCode when !context.Options.DisableTokenStorage
-                        => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server },
-                    TokenTypeHints.UserCode => new[] { Handlers.Server, Formats.UserCode, Schemes.Server },
+                        (TokenTypeHints.UserCode, true)
+                            => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server },
+                        (TokenTypeHints.UserCode, false)
+                            => new[] { Handlers.Server, Formats.UserCode, Schemes.Server },
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
-                });
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
+                    });
 
                 using var buffer = new MemoryStream();
                 using var writer = new BinaryWriter(buffer);
