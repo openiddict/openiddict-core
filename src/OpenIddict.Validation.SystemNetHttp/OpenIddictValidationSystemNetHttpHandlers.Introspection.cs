@@ -29,6 +29,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
              * Introspection response processing:
              */
             ExtractJsonHttpResponse<ExtractIntrospectionResponseContext>.Descriptor,
+            ExtractWwwAuthenticateHeader<ExtractIntrospectionResponseContext>.Descriptor,
+            ValidateHttpResponse<ExtractIntrospectionResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractIntrospectionResponseContext>.Descriptor);
 
         /// <summary>

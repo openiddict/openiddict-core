@@ -307,9 +307,9 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
 
     private async Task<OpenIddictResponse> GetResponseAsync(HttpResponseMessage message)
     {
-        if (message.Headers.WwwAuthenticate.Count != 0)
+        if (message.Headers.WwwAuthenticate.Count is not 0)
         {
-            var response = new OpenIddictResponse();
+            var parameters = new Dictionary<string, StringValues>(message.Headers.WwwAuthenticate.Count);
 
             foreach (var header in message.Headers.WwwAuthenticate)
             {
@@ -318,31 +318,35 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
                     continue;
                 }
 
-                foreach (var parameter in header.Parameter.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                // Note: while initially not allowed by the core OAuth 2.0 specification, multiple
+                // parameters with the same name are used by derived drafts like the OAuth 2.0
+                // token exchange specification. For consistency, multiple parameters with the
+                // same name are also supported when returned as part of WWW-Authentication headers.
+
+                foreach (var parameter in header.Parameter.Split(Separators.Comma, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    var values = parameter.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (values.Length != 2)
+                    var values = parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries);
+                    if (values.Length is not 2)
                     {
                         continue;
                     }
 
-                    var name = values[0]?.Trim(' ', '"');
+                    var (name, value) = (
+                        values[0]?.Trim(Separators.Space[0]),
+                        values[1]?.Trim(Separators.Space[0], Separators.DoubleQuote[0]));
+
                     if (string.IsNullOrEmpty(name))
                     {
                         continue;
                     }
 
-                    var value = values[1]?.Trim(' ', '"');
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        continue;
-                    }
-
-                    response.SetParameter(name, value);
+                    parameters[name] = parameters.ContainsKey(name) ?
+                        StringValues.Concat(parameters[name], value?.Replace("\\\"", "\"")) :
+                        new StringValues(value?.Replace("\\\"", "\""));
                 }
             }
 
-            return response;
+            return new OpenIddictResponse(parameters);
         }
 
         else if (message.Headers.Location is not null)
