@@ -7,8 +7,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
 namespace OpenIddict.Client.SystemNetHttp;
@@ -30,7 +28,10 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /*
              * Userinfo response processing:
              */
-            ExtractUserinfoHttpResponse.Descriptor,
+            ExtractUserinfoTokenHttpResponse.Descriptor,
+            ExtractJsonHttpResponse<ExtractUserinfoResponseContext>.Descriptor,
+            ExtractWwwAuthenticateHeader<ExtractUserinfoResponseContext>.Descriptor,
+            ValidateHttpResponse<ExtractUserinfoResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractUserinfoResponseContext>.Descriptor);
 
         /// <summary>
@@ -77,7 +78,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the response from the userinfo response.
         /// </summary>
-        public class ExtractUserinfoHttpResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        public class ExtractUserinfoTokenHttpResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -85,8 +86,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
-                    .UseSingletonHandler<ExtractUserinfoHttpResponse>()
-                    .SetOrder(DisposeHttpResponse<ExtractUserinfoResponseContext>.Descriptor.Order - 50_000)
+                    .UseSingletonHandler<ExtractUserinfoTokenHttpResponse>()
+                    .SetOrder(ExtractJsonHttpResponse<ExtractUserinfoResponseContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -116,51 +117,14 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 //  - application/json responses containing a JSON object listing the user claims as-is.
                 //  - application/jwt responses containing a signed/encrypted JSON Web Token containing the user claims.
                 //
-                // As such, this handler implements a selection routine to extract the userinfo token as-is
-                // if the media type is application/jwt and fall back to JSON in any other case.
+                // To support both types, this handler will try to extract the userinfo token as-is if the media type
+                // is application/jwt and will rely on other handlers in the pipeline to process regular JSON responses.
 
                 if (string.Equals(response.Content.Headers.ContentType?.MediaType,
-                    ContentTypes.JsonWebToken, StringComparison.OrdinalIgnoreCase))
+                    MediaTypes.JsonWebToken, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response = new OpenIddictResponse();
                     context.UserinfoToken = await response.Content.ReadAsStringAsync();
-
-                    return;
-                }
-
-                try
-                {
-                    try
-                    {
-                        // Note: ReadFromJsonAsync() automatically validates the content encoding and transparently
-                        // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
-                        context.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
-                    }
-
-                    // Initial versions of System.Net.Http.Json were known to eagerly validate the media type returned
-                    // as part of the HTTP Content-Type header and throw a NotSupportedException. If such an exception
-                    // is caught, try to extract the response using the less efficient string-based deserialization,
-                    // that will also take care of handling non-UTF-8 encodings but won't validate the media type.
-                    catch (NotSupportedException)
-                    {
-                        context.Response = JsonSerializer.Deserialize<OpenIddictResponse>(
-                            await response.Content.ReadAsStringAsync());
-                    }
-                }
-
-                // If an exception is thrown at this stage, this likely means the returned response was not a valid
-                // JSON response or was not correctly formatted as a JSON object. This typically happens when
-                // a server error occurs and a default error page is returned by the remote HTTP server.
-                // In this case, log the error details and return a generic error to stop processing the event.
-                catch (Exception exception)
-                {
-                    context.Logger.LogError(exception, SR.GetResourceString(SR.ID6183),
-                        await response.Content.ReadAsStringAsync());
-
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2137),
-                        uri: SR.FormatID8000(SR.ID2137));
 
                     return;
                 }

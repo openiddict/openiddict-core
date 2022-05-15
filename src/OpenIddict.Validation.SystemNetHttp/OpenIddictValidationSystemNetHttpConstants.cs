@@ -4,16 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Client.SystemNetHttp;
+namespace OpenIddict.Validation.SystemNetHttp;
 
 /// <summary>
 /// Exposes common constants used by the OpenIddict System.Net.Http integration.
 /// </summary>
-public static class OpenIddictClientSystemNetHttpConstants
+public static class OpenIddictValidationSystemNetHttpConstants
 {
     public static class MediaTypes
     {
         public const string Json = "application/json";
-        public const string JsonWebToken = "application/jwt";
     }
 }

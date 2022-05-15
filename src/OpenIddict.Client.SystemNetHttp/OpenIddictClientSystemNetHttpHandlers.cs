@@ -10,8 +10,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
 namespace OpenIddict.Client.SystemNetHttp;
 
@@ -139,7 +140,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             var request = context.Transaction.GetHttpRequestMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
-            if (request.RequestUri is null || context.Transaction.Request.Count == 0)
+            if (request.RequestUri is null || context.Transaction.Request.Count is 0)
             {
                 return default;
             }
@@ -333,7 +334,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataAddress>()
                 .UseSingletonHandler<ExtractJsonHttpResponse<TContext>>()
-                .SetOrder(DisposeHttpResponse<TContext>.Descriptor.Order - 50_000)
+                .SetOrder(ExtractWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -356,33 +357,24 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             var response = context.Transaction.GetHttpResponseMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
-            // The status code is deliberately not validated to ensure even errored responses
-            // (typically in the 4xx range) can be deserialized and handled by the event handlers.
+            // If the returned Content-Type doesn't indicate the response has a JSON payload,
+            // ignore it and allow other handlers in the pipeline to process the HTTP response.
+            if (!string.Equals(response.Content.Headers.ContentType?.MediaType,
+                MediaTypes.Json, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
 
             try
             {
-                try
-                {
-                    // Note: ReadFromJsonAsync() automatically validates the content encoding and transparently
-                    // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
-                    context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
-                }
-
-                // Initial versions of System.Net.Http.Json were known to eagerly validate the media type returned
-                // as part of the HTTP Content-Type header and throw a NotSupportedException. If such an exception
-                // is caught, try to extract the response using the less efficient string-based deserialization,
-                // that will also take care of handling non-UTF-8 encodings but won't validate the media type.
-                catch (NotSupportedException)
-                {
-                    context.Transaction.Response = JsonSerializer.Deserialize<OpenIddictResponse>(
-                        await response.Content.ReadAsStringAsync());
-                }
+                // Note: ReadFromJsonAsync() automatically validates the content encoding and transparently
+                // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
+                context.Transaction.Response = await response.Content.ReadFromJsonAsync<OpenIddictResponse>();
             }
 
             // If an exception is thrown at this stage, this likely means the returned response was not a valid
             // JSON response or was not correctly formatted as a JSON object. This typically happens when
-            // a server error occurs and a default error page is returned by the remote HTTP server.
-            // In this case, log the error details and return a generic error to stop processing the event.
+            // a server error occurs while the JSON response is being generated and returned to the client.
             catch (Exception exception)
             {
                 context.Logger.LogError(exception, SR.GetResourceString(SR.ID6183),
@@ -392,6 +384,159 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     error: Errors.ServerError,
                     description: SR.GetResourceString(SR.ID2137),
                     uri: SR.FormatID8000(SR.ID2137));
+
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting errors from WWW-Authenticate headers.
+    /// </summary>
+    public class ExtractWwwAuthenticateHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataAddress>()
+                .UseSingletonHandler<ExtractWwwAuthenticateHeader<TContext>>()
+                .SetOrder(ValidateHttpResponse<TContext>.Descriptor.Order - 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Don't overwrite the response if one was already provided.
+            if (context.Transaction.Response is not null)
+            {
+                return default;
+            }
+
+            // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var response = context.Transaction.GetHttpResponseMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            if (response.Headers.WwwAuthenticate.Count is 0)
+            {
+                return default;
+            }
+
+            var parameters = new Dictionary<string, StringValues>(response.Headers.WwwAuthenticate.Count);
+
+            foreach (var header in response.Headers.WwwAuthenticate)
+            {
+                if (string.IsNullOrEmpty(header.Parameter))
+                {
+                    continue;
+                }
+
+                // Note: while initially not allowed by the core OAuth 2.0 specification, multiple
+                // parameters with the same name are used by derived drafts like the OAuth 2.0
+                // token exchange specification. For consistency, multiple parameters with the
+                // same name are also supported when returned as part of WWW-Authentication headers.
+
+                foreach (var parameter in header.Parameter.Split(Separators.Comma, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var values = parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries);
+                    if (values.Length is not 2)
+                    {
+                        continue;
+                    }
+
+                    var (name, value) = (
+                        values[0]?.Trim(Separators.Space[0]),
+                        values[1]?.Trim(Separators.Space[0], Separators.DoubleQuote[0]));
+
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        continue;
+                    }
+
+                    parameters[name] = parameters.ContainsKey(name) ?
+                        StringValues.Concat(parameters[name], value?.Replace("\\\"", "\"")) :
+                        new StringValues(value?.Replace("\\\"", "\""));
+                }
+            }
+
+            context.Transaction.Response = new OpenIddictResponse(parameters);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting errors from WWW-Authenticate headers.
+    /// </summary>
+    public class ValidateHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataAddress>()
+                .UseSingletonHandler<ValidateHttpResponse<TContext>>()
+                .SetOrder(DisposeHttpResponse<TContext>.Descriptor.Order - 50_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var response = context.Transaction.GetHttpResponseMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            // At this stage, return a generic error based on the HTTP status code if no
+            // error could be extracted from the payload or from the WWW-Authenticate header.
+            if (!response.IsSuccessStatusCode && string.IsNullOrEmpty(context.Transaction.Response?.Error))
+            {
+                context.Logger.LogError(SR.GetResourceString(SR.ID6184), response.StatusCode,
+                    await response.Content.ReadAsStringAsync());
+
+                context.Reject(
+                    error: (int) response.StatusCode switch
+                    {
+                        400 => Errors.InvalidRequest,
+                        401 => Errors.InvalidToken,
+                        403 => Errors.InsufficientAccess,
+                        429 => Errors.SlowDown,
+                        500 => Errors.ServerError,
+                        503 => Errors.TemporarilyUnavailable,
+                        _   => Errors.ServerError
+                    },
+                    description: SR.GetResourceString(SR.ID0328),
+                    uri: SR.FormatID8000(SR.ID0328));
+
+                return;
+            }
+
+            // If no other event handler was able to extract the response payload at this point
+            // (e.g because an unsupported content type was returned), return a generic error.
+            if (context.Transaction.Response is null)
+            {
+                context.Logger.LogError(SR.GetResourceString(SR.ID6185), response.StatusCode,
+                    response.Content.Headers.ContentType, await response.Content.ReadAsStringAsync());
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID0329),
+                    uri: SR.FormatID8000(SR.ID0329));
 
                 return;
             }

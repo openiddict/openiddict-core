@@ -1256,6 +1256,36 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   Error description: {1}
   Error URI: {2}</value>
   </data>
+  <data name="ID0324" xml:space="preserve">
+    <value>An error occurred while preparing the userinfo request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0325" xml:space="preserve">
+    <value>An error occurred while sending the userinfo request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0326" xml:space="preserve">
+    <value>An error occurred while extracting the userinfo response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0327" xml:space="preserve">
+    <value>An error occurred while handling the userinfo response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0328" xml:space="preserve">
+    <value>A generic error was returned by the remote authorization server.</value>
+  </data>
+  <data name="ID0329" xml:space="preserve">
+    <value>An unsupported response was returned by the remote authorization server.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2222,7 +2252,13 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>A network error occured while communicating with the remote HTTP server.</value>
   </data>
   <data name="ID6183" xml:space="preserve">
-    <value>An invalid JSON response was returned by the remote HTTP server: {Payload}.</value>
+    <value>An invalid JSON payload was returned by the remote HTTP server: {Payload}.</value>
+  </data>
+  <data name="ID6184" xml:space="preserve">
+    <value>A generic {StatusCode} response was returned by the remote HTTP server: {Payload}.</value>
+  </data>
+  <data name="ID6185" xml:space="preserve">
+    <value>An unsupported {StatusCode} response was returned by the remote HTTP server: {ContentType} {Payload}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

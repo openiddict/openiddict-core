@@ -25,6 +25,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
              * Configuration response processing:
              */
             ExtractJsonHttpResponse<ExtractConfigurationResponseContext>.Descriptor,
+            ExtractWwwAuthenticateHeader<ExtractConfigurationResponseContext>.Descriptor,
+            ValidateHttpResponse<ExtractConfigurationResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractConfigurationResponseContext>.Descriptor,
 
             /*
@@ -39,6 +41,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
              * Configuration response processing:
              */
             ExtractJsonHttpResponse<ExtractCryptographyResponseContext>.Descriptor,
+            ExtractWwwAuthenticateHeader<ExtractCryptographyResponseContext>.Descriptor,
+            ValidateHttpResponse<ExtractCryptographyResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractCryptographyResponseContext>.Descriptor);
     }
 }

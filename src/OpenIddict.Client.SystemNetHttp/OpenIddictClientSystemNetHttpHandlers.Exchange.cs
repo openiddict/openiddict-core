@@ -29,6 +29,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              * Token response processing:
              */
             ExtractJsonHttpResponse<ExtractTokenResponseContext>.Descriptor,
+            ExtractWwwAuthenticateHeader<ExtractTokenResponseContext>.Descriptor,
+            ValidateHttpResponse<ExtractTokenResponseContext>.Descriptor,
             DisposeHttpResponse<ExtractTokenResponseContext>.Descriptor);
 
         /// <summary>
