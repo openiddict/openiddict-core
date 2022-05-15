@@ -6,8 +6,7 @@
     <Setting Type="ECDsaSecurityKey" Name="SigningKey" SigningAlgorithm="ES256"
              Description="Gets or sets the ECDSA signing key associated with the developer account." />
 
-    <Setting Type="string" Name="TeamId"
-             Description="Gets or sets the Team ID associated with the developer account." />
+    <Setting Type="string" Name="TeamId" Description="Gets or sets the Team ID associated with the developer account." />
   </Provider>
 
   <Provider Name="Fitbit" Documentation="https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/">
@@ -43,11 +42,8 @@
       </Configuration>
     </Environment>
 
-    <Setting Type="string" Name="ProductName"
-             Description="Gets or sets the product name, used to build the user agent header." />
-
-    <Setting Type="string" Name="ProductVersion"
-             Description="Gets or sets the product version, used to build the user agent header." />
+    <Setting Type="string" Name="ProductName" Description="Gets or sets the product name used in the user agent header." />
+    <Setting Type="string" Name="ProductVersion" Description="Gets or sets the product version used in the user agent header." />
   </Provider>
 
   <Provider Name="Salesforce" Documentation="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_flows.htm">
@@ -81,8 +77,7 @@
                      UserinfoEndpoint="https://{tenant}.zendesk.com/api/v2/users/me" />
     </Environment>
 
-    <Setting Type="string" Name="Tenant"
-             Description="Gets or sets the tenant used to identify the Zendesk instance." />
+    <Setting Type="string" Name="Tenant" Description="Gets or sets the tenant used to identify the Zendesk instance." />
   </Provider>
 
 </Providers>

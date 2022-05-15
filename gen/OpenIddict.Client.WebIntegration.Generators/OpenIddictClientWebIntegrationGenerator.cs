@@ -35,6 +35,10 @@ namespace OpenIddict.Client.WebIntegration.Generators
                 SourceText.From(GenerateEnvironments(document), Encoding.UTF8));
 
             context.AddSource(
+                "OpenIddictClientWebIntegrationHelpers.generated.cs",
+                SourceText.From(GenerateHelpers(document), Encoding.UTF8));
+
+            context.AddSource(
                 "OpenIddictClientWebIntegrationSettings.generated.cs",
                 SourceText.From(GenerateSettings(document), Encoding.UTF8));
 
@@ -345,6 +349,37 @@ public partial class OpenIddictClientWebIntegrationEnvironments
                 });
             }
 
+            static string GenerateHelpers(XDocument document)
+            {
+                var template = Template.Parse(@"#nullable enable
+
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
+
+namespace OpenIddict.Client.WebIntegration;
+
+public partial class OpenIddictClientWebIntegrationHelpers
+{
+    {{~ for provider in providers ~}}
+    /// <summary>
+    /// Resolves the {{ provider.name }} integration settings from the specified registration.
+    /// </summary>
+    /// <param name=""registration"">The client registration.</param>
+    /// <returns>The {{ provider.name }} integration settings.</returns>
+    /// <exception cref=""InvalidOperationException"">The integration settings cannot be resolved.</exception>
+    public static OpenIddictClientWebIntegrationSettings.{{ provider.name }} Get{{ provider.name }}Settings(this OpenIddictClientRegistration registration)
+        => registration.GetProviderSettings<OpenIddictClientWebIntegrationSettings.{{ provider.name }}>() ??
+            throw new InvalidOperationException(SR.FormatID0330(Providers.{{ provider.name }}));
+    {{~ end ~}}
+}
+");
+                return template.Render(new
+                {
+                    Providers = document.Root.Elements("Provider")
+                        .Select(provider => new { Name = (string?) provider.Attribute("Name") })
+                        .ToList()
+                });
+            }
+
             static string GenerateSettings(XDocument document)
             {
                 var template = Template.Parse(@"#nullable enable
@@ -390,7 +425,6 @@ public partial class OpenIddictClientWebIntegrationSettings
                             {
                                 Type = (string?) setting.Attribute("Type"),
                                 Name = (string?) setting.Attribute("Name"),
-                                Property = (string?) setting.Attribute("Property"),
                                 Description = (string?) setting.Attribute("Description")
                             })
                             .ToList()
