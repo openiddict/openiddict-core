@@ -17,7 +17,7 @@ public abstract partial class OpenIddictClientWebIntegrationSettings
     public virtual string? ClientId { get; set; }
 
     /// <summary>
-    /// Gets or sets the client secret.
+    /// Gets or sets the client secret, if applicable.
     /// </summary>
     public virtual string? ClientSecret { get; set; }
 

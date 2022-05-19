@@ -227,6 +227,16 @@
                     </xs:simpleType>
                   </xs:attribute>
 
+                  <xs:attribute name="Required" use="required">
+                    <xs:annotation>
+                      <xs:documentation>The setting type.</xs:documentation>
+                    </xs:annotation>
+
+                    <xs:simpleType>
+                      <xs:restriction base="xs:boolean" />
+                    </xs:simpleType>
+                  </xs:attribute>
+
                   <xs:attribute name="EncryptionAlgorithm" use="optional">
                     <xs:annotation>
                       <xs:documentation>The encryption algorithm, if applicable.</xs:documentation>

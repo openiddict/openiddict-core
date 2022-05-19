@@ -47,7 +47,6 @@ namespace OpenIddict.Client.WebIntegration.Generators
                 var template = Template.Parse(@"#nullable enable
 
 using Microsoft.IdentityModel.Tokens;
-
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
 using SmartFormat;
@@ -75,6 +74,29 @@ public partial class OpenIddictClientWebIntegrationBuilder
         {
             throw new ArgumentNullException(nameof(settings));
         }
+
+        if (string.IsNullOrEmpty(settings.ClientId))
+        {
+            throw new ArgumentException(SR.FormatID0331(nameof(settings.ClientId), ""{{ provider.name }}""), nameof(settings));
+        }
+
+        if (settings.RedirectUri is null)
+        {
+            throw new ArgumentException(SR.FormatID0331(nameof(settings.RedirectUri), ""{{ provider.name }}""), nameof(settings));
+        }
+
+        {{~ for setting in provider.settings ~}}
+        {{~ if setting.required ~}}
+        {{~ if setting.type == 'string' ~}} 
+        if (string.IsNullOrEmpty(settings.{{ setting.name }}))
+        {{~ else ~}}
+        if (settings.{{ setting.name }} is null)
+        {{~ end ~}}
+        {
+            throw new ArgumentException(SR.FormatID0331(""{{ setting.name }}"", ""{{ provider.name }}""), nameof(settings));
+        }
+        {{~ end ~}}
+        {{~ end ~}}
 
         Services.Configure<OpenIddictClientOptions>(options =>
         {
@@ -207,13 +229,13 @@ public partial class OpenIddictClientWebIntegrationBuilder
                     Providers = document.Root.Elements("Provider")
                         .Select(provider => new
                         {
-                            Name = (string?) provider.Attribute("Name"),
+                            Name = (string) provider.Attribute("Name"),
                             Documentation = (string?) provider.Attribute("Documentation"),
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
                                 Name = (string?) environment.Attribute("Name") ?? "Production",
-                                Issuer = (string?) environment.Attribute("Issuer"),
+                                Issuer = (string) environment.Attribute("Issuer"),
                                 Configuration = environment.Element("Configuration") switch
                                 {
                                     XElement configuration => new
@@ -277,7 +299,9 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Name = (string?) setting.Attribute("Name"),
+                                Name = (string) setting.Attribute("Name"),
+                                Type = (string) setting.Attribute("Type"),
+                                Required = (bool) setting.Attribute("Required"),
                                 EncryptionAlgorithm = (string?) setting.Attribute("EncryptionAlgorithm"),
                                 SigningAlgorithm = (string?) setting.Attribute("SigningAlgorithm")
                             })
@@ -306,7 +330,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
                 return template.Render(new
                 {
                     Providers = document.Root.Elements("Provider")
-                        .Select(provider => new { Name = (string?) provider.Attribute("Name") })
+                        .Select(provider => new { Name = (string) provider.Attribute("Name") })
                         .ToList()
                 });
             }
@@ -337,7 +361,7 @@ public partial class OpenIddictClientWebIntegrationEnvironments
                     Providers = document.Root.Elements("Provider")
                         .Select(provider => new
                         {
-                            Name = (string?) provider.Attribute("Name"),
+                            Name = (string) provider.Attribute("Name"),
 
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
@@ -375,7 +399,7 @@ public partial class OpenIddictClientWebIntegrationHelpers
                 return template.Render(new
                 {
                     Providers = document.Root.Elements("Provider")
-                        .Select(provider => new { Name = (string?) provider.Attribute("Name") })
+                        .Select(provider => new { Name = (string) provider.Attribute("Name") })
                         .ToList()
                 });
             }
@@ -419,13 +443,13 @@ public partial class OpenIddictClientWebIntegrationSettings
                     Providers = document.Root.Elements("Provider")
                         .Select(provider => new
                         {
-                            Name = (string?) provider.Attribute("Name"),
+                            Name = (string) provider.Attribute("Name"),
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Type = (string?) setting.Attribute("Type"),
-                                Name = (string?) setting.Attribute("Name"),
-                                Description = (string?) setting.Attribute("Description")
+                                Type = (string) setting.Attribute("Type"),
+                                Name = (string) setting.Attribute("Name"),
+                                Description = (string) setting.Attribute("Description")
                             })
                             .ToList()
                         })
