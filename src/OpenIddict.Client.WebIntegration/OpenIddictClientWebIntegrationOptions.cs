@@ -11,4 +11,8 @@ namespace OpenIddict.Client.WebIntegration;
 /// </summary>
 public class OpenIddictClientWebIntegrationOptions
 {
+    /// <summary>
+    /// Gets the list of provider integrations enabled for this application.
+    /// </summary>
+    public List<OpenIddictClientWebIntegrationProvider> Providers { get; } = new();
 }
