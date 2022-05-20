@@ -45,10 +45,7 @@ public class AuthenticationController : Controller
     // Note: this controller uses the same callback action for all providers
     // but for users who prefer using a different action per provider,
     // the following action can be split into separate actions.
-    [HttpGet("~/signin-oidc"),   HttpPost("~/signin-oidc")]
-    [HttpGet("~/signin-github"), HttpPost("~/signin-github")]
-    [HttpGet("~/signin-google"), HttpPost("~/signin-google")]
-    [HttpGet("~/signin-reddit"), HttpPost("~/signin-reddit")]
+    [HttpGet("~/signin-{provider}"), HttpPost("~/signin-{provider}")]
     public async Task<ActionResult> Callback()
     {
         // Retrieve the authorization data validated by OpenIddict as part of the callback handling.

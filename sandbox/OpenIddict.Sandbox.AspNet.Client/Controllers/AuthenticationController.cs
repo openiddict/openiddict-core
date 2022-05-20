@@ -53,10 +53,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
         // Note: this controller uses the same callback action for all providers
         // but for users who prefer using a different action per provider,
         // the following action can be split into separate actions.
-        [AcceptVerbs("GET", "POST")]
-        [Route("~/signin-oidc")]
-        [Route("~/signin-github")]
-        [Route("~/signin-google")]
+        [AcceptVerbs("GET", "POST"), Route("~/signin-{provider}")]
         public async Task<ActionResult> Callback()
         {
             var context = HttpContext.GetOwinContext();
