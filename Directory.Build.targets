@@ -82,6 +82,7 @@
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_MULTIPLE_VALUES_IN_QUERYHELPERS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup

@@ -257,6 +257,11 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // If supported, import the HTTP version from the client instance.
             request.Version = client.DefaultRequestVersion;
 #endif
+
+#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY
+            // If supported, import the HTTP version policy from the client instance.
+            request.VersionPolicy = client.DefaultVersionPolicy;
+#endif
             HttpResponseMessage response;
 
             try
