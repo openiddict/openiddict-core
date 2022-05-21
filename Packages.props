@@ -8,6 +8,7 @@
     <PackageReference Update="Autofac.Owin" Version="6.0.1" />
     <PackageReference Update="Autofac.WebApi2.Owin" Version="6.0.0" />
     <PackageReference Update="EntityFramework" Version="6.4.4" />
+    <PackageReference Update="Humanizer.Core" Version="2.14.1" />
     <PackageReference Update="MartinCostello.Logging.XUnit" Version="0.3.0" />
     <PackageReference Update="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.3" />
     <PackageReference Update="Microsoft.AspNet.Identity.Owin" Version="2.2.3" />
@@ -66,6 +67,7 @@
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="2.1.1" />
     <PackageReference Update="System.Collections.Immutable" Version="1.7.1" />
     <PackageReference Update="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Update="System.Interactive" Version="4.1.1" />
     <PackageReference Update="System.Linq.Async" Version="4.1.1" />
     <PackageReference Update="System.Net.Http.Json" Version="3.2.1" />
     <PackageReference Update="System.Text.Encodings.Web" Version="4.7.2" />
@@ -92,6 +94,7 @@
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="3.1.25" />
     <PackageReference Update="System.Collections.Immutable" Version="1.7.1" />
     <PackageReference Update="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Update="System.Interactive" Version="4.1.1" />
     <PackageReference Update="System.Linq.Async" Version="4.1.1" />
     <PackageReference Update="System.Net.Http.Json" Version="3.2.1" />
     <PackageReference Update="System.Text.Encodings.Web" Version="4.7.2" />
@@ -117,6 +120,7 @@
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="5.0.17" />
     <PackageReference Update="System.Collections.Immutable" Version="5.0.0" />
     <PackageReference Update="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Update="System.Interactive" Version="4.1.1" />
     <PackageReference Update="System.Linq.Async" Version="5.0.0" />
     <PackageReference Update="System.Net.Http.Json" Version="5.0.0" />
     <PackageReference Update="System.Text.Encodings.Web" Version="5.0.1" />
@@ -142,6 +146,7 @@
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="6.0.5" />
     <PackageReference Update="System.Collections.Immutable" Version="6.0.0" />
     <PackageReference Update="System.ComponentModel.Annotations" Version="6.0.0" />
+    <PackageReference Update="System.Interactive" Version="4.1.1" />
     <PackageReference Update="System.Linq.Async" Version="6.0.1" />
     <PackageReference Update="System.Net.Http.Json" Version="6.0.0" />
     <PackageReference Update="System.Text.Encodings.Web" Version="6.0.0" />

@@ -1,4 +1,4 @@
-﻿<Providers>
+﻿<Providers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenIddictClientWebIntegrationProviders.xsd">
 
   <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
     <Environment Issuer="https://appleid.apple.com/" />
@@ -41,6 +41,15 @@
                      UserinfoEndpoint="https://oauth.reddit.com/api/v1/me">
         <TokenEndpointAuthMethod Value="client_secret_basic" />
       </Configuration>
+
+      <!--
+        Note: Reddit requires sending at least one scope element. If no scope parameter
+        is set, a misleading "invalid client identifier" error is returned to the caller.
+        To prevent that, the "identity" scope (that is required by the userinfo endpoint)
+        is always added even if another scope was explicitly registered by the user.
+      -->
+
+      <Scope Name="identity" Required="true" Description="Access my reddit username and signup date." />
     </Environment>
 
     <Setting Name="ProductName" Type="string" Required="false"

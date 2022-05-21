@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Xml.Linq;
+using Humanizer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Scriban;
@@ -41,6 +42,10 @@ namespace OpenIddict.Client.WebIntegration.Generators
             context.AddSource(
                 "OpenIddictClientWebIntegrationHelpers.generated.cs",
                 SourceText.From(GenerateHelpers(document), Encoding.UTF8));
+
+            context.AddSource(
+                "OpenIddictClientWebIntegrationScopes.generated.cs",
+                SourceText.From(GenerateScopes(document), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationSettings.generated.cs",
@@ -351,6 +356,24 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
                 registration.Scopes.UnionWith(settings.Scopes);
 
+                {{~ for environment in provider.environments ~}}
+                if (settings.Environment is OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }})
+                {
+                    {{~ for scope in environment.scopes ~}}
+                    {{~ if scope.required ~}}
+                    registration.Scopes.Add(""{{ scope.name }}"");
+                    {{~ end ~}}
+
+                    {{~ if scope.default ~}}
+                    if (registration.Scopes.Count is 0)
+                    {
+                        registration.Scopes.Add(""{{ scope.name }}"");
+                    }
+                    {{~ end ~}}
+                    {{~ end ~}}
+                }
+                {{~ end ~}}
+
                 options.Registrations.Add(registration);
             }
         }
@@ -426,7 +449,14 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                                     },
 
                                     _ => null
-                                }
+                                },
+
+                                Scopes = environment.Elements("Scope").Select(setting => new
+                                {
+                                    Name = (string) setting.Attribute("Name"),
+                                    Default = (bool?) setting.Attribute("Default") ?? false,
+                                    Required = (bool?) setting.Attribute("Required") ?? false
+                                })
                             })
                             .ToList(),
 
@@ -434,7 +464,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                             {
                                 Name = (string) setting.Attribute("Name"),
                                 Type = (string) setting.Attribute("Type"),
-                                Required = (bool) setting.Attribute("Required"),
+                                Required = (bool?) setting.Attribute("Required") ?? false,
                                 EncryptionAlgorithm = (string?) setting.Attribute("EncryptionAlgorithm"),
                                 SigningAlgorithm = (string?) setting.Attribute("SigningAlgorithm")
                             })
@@ -477,6 +507,53 @@ public partial class OpenIddictClientWebIntegrationHelpers
                 {
                     Providers = document.Root.Elements("Provider")
                         .Select(provider => new { Name = (string) provider.Attribute("Name") })
+                        .ToList()
+                });
+            }
+
+            static string GenerateScopes(XDocument document)
+            {
+                var template = Template.Parse(@"#nullable enable
+
+namespace OpenIddict.Client.WebIntegration;
+
+public static partial class OpenIddictClientWebIntegrationScopes
+{
+    {{~ for provider in providers ~}}
+    /// <summary>
+    /// Exposes the scopes supported by the {{ provider.name }} provider.
+    /// </summary>
+    public static class {{ provider.name }}
+    {
+        {{~ for scope in provider.scopes ~}}
+        {{~ if scope.description ~}}
+        /// <summary>
+        /// {{ scope.description }}
+        /// </summary>
+        {{~ end ~}}
+        public const string {{ scope.clr_name }} = ""{{ scope.name }}"";
+        {{~ end ~}}
+    }
+    {{~ end ~}}
+}
+");
+                return template.Render(new
+                {
+                    Providers = document.Root.Elements("Provider")
+                        .Select(provider => new
+                        {
+                            Name = (string) provider.Attribute("Name"),
+
+                            Scopes = provider.Elements("Environment")
+                                .SelectMany(environment => environment.Elements("Scope"))
+                                .Select(scope => new
+                                {
+                                    Name = (string) scope.Attribute("Name"),
+                                    ClrName = ((string) scope.Attribute("Name")).Pascalize(),
+                                    Description = (string?) scope.Attribute("Description")
+                                })
+                                .ToList()
+                        })
                         .ToList()
                 });
             }

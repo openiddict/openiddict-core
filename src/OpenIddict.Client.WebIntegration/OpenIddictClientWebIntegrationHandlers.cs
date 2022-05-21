@@ -28,7 +28,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /*
          * Challenge processing:
          */
-        AttachDefaultScopes.Descriptor,
         AttachNonDefaultResponseMode.Descriptor,
         FormatNonStandardScopeParameter.Descriptor)
         .AddRange(Discovery.DefaultHandlers)
@@ -164,41 +163,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching default scopes for providers that require it.
-    /// </summary>
-    public class AttachDefaultScopes : IOpenIddictClientHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .UseSingletonHandler<AttachDefaultScopes>()
-                .SetOrder(AttachScopes.Descriptor.Order + 500)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // Note: Reddit requires sending at least one scope element. If no scope parameter
-            // is set, a misleading "invalid client identifier" error is returned to the caller.
-            // To prevent that, the "identity" scope is always added by default.
-            if (context.Registration.GetProviderName() is Providers.Reddit)
-            {
-                context.Scopes.Add("identity");
-            }
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for attaching a specific response mode for providers that require it.
     /// </summary>
     public class AttachNonDefaultResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -211,7 +175,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 .UseSingletonHandler<AttachNonDefaultResponseMode>()
                 // Note: this handler MUST be invoked after the scopes have been attached to the
                 // context to support overriding the response mode based on the requested scopes.
-                .SetOrder(AttachDefaultScopes.Descriptor.Order + 500)
+                .SetOrder(AttachScopes.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
