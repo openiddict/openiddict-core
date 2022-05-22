@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Humanizer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Scriban;
@@ -549,9 +550,11 @@ public static partial class OpenIddictClientWebIntegrationScopes
                                 .Select(scope => new
                                 {
                                     Name = (string) scope.Attribute("Name"),
-                                    ClrName = ((string) scope.Attribute("Name")).Pascalize(),
+                                    ClrName = Regex.Replace((string) scope.Attribute("Name"), "(?:^|_| +)(.)",
+                                        match => match.Groups[1].Value.ToUpper(CultureInfo.InvariantCulture)),
                                     Description = (string?) scope.Attribute("Description")
                                 })
+                                .Distinct(scope => scope.ClrName)
                                 .ToList()
                         })
                         .ToList()
