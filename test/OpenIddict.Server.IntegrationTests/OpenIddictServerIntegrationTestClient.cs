@@ -426,12 +426,17 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
             // that always return their HTTP responses encoded using UTF-8. As such, the stream
             // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
             using var stream = await message.Content!.ReadAsStreamAsync();
+
             using var document = await HtmlParser.ParseDocumentAsync(stream);
+            if (document.Body is null)
+            {
+                return new OpenIddictResponse();
+            }
 
             // Note: a dictionary is deliberately not used here to allow multiple parameters with the
             // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
             // this is required for derived drafts like the OAuth2 token exchange specification.
-            var parameters = new List<KeyValuePair<string, string>>();
+            var parameters = new List<KeyValuePair<string, string?>>();
 
             foreach (var element in document.Body.GetElementsByTagName("input"))
             {
@@ -443,7 +448,7 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
 
                 var value = element.GetAttribute("value");
 
-                parameters.Add(new KeyValuePair<string, string>(name, value));
+                parameters.Add(new KeyValuePair<string, string?>(name, value));
             }
 
             return new OpenIddictResponse(
