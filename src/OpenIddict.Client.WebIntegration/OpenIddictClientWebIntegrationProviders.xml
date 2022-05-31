@@ -1,4 +1,5 @@
-﻿<Providers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenIddictClientWebIntegrationProviders.xsd">
+﻿<Providers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="OpenIddictClientWebIntegrationProviders.xsd">
 
   <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
     <Environment Issuer="https://appleid.apple.com/" />
