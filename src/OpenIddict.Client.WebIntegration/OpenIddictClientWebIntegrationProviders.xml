@@ -11,18 +11,6 @@
              Description="Gets or sets the Team ID associated with the developer account." />
   </Provider>
 
-  <Provider Name="Fitbit" Documentation="https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/">
-    <Environment Issuer="https://www.fitbit.com/">
-      <Configuration AuthorizationEndpoint="https://www.fitbit.com/oauth2/authorize"
-                     TokenEndpoint="https://api.fitbit.com/oauth2/token"
-                     UserinfoEndpoint="https://api.fitbit.com/1/user/-/profile.json">
-        <CodeChallengeMethod Value="S256" />
-
-        <TokenEndpointAuthMethod Value="client_secret_basic" />
-      </Configuration>
-    </Environment>
-  </Provider>
-
   <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
@@ -58,41 +46,6 @@
 
     <Setting Name="ProductVersion" Type="string" Required="false"
              Description="Gets or sets the product version used in the user agent header." />
-  </Provider>
-
-  <Provider Name="Salesforce" Documentation="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_flows.htm">
-    <!--
-      Note: no static userinfo endpoint is specified here because Salesforce uses a user-specific endpoint
-      whose address is dynamically returned as part of the token response. To deal with that, a dedicated
-      event handler is responsible of resolving its address and setting it per authentication demand.
-    -->
-
-    <Environment Name="Production" Issuer="https://login.salesforce.com/">
-      <Configuration AuthorizationEndpoint="https://login.salesforce.com/services/oauth2/authorize"
-                     TokenEndpoint="https://login.salesforce.com/services/oauth2/token" />
-    </Environment>
-
-    <Environment Name="Development" Issuer="https://test.salesforce.com/">
-      <Configuration AuthorizationEndpoint="https://test.salesforce.com/services/oauth2/authorize"
-                     TokenEndpoint="https://test.salesforce.com/services/oauth2/token" />
-    </Environment>
-  </Provider>
-
-  <Provider Name="Zendesk" Documentation="https://developer.zendesk.com/documentation/live-chat/getting-started/auth/">
-    <!--
-      Note: Zendesk is a multitenant provider that relies on subdomains to identify instances.
-      As such, the following URLs all include a {tenant} placeholder that will be dynamically
-      replaced by OpenIddict at runtime by the tenant configured in the Zendesk settings.
-    -->
-
-    <Environment Issuer="https://{tenant}.zendesk.com/">
-      <Configuration AuthorizationEndpoint="https://{tenant}.zendesk.com/oauth/authorizations/new"
-                     TokenEndpoint="https://{tenant}.zendesk.com/oauth/tokens"
-                     UserinfoEndpoint="https://{tenant}.zendesk.com/api/v2/users/me" />
-    </Environment>
-
-    <Setting Name="Tenant" Type="string" Required="true"
-             Description="Gets or sets the tenant used to identify the Zendesk instance." />
   </Provider>
 
 </Providers>

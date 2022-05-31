@@ -23,7 +23,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
          */
         AttachNonStandardClientAssertionTokenClaims.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
-        ResolveDynamicUserinfoEndpoint.Descriptor,
 
         /*
          * Challenge processing:
@@ -118,45 +117,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.TokenRequest.ClientAssertion = null;
                 context.TokenRequest.ClientAssertionType = null;
             }
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for resolving the address of
-    /// dynamic userinfo endpoints for providers that require it.
-    /// </summary>
-    public class ResolveDynamicUserinfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseSingletonHandler<ResolveDynamicUserinfoEndpoint>()
-                .SetOrder(ResolveUserinfoEndpoint.Descriptor.Order + 500)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // The following providers are known to use dynamic userinfo endpoints:
-            context.UserinfoEndpoint = context.Registration.GetProviderName() switch
-            {
-                // Salesforce exposes a userinfo endpoint whose address is user-specific
-                // and returned as part of the token response when using the code flow.
-                Providers.Salesforce => (string?) context.TokenResponse?["id"] is string address &&
-                    Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) ? uri : null,
-
-                _ => context.UserinfoEndpoint
-            };
 
             return default;
         }
