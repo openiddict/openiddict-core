@@ -70,7 +70,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
                         DisplayName = "MVC client application",
                         RedirectUris =
                         {
-                            new Uri("https://localhost:44378/signin-oidc")
+                            new Uri("https://localhost:44378/signin-local")
                         },
                         Permissions =
                         {

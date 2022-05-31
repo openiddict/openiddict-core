@@ -67,7 +67,15 @@ namespace OpenIddict.Sandbox.AspNet.Client
                 .AddClient(options =>
                 {
                     // Enable the redirection endpoint needed to handle the callback stage.
-                    options.SetRedirectionEndpointUris("/signin-oidc");
+                    //
+                    // Note: to prevent mix-up attacks, it's recommended to use a unique redirection endpoint
+                    // address per provider, unless all the registered providers support returning an "iss"
+                    // parameter containing their URL as part of authorization responses. For more information,
+                    // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
+                    options.SetRedirectionEndpointUris(
+                        "/signin-local",
+                        "/signin-github",
+                        "/signin-google");
 
                     // Register the signing and encryption credentials used to protect
                     // sensitive data like the state tokens produced by OpenIddict.
@@ -88,9 +96,25 @@ namespace OpenIddict.Sandbox.AspNet.Client
 
                         ClientId = "mvc",
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                        RedirectUri = new Uri("https://localhost:44378/signin-oidc", UriKind.Absolute),
+                        RedirectUri = new Uri("https://localhost:44378/signin-local", UriKind.Absolute),
                         Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
                     });
+
+                    // Register the Web providers integrations.
+                    options.UseWebProviders()
+                           .AddGitHub(new()
+                           {
+                               ClientId = "c4ade52327b01ddacff3",
+                               ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
+                               RedirectUri = new Uri("https://localhost:44378/signin-github", UriKind.Absolute)
+                           })
+                           .AddGoogle(new()
+                           {
+                               ClientId = "1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com",
+                               ClientSecret = "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",
+                               RedirectUri = new Uri("https://localhost:44378/signin-google", UriKind.Absolute),
+                               Scopes = { Scopes.Profile }
+                           });
                 });
 
             // Create a new Autofac container and import the OpenIddict services.

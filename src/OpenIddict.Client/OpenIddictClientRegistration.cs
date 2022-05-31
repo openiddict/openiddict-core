@@ -132,4 +132,9 @@ public class OpenIddictClientRegistration
     /// Gets the list of scopes sent by default as part of authorization requests.
     /// </summary>
     public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the bag used to store additional provider-specific properties.
+    /// </summary>
+    public Dictionary<string, object?> Properties { get; } = new(StringComparer.OrdinalIgnoreCase);
 }

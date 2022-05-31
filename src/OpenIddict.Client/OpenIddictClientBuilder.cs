@@ -973,8 +973,13 @@ public class OpenIddictClientBuilder
     /// <summary>
     /// Sets the relative or absolute URLs associated to the redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
     /// </summary>
+    /// <remarks>
+    /// Note: to prevent mix-up attacks, it's recommended to use a unique redirection endpoint
+    /// address per provider, unless all the registered providers support returning an "iss"
+    /// parameter containing their URL as part of authorization responses. For more information,
+    /// see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
+    /// </remarks>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     public OpenIddictClientBuilder SetRedirectionEndpointUris(params string[] addresses)
@@ -990,8 +995,13 @@ public class OpenIddictClientBuilder
     /// <summary>
     /// Sets the relative or absolute URLs associated to the redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
     /// </summary>
+    /// <remarks>
+    /// Note: to prevent mix-up attacks, it's recommended to use a unique redirection endpoint
+    /// address per provider, unless all the registered providers support returning an "iss"
+    /// parameter containing their URL as part of authorization responses. For more information,
+    /// see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
+    /// </remarks>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
     public OpenIddictClientBuilder SetRedirectionEndpointUris(params Uri[] addresses)

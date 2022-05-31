@@ -10,13 +10,28 @@ namespace OpenIddict.Sandbox.AspNetCore.Client.Controllers;
 public class AuthenticationController : Controller
 {
     [HttpGet("~/login")]
-    public ActionResult LogIn(string returnUrl)
+    public ActionResult LogIn(string provider, string returnUrl)
     {
+        var issuer = provider switch
+        {
+            "local"  => "https://localhost:44395/",
+            "github" => "https://github.com/",
+            "google" => "https://accounts.google.com/",
+            "reddit" => "https://www.reddit.com/",
+
+            _ => null
+        };
+
+        if (string.IsNullOrEmpty(issuer))
+        {
+            return BadRequest();
+        }
+
         var properties = new AuthenticationProperties(new Dictionary<string, string>
         {
             // Note: when only one client is registered in the client options,
             // setting the issuer property is not required and can be omitted.
-            [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = "https://localhost:44395/"
+            [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = issuer
         })
         {
             // Only allow local return URLs to prevent open redirect attacks.
@@ -27,7 +42,10 @@ public class AuthenticationController : Controller
         return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
     }
 
-    [HttpGet("~/signin-oidc"), HttpPost("~/signin-oidc")]
+    // Note: this controller uses the same callback action for all providers
+    // but for users who prefer using a different action per provider,
+    // the following action can be split into separate actions.
+    [HttpGet("~/signin-{provider}"), HttpPost("~/signin-{provider}")]
     public async Task<ActionResult> Callback()
     {
         // Retrieve the authorization data validated by OpenIddict as part of the callback handling.
@@ -73,7 +91,7 @@ public class AuthenticationController : Controller
             .Select(claim => claim switch
             {
                 // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
-                { Type: "non_standard_user_id", Issuer: "https://example.com/" }
+                { Type: "id", Issuer: "https://github.com/" }
                     => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
 
                 _ => claim
@@ -84,7 +102,7 @@ public class AuthenticationController : Controller
                 { Type: Claims.Name or Claims.Subject } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.
-                { Type: "custom_claim", Issuer: "https://example.com/" } => true,
+                { Type: "bio", Issuer: "https://github.com/" } => true,
 
                 // Don't preserve the other claims.
                 _ => false

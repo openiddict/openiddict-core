@@ -16,15 +16,29 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
     public class AuthenticationController : Controller
     {
         [HttpGet, Route("~/login")]
-        public ActionResult LogIn(string returnUrl)
+        public ActionResult LogIn(string provider, string returnUrl)
         {
             var context = HttpContext.GetOwinContext();
+
+            var issuer = provider switch
+            {
+                "local"  => "https://localhost:44349/",
+                "github" => "https://github.com/",
+                "google" => "https://accounts.google.com/",
+
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(issuer))
+            {
+                return new HttpStatusCodeResult(400);
+            }
 
             var properties = new AuthenticationProperties(new Dictionary<string, string>
             {
                 // Note: when only one client is registered in the client options,
                 // setting the issuer property is not required and can be omitted.
-                [OpenIddictClientOwinConstants.Properties.Issuer] = "https://localhost:44349/"
+                [OpenIddictClientOwinConstants.Properties.Issuer] = issuer
             })
             {
                 // Only allow local return URLs to prevent open redirect attacks.
@@ -36,7 +50,10 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             return new EmptyResult();
         }
 
-        [AcceptVerbs("GET", "POST"), Route("~/signin-oidc")]
+        // Note: this controller uses the same callback action for all providers
+        // but for users who prefer using a different action per provider,
+        // the following action can be split into separate actions.
+        [AcceptVerbs("GET", "POST"), Route("~/signin-{provider}")]
         public async Task<ActionResult> Callback()
         {
             var context = HttpContext.GetOwinContext();
@@ -93,7 +110,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                         => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
 
                     // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
-                    { Type: "non_standard_user_id", Issuer: "https://example.com/" }
+                    { Type: "id", Issuer: "https://github.com/" }
                         => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
 
                     _ => claim
@@ -104,7 +121,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                     { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
 
                     // Applications that use multiple client registrations can filter claims based on the issuer.
-                    { Type: "custom_claim", Issuer: "https://example.com/" } => true,
+                    { Type: "bio", Issuer: "https://github.com/" } => true,
 
                     // Don't preserve the other claims.
                     _ => false

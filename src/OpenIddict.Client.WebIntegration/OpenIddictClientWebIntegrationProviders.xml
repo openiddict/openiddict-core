@@ -1,0 +1,51 @@
+﻿<Providers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="OpenIddictClientWebIntegrationProviders.xsd">
+
+  <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
+    <Environment Issuer="https://appleid.apple.com/" />
+
+    <Setting Name="SigningKey" Type="ECDsaSecurityKey" Required="true" SigningAlgorithm="ES256"
+             Description="Gets or sets the ECDSA signing key associated with the developer account." />
+
+    <Setting Name="TeamId" Type="string" Required="true"
+             Description="Gets or sets the Team ID associated with the developer account." />
+  </Provider>
+
+  <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
+    <Environment Issuer="https://github.com/">
+      <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
+                     TokenEndpoint="https://github.com/login/oauth/access_token"
+                     UserinfoEndpoint="https://api.github.com/user" />
+    </Environment>
+  </Provider>
+
+  <Provider Name="Google" Documentation="https://developers.google.com/identity/protocols/oauth2/openid-connect">
+    <Environment Issuer="https://accounts.google.com/" />
+  </Provider>
+
+  <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
+    <Environment Issuer="https://www.reddit.com/">
+      <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
+                     TokenEndpoint="https://www.reddit.com/api/v1/access_token"
+                     UserinfoEndpoint="https://oauth.reddit.com/api/v1/me">
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+
+      <!--
+        Note: Reddit requires sending at least one scope element. If no scope parameter
+        is set, a misleading "invalid client identifier" error is returned to the caller.
+        To prevent that, the "identity" scope (that is required by the userinfo endpoint)
+        is always added even if another scope was explicitly registered by the user.
+      -->
+
+      <Scope Name="identity" Required="true" Description="Access my reddit username and signup date." />
+    </Environment>
+
+    <Setting Name="ProductName" Type="string" Required="false"
+             Description="Gets or sets the product name used in the user agent header." />
+
+    <Setting Name="ProductVersion" Type="string" Required="false"
+             Description="Gets or sets the product version used in the user agent header." />
+  </Provider>
+
+</Providers>

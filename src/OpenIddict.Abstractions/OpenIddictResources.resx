@@ -800,7 +800,7 @@ To register the validation services, use 'services.AddOpenIddict().AddValidation
     <value>The item index cannot be negative.</value>
   </data>
   <data name="ID0194" xml:space="preserve">
-    <value>The type of the parameter value is not supported.</value>
+    <value>The specified '{0}' setting is not valid.</value>
   </data>
   <data name="ID0195" xml:space="preserve">
     <value>The identifier cannot be null or empty.</value>
@@ -1285,6 +1285,18 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID0329" xml:space="preserve">
     <value>An unsupported response was returned by the remote authorization server.</value>
+  </data>
+  <data name="ID0330" xml:space="preserve">
+    <value>The provider name cannot be null or empty.</value>
+  </data>
+  <data name="ID0331" xml:space="preserve">
+    <value>The type of the settings instance attached to the '{0}' provider doesn't match the expected type.</value>
+  </data>
+  <data name="ID0332" xml:space="preserve">
+    <value>The mandatory '{0}' setting required by the {1} provider integration must be set.</value>
+  </data>
+  <data name="ID0333" xml:space="preserve">
+    <value>The '{0}' provider settings cannot be resolved from the event context. Make sure the provider was correctly registered using 'services.AddOpenIddict().AddClient().UseWebProviders().Add{0}()'.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>

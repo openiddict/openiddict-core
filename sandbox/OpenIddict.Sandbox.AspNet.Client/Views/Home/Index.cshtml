@@ -1,4 +1,5 @@
 ﻿@using System.Security.Claims
+@using OpenIddict.Abstractions
 @model string
 
 <div class="jumbotron">
@@ -18,11 +19,15 @@
             <h3>Message received from the resource controller: @Model</h3>
         }
 
-        <form action="~/" method="post">
-            @Html.AntiForgeryToken()
+        if (User is ClaimsPrincipal principal &&
+            principal.FindFirst(OpenIddictConstants.Claims.Subject)?.Issuer is "https://localhost:44395/")
+        {
+            <form action="~/" method="post">
+                @Html.AntiForgeryToken()
 
-            <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
-        </form>
+                <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
+            </form>
+        }
 
         <a class="btn btn-lg btn-danger" href="/logout">Sign out</a>
     }
@@ -30,6 +35,11 @@
     else
     {
         <h1>Welcome, anonymous</h1>
-        <a class="btn btn-lg btn-success" href="/login">Sign in</a>
+        @Html.ActionLink("Sign in using the local OIDC server", "Login", "Authentication",
+            new { provider = "local" }, new { @class = "btn btn-lg btn-success" })
+        @Html.ActionLink("Sign in using GitHub", "Login", "Authentication",
+            new { provider = "github" }, new { @class = "btn btn-lg btn-success" })
+        @Html.ActionLink("Sign in using Google", "Login", "Authentication",
+            new { provider = "google" }, new { @class = "btn btn-lg btn-success" })
     }
 </div>

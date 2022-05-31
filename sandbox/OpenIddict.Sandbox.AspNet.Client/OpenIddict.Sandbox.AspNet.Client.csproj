@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Client.Owin\OpenIddict.Client.Owin.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Client.SystemNetHttp\OpenIddict.Client.SystemNetHttp.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Client.WebIntegration\OpenIddict.Client.WebIntegration.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Quartz\OpenIddict.Quartz.csproj" />
   </ItemGroup>

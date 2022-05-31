@@ -38,13 +38,9 @@ public class Worker : IHostedService
                     {
                         [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente MVC"
                     },
-                    PostLogoutRedirectUris =
-                    {
-                        new Uri("https://localhost:44381/signout-callback-oidc")
-                    },
                     RedirectUris =
                     {
-                        new Uri("https://localhost:44381/signin-oidc")
+                        new Uri("https://localhost:44381/signin-local")
                     },
                     Permissions =
                     {
