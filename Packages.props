@@ -18,9 +18,9 @@
     <PackageReference Update="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
     <PackageReference Update="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="3.6.0" />
-    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.18.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.18.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.18.0" />
+    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.16.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.16.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.16.0" />
     <PackageReference Update="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Update="Microsoft.Owin.Diagnostics" Version="4.2.2" />
     <PackageReference Update="Microsoft.Owin.Host.HttpListener" Version="4.2.2" />
