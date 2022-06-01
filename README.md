@@ -6,7 +6,7 @@
 
 ## What's OpenIddict?
 
-OpenIddict aims at providing a **versatile solution** to implement an **OpenID Connect server and token validation in any ASP.NET Core 2.1 (and higher) application**.
+OpenIddict aims at providing a **versatile solution** to implement **OpenID Connect client, server and token validation support in any ASP.NET Core 2.1 (and higher) application**.
 **ASP.NET 4.6.1 (and higher) applications are also fully supported thanks to a native Microsoft.Owin 4.2 integration**.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**,
@@ -125,29 +125,7 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 
 **OpenIddict** is actively maintained by **[Kévin Chalet](https://github.com/kevinchalet)**. Contributions are welcome and can be submitted using pull requests.
 
-**Special thanks to our sponsors for their incredible support**:
-
-- [Sébastien Ros](https://github.com/sebastienros)
-- [mridentity](https://github.com/mridentity)
-- [Andrew](https://github.com/GDreyV)
-- [gustavdw](https://github.com/gustavdw)
-- [Gillardo](https://github.com/Gillardo)
-- [Dovydas Navickas](https://github.com/DovydasNavickas)
-- [Christian Schmitt](https://github.com/schmitch)
-- [Thomas W](https://github.com/ThreeScreenStudios)
-- [torfikarl](https://github.com/torfikarl)
-- [Lewis Cianci](https://github.com/lewcianci)
-- [Florian Wachs](https://github.com/florianwachs)
-- [Vasko Poposki](https://github.com/vaspop)
-- [Sebastian Stehle](https://github.com/SebastianStehle)
-- [Michael Hochriegl](https://github.com/MichaelHochriegl)
-- [sunielreddy](https://github.com/sunielreddy)
-- [Communicatie Cockpit](https://github.com/communicatie-cockpit)
-- [Keith Turner](https://github.com/KeithT)
-- [WGMurray](https://github.com/WGMurray)
-- [Thomas Bjallas](https://github.com/ThomasBjallas)
-- [Pablo Pioli](https://github.com/pablopioli)
-- [Michael Calasanz](https://github.com/mcalasa)
+**Special thanks to [our sponsors](https://github.com/sponsors/kevinchalet#sponsors) for their incredible support**.
 
 ## License
 
