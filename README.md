@@ -37,15 +37,15 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 |                       |                      |                                         |                                         |
 | ASP.NET Core 3.1      | .NET Core 3.1        | :heavy_check_mark:                      | :heavy_check_mark:                      |
 |                       |                      |                                         |                                         |
-| ASP.NET Core 5.0      | .NET 5.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| ASP.NET Core 5.0      | .NET 5.0             | :heavy_check_mark:                      | :exclamation:                           |
 | ASP.NET Core 6.0      | .NET 6.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
 |                       |                      |                                         |                                         |
 | Microsoft.Owin 4.2    | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
 | Microsoft.Owin 4.2    | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
 | Microsoft.Owin 4.2    | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
 
-:exclamation: **Note: ASP.NET Core 2.1 on .NET Core 2.1 is no longer supported. While OpenIddict 4.x can still be used on .NET Core 2.1
-thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
+:exclamation: **ASP.NET Core 2.1 on .NET Core 2.1 and ASP.NET Core 5.0 on .NET 5.0 are no longer supported. While OpenIddict 4.x can still be
+used on .NET Core 2.1 thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
 ASP.NET Core 2.1 on .NET Framework 4.6.1 (and higher) is still fully supported.
 
 :information_source: **Note: the following features are not available when targeting .NET Framework 4.6.1**:
