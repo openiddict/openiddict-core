@@ -1,0 +1,29 @@
+name: push
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  sponsor_job:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Generate sponsors section
+      uses: JamesIves/github-sponsors-readme-action@v1.0.8
+      with:
+        token: ${{ secrets.SPONSORS_TOKEN }}
+        file: 'README.md'
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: dev
+        folder: '.'
+        token: ${{ secrets.GITHUB_TOKEN }}
+        git-config-name: OpenIddict Bot
+        git-config-email: 32257313+openiddict-bot@users.noreply.github.com
+        commit-message: Update the sponsors section

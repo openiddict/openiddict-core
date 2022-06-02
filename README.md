@@ -125,7 +125,9 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 
 **OpenIddict** is actively maintained by **[Kévin Chalet](https://github.com/kevinchalet)**. Contributions are welcome and can be submitted using pull requests.
 
-**Special thanks to [our sponsors](https://github.com/sponsors/kevinchalet#sponsors) for their incredible support**.
+**Special thanks to [our sponsors](https://github.com/sponsors/kevinchalet#sponsors) for their incredible support**:
+
+<!-- sponsors --><!-- sponsors -->
 
 ## License
 
