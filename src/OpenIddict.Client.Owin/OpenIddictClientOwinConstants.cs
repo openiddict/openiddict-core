@@ -35,6 +35,14 @@ public static class OpenIddictClientOwinConstants
         public const string UserinfoTokenPrincipal = ".userinfo_token_principal";
     }
 
+    public static class PropertyTypes
+    {
+        public const string Boolean = "#boolean";
+        public const string Integer = "#integer";
+        public const string Json = "#json";
+        public const string String = "#string";
+    }
+
     public static class Tokens
     {
         public const string AuthorizationCode = "authorization_code";
