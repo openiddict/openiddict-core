@@ -131,6 +131,45 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
     }
 
     [Fact]
+    public async Task ProcessChallenge_ReturnsParametersFromAuthenticationProperties()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetTokenEndpointUris("/challenge/custom");
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w"
+        });
+
+        // Assert
+        Assert.True((bool) response["boolean_parameter"]);
+        Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_parameter"]).ValueKind);
+        Assert.Equal(42, (long) response["integer_parameter"]);
+        Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
+        Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
+        Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
+        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["json_parameter"]);
+        Assert.Equal(JsonValueKind.Array, ((JsonElement) response["json_parameter"]).ValueKind);
+    }
+
+    [Fact]
     public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
     {
         // Arrange
@@ -680,6 +719,78 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         Assert.Equal("Bob le Magnifique", (string?) response["name"]);
     }
 
+    [Fact]
+    public async Task ProcessSignIn_ReturnsParametersFromAuthenticationProperties()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetTokenEndpointUris("/signin/custom");
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/signin/custom", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w"
+        });
+
+        // Assert
+        Assert.True((bool) response["boolean_parameter"]);
+        Assert.Equal(JsonValueKind.True, ((JsonElement) response["boolean_parameter"]).ValueKind);
+        Assert.Equal(42, (long) response["integer_parameter"]);
+        Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
+        Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
+        Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
+        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["json_parameter"]);
+        Assert.Equal(JsonValueKind.Array, ((JsonElement) response["json_parameter"]).ValueKind);
+    }
+
+    [Fact]
+    public async Task ProcessSignOut_ReturnsParametersFromAuthenticationProperties()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetLogoutEndpointUris("/signout/custom");
+
+            options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/signout/custom", new OpenIddictRequest
+        {
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path",
+            State = "af0ifjsldkj"
+        });
+
+        // Assert
+        Assert.True((bool) response["boolean_parameter"]);
+        Assert.Equal(42, (long) response["integer_parameter"]);
+        Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
+    }
+
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The caller is responsible for disposing the test server.")]
     protected override ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
@@ -746,9 +857,42 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     return;
                 }
 
+                else if (context.Request.Path == new PathString("/signin/custom"))
+                {
+                    var identity = new ClaimsIdentity(OpenIddictServerOwinDefaults.AuthenticationType);
+                    identity.AddClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    var principal = new ClaimsPrincipal(identity);
+
+                    var properties = new AuthenticationProperties(new Dictionary<string, string?>
+                    {
+                        ["boolean_parameter#boolean"] = "true",
+                        ["integer_parameter#integer"] = "42",
+                        ["string_parameter#string"] = "Bob l'Eponge",
+                        ["json_parameter#json"] = @"[""Contoso"",""Fabrikam""]"
+                    });
+
+                    context.Authentication.SignIn(properties, identity);
+                    return;
+                }
+
                 else if (context.Request.Path == new PathString("/signout"))
                 {
                     context.Authentication.SignOut(OpenIddictServerOwinDefaults.AuthenticationType);
+                    return;
+                }
+
+                else if (context.Request.Path == new PathString("/signout/custom"))
+                {
+
+                    var properties = new AuthenticationProperties(new Dictionary<string, string?>
+                    {
+                        ["boolean_parameter#boolean"] = "true",
+                        ["integer_parameter#integer"] = "42",
+                        ["string_parameter#string"] = "Bob l'Eponge"
+                    });
+
+                    context.Authentication.SignOut(properties, OpenIddictServerOwinDefaults.AuthenticationType);
                     return;
                 }
 
@@ -764,7 +908,12 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     {
                         [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
                         [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
-                        [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri"
+                        [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri",
+
+                        ["boolean_parameter#boolean"] = "true",
+                        ["integer_parameter#integer"] = "42",
+                        ["string_parameter#string"] = "Bob l'Eponge",
+                        ["json_parameter#json"] = @"[""Contoso"",""Fabrikam""]"
                     });
 
                     context.Authentication.Challenge(properties, OpenIddictServerOwinDefaults.AuthenticationType);

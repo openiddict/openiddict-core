@@ -171,6 +171,10 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         Assert.Equal(JsonValueKind.Number, ((JsonElement) response["integer_parameter"]).ValueKind);
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
+        Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["array_parameter"]);
+        Assert.Equal(JsonValueKind.Array, ((JsonElement) response["array_parameter"]).ValueKind);
+        Assert.Equal("value", (string?) response["object_parameter"]?["parameter"]);
+        Assert.Equal(JsonValueKind.Object, ((JsonElement) response["object_parameter"]).ValueKind);
 
 #if SUPPORTS_JSON_NODES
         Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["node_array_parameter"]);

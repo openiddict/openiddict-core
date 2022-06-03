@@ -51,6 +51,14 @@ public static class OpenIddictServerOwinConstants
         public const string UserCodePrincipal = ".user_code_principal";
     }
 
+    public static class PropertyTypes
+    {
+        public const string Boolean = "#boolean";
+        public const string Integer = "#integer";
+        public const string Json = "#json";
+        public const string String = "#string";
+    }
+
     public static class Tokens
     {
         public const string AccessToken = "access_token";
