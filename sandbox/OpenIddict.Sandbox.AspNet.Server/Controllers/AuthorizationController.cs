@@ -14,9 +14,10 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using OpenIddict.Abstractions;
+using OpenIddict.Client.Owin;
 using OpenIddict.Sandbox.AspNet.Server.Helpers;
 using OpenIddict.Sandbox.AspNet.Server.ViewModels.Authorization;
-using OpenIddict.Abstractions;
 using OpenIddict.Server.Owin;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -53,8 +54,52 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
             if (result?.Identity == null || (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
                 DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
             {
-                context.Authentication.Challenge(DefaultAuthenticationTypes.ApplicationCookie);
+                // For applications that want to allow the client to select the external authentication provider
+                // that will be used to authenticate the user, the identity_provider parameter can be used for that.
+                if (!string.IsNullOrEmpty(request.IdentityProvider))
+                {
+                    var issuer = request.IdentityProvider switch
+                    {
+                        "github" => "https://github.com/",
 
+                        _ => null
+                    };
+
+                    if (string.IsNullOrEmpty(issuer))
+                    {
+                        context.Authentication.Challenge(
+                            authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
+                            properties: new AuthenticationProperties(new Dictionary<string, string>
+                            {
+                                [OpenIddictServerOwinConstants.Properties.Error] = Errors.InvalidRequest,
+                                [OpenIddictServerOwinConstants.Properties.ErrorDescription] =
+                                    "The specified identity provider is not valid."
+                            }));
+
+                        return new EmptyResult();
+                    }
+
+                    var properties = new AuthenticationProperties(new Dictionary<string, string>
+                    {
+                        // Note: when only one client is registered in the client options,
+                        // setting the issuer property is not required and can be omitted.
+                        [OpenIddictClientOwinConstants.Properties.Issuer] = issuer
+                    })
+                    {
+                        // Once the callback is handled, redirect the user agent to the ASP.NET Identity
+                        // page responsible for showing the external login confirmation form if necessary.
+                        RedirectUri = Url.Action("ExternalLoginCallback", "Account", new
+                        {
+                            ReturnUrl = Request.RawUrl
+                        })
+                    };
+
+                    // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+                    context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
+                    return new EmptyResult();
+                }
+
+                context.Authentication.Challenge(DefaultAuthenticationTypes.ApplicationCookie);
                 return new EmptyResult();
             }
 

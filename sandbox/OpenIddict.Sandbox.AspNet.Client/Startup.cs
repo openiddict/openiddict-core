@@ -29,7 +29,7 @@ namespace OpenIddict.Sandbox.AspNet.Client
                 SlidingExpiration = false
             });
 
-            // Register the OpenIddict client middleware.
+            // Register the OpenIddict middleware.
             app.UseMiddlewareFromContainer<OpenIddictClientOwinMiddleware>();
 
             // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances.
@@ -68,7 +68,7 @@ namespace OpenIddict.Sandbox.AspNet.Client
                 {
                     // Enable the redirection endpoint needed to handle the callback stage.
                     //
-                    // Note: to prevent mix-up attacks, it's recommended to use a unique redirection endpoint
+                    // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
                     // address per provider, unless all the registered providers support returning an "iss"
                     // parameter containing their URL as part of authorization responses. For more information,
                     // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.

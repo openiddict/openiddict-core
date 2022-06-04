@@ -1,56 +1,13 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Client.AspNetCore;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 
-namespace OpenIddict.Sandbox.AspNetCore.Client.Controllers;
+namespace OpenIddict.Sandbox.AspNetCore.Server.Controllers;
 
 public class AuthenticationController : Controller
 {
-    [HttpGet("~/login")]
-    public ActionResult LogIn(string provider, string returnUrl)
-    {
-        var issuer = provider switch
-        {
-            "local" or "local-github" => "https://localhost:44395/",
-            "github"                  => "https://github.com/",
-            "google"                  => "https://accounts.google.com/",
-            "reddit"                  => "https://www.reddit.com/",
-
-            _ => null
-        };
-
-        if (string.IsNullOrEmpty(issuer))
-        {
-            return BadRequest();
-        }
-
-        var properties = new AuthenticationProperties(new Dictionary<string, string>
-        {
-            // Note: when only one client is registered in the client options,
-            // setting the issuer property is not required and can be omitted.
-            [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = issuer
-        })
-        {
-            // Only allow local return URLs to prevent open redirect attacks.
-            RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
-        };
-
-        // The local authorization server sample allows the client to select the external
-        // identity provider that will be used to eventually authenticate the user. For that,
-        // a custom "identity_provider" parameter is sent to the authorization server so that
-        // the user is directly redirected to GitHub (in this case, no login page is shown).
-        if (provider is "local-github")
-        {
-            properties.Parameters["identity_provider"] = "github";
-        }
-
-        // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-        return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
-    }
-
     // Note: this controller uses the same callback action for all providers
     // but for users who prefer using a different action per provider,
     // the following action can be split into separate actions.
@@ -99,16 +56,18 @@ public class AuthenticationController : Controller
         var claims = new List<Claim>(result.Principal.Claims
             .Select(claim => claim switch
             {
-                // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
+                // Note: when using external authentication providers with ASP.NET Core Identity,
+                // the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim
+                // - which is not configurable in Identity - MUST be used to store the user identifier.
                 { Type: "id", Issuer: "https://github.com/" }
-                    => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
+                    => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
 
                 _ => claim
             })
             .Where(claim => claim switch
             {
-                // Preserve the "name" and "sub" claims.
-                { Type: Claims.Name or Claims.Subject } => true,
+                // Preserve the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim.
+                { Type: ClaimTypes.NameIdentifier } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.
                 { Type: "bio", Issuer: "https://github.com/" } => true,
@@ -117,15 +76,22 @@ public class AuthenticationController : Controller
                 _ => false
             }));
 
+        // Note: when using external authentication providers with ASP.NET Core Identity,
+        // the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim
+        // - which is not configurable in Identity - MUST be used to store the user identifier.
         var identity = new ClaimsIdentity(claims,
-            authenticationType: CookieAuthenticationDefaults.AuthenticationScheme,
-            nameType: Claims.Name,
-            roleType: Claims.Role);
+            authenticationType: IdentityConstants.ExternalScheme,
+            nameType: ClaimTypes.NameIdentifier,
+            roleType: ClaimTypes.Role);
 
         var properties = new AuthenticationProperties
         {
             RedirectUri = result.Properties.RedirectUri
         };
+
+        // Store the identity of the external provider in the authentication properties to allow
+        // ASP.NET Core Identity to resolve it when returning the external login confirmation form.
+        properties.Items["LoginProvider"] = claims[0].Issuer;
 
         // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
         // To make cookies less heavy, tokens that are not used can be filtered out before creating the cookie.
@@ -144,21 +110,8 @@ public class AuthenticationController : Controller
         // Note: "return SignIn(...)" cannot be directly used in this case, as the cookies handler doesn't allow
         // redirecting from an endpoint that doesn't match the path set in CookieAuthenticationOptions.LoginPath.
         // For more information about this restriction, visit https://github.com/dotnet/aspnetcore/issues/36934.
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), properties);
+        await HttpContext.SignInAsync(IdentityConstants.ExternalScheme, new ClaimsPrincipal(identity), properties);
 
         return Redirect(properties.RedirectUri);
-    }
-
-    [HttpGet("~/logout"), HttpPost("~/logout")]
-    public ActionResult LogOut()
-    {
-        // Ask the cookies middleware to delete the local cookie created when the user agent
-        // is redirected from the identity provider after a successful authorization flow.
-        var properties = new AuthenticationProperties
-        {
-            RedirectUri = "/"
-        };
-
-        return SignOut(properties, CookieAuthenticationDefaults.AuthenticationScheme);
     }
 }

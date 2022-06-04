@@ -11,10 +11,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using OpenIddict.Abstractions;
+using OpenIddict.Client.AspNetCore;
 using OpenIddict.Sandbox.AspNetCore.Server.Helpers;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Authorization;
-using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -54,11 +55,15 @@ public class AuthorizationController : Controller
         var request = HttpContext.GetOpenIddictServerRequest() ??
             throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
-        // Retrieve the user principal stored in the authentication cookie.
-        // If a max_age parameter was provided, ensure that the cookie is not too old.
-        // If the user principal can't be extracted or the cookie is too old, redirect the user to the login page.
+        // Try to retrieve the user principal stored in the authentication cookie and redirect
+        // the user agent to the login page (or to an external provider) in the following cases:
+        //
+        //  - If the user principal can't be extracted or the cookie is too old.
+        //  - If prompt=login was specified by the client application.
+        //  - If a max_age parameter was provided and the authentication cookie is not considered "fresh" enough.
         var result = await HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-        if (result == null || !result.Succeeded || (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
+        if (result == null || !result.Succeeded || request.HasPrompt(Prompts.Login) ||
+           (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
             DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
         {
             // If the client application requested promptless authentication,
@@ -74,19 +79,6 @@ public class AuthorizationController : Controller
                     }));
             }
 
-            return Challenge(
-                authenticationSchemes: IdentityConstants.ApplicationScheme,
-                properties: new AuthenticationProperties
-                {
-                    RedirectUri = Request.PathBase + Request.Path + QueryString.Create(
-                        Request.HasFormContentType ? Request.Form.ToList() : Request.Query.ToList())
-                });
-        }
-
-        // If prompt=login was specified by the client application,
-        // immediately return the user agent to the login page.
-        if (request.HasPrompt(Prompts.Login))
-        {
             // To avoid endless login -> authorization redirects, the prompt=login flag
             // is removed from the authorization request payload before redirecting the user.
             var prompt = string.Join(" ", request.GetPrompts().Remove(Prompts.Login));
@@ -96,6 +88,48 @@ public class AuthorizationController : Controller
                 Request.Query.Where(parameter => parameter.Key != Parameters.Prompt).ToList();
 
             parameters.Add(KeyValuePair.Create(Parameters.Prompt, new StringValues(prompt)));
+
+            // For applications that want to allow the client to select the external authentication provider
+            // that will be used to authenticate the user, the identity_provider parameter can be used for that.
+            if (!string.IsNullOrEmpty(request.IdentityProvider))
+            {
+                var issuer = request.IdentityProvider switch
+                {
+                    "github" => "https://github.com/",
+
+                    _ => null
+                };
+
+                if (string.IsNullOrEmpty(issuer))
+                {
+                    return Forbid(
+                        authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                        properties: new AuthenticationProperties(new Dictionary<string, string>
+                        {
+                            [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidRequest,
+                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
+                                "The specified identity provider is not valid."
+                        }));
+                }
+
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    // Note: when only one client is registered in the client options,
+                    // setting the issuer property is not required and can be omitted.
+                    [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = issuer
+                })
+                {
+                    // Once the callback is handled, redirect the user agent to the ASP.NET Identity
+                    // page responsible for showing the external login confirmation form if necessary.
+                    RedirectUri = Url.Action("ExternalLoginCallback", "Account", new
+                    {
+                        ReturnUrl = Request.PathBase + Request.Path + QueryString.Create(parameters)
+                    })
+                };
+
+                // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+                return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
+            }
 
             return Challenge(
                 authenticationSchemes: IdentityConstants.ApplicationScheme,
