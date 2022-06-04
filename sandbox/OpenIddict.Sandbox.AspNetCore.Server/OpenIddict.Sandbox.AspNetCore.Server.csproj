@@ -9,13 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict.AspNetCore\OpenIddict.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.MongoDb\OpenIddict.MongoDb.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Quartz\OpenIddict.Quartz.csproj" />
-    <ProjectReference Include="..\..\src\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\OpenIddict.Server.DataProtection\OpenIddict.Server.DataProtection.csproj" />
-    <ProjectReference Include="..\..\src\OpenIddict.Validation.AspNetCore\OpenIddict.Validation.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\OpenIddict.Validation.ServerIntegration\OpenIddict.Validation.ServerIntegration.csproj" />
   </ItemGroup>
 
   <ItemGroup>

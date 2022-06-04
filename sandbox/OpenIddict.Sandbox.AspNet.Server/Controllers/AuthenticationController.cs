@@ -5,62 +5,15 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
-using Microsoft.Owin.Security.Cookies;
 using OpenIddict.Client.Owin;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 
-namespace OpenIddict.Sandbox.AspNet.Client.Controllers
+namespace OpenIddict.Sandbox.AspNet.Server.Controllers
 {
     public class AuthenticationController : Controller
     {
-        [HttpGet, Route("~/login")]
-        public ActionResult LogIn(string provider, string returnUrl)
-        {
-            var context = HttpContext.GetOwinContext();
-
-            var issuer = provider switch
-            {
-                "local" or "local-github" => "https://localhost:44349/",
-                "github"                  => "https://github.com/",
-                "google"                  => "https://accounts.google.com/",
-
-                _ => null
-            };
-
-            if (string.IsNullOrEmpty(issuer))
-            {
-                return new HttpStatusCodeResult(400);
-            }
-
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
-            {
-                // Note: when only one client is registered in the client options,
-                // setting the issuer property is not required and can be omitted.
-                [OpenIddictClientOwinConstants.Properties.Issuer] = issuer
-            })
-            {
-                // Only allow local return URLs to prevent open redirect attacks.
-                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
-            };
-
-            // The local authorization server sample allows the client to select the external
-            // identity provider that will be used to eventually authenticate the user. For that,
-            // a custom "identity_provider" parameter is sent to the authorization server so that
-            // the user is directly redirected to GitHub (in this case, no login page is shown).
-            if (provider is "local-github")
-            {
-                // Note: the OWIN host requires appending the #string suffix to indicate
-                // that the "identity_provider" property is a public string parameter.
-                properties.Dictionary["identity_provider#string"] = "github";
-            }
-
-            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-            context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
-            return new EmptyResult();
-        }
-
         // Note: this controller uses the same callback action for all providers
         // but for users who prefer using a different action per provider,
         // the following action can be split into separate actions.
@@ -111,25 +64,18 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             var claims = new List<Claim>(result.Identity.Claims
                 .Select(claim => claim switch
                 {
-                    // Map the standard "sub" claim to http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier,
-                    // which is the default claim type used by ASP.NET and is required by the antiforgery components.
-                    { Type: Claims.Subject }
-                        => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
-
-                    // Map the standard "name" claim to http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name.
-                    { Type: Claims.Name }
-                        => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
-
-                    // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
+                    // Note: when using external authentication providers with ASP.NET Core Identity,
+                    // the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim
+                    // - which is not configurable in Identity - MUST be used to store the user identifier.
                     { Type: "id", Issuer: "https://github.com/" }
-                        => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
+                        => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
 
                     _ => claim
                 })
                 .Where(claim => claim switch
                 {
-                    // Preserve the nameidentifier and name claims.
-                    { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
+                    // Preserve the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim.
+                    { Type: ClaimTypes.NameIdentifier } => true,
 
                     // Applications that use multiple client registrations can filter claims based on the issuer.
                     { Type: "bio", Issuer: "https://github.com/" } => true,
@@ -143,7 +89,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", claims[0].Issuer));
 
             var identity = new ClaimsIdentity(claims,
-                authenticationType: CookieAuthenticationDefaults.AuthenticationType,
+                authenticationType: DefaultAuthenticationTypes.ExternalCookie,
                 nameType: ClaimTypes.Name,
                 roleType: ClaimTypes.Role);
 
@@ -161,22 +107,6 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 
             static string GetProperty(AuthenticationProperties properties, string name)
                 => properties.Dictionary.TryGetValue(name, out var value) ? value : string.Empty;
-        }
-
-        [AcceptVerbs("GET", "POST"), Route("~/logout")]
-        public ActionResult LogOut()
-        {
-            var context = HttpContext.GetOwinContext();
-
-            // Ask the cookies middleware to delete the local cookie created when the user agent
-            // is redirected from the identity provider after a successful authorization flow.
-            var properties = new AuthenticationProperties
-            {
-                RedirectUri = "/"
-            };
-
-            context.Authentication.SignOut(properties, CookieAuthenticationDefaults.AuthenticationType);
-            return Redirect(properties.RedirectUri);
         }
     }
 }

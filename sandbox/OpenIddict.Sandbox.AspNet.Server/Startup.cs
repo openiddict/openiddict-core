@@ -9,6 +9,7 @@ using Autofac.Integration.WebApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using OpenIddict.Abstractions;
+using OpenIddict.Client.Owin;
 using OpenIddict.Sandbox.AspNet.Server.Models;
 using OpenIddict.Server.Owin;
 using OpenIddict.Validation.Owin;
@@ -29,7 +30,8 @@ namespace OpenIddict.Sandbox.AspNet.Server
             // Register the Autofac scope injector middleware.
             app.UseAutofacLifetimeScopeInjector(container);
 
-            // Register the two OpenIddict server/validation middleware.
+            // Register the OpenIddict middleware.
+            app.UseMiddlewareFromContainer<OpenIddictClientOwinMiddleware>();
             app.UseMiddlewareFromContainer<OpenIddictServerOwinMiddleware>();
             app.UseMiddlewareFromContainer<OpenIddictValidationOwinMiddleware>();
 
@@ -116,6 +118,39 @@ namespace OpenIddict.Sandbox.AspNet.Server
                     // and configure OpenIddict to use the specified MongoDB database:
                     // options.UseMongoDb()
                     //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
+                })
+
+                // Register the OpenIddict client components.
+                .AddClient(options =>
+                {
+                    // Enable the redirection endpoint needed to handle the callback stage.
+                    //
+                    // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
+                    // address per provider, unless all the registered providers support returning an "iss"
+                    // parameter containing their URL as part of authorization responses. For more information,
+                    // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
+                    options.SetRedirectionEndpointUris("/signin-github");
+
+                    // Register the signing and encryption credentials used to protect
+                    // sensitive data like the state tokens produced by OpenIddict.
+                    options.AddDevelopmentEncryptionCertificate()
+                           .AddDevelopmentSigningCertificate();
+
+                    // Register the OWIN host and configure the OWIN-specific options.
+                    options.UseOwin()
+                           .EnableRedirectionEndpointPassthrough();
+
+                    // Register the System.Net.Http integration.
+                    options.UseSystemNetHttp();
+
+                    // Register the Web providers integrations.
+                    options.UseWebProviders()
+                           .AddGitHub(new()
+                           {
+                               ClientId = "c4ade52327b01ddacff3",
+                               ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
+                               RedirectUri = new Uri("https://localhost:44349/signin-github", UriKind.Absolute)
+                           });
                 })
 
                 // Register the OpenIddict server components.
