@@ -5,6 +5,7 @@
  */
 
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin.Security.Infrastructure;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
@@ -173,15 +174,18 @@ public class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClien
                 return null;
             }
 
-            var properties = new AuthenticationProperties
-            {
-                ExpiresUtc = principal.GetExpirationDate(),
-                IssuedUtc = principal.GetCreationDate(),
+            // Attach the identity of the authorization to the returned principal to allow resolving it even if no other
+            // claim was added to the principal (e.g when no id_token was returned and no userinfo endpoint is available).
+            principal.SetClaim(Claims.AuthorizationServer, context.StateTokenPrincipal?.GetClaim(Claims.AuthorizationServer));
 
-                // Restore the return URL using the "target_link_uri" that was stored
-                // in the state token when the challenge operation started, if available.
-                RedirectUri = context.StateTokenPrincipal?.GetClaim(Claims.TargetLinkUri)
-            };
+            // Restore or create a new authentication properties collection and populate it.
+            var properties = CreateProperties(context.StateTokenPrincipal);
+            properties.ExpiresUtc = principal.GetExpirationDate();
+            properties.IssuedUtc = principal.GetCreationDate();
+
+            // Restore the return URL using the "target_link_uri" that was stored
+            // in the state token when the challenge operation started, if available.
+            properties.RedirectUri = context.StateTokenPrincipal?.GetClaim(Claims.TargetLinkUri);
 
             // Attach the tokens to allow any OWIN component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
@@ -265,6 +269,29 @@ public class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClien
                 }
 
                 return new ClaimsPrincipal(identity);
+            }
+
+            static AuthenticationProperties CreateProperties(ClaimsPrincipal? principal)
+            {
+                // Note: the principal may be null if no value was extracted from the corresponding token.
+                if (principal is not null)
+                {
+                    var value = principal.GetClaim(Claims.Private.HostProperties);
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        var dictionary = new Dictionary<string, string?>(comparer: StringComparer.Ordinal);
+                        using var document = JsonDocument.Parse(value);
+
+                        foreach (var property in document.RootElement.EnumerateObject())
+                        {
+                            dictionary[property.Name] = property.Value.GetString();
+                        }
+
+                        return new AuthenticationProperties(dictionary);
+                    }
+                }
+
+                return new AuthenticationProperties();
             }
         }
     }

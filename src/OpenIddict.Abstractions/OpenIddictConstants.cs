@@ -127,6 +127,7 @@ public static class OpenIddictConstants
             public const string DeviceCodeLifetime = "oi_dvc_lft";
             public const string ExpirationDate = "oi_exp_dt";
             public const string GrantType = "oi_grt_typ";
+            public const string HostProperties = "oi_hst_props";
             public const string IdentityTokenLifetime = "oi_idt_lft";
             public const string Issuer = "oi_iss";
             public const string Nonce = "oi_nce";

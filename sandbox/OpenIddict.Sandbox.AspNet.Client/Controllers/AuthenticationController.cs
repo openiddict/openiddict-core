@@ -7,6 +7,7 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
+using OpenIddict.Abstractions;
 using OpenIddict.Client.Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
@@ -54,7 +55,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             {
                 // Note: the OWIN host requires appending the #string suffix to indicate
                 // that the "identity_provider" property is a public string parameter.
-                properties.Dictionary["identity_provider#string"] = "github";
+                properties.Dictionary[Parameters.IdentityProvider + PropertyTypes.String] = "github";
             }
 
             // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
@@ -112,18 +113,15 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             var claims = new List<Claim>(result.Identity.Claims
                 .Select(claim => claim switch
                 {
-                    // Map the standard "sub" claim to http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier,
-                    // which is the default claim type used by ASP.NET and is required by the antiforgery components.
-                    { Type: Claims.Subject }
+                    // Map the standard "sub" and custom "id" claims to ClaimTypes.NameIdentifier, which is
+                    // the default claim type used by ASP.NET and is required by the antiforgery components.
+                    { Type: Claims.Subject } or
+                    { Type: "id", Issuer: "https://github.com/" or "https://twitter.com/" }
                         => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
 
-                    // Map the standard "name" claim to http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name.
+                    // Map the standard "name" claim to ClaimTypes.Name.
                     { Type: Claims.Name }
                         => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
-
-                    // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
-                    { Type: "id", Issuer: "https://github.com/" or "https://twitter.com/" }
-                        => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
 
                     _ => claim
                 })
@@ -141,27 +139,31 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 
             // The antiforgery components require both the nameidentifier and identityprovider claims
             // so the latter is manually added using the issuer identity resolved from the remote server.
-            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", claims[0].Issuer));
+            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                result.Identity.GetClaim(Claims.AuthorizationServer)));
 
             var identity = new ClaimsIdentity(claims,
                 authenticationType: CookieAuthenticationDefaults.AuthenticationType,
                 nameType: ClaimTypes.Name,
                 roleType: ClaimTypes.Role);
 
-            var properties = new AuthenticationProperties
-            {
-                RedirectUri = result.Properties.RedirectUri
-            };
+            // Build the authentication properties based on the properties that were added when the challenge was triggered.
+            var properties = new AuthenticationProperties(result.Properties.Dictionary
+                .Where(item => item switch
+                {
+                    // Preserve the redirect URL.
+                    { Key: ".redirect" } => true,
 
-            // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-            properties.Dictionary[Tokens.BackchannelAccessToken] = GetProperty(result.Properties, Tokens.BackchannelAccessToken);
-            properties.Dictionary[Tokens.RefreshToken] = GetProperty(result.Properties, Tokens.RefreshToken);
+                    // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
+                    { Key: Tokens.BackchannelAccessToken or Tokens.RefreshToken } => true,
+
+                    // Don't add the other properties to the external cookie.
+                    _ => false
+                })
+                .ToDictionary(pair => pair.Key, pair => pair.Value));
 
             context.Authentication.SignIn(properties, identity);
             return Redirect(properties.RedirectUri);
-
-            static string GetProperty(AuthenticationProperties properties, string name)
-                => properties.Dictionary.TryGetValue(name, out var value) ? value : string.Empty;
         }
 
         [AcceptVerbs("GET", "POST"), Route("~/logout")]

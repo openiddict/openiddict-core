@@ -29,10 +29,12 @@ public class OpenIddictClientDataProtectionFormatter : IOpenIddictClientDataProt
         // can be reused, well-known properties are manually mapped to their claims equivalents.
 
         return principal
-            .SetAudiences(GetArrayProperty(properties, Properties.Audiences))
-            .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
-            .SetResources(GetArrayProperty(properties, Properties.Resources))
-            .SetScopes(GetArrayProperty(properties, Properties.Scopes))
+            .SetClaims(Claims.Private.Audience,  GetJsonProperty(properties, Properties.Audiences))
+            .SetClaims(Claims.Private.Presenter, GetJsonProperty(properties, Properties.Presenters))
+            .SetClaims(Claims.Private.Resource,  GetJsonProperty(properties, Properties.Resources))
+            .SetClaims(Claims.Private.Scope,     GetJsonProperty(properties, Properties.Scopes))
+
+            .SetClaim(Claims.Private.HostProperties, GetJsonProperty(properties, Properties.HostProperties))
 
             .SetClaim(Claims.Private.CodeVerifier,       GetProperty(properties, Properties.CodeVerifier))
             .SetClaim(Claims.Private.CreationDate,       GetProperty(properties, Properties.Issued))
@@ -158,28 +160,15 @@ public class OpenIddictClientDataProtectionFormatter : IOpenIddictClientDataProt
         static string? GetProperty(IReadOnlyDictionary<string, string> properties, string name)
             => properties.TryGetValue(name, out var value) ? value : null;
 
-        static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
+        static JsonElement GetJsonProperty(IReadOnlyDictionary<string, string> properties, string name)
         {
             if (properties.TryGetValue(name, out var value))
             {
                 using var document = JsonDocument.Parse(value);
-                var builder = ImmutableArray.CreateBuilder<string>(document.RootElement.GetArrayLength());
-
-                foreach (var element in document.RootElement.EnumerateArray())
-                {
-                    var item = element.GetString();
-                    if (string.IsNullOrEmpty(item))
-                    {
-                        continue;
-                    }
-
-                    builder.Add(item);
-                }
-
-                return builder.ToImmutable();
+                return document.RootElement.Clone();
             }
 
-            return ImmutableArray.Create<string>();
+            return default;
         }
     }
 
@@ -209,6 +198,7 @@ public class OpenIddictClientDataProtectionFormatter : IOpenIddictClientDataProt
         SetProperty(properties, Properties.InternalTokenId, principal.GetTokenId());
 
         SetProperty(properties, Properties.CodeVerifier,        principal.GetClaim(Claims.Private.CodeVerifier));
+        SetProperty(properties, Properties.HostProperties,      principal.GetClaim(Claims.Private.HostProperties));
         SetProperty(properties, Properties.Nonce,               principal.GetClaim(Claims.Private.Nonce));
         SetProperty(properties, Properties.OriginalRedirectUri, principal.GetClaim(Claims.Private.RedirectUri));
 

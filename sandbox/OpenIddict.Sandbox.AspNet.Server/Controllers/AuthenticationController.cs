@@ -7,7 +7,9 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using OpenIddict.Abstractions;
 using OpenIddict.Client.Owin;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Server.Controllers
@@ -64,18 +66,22 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
             var claims = new List<Claim>(result.Identity.Claims
                 .Select(claim => claim switch
                 {
-                    // Note: when using external authentication providers with ASP.NET Core Identity,
-                    // the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim
-                    // - which is not configurable in Identity - MUST be used to store the user identifier.
+                    // Map the standard "sub" and custom "id" claims to ClaimTypes.NameIdentifier, which is
+                    // the default claim type used by ASP.NET and is required by the antiforgery components.
+                    { Type: Claims.Subject } or
                     { Type: "id", Issuer: "https://github.com/" }
                         => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
+
+                    // Map the standard "name" claim to ClaimTypes.Name.
+                    { Type: Claims.Name }
+                        => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
 
                     _ => claim
                 })
                 .Where(claim => claim switch
                 {
-                    // Preserve the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim.
-                    { Type: ClaimTypes.NameIdentifier } => true,
+                    // Preserve the nameidentifier and name claims.
+                    { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
 
                     // Applications that use multiple client registrations can filter claims based on the issuer.
                     { Type: "bio", Issuer: "https://github.com/" } => true,
@@ -86,27 +92,31 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
 
             // The antiforgery components require both the nameidentifier and identityprovider claims
             // so the latter is manually added using the issuer identity resolved from the remote server.
-            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider", claims[0].Issuer));
+            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                result.Identity.GetClaim(Claims.AuthorizationServer)));
 
             var identity = new ClaimsIdentity(claims,
                 authenticationType: DefaultAuthenticationTypes.ExternalCookie,
                 nameType: ClaimTypes.Name,
                 roleType: ClaimTypes.Role);
 
-            var properties = new AuthenticationProperties
-            {
-                RedirectUri = result.Properties.RedirectUri
-            };
+            // Build the authentication properties based on the properties that were added when the challenge was triggered.
+            var properties = new AuthenticationProperties(result.Properties.Dictionary
+                .Where(item => item switch
+                {
+                    // Preserve the redirect URL.
+                    { Key: ".redirect" } => true,
 
-            // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-            properties.Dictionary[Tokens.BackchannelAccessToken] = GetProperty(result.Properties, Tokens.BackchannelAccessToken);
-            properties.Dictionary[Tokens.RefreshToken] = GetProperty(result.Properties, Tokens.RefreshToken);
+                    // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
+                    { Key: Tokens.BackchannelAccessToken or Tokens.RefreshToken } => true,
+
+                    // Don't add the other properties to the external cookie.
+                    _ => false
+                })
+                .ToDictionary(pair => pair.Key, pair => pair.Value));
 
             context.Authentication.SignIn(properties, identity);
             return Redirect(properties.RedirectUri);
-
-            static string GetProperty(AuthenticationProperties properties, string name)
-                => properties.Dictionary.TryGetValue(name, out var value) ? value : string.Empty;
         }
     }
 }

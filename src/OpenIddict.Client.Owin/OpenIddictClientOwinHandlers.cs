@@ -432,6 +432,8 @@ public static partial class OpenIddictClientOwinHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is null)
             {
@@ -454,6 +456,12 @@ public static partial class OpenIddictClientOwinHandlers
             if (!string.IsNullOrEmpty(properties.RedirectUri))
             {
                 context.TargetLinkUri = properties.RedirectUri;
+            }
+
+            // Preserve the host properties in the principal.
+            if (properties.Dictionary.Count is not 0)
+            {
+                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Dictionary);
             }
 
             // Note: unlike ASP.NET Core, Owin's AuthenticationProperties doesn't offer a strongly-typed
