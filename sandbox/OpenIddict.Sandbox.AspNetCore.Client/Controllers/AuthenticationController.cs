@@ -45,7 +45,7 @@ public class AuthenticationController : Controller
         // the user is directly redirected to GitHub (in this case, no login page is shown).
         if (provider is "local-github")
         {
-            properties.Parameters["identity_provider"] = "github";
+            properties.Parameters[Parameters.IdentityProvider] = "github";
         }
 
         // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
@@ -123,13 +123,11 @@ public class AuthenticationController : Controller
             nameType: Claims.Name,
             roleType: Claims.Role);
 
-        var properties = new AuthenticationProperties
-        {
-            RedirectUri = result.Properties.RedirectUri
-        };
+        // Build the authentication properties based on the properties that were added when the challenge was triggered.
+        var properties = new AuthenticationProperties(result.Properties.Items);
 
         // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-        // To make cookies less heavy, tokens that are not used can be filtered out before creating the cookie.
+        // To make cookies less heavy, tokens that are not used are filtered out before creating the cookie.
         properties.StoreTokens(result.Properties.GetTokens().Where(token => token switch
         {
             // Preserve the access and refresh tokens returned in the token response, if available.

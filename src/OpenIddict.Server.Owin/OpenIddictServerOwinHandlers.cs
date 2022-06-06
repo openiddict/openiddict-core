@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -317,7 +318,7 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the additional sign-in parameters stored in the
+    /// Contains the logic responsible for resolving the additional challenge parameters stored in the
     /// OWIN authentication properties specified by the application that triggered the sign-in operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -416,10 +417,18 @@ public static partial class OpenIddictServerOwinHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is null)
             {
                 return default;
+            }
+
+            // Preserve the host properties in the principal.
+            if (properties.Dictionary.Count is not 0)
+            {
+                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Dictionary);
             }
 
             // Note: unlike ASP.NET Core, Owin's AuthenticationProperties doesn't offer a strongly-typed

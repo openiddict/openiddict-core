@@ -412,6 +412,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is null)
             {
@@ -434,6 +436,12 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             if (!string.IsNullOrEmpty(properties.RedirectUri))
             {
                 context.TargetLinkUri = properties.RedirectUri;
+            }
+
+            // Preserve the host properties in the principal.
+            if (properties.Items.Count is not 0)
+            {
+                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Items);
             }
 
             foreach (var parameter in properties.Parameters)

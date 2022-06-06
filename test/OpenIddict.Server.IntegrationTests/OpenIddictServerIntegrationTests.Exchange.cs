@@ -862,8 +862,7 @@ public abstract partial class OpenIddictServerIntegrationTests
                         .SetTokenType(TokenTypeHints.AuthorizationCode)
                         .SetPresenters("Fabrikam")
                         .SetClaim(Claims.Subject, "Bob le Bricoleur")
-                        .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
-                        .SetClaim(Claims.Private.CodeChallengeMethod, null);
+                        .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
 
                     return default;
                 });

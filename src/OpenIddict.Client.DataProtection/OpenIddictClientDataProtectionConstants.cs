@@ -13,6 +13,7 @@ public static class OpenIddictClientDataProtectionConstants
         public const string Audiences = ".audiences";
         public const string CodeVerifier = ".code_verifier";
         public const string Expires = ".expires";
+        public const string HostProperties = ".host_properties";
         public const string InternalTokenId = ".internal_token_id";
         public const string Issued = ".issued";
         public const string Nonce = ".nonce";

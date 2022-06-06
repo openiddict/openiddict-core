@@ -57,8 +57,8 @@ public class AuthenticationController : Controller
             .Select(claim => claim switch
             {
                 // Note: when using external authentication providers with ASP.NET Core Identity,
-                // the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim
-                // - which is not configurable in Identity - MUST be used to store the user identifier.
+                // the ClaimTypes.NameIdentifier claim - which is not configurable in Identity -
+                // MUST be used to store the user identifier.
                 { Type: "id", Issuer: "https://github.com/" }
                     => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
 
@@ -66,7 +66,7 @@ public class AuthenticationController : Controller
             })
             .Where(claim => claim switch
             {
-                // Preserve the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim.
+                // Preserve the ClaimTypes.NameIdentifier claim.
                 { Type: ClaimTypes.NameIdentifier } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.
@@ -84,17 +84,11 @@ public class AuthenticationController : Controller
             nameType: ClaimTypes.NameIdentifier,
             roleType: ClaimTypes.Role);
 
-        var properties = new AuthenticationProperties
-        {
-            RedirectUri = result.Properties.RedirectUri
-        };
-
-        // Store the identity of the external provider in the authentication properties to allow
-        // ASP.NET Core Identity to resolve it when returning the external login confirmation form.
-        properties.Items["LoginProvider"] = claims[0].Issuer;
+        // Build the authentication properties based on the properties that were added when the challenge was triggered.
+        var properties = new AuthenticationProperties(result.Properties.Items);
 
         // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-        // To make cookies less heavy, tokens that are not used can be filtered out before creating the cookie.
+        // To make cookies less heavy, tokens that are not used are filtered out before creating the cookie.
         properties.StoreTokens(result.Properties.GetTokens().Where(token => token switch
         {
             // Preserve the access and refresh tokens returned in the token response, if available.

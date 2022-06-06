@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
-using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace OpenIddict.Validation;
 
@@ -411,28 +410,11 @@ public static partial class OpenIddictValidationHandlers
                         // Top-level claims represented as arrays are split and mapped to multiple CLR claims
                         // to match the logic implemented by IdentityModel for JWT token deserialization.
                         case { ValueKind: JsonValueKind.Array } value:
-                            foreach (var item in value.EnumerateArray())
-                            {
-                                identity.AddClaim(new Claim(
-                                    type          : parameter.Key,
-                                    value         : item.ToString()!,
-                                    valueType     : GetClaimValueType(item),
-                                    issuer        : issuer,
-                                    originalIssuer: issuer,
-                                    subject       : identity));
-                            }
+                            identity.AddClaims(parameter.Key, value, issuer);
                             break;
 
-                        // Note: JsonElement.ToString() returns string.Empty for JsonValueKind.Null and
-                        // JsonValueKind.Undefined, which, unlike null strings, is a valid claim value.
                         case { ValueKind: _ } value:
-                            identity.AddClaim(new Claim(
-                                type          : parameter.Key,
-                                value         : value.ToString()!,
-                                valueType     : GetClaimValueType(value),
-                                issuer        : issuer,
-                                originalIssuer: issuer,
-                                subject       : identity));
+                            identity.AddClaim(parameter.Key, value, issuer);
                             break;
                     }
                 }
@@ -440,22 +422,6 @@ public static partial class OpenIddictValidationHandlers
                 context.Principal = new ClaimsPrincipal(identity);
 
                 return default;
-
-                static string GetClaimValueType(JsonElement element) => element.ValueKind switch
-                {
-                    JsonValueKind.String                      => ClaimValueTypes.String,
-                    JsonValueKind.True or JsonValueKind.False => ClaimValueTypes.Boolean,
-
-                    JsonValueKind.Number when element.TryGetInt32(out _)  => ClaimValueTypes.Integer32,
-                    JsonValueKind.Number when element.TryGetInt64(out _)  => ClaimValueTypes.Integer64,
-                    JsonValueKind.Number when element.TryGetUInt32(out _) => ClaimValueTypes.UInteger32,
-                    JsonValueKind.Number when element.TryGetUInt64(out _) => ClaimValueTypes.UInteger64,
-                    JsonValueKind.Number when element.TryGetDouble(out _) => ClaimValueTypes.Double,
-
-                    JsonValueKind.Null or JsonValueKind.Undefined => JsonClaimValueTypes.JsonNull,
-                    JsonValueKind.Array                           => JsonClaimValueTypes.JsonArray,
-                    JsonValueKind.Object or _                     => JsonClaimValueTypes.Json
-                };
             }
         }
     }

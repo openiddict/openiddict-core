@@ -773,7 +773,7 @@ To register the validation services, use 'services.AddOpenIddict().AddValidation
     <value>The claim type cannot be null or empty.</value>
   </data>
   <data name="ID0185" xml:space="preserve">
-    <value>The claim value cannot be null or empty.</value>
+    <value>The claim value is not a supported JSON node.</value>
   </data>
   <data name="ID0186" xml:space="preserve">
     <value>The audience cannot be null or empty.</value>

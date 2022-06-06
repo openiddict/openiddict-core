@@ -6,6 +6,7 @@
 
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
@@ -181,11 +182,10 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
                 return AuthenticateResult.NoResult();
             }
 
-            var properties = new AuthenticationProperties
-            {
-                ExpiresUtc = principal.GetExpirationDate(),
-                IssuedUtc = principal.GetCreationDate()
-            };
+            // Restore or create a new authentication properties collection and populate it.
+            var properties = CreateProperties(principal);
+            properties.ExpiresUtc = principal.GetExpirationDate();
+            properties.IssuedUtc = principal.GetCreationDate();
 
             List<AuthenticationToken>? tokens = null;
 
@@ -289,6 +289,29 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
 
             return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
                 OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+        }
+
+        static AuthenticationProperties CreateProperties(ClaimsPrincipal? principal)
+        {
+            // Note: the principal may be null if no value was extracted from the corresponding token.
+            if (principal is not null)
+            {
+                var value = principal.GetClaim(Claims.Private.HostProperties);
+                if (!string.IsNullOrEmpty(value))
+                {
+                    var dictionary = new Dictionary<string, string?>(comparer: StringComparer.Ordinal);
+                    using var document = JsonDocument.Parse(value);
+
+                    foreach (var property in document.RootElement.EnumerateObject())
+                    {
+                        dictionary[property.Name] = property.Value.GetString();
+                    }
+
+                    return new AuthenticationProperties(dictionary);
+                }
+            }
+
+            return new AuthenticationProperties();
         }
     }
 

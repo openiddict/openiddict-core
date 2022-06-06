@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -316,7 +317,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the additional sign-in parameters stored in the ASP.NET
+    /// Contains the logic responsible for resolving the additional challenge parameters stored in the ASP.NET
     /// Core authentication properties specified by the application that triggered the sign-in operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
@@ -396,10 +397,18 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
             if (properties is null)
             {
                 return default;
+            }
+
+            // Preserve the host properties in the principal.
+            if (properties.Items.Count is not 0)
+            {
+                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Items);
             }
 
             foreach (var parameter in properties.Parameters)

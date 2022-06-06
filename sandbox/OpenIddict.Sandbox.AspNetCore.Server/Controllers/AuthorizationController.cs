@@ -112,20 +112,16 @@ public class AuthorizationController : Controller
                         }));
                 }
 
-                var properties = new AuthenticationProperties(new Dictionary<string, string>
-                {
-                    // Note: when only one client is registered in the client options,
-                    // setting the issuer property is not required and can be omitted.
-                    [OpenIddictClientAspNetCoreConstants.Properties.Issuer] = issuer
-                })
-                {
-                    // Once the callback is handled, redirect the user agent to the ASP.NET Identity
-                    // page responsible for showing the external login confirmation form if necessary.
-                    RedirectUri = Url.Action("ExternalLoginCallback", "Account", new
+                var properties = _signInManager.ConfigureExternalAuthenticationProperties(
+                    provider: issuer,
+                    redirectUrl: Url.Action("ExternalLoginCallback", "Account", new
                     {
                         ReturnUrl = Request.PathBase + Request.Path + QueryString.Create(parameters)
-                    })
-                };
+                    }));
+
+                // Note: when only one client is registered in the client options,
+                // setting the issuer property is not required and can be omitted.
+                properties.SetString(OpenIddictClientAspNetCoreConstants.Properties.Issuer, issuer);
 
                 // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
                 return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
@@ -196,11 +192,7 @@ public class AuthorizationController : Controller
                 }
 
                 principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
-
-                foreach (var claim in principal.Claims)
-                {
-                    claim.SetDestinations(GetDestinations(claim, principal));
-                }
+                principal.SetDestinations(GetDestinations);
 
                 return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
@@ -286,11 +278,7 @@ public class AuthorizationController : Controller
         }
 
         principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
-
-        foreach (var claim in principal.Claims)
-        {
-            claim.SetDestinations(GetDestinations(claim, principal));
-        }
+        principal.SetDestinations(GetDestinations);
 
         // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
         return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -362,11 +350,7 @@ public class AuthorizationController : Controller
             // For that, simply restrict the list of scopes before calling SetScopes.
             principal.SetScopes(result.Principal.GetScopes());
             principal.SetResources(await _scopeManager.ListResourcesAsync(principal.GetScopes()).ToListAsync());
-
-            foreach (var claim in principal.Claims)
-            {
-                claim.SetDestinations(GetDestinations(claim, principal));
-            }
+            principal.SetDestinations(GetDestinations);
 
             var properties = new AuthenticationProperties
             {
@@ -470,11 +454,7 @@ public class AuthorizationController : Controller
             // For that, simply restrict the list of scopes before calling SetScopes.
             principal.SetScopes(request.GetScopes());
             principal.SetResources(await _scopeManager.ListResourcesAsync(principal.GetScopes()).ToListAsync());
-
-            foreach (var claim in principal.Claims)
-            {
-                claim.SetDestinations(GetDestinations(claim, principal));
-            }
+            principal.SetDestinations(GetDestinations);
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
             return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -488,7 +468,8 @@ public class AuthorizationController : Controller
             // Retrieve the user profile corresponding to the authorization code/refresh token.
             // Note: if you want to automatically invalidate the authorization code/refresh token
             // when the user password/roles change, use the following line instead:
-            // var user = _signInManager.ValidateSecurityStampAsync(info.Principal);
+            //
+            // var user = await _signInManager.ValidateSecurityStampAsync(info.Principal);
             var user = await _userManager.GetUserAsync(principal);
             if (user is null)
             {
@@ -513,10 +494,7 @@ public class AuthorizationController : Controller
                     }));
             }
 
-            foreach (var claim in principal.Claims)
-            {
-                claim.SetDestinations(GetDestinations(claim, principal));
-            }
+            principal.SetDestinations(GetDestinations);
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
             return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -526,7 +504,7 @@ public class AuthorizationController : Controller
     }
     #endregion
 
-    private IEnumerable<string> GetDestinations(Claim claim, ClaimsPrincipal principal)
+    private IEnumerable<string> GetDestinations(Claim claim)
     {
         // Note: by default, claims are NOT automatically included in the access and identity tokens.
         // To allow OpenIddict to serialize them, you must attach them a destination, that specifies
@@ -537,7 +515,7 @@ public class AuthorizationController : Controller
             case Claims.Name:
                 yield return Destinations.AccessToken;
 
-                if (principal.HasScope(Scopes.Profile))
+                if (claim.Subject.HasScope(Scopes.Profile))
                     yield return Destinations.IdentityToken;
 
                 yield break;
@@ -545,7 +523,7 @@ public class AuthorizationController : Controller
             case Claims.Email:
                 yield return Destinations.AccessToken;
 
-                if (principal.HasScope(Scopes.Email))
+                if (claim.Subject.HasScope(Scopes.Email))
                     yield return Destinations.IdentityToken;
 
                 yield break;
@@ -553,7 +531,7 @@ public class AuthorizationController : Controller
             case Claims.Role:
                 yield return Destinations.AccessToken;
 
-                if (principal.HasScope(Scopes.Roles))
+                if (claim.Subject.HasScope(Scopes.Roles))
                     yield return Destinations.IdentityToken;
 
                 yield break;
