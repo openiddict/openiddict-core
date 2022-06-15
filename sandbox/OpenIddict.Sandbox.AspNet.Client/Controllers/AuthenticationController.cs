@@ -25,6 +25,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                 "local" or "local-github" => "https://localhost:44349/",
                 "github"                  => "https://github.com/",
                 "google"                  => "https://accounts.google.com/",
+                "twitter"                 => "https://twitter.com/",
 
                 _ => null
             };
@@ -121,7 +122,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                         => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
 
                     // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
-                    { Type: "id", Issuer: "https://github.com/" }
+                    { Type: "id", Issuer: "https://github.com/" or "https://twitter.com/" }
                         => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
 
                     _ => claim

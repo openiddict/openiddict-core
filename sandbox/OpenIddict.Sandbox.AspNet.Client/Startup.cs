@@ -75,7 +75,8 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     options.SetRedirectionEndpointUris(
                         "/signin-local",
                         "/signin-github",
-                        "/signin-google");
+                        "/signin-google",
+                        "/signin-twitter");
 
                     // Register the signing and encryption credentials used to protect
                     // sensitive data like the state tokens produced by OpenIddict.
@@ -114,6 +115,12 @@ namespace OpenIddict.Sandbox.AspNet.Client
                                ClientSecret = "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",
                                RedirectUri = new Uri("https://localhost:44378/signin-google", UriKind.Absolute),
                                Scopes = { Scopes.Profile }
+                           })
+                           .AddTwitter(new()
+                           {
+                               ClientId = "bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ",
+                               ClientSecret = "VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS",
+                               RedirectUri = new Uri("https://localhost:44378/signin-twitter", UriKind.Absolute)
                            });
                 });
 

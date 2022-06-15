@@ -84,7 +84,8 @@ public class Startup
                     "/signin-local",
                     "/signin-github",
                     "/signin-google",
-                    "/signin-reddit");
+                    "/signin-reddit",
+                    "/signin-twitter");
 
                 // Register the signing and encryption credentials used to protect
                 // sensitive data like the state tokens produced by OpenIddict.
@@ -132,6 +133,12 @@ public class Startup
                            RedirectUri = new Uri("https://localhost:44381/signin-reddit", UriKind.Absolute),
                            ProductName = "DemoApp",
                            ProductVersion = "1.0.0"
+                       })
+                       .AddTwitter(new()
+                       {
+                           ClientId = "bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ",
+                           ClientSecret = "VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS",
+                           RedirectUri = new Uri("https://localhost:44381/signin-twitter", UriKind.Absolute)
                        });
             });
 

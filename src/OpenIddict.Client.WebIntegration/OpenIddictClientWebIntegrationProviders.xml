@@ -4,10 +4,12 @@
   <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
     <Environment Issuer="https://appleid.apple.com/" />
 
-    <Setting Name="SigningKey" Type="ECDsaSecurityKey" Required="true" SigningAlgorithm="ES256"
-             Description="Gets or sets the ECDSA signing key associated with the developer account." />
+    <Setting Name="SigningKey" Type="SigningKey" Required="true"
+             Description="Gets or sets the ECDSA signing key associated with the developer account.">
+      <SigningAlgorithm Value="ES256" />
+    </Setting>
 
-    <Setting Name="TeamId" Type="string" Required="true"
+    <Setting Name="TeamId" Type="String" Required="true"
              Description="Gets or sets the Team ID associated with the developer account." />
   </Provider>
 
@@ -38,14 +40,46 @@
         is always added even if another scope was explicitly registered by the user.
       -->
 
-      <Scope Name="identity" Required="true" Description="Access my reddit username and signup date." />
+      <Scope Name="identity" Default="true" Required="true" />
     </Environment>
 
-    <Setting Name="ProductName" Type="string" Required="false"
+    <Setting Name="ProductName" Type="String" Required="false"
              Description="Gets or sets the product name used in the user agent header." />
 
-    <Setting Name="ProductVersion" Type="string" Required="false"
+    <Setting Name="ProductVersion" Type="String" Required="false"
              Description="Gets or sets the product version used in the user agent header." />
+  </Provider>
+
+  <Provider Name="Twitter" Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">
+    <Environment Issuer="https://twitter.com/">
+      <Configuration AuthorizationEndpoint="https://twitter.com/i/oauth2/authorize"
+                     TokenEndpoint="https://api.twitter.com/2/oauth2/token"
+                     UserinfoEndpoint="https://api.twitter.com/2/users/me">
+        <CodeChallengeMethod Value="S256" />
+
+        <TokenEndpointAuthMethod Value="client_secret_basic" />
+      </Configuration>
+
+      <!--
+        Note: Twitter requires requesting the "tweet.read" and "users.read" scopes for the
+        userinfo endpoint to work correctly. As such, these 2 scopes are marked as required
+        so they are always sent even if they were not explicitly added by the user.
+      -->
+
+      <Scope Name="tweet.read" Default="true" Required="true" />
+      <Scope Name="users.read" Default="true" Required="true" />
+    </Environment>
+
+    <Setting Name="Expansions" Collection="true" Type="String"
+             Description="Gets the list of data objects to expand from the userinfo endpoint." />
+
+    <Setting Name="TweetFields" Collection="true" Type="String"
+             Description="Gets the tweet fields that should be retrieved from the userinfo endpoint." />
+
+    <Setting Name="UserFields" Collection="true" Type="String"
+             Description="Gets the user fields that should be retrieved from the userinfo endpoint.">
+      <CollectionItem Value="profile_image_url" Default="true" Required="false" />
+    </Setting>
   </Provider>
 
 </Providers>

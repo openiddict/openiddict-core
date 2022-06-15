@@ -191,7 +191,7 @@
                           </xs:simpleType>
                         </xs:attribute>
 
-                        <xs:attribute name="Default" use="optional">
+                        <xs:attribute name="Default" use="required">
                           <xs:annotation>
                             <xs:documentation>A boolean indicating whether the scope is automatically added if no other scope is added by the user.</xs:documentation>
                           </xs:annotation>
@@ -201,7 +201,7 @@
                           </xs:simpleType>
                         </xs:attribute>
 
-                        <xs:attribute name="Required" use="optional">
+                        <xs:attribute name="Required" use="required">
                           <xs:annotation>
                             <xs:documentation>A boolean indicating whether the scope is always added even if another scope is already added by the user.</xs:documentation>
                           </xs:annotation>
@@ -209,12 +209,6 @@
                           <xs:simpleType>
                             <xs:restriction base="xs:boolean" />
                           </xs:simpleType>
-                        </xs:attribute>
-
-                        <xs:attribute name="Description" type="xs:string" use="required">
-                          <xs:annotation>
-                            <xs:documentation>The scope description.</xs:documentation>
-                          </xs:annotation>
                         </xs:attribute>
                       </xs:complexType>
                     </xs:element>
@@ -246,6 +240,95 @@
                 </xs:annotation>
 
                 <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="CollectionItem" minOccurs="0" maxOccurs="1">
+                      <xs:annotation>
+                        <xs:documentation>An item added by default to the collection, if applicable.</xs:documentation>
+                      </xs:annotation>
+
+                      <xs:complexType>
+                        <xs:attribute name="Value" use="required">
+                          <xs:annotation>
+                            <xs:documentation>The value of the item.</xs:documentation>
+                          </xs:annotation>
+
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string" />
+                          </xs:simpleType>
+                        </xs:attribute>
+
+                        <xs:attribute name="Default" use="required">
+                          <xs:annotation>
+                            <xs:documentation>A boolean indicating whether the item is automatically added if no other item is added by the user.</xs:documentation>
+                          </xs:annotation>
+
+                          <xs:simpleType>
+                            <xs:restriction base="xs:boolean" />
+                          </xs:simpleType>
+                        </xs:attribute>
+
+                        <xs:attribute name="Required" use="required">
+                          <xs:annotation>
+                            <xs:documentation>A boolean indicating whether the item is always added even if another item is already added by the user.</xs:documentation>
+                          </xs:annotation>
+
+                          <xs:simpleType>
+                            <xs:restriction base="xs:boolean" />
+                          </xs:simpleType>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+
+                    <xs:element name="EncryptionAlgorithm" minOccurs="0" maxOccurs="1">
+                      <xs:annotation>
+                        <xs:documentation>The encryption algorithm used with the encryption key, if applicable.</xs:documentation>
+                      </xs:annotation>
+
+                      <xs:complexType>
+                        <xs:attribute name="Value" use="required">
+                          <xs:annotation>
+                            <xs:documentation>The encryption algorithm name (e.g RSA-OAEP).</xs:documentation>
+                          </xs:annotation>
+
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:enumeration value="A256KW" />
+                              <xs:enumeration value="RSA-OAEP" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+
+                    <xs:element name="SigningAlgorithm" minOccurs="0" maxOccurs="1">
+                      <xs:annotation>
+                        <xs:documentation>The signing algorithm used with the signing key, if applicable.</xs:documentation>
+                      </xs:annotation>
+
+                      <xs:complexType>
+                        <xs:attribute name="Value" use="required">
+                          <xs:annotation>
+                            <xs:documentation>The signing algorithm name (e.g RS256).</xs:documentation>
+                          </xs:annotation>
+
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:enumeration value="ES256" />
+                              <xs:enumeration value="ES384" />
+                              <xs:enumeration value="ES512" />
+                              <xs:enumeration value="PS256" />
+                              <xs:enumeration value="PS384" />
+                              <xs:enumeration value="PS512" />
+                              <xs:enumeration value="RS256" />
+                              <xs:enumeration value="RS384" />
+                              <xs:enumeration value="RS512" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+
                   <xs:attribute name="Name" use="required">
                     <xs:annotation>
                       <xs:documentation>The setting name.</xs:documentation>
@@ -258,22 +341,9 @@
                     </xs:simpleType>
                   </xs:attribute>
 
-                  <xs:attribute name="Type" use="required">
+                  <xs:attribute name="Collection" use="optional">
                     <xs:annotation>
-                      <xs:documentation>The setting type.</xs:documentation>
-                    </xs:annotation>
-
-                    <xs:simpleType>
-                      <xs:restriction base="xs:string">
-                        <xs:enumeration value="ECDsaSecurityKey" />
-                        <xs:enumeration value="string" />
-                      </xs:restriction>
-                    </xs:simpleType>
-                  </xs:attribute>
-
-                  <xs:attribute name="Required" use="required">
-                    <xs:annotation>
-                      <xs:documentation>A boolean indicating whether the setting is required.</xs:documentation>
+                      <xs:documentation>A boolean indicating whether the setting is a collection.</xs:documentation>
                     </xs:annotation>
 
                     <xs:simpleType>
@@ -281,36 +351,27 @@
                     </xs:simpleType>
                   </xs:attribute>
 
-                  <xs:attribute name="EncryptionAlgorithm" use="optional">
+                  <xs:attribute name="Type" use="required">
                     <xs:annotation>
-                      <xs:documentation>The encryption algorithm, if applicable.</xs:documentation>
+                      <xs:documentation>The setting type.</xs:documentation>
                     </xs:annotation>
 
                     <xs:simpleType>
                       <xs:restriction base="xs:string">
-                        <xs:enumeration value="A256KW" />
-                        <xs:enumeration value="RSA-OAEP" />
+                        <xs:enumeration value="EncryptionKey" />
+                        <xs:enumeration value="SigningKey" />
+                        <xs:enumeration value="String" />
                       </xs:restriction>
                     </xs:simpleType>
                   </xs:attribute>
 
-                  <xs:attribute name="SigningAlgorithm" use="optional">
+                  <xs:attribute name="Required" use="optional">
                     <xs:annotation>
-                      <xs:documentation>The signing algorithm, if applicable.</xs:documentation>
+                      <xs:documentation>A boolean indicating whether the setting is required.</xs:documentation>
                     </xs:annotation>
 
                     <xs:simpleType>
-                      <xs:restriction base="xs:string">
-                        <xs:enumeration value="ES256" />
-                        <xs:enumeration value="ES384" />
-                        <xs:enumeration value="ES512" />
-                        <xs:enumeration value="PS256" />
-                        <xs:enumeration value="PS384" />
-                        <xs:enumeration value="PS512" />
-                        <xs:enumeration value="RS256" />
-                        <xs:enumeration value="RS384" />
-                        <xs:enumeration value="RS512" />
-                      </xs:restriction>
+                      <xs:restriction base="xs:boolean" />
                     </xs:simpleType>
                   </xs:attribute>
 

@@ -18,6 +18,7 @@ public class AuthenticationController : Controller
             "github"                  => "https://github.com/",
             "google"                  => "https://accounts.google.com/",
             "reddit"                  => "https://www.reddit.com/",
+            "twitter"                 => "https://twitter.com/",
 
             _ => null
         };
@@ -100,7 +101,7 @@ public class AuthenticationController : Controller
             .Select(claim => claim switch
             {
                 // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
-                { Type: "id", Issuer: "https://github.com/" }
+                { Type: "id", Issuer: "https://github.com/" or "https://twitter.com/" }
                     => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
 
                 _ => claim
