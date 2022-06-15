@@ -1298,6 +1298,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0333" xml:space="preserve">
     <value>The '{0}' provider settings cannot be resolved from the event context. Make sure the provider was correctly registered using 'services.AddOpenIddict().AddClient().UseWebProviders().Add{0}()'.</value>
   </data>
+  <data name="ID0334" xml:space="preserve">
+    <value>The '{0}' node cannot be extracted from the response.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

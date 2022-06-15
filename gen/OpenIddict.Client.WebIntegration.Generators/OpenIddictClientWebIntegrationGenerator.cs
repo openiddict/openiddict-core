@@ -45,10 +45,6 @@ namespace OpenIddict.Client.WebIntegration.Generators
                 SourceText.From(GenerateHelpers(document), Encoding.UTF8));
 
             context.AddSource(
-                "OpenIddictClientWebIntegrationScopes.generated.cs",
-                SourceText.From(GenerateScopes(document), Encoding.UTF8));
-
-            context.AddSource(
                 "OpenIddictClientWebIntegrationSettings.generated.cs",
                 SourceText.From(GenerateSettings(document), Encoding.UTF8));
 
@@ -230,7 +226,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
                 {{~ for setting in provider.settings ~}}
                 {{~ if setting.required ~}}
-                {{~ if setting.type == 'string' ~}} 
+                {{~ if setting.type == 'String' ~}} 
                 if (string.IsNullOrEmpty(settings.{{ setting.name }}))
                 {{~ else ~}}
                 if (settings.{{ setting.name }} is null)
@@ -333,7 +329,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                     EncryptionCredentials =
                     {
                         {{~ for setting in provider.settings ~}}
-                        {{~ if setting.encryption_algorithm ~}}
+                        {{~ if setting.type == 'EncryptionKey' ~}}
                         new EncryptingCredentials(settings.{{ setting.name }}, ""{{ setting.encryption_algorithm }}"", SecurityAlgorithms.Aes256CbcHmacSha512),
                         {{~ end ~}}
                         {{~ end ~}}
@@ -342,7 +338,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                     SigningCredentials =
                     {
                         {{~ for setting in provider.settings ~}}
-                        {{~ if setting.signing_algorithm ~}}
+                        {{~ if setting.type == 'SigningKey' ~}}
                         new SigningCredentials(settings.{{ setting.name }}, ""{{ setting.signing_algorithm }}""),
                         {{~ end ~}}
                         {{~ end ~}}
@@ -373,6 +369,21 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                     {{~ end ~}}
                     {{~ end ~}}
                 }
+                {{~ end ~}}
+
+                {{~ for setting in provider.settings ~}}
+                {{~ for item in setting.collection_items ~}}
+                {{~ if item.required ~}}
+                settings.{{ setting.name }}.Add(""{{ item.value }}"");
+                {{~ end ~}}
+
+                {{~ if item.default ~}}
+                if (settings.{{ setting.name }}.Count is 0)
+                {
+                    settings.{{ setting.name }}.Add(""{{ item.value }}"");
+                }
+                {{~ end ~}}
+                {{~ end ~}}
                 {{~ end ~}}
 
                 options.Registrations.Add(registration);
@@ -466,8 +477,17 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                                 Name = (string) setting.Attribute("Name"),
                                 Type = (string) setting.Attribute("Type"),
                                 Required = (bool?) setting.Attribute("Required") ?? false,
-                                EncryptionAlgorithm = (string?) setting.Attribute("EncryptionAlgorithm"),
-                                SigningAlgorithm = (string?) setting.Attribute("SigningAlgorithm")
+
+                                EncryptionAlgorithm = (string?) setting.Element("EncryptionAlgorithm")?.Attribute("Value"),
+                                SigningAlgorithm = (string?) setting.Element("SigningAlgorithm")?.Attribute("Value"),
+
+                                CollectionItems = setting.Elements("CollectionItem").Select(item => new
+                                {
+                                    Value = (string) item.Attribute("Value"),
+                                    Default = (bool?) item.Attribute("Default") ?? false,
+                                    Required = (bool?) item.Attribute("Required") ?? false
+                                })
+                                .ToList()
                             })
                             .ToList()
                         })
@@ -512,55 +532,6 @@ public partial class OpenIddictClientWebIntegrationHelpers
                 });
             }
 
-            static string GenerateScopes(XDocument document)
-            {
-                var template = Template.Parse(@"#nullable enable
-
-namespace OpenIddict.Client.WebIntegration;
-
-public static partial class OpenIddictClientWebIntegrationScopes
-{
-    {{~ for provider in providers ~}}
-    /// <summary>
-    /// Exposes the scopes supported by the {{ provider.name }} provider.
-    /// </summary>
-    public static class {{ provider.name }}
-    {
-        {{~ for scope in provider.scopes ~}}
-        {{~ if scope.description ~}}
-        /// <summary>
-        /// {{ scope.description }}
-        /// </summary>
-        {{~ end ~}}
-        public const string {{ scope.clr_name }} = ""{{ scope.name }}"";
-        {{~ end ~}}
-    }
-    {{~ end ~}}
-}
-");
-                return template.Render(new
-                {
-                    Providers = document.Root.Elements("Provider")
-                        .Select(provider => new
-                        {
-                            Name = (string) provider.Attribute("Name"),
-
-                            Scopes = provider.Elements("Environment")
-                                .SelectMany(environment => environment.Elements("Scope"))
-                                .Select(scope => new
-                                {
-                                    Name = (string) scope.Attribute("Name"),
-                                    ClrName = Regex.Replace((string) scope.Attribute("Name"), "(?:^|_| +)(.)",
-                                        match => match.Groups[1].Value.ToUpper(CultureInfo.InvariantCulture)),
-                                    Description = (string?) scope.Attribute("Description")
-                                })
-                                .Distinct(scope => scope.ClrName)
-                                .ToList()
-                        })
-                        .ToList()
-                });
-            }
-
             static string GenerateSettings(XDocument document)
             {
                 var template = Template.Parse(@"#nullable enable
@@ -583,7 +554,11 @@ public partial class OpenIddictClientWebIntegrationSettings
         /// {{ setting.description }}
         /// </summary>
         {{~ end ~}}
+        {{~ if setting.collection ~}}
+        public HashSet<{{ setting.type }}> {{ setting.name }} { get; } = new();
+        {{~ else ~}}
         public {{ setting.type }}? {{ setting.name }} { get; set; }
+        {{~ end ~}}
         {{~ end ~}}
 
         /// <summary>
@@ -603,9 +578,26 @@ public partial class OpenIddictClientWebIntegrationSettings
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Type = (string) setting.Attribute("Type"),
                                 Name = (string) setting.Attribute("Name"),
-                                Description = (string) setting.Attribute("Description")
+                                Collection = (bool?) setting.Attribute("Collection") ?? false,
+                                Description = (string) setting.Attribute("Description"),
+                                Type = (string) setting.Attribute("Type") switch
+                                {
+                                    "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
+                                        is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+
+                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
+                                        is "ES256" or "ES384" or "ES512" => "ECDsaSecurityKey",
+
+                                    "SigningKey" when (string) setting.Element("SigningAlgorithm").Attribute("Value")
+                                        is "PS256" or "PS384" or "PS512" or
+                                           "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
+
+                                    "String" => "string",
+                                    "StringHashSet" => "HashSet<string>",
+
+                                    string value => value
+                                }
                             })
                             .ToList()
                         })
