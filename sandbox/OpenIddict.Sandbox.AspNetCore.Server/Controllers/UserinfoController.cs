@@ -21,7 +21,7 @@ public class UserinfoController : Controller
     [IgnoreAntiforgeryToken, Produces("application/json")]
     public async Task<IActionResult> Userinfo()
     {
-        var user = await _userManager.GetUserAsync(User);
+        var user = await _userManager.FindByIdAsync(User.GetClaim(Claims.Subject));
         if (user is null)
         {
             return Challenge(

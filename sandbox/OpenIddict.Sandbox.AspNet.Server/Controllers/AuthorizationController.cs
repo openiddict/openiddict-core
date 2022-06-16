@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -140,11 +141,12 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                 case ConsentTypes.Implicit:
                 case ConsentTypes.External when authorizations.Any():
                 case ConsentTypes.Explicit when authorizations.Any() && !request.HasPrompt(Prompts.Consent):
-                    var identity = new ClaimsIdentity(OpenIddictServerOwinDefaults.AuthenticationType);
-                    identity.AddClaims((await context.Get<ApplicationSignInManager>().CreateUserIdentityAsync(user)).Claims);
-
-                    identity.AddClaim(new Claim(Claims.Subject, identity.FindFirstValue(ClaimTypes.NameIdentifier)));
-                    identity.AddClaim(new Claim(Claims.Name, identity.FindFirstValue(ClaimTypes.Name)));
+                    // Create the claims-based identity that will be used by OpenIddict to generate tokens.
+                    var identity = new ClaimsIdentity(OpenIddictServerOwinDefaults.AuthenticationType)
+                        .AddClaim(Claims.Subject, user.Id)
+                        .AddClaim(Claims.Email, user.Email)
+                        .AddClaim(Claims.Name, user.UserName)
+                        .AddClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
 
                     // Note: in this sample, the granted scopes match the requested scope
                     // but you may want to allow the user to uncheck specific scopes.
@@ -255,11 +257,12 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                 return new EmptyResult();
             }
 
-            var identity = new ClaimsIdentity(OpenIddictServerOwinDefaults.AuthenticationType);
-            identity.AddClaims((await context.Get<ApplicationSignInManager>().CreateUserIdentityAsync(user)).Claims);
-
-            identity.AddClaim(new Claim(Claims.Subject, identity.FindFirstValue(ClaimTypes.NameIdentifier)));
-            identity.AddClaim(new Claim(Claims.Name, identity.FindFirstValue(ClaimTypes.Name)));
+            // Create the claims-based identity that will be used by OpenIddict to generate tokens.
+            var identity = new ClaimsIdentity(OpenIddictServerOwinDefaults.AuthenticationType)
+                .AddClaim(Claims.Subject, user.Id)
+                .AddClaim(Claims.Email, user.Email)
+                .AddClaim(Claims.Name, user.UserName)
+                .AddClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
 
             // Note: in this sample, the granted scopes match the requested scope
             // but you may want to allow the user to uncheck specific scopes.

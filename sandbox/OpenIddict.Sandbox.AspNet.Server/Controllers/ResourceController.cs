@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using OpenIddict.Abstractions;
 using OpenIddict.Validation.Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -22,7 +23,7 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
             // This demo action requires that the client application be granted the "demo_api" scope.
             // If it was not granted, a detailed error is returned to the client application to inform it
             // that the authorization process must be restarted with the specified scope to access this API.
-            if (!((ClaimsPrincipal) User).HasClaim(Claims.Private.Scope, "demo_api"))
+            if (User is not ClaimsPrincipal principal || !principal.HasScope("demo_api"))
             {
                 context.Authentication.Challenge(
                     authenticationTypes: OpenIddictValidationOwinDefaults.AuthenticationType,

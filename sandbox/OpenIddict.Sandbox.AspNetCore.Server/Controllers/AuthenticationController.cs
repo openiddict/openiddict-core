@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Client.AspNetCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server.Controllers;
 
@@ -56,18 +57,22 @@ public class AuthenticationController : Controller
         var claims = new List<Claim>(result.Principal.Claims
             .Select(claim => claim switch
             {
-                // Note: when using external authentication providers with ASP.NET Core Identity,
-                // the ClaimTypes.NameIdentifier claim - which is not configurable in Identity -
-                // MUST be used to store the user identifier.
-                { Type: "id", Issuer: "https://github.com/" }
+                // Map the standard "sub" and custom "id" claims to ClaimTypes.NameIdentifier, which is
+                // the default claim type used by .NET and is required by the antiforgery components.
+                { Type: Claims.Subject } or
+                { Type: "id", Issuer: "https://github.com/" or "https://twitter.com/" }
                     => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
+
+                // Map the standard "name" claim to ClaimTypes.Name.
+                { Type: Claims.Name }
+                    => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
 
                 _ => claim
             })
             .Where(claim => claim switch
             {
-                // Preserve the ClaimTypes.NameIdentifier claim.
-                { Type: ClaimTypes.NameIdentifier } => true,
+                // Preserve the nameidentifier and name claims.
+                { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.
                 { Type: "bio", Issuer: "https://github.com/" } => true,
@@ -77,8 +82,7 @@ public class AuthenticationController : Controller
             }));
 
         // Note: when using external authentication providers with ASP.NET Core Identity,
-        // the "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" claim
-        // - which is not configurable in Identity - MUST be used to store the user identifier.
+        // the user identity MUST be added to the external authentication cookie scheme.
         var identity = new ClaimsIdentity(claims,
             authenticationType: IdentityConstants.ExternalScheme,
             nameType: ClaimTypes.NameIdentifier,
