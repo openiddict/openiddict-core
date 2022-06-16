@@ -100,16 +100,22 @@ public class AuthenticationController : Controller
         var claims = new List<Claim>(result.Principal.Claims
             .Select(claim => claim switch
             {
-                // Applications can map non-standard claims issued by specific issuers to a standard equivalent.
+                // Map the standard "sub" and custom "id" claims to ClaimTypes.NameIdentifier, which is
+                // the default claim type used by .NET and is required by the antiforgery components.
+                { Type: Claims.Subject } or
                 { Type: "id", Issuer: "https://github.com/" or "https://twitter.com/" }
-                    => new Claim(Claims.Subject, claim.Value, claim.ValueType, claim.Issuer),
+                    => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
+
+                // Map the standard "name" claim to ClaimTypes.Name.
+                { Type: Claims.Name }
+                    => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
 
                 _ => claim
             })
             .Where(claim => claim switch
             {
-                // Preserve the "name" and "sub" claims.
-                { Type: Claims.Name or Claims.Subject } => true,
+                // Preserve the nameidentifier and name claims.
+                { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.
                 { Type: "bio", Issuer: "https://github.com/" } => true,
@@ -120,8 +126,8 @@ public class AuthenticationController : Controller
 
         var identity = new ClaimsIdentity(claims,
             authenticationType: CookieAuthenticationDefaults.AuthenticationScheme,
-            nameType: Claims.Name,
-            roleType: Claims.Role);
+            nameType: ClaimTypes.Name,
+            roleType: ClaimTypes.Role);
 
         // Build the authentication properties based on the properties that were added when the challenge was triggered.
         var properties = new AuthenticationProperties(result.Properties.Items);

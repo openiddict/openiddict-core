@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Abstractions;
+using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Validation.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -37,7 +37,7 @@ public class ResourceController : Controller
                 }));
         }
 
-        var user = await _userManager.GetUserAsync(User);
+        var user = await _userManager.FindByIdAsync(User.GetClaim(Claims.Subject));
         if (user is null)
         {
             return Challenge(

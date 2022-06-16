@@ -34,17 +34,6 @@ public class Startup
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        // Configure Identity to use the same JWT claims as OpenIddict instead
-        // of the legacy WS-Federation claims it uses by default (ClaimTypes),
-        // which saves you from doing the mapping in your authorization controller.
-        services.Configure<IdentityOptions>(options =>
-        {
-            options.ClaimsIdentity.UserNameClaimType = Claims.Name;
-            options.ClaimsIdentity.UserIdClaimType = Claims.Subject;
-            options.ClaimsIdentity.RoleClaimType = Claims.Role;
-            options.ClaimsIdentity.EmailClaimType = Claims.Email;
-        });
-
         // OpenIddict offers native integration with Quartz.NET to perform scheduled tasks
         // (like pruning orphaned authorizations/tokens from the database) at regular intervals.
         services.AddQuartz(options =>

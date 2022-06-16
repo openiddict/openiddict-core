@@ -1,4 +1,4 @@
-﻿@using static OpenIddict.Abstractions.OpenIddictConstants
+﻿@using System.Security.Claims
 @model string
 
 <div class="jumbotron">
@@ -18,7 +18,7 @@
             <h3>Message received from the resource controller: @Model</h3>
         }
 
-        if (User.FindFirst(Claims.Subject)?.Issuer is "https://localhost:44349/")
+        if (User.FindFirst(ClaimTypes.NameIdentifier)?.Issuer is "https://localhost:44395/")
         {
             <form action="/" method="post">
                 <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>

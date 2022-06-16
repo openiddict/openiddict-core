@@ -67,7 +67,7 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                 .Select(claim => claim switch
                 {
                     // Map the standard "sub" and custom "id" claims to ClaimTypes.NameIdentifier, which is
-                    // the default claim type used by ASP.NET and is required by the antiforgery components.
+                    // the default claim type used by .NET and is required by the antiforgery components.
                     { Type: Claims.Subject } or
                     { Type: "id", Issuer: "https://github.com/" }
                         => new Claim(ClaimTypes.NameIdentifier, claim.Value, claim.ValueType, claim.Issuer),
@@ -90,11 +90,13 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                     _ => false
                 }));
 
-            // The antiforgery components require both the nameidentifier and identityprovider claims
+            // The antiforgery components require both the ClaimTypes.NameIdentifier and identityprovider claims
             // so the latter is manually added using the issuer identity resolved from the remote server.
             claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
                 result.Identity.GetClaim(Claims.AuthorizationServer)));
 
+            // Note: when using external authentication providers with ASP.NET Identity,
+            // the user identity MUST be added to the external authentication cookie scheme.
             var identity = new ClaimsIdentity(claims,
                 authenticationType: DefaultAuthenticationTypes.ExternalCookie,
                 nameType: ClaimTypes.Name,
