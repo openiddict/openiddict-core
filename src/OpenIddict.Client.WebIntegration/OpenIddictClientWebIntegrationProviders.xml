@@ -25,6 +25,10 @@
     <Environment Issuer="https://accounts.google.com/" />
   </Provider>
 
+  <Provider Name="Microsoft" Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
+    <Environment Issuer="https://login.microsoftonline.com/common/v2.0" />
+  </Provider>
+
   <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
     <Environment Issuer="https://www.reddit.com/">
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"

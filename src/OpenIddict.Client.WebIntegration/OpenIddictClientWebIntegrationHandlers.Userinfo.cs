@@ -101,10 +101,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // logic from mapping the parameters to CLR claims. To work around that, this handler
                 // is responsible for extracting the nested payload and replacing the userinfo response.
 
-                if (context.Registration.GetProviderName() is Providers.Twitter)
+                var parameter = context.Registration.GetProviderName() switch
                 {
-                    context.Response = new OpenIddictResponse(context.Response["data"]?.GetNamedParameters() ??
-                        throw new InvalidOperationException(SR.FormatID0334("data")));
+                    Providers.Twitter => "data",
+
+                    _ => null
+                };
+
+                if (!string.IsNullOrEmpty(parameter))
+                {
+                    context.Response = new OpenIddictResponse(context.Response[parameter]?.GetNamedParameters() ??
+                        throw new InvalidOperationException(SR.FormatID0334(parameter)));
                 }
 
                 return default;
