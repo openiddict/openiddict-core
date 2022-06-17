@@ -18,7 +18,46 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Configuration response handling:
              */
+            AmendIssuer.Descriptor,
             AmendClientAuthenticationMethods.Descriptor);
+
+        /// <summary>
+        /// Contains the logic responsible for amending the issuer for the providers that require it.
+        /// </summary>
+        public class AmendIssuer : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendIssuer>()
+                    .SetOrder(ValidateIssuer.Descriptor.Order - 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: the server configuration metadata returned by the Microsoft Account "common" tenant
+                // uses "https://login.microsoftonline.com/{tenantid}/v2.0" as the issuer to indicate that
+                // the issued identity tokens will have a dynamic issuer claim whose value will be resolved
+                // based on the client identity. As required by RFC8414, OpenIddict would automatically reject
+                // such responses as the issuer wouldn't match the expected value. To work around that, the issuer
+                // is replaced by this handler to always use "https://login.microsoftonline.com/common/v2.0".
+                if (context.Registration.GetProviderName() is Providers.Microsoft)
+                {
+                    context.Response[Metadata.Issuer] = "https://login.microsoftonline.com/common/v2.0";
+                }
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for amending the client

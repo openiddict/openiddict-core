@@ -1210,6 +1210,8 @@ public static partial class OpenIddictClientHandlers
             // ensure the at_hash claim matches the hash of the actual access token.
             if (!string.IsNullOrEmpty(context.FrontchannelAccessToken))
             {
+                // Note: the at_hash MUST be present in identity tokens returned from the authorization endpoint.
+                // See https://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2 for more information.
                 var hash = context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.AccessTokenHash);
                 if (string.IsNullOrEmpty(hash))
                 {
@@ -2470,18 +2472,11 @@ public static partial class OpenIddictClientHandlers
             using var algorithm = GetHashAlgorithm(name) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
 
+            // Note: the at_hash is optional for backchannel identity tokens returned from the token endpoint.
+            // As such, the validation routine is only enforced if the at_hash claim is present in the token.
+            // See https://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken2 for more information.
             var hash = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.AccessTokenHash);
-            if (string.IsNullOrEmpty(hash))
-            {
-                context.Reject(
-                    error: Errors.InvalidRequest,
-                    description: SR.FormatID2126(Claims.AccessTokenHash),
-                    uri: SR.FormatID8000(SR.ID2126));
-
-                return default;
-            }
-
-            if (!ValidateTokenHash(algorithm, context.BackchannelAccessToken, hash))
+            if (!string.IsNullOrEmpty(hash) && !ValidateTokenHash(algorithm, context.BackchannelAccessToken, hash))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,

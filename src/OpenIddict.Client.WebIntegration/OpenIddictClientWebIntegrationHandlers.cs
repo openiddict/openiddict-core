@@ -31,6 +31,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         FormatNonStandardScopeParameter.Descriptor)
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Exchange.DefaultHandlers)
+        .AddRange(Protection.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
