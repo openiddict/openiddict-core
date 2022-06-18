@@ -133,6 +133,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachNonDefaultResponseMode>()
                 // Note: this handler MUST be invoked after the scopes have been attached to the
                 // context to support overriding the response mode based on the requested scopes.
@@ -172,6 +173,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<FormatNonStandardScopeParameter>()
                 .SetOrder(AttachChallengeParameters.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -189,9 +191,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                Providers.Reddit
-                    when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.Implicit
-                    => string.Join(",", context.Scopes),
+                Providers.Reddit => string.Join(",", context.Scopes),
 
                 _ => context.Request.Scope
             };
