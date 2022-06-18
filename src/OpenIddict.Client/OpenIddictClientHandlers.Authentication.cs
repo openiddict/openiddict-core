@@ -59,7 +59,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                    .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                    .AddFilter<RequireInteractiveGrantType>()
                     .UseScopedHandler<PrepareAuthorizationRequest>()
                     .SetOrder(int.MaxValue - 100_000)
                     .Build();
@@ -104,7 +104,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                    .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                    .AddFilter<RequireInteractiveGrantType>()
                     .UseScopedHandler<ApplyAuthorizationRequest>()
                     .SetOrder(PrepareAuthorizationRequest.Descriptor.Order + 1_000)
                     .Build();

@@ -546,6 +546,16 @@ public static partial class OpenIddictClientEvents
         public string? RefreshToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the username to send to the server, if applicable.
+        /// </summary>
+        public string? Username { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password to send to the server, if applicable.
+        /// </summary>
+        public string? Password { get; set; }
+
+        /// <summary>
         /// Gets or sets the frontchannel state token to validate, if applicable.
         /// </summary>
         public string? StateToken { get; set; }

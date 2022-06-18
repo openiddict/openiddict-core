@@ -12,23 +12,6 @@ namespace OpenIddict.Client;
 public static class OpenIddictClientHandlerFilters
 {
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if the challenge
-    /// doesn't correspond to an authorization code or implicit grant operation.
-    /// </summary>
-    public class RequireAuthorizationCodeOrImplicitGrantType : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
-    {
-        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.Implicit);
-        }
-    }
-
-    /// <summary>
     /// Represents a filter that excludes the associated handlers if no authorization code is validated.
     /// </summary>
     public class RequireAuthorizationCodeValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
@@ -153,6 +136,23 @@ public static class OpenIddictClientHandlerFilters
             }
 
             return new(context.ValidateFrontchannelIdentityToken);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the challenge
+    /// doesn't correspond to an authorization code or implicit grant operation.
+    /// </summary>
+    public class RequireInteractiveGrantType : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.Implicit);
         }
     }
 

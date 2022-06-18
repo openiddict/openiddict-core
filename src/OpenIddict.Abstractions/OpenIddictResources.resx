@@ -1301,6 +1301,18 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0334" xml:space="preserve">
     <value>The '{0}' node cannot be extracted from the response.</value>
   </data>
+  <data name="ID0335" xml:space="preserve">
+    <value>The username cannot be null or empty.</value>
+  </data>
+  <data name="ID0336" xml:space="preserve">
+    <value>The password cannot be null or empty.</value>
+  </data>
+  <data name="ID0337" xml:space="preserve">
+    <value>A username must be specified when using the resource owner password credentials grant.</value>
+  </data>
+  <data name="ID0338" xml:space="preserve">
+    <value>A password must be specified when using the resource owner password credentials grant.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1756,6 +1768,12 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID4013" xml:space="preserve">
     <value>The issuer should be a valid absolute URL at this point.</value>
+  </data>
+  <data name="ID4014" xml:space="preserve">
+    <value>The username shouldn't be null or empty at this point.</value>
+  </data>
+  <data name="ID4015" xml:space="preserve">
+    <value>The password shouldn't be null or empty at this point.</value>
   </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>

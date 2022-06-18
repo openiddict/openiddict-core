@@ -41,6 +41,16 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
 
         foreach (var registration in options.Registrations)
         {
+            if (registration.Issuer is not { IsAbsoluteUri: true })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
+            }
+
+            if (!string.IsNullOrEmpty(registration.Issuer.Fragment) || !string.IsNullOrEmpty(registration.Issuer.Query))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
+            }
+
             if (registration.ConfigurationManager is null)
             {
                 if (registration.Configuration is not null)
@@ -65,16 +75,6 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
                     if (!registration.MetadataAddress.IsAbsoluteUri)
                     {
                         var issuer = registration.Issuer;
-                        if (issuer is not { IsAbsoluteUri: true })
-                        {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
-                        }
-
-                        if (!string.IsNullOrEmpty(issuer.Fragment) || !string.IsNullOrEmpty(issuer.Query))
-                        {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
-                        }
-
                         if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
                         {
                             issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);

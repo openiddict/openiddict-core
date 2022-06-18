@@ -10,8 +10,6 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 #if !SUPPORTS_TIME_CONSTANT_COMPARISONS
@@ -158,12 +156,27 @@ public static partial class OpenIddictClientHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0309));
                     }
 
-                    if (context.GrantType is not GrantTypes.RefreshToken)
+                    if (context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit or
+                                                  GrantTypes.Password          or GrantTypes.RefreshToken))
                     {
                         throw new InvalidOperationException(SR.FormatID0310(context.GrantType));
                     }
 
-                    if (string.IsNullOrEmpty(context.RefreshToken))
+                    if (context.GrantType is GrantTypes.Password)
+                    {
+                        if (string.IsNullOrEmpty(context.Username))
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0337));
+                        }
+
+                        if (string.IsNullOrEmpty(context.Password))
+                        {
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0338));
+                        }
+                    }
+
+                    if (context.GrantType is GrantTypes.RefreshToken &&
+                        string.IsNullOrEmpty(context.RefreshToken))
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0311));
                     }
@@ -1045,7 +1058,7 @@ public static partial class OpenIddictClientHandlers
             // In any case, the client identifier of the application MUST be included in the audiences.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation for more information.
             var audiences = context.FrontchannelIdentityTokenPrincipal.GetClaims(Claims.Audience);
-            if (!audiences.Contains(context.Registration.ClientId!))
+            if (!string.IsNullOrEmpty(context.Registration.ClientId) && !audiences.Contains(context.Registration.ClientId))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -1087,7 +1100,7 @@ public static partial class OpenIddictClientHandlers
             // Note: the "azp" claim is optional, but if it's present, it MUST match the client identifier of the application.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation for more information.
             var presenter = context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.AuthorizedParty);
-            if (!string.IsNullOrEmpty(presenter) &&
+            if (!string.IsNullOrEmpty(presenter) && !string.IsNullOrEmpty(context.Registration.ClientId) &&
                 !string.Equals(presenter, context.Registration.ClientId, StringComparison.Ordinal))
             {
                 context.Reject(
@@ -1504,8 +1517,8 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
                     => true,
 
-                // For refresh token requests, always send a token request.
-                GrantTypes.RefreshToken => true,
+                // For resource owner password credentials and refresh token requests, always send a token request.
+                GrantTypes.Password or GrantTypes.RefreshToken => true,
 
                 _ => false
             };
@@ -1568,6 +1581,16 @@ public static partial class OpenIddictClientHandlers
                 context.TokenRequest.Code = context.AuthorizationCode;
                 context.TokenRequest.CodeVerifier = context.StateTokenPrincipal.GetClaim(Claims.Private.CodeVerifier);
                 context.TokenRequest.RedirectUri = context.StateTokenPrincipal.GetClaim(Claims.Private.RedirectUri);
+            }
+
+            // If the token request uses a resource owner password credentials grant, attach the credentials to the request.
+            else if (context.TokenRequest.GrantType is GrantTypes.Password)
+            {
+                Debug.Assert(!string.IsNullOrEmpty(context.Username), SR.GetResourceString(SR.ID4014));
+                Debug.Assert(!string.IsNullOrEmpty(context.Password), SR.GetResourceString(SR.ID4015));
+
+                context.TokenRequest.Username = context.Username;
+                context.TokenRequest.Password = context.Password;
             }
 
             // If the token request uses a refresh token grant, attach the refresh token to the request.
@@ -1932,8 +1955,9 @@ public static partial class OpenIddictClientHandlers
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
                      => (true, true, false),
 
-                 // An access token is always returned as part of refresh token responses.
-                 GrantTypes.RefreshToken => (true, true, false),
+                 // An access token is always returned as part of resource
+                 // owner password credentials and refresh token responses.
+                 GrantTypes.Password or GrantTypes.RefreshToken => (true, true, false),
 
                  _ => (false, false, false)
              };
@@ -1948,6 +1972,14 @@ public static partial class OpenIddictClientHandlers
                  // include "openid", which indicates the initial request was an OpenID Connect request.
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code) &&
                      context.StateTokenPrincipal!.HasScope(Scopes.OpenId) => (true, true, true),
+
+                 // The resource owner password credentials grant doesn't have an equivalent in
+                 // OpenID Connect so an identity token is typically never returned when using it.
+                 // However, certain server implementations - like OpenIddict - allow returning it
+                 // as a non-standard artifact. As such, the identity token is not considered required
+                 // but will always be validated using the same routine (except nonce validation)
+                 // if it is present in the token response.
+                 GrantTypes.Password => (true, false, true),
 
                  // An identity token may or may not be returned as part of refresh token responses
                  // depending on the policy adopted by the remote authorization server. As such,
@@ -1973,10 +2005,11 @@ public static partial class OpenIddictClientHandlers
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
                     => (true, false, false),
 
-                 // A refresh token may or may not be returned as part of refresh token responses
-                 // depending on the policy adopted by the remote authorization server. As such,
-                 // a refresh token is never considered required for refresh token responses.
-                 GrantTypes.RefreshToken => (true, false, false),
+                 // A refresh token may or may not be returned as part of resource owner password
+                 // credentials and refresh token responses depending on the policy adopted by the
+                 // remote authorization server. As such, a refresh token is never considered
+                 // required for refresh token responses.
+                 GrantTypes.Password or GrantTypes.RefreshToken => (true, false, false),
 
                  _ => (false, false, false)
              };
@@ -2310,7 +2343,7 @@ public static partial class OpenIddictClientHandlers
             // In any case, the client identifier of the application MUST be included in the audiences.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation for more information.
             var audiences = context.BackchannelIdentityTokenPrincipal.GetClaims(Claims.Audience);
-            if (!audiences.Contains(context.Registration.ClientId!))
+            if (!string.IsNullOrEmpty(context.Registration.ClientId) && !audiences.Contains(context.Registration.ClientId))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -2352,7 +2385,7 @@ public static partial class OpenIddictClientHandlers
             // Note: the "azp" claim is optional, but if it's present, it MUST match the client identifier of the application.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation for more information.
             var presenter = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.AuthorizedParty);
-            if (!string.IsNullOrEmpty(presenter) &&
+            if (!string.IsNullOrEmpty(presenter) && !string.IsNullOrEmpty(context.Registration.ClientId) &&
                 !string.Equals(presenter, context.Registration.ClientId, StringComparison.Ordinal))
             {
                 context.Reject(
@@ -2732,7 +2765,8 @@ public static partial class OpenIddictClientHandlers
                 // endpoint when a frontchannel or backchannel access token is available.
                 //
                 // Note: the userinfo endpoint is an optional endpoint and may not be supported.
-                GrantTypes.AuthorizationCode or GrantTypes.Implicit or GrantTypes.RefreshToken
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit or
+                GrantTypes.Password          or GrantTypes.RefreshToken
                     when context.UserinfoEndpoint is not null &&
                     (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
                      !string.IsNullOrEmpty(context.FrontchannelAccessToken)) => true,
@@ -3167,6 +3201,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenStorageEnabled>()
+                .AddFilter<RequireStateTokenPrincipal>()
                 .UseScopedHandler<RedeemStateTokenEntry>()
                 .SetOrder(ValidateUserinfoTokenSubject.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -3423,7 +3458,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachResponseType>()
                 .SetOrder(EvaluateGeneratedChallengeTokens.Descriptor.Order + 1_000)
                 .Build();
@@ -3614,7 +3649,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachResponseMode>()
                 .SetOrder(AttachResponseType.Descriptor.Order + 1_000)
                 .Build();
@@ -3719,7 +3754,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachClientId>()
                 .SetOrder(AttachResponseMode.Descriptor.Order + 1_000)
                 .Build();
@@ -3748,7 +3783,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachRedirectUri>()
                 .SetOrder(AttachClientId.Descriptor.Order + 1_000)
                 .Build();
@@ -3781,7 +3816,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachScopes>()
                 .SetOrder(AttachRedirectUri.Descriptor.Order + 1_000)
                 .Build();
@@ -3826,7 +3861,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachRequestForgeryProtection>()
                 .SetOrder(AttachScopes.Descriptor.Order + 1_000)
                 .Build();
@@ -3864,7 +3899,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachNonce>()
                 .SetOrder(AttachRequestForgeryProtection.Descriptor.Order + 1_000)
                 .Build();
@@ -3907,7 +3942,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachCodeChallengeParameters>()
                 .SetOrder(AttachNonce.Descriptor.Order + 1_000)
                 .Build();
@@ -4179,7 +4214,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireAuthorizationCodeOrImplicitGrantType>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<ValidateRedirectUriParameter>()
                 .SetOrder(GenerateStateToken.Descriptor.Order + 1_000)
                 .Build();
