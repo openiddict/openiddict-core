@@ -375,6 +375,16 @@
                     </xs:simpleType>
                   </xs:attribute>
 
+                  <xs:attribute name="DefaultValue" use="optional">
+                    <xs:annotation>
+                      <xs:documentation>The default value used if no value was explictly set by the user.</xs:documentation>
+                    </xs:annotation>
+
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string" />
+                    </xs:simpleType>
+                  </xs:attribute>
+
                   <xs:attribute name="Description" type="xs:string" use="required">
                     <xs:annotation>
                       <xs:documentation>The setting description.</xs:documentation>
