@@ -156,8 +156,9 @@ public static partial class OpenIddictClientHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0309));
                     }
 
-                    if (context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit or
-                                                  GrantTypes.Password          or GrantTypes.RefreshToken))
+                    if (context.GrantType is not (
+                        GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                        GrantTypes.Implicit          or GrantTypes.Password          or GrantTypes.RefreshToken))
                     {
                         throw new InvalidOperationException(SR.FormatID0310(context.GrantType));
                     }
@@ -400,7 +401,7 @@ public static partial class OpenIddictClientHandlers
             // Retrieve the client definition using the authorization server stored in the state token.
             //
             // Note: there's no guarantee that the state token was not replaced by a malicious actor
-            // by a state token meant to be used with a different authorization server as part of a
+            // with a state token meant to be used with a different authorization server as part of a
             // mix-up attack where the state token and the authorization code or access/identity tokens
             // wouldn't match. To mitigate this, additional defenses are added later by other handlers.
 
@@ -1517,8 +1518,9 @@ public static partial class OpenIddictClientHandlers
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
                     => true,
 
-                // For resource owner password credentials and refresh token requests, always send a token request.
-                GrantTypes.Password or GrantTypes.RefreshToken => true,
+                // For client credentials, resource owner password credentials
+                // and refresh token requests, always send a token request.
+                GrantTypes.ClientCredentials or GrantTypes.Password or GrantTypes.RefreshToken => true,
 
                 _ => false
             };
@@ -1955,9 +1957,10 @@ public static partial class OpenIddictClientHandlers
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
                      => (true, true, false),
 
-                 // An access token is always returned as part of resource
-                 // owner password credentials and refresh token responses.
-                 GrantTypes.Password or GrantTypes.RefreshToken => (true, true, false),
+                 // An access token is always returned as part of client credentials,
+                 // resource owner password credentials and refresh token responses.
+                 GrantTypes.ClientCredentials or GrantTypes.Password or GrantTypes.RefreshToken
+                    => (true, true, false),
 
                  _ => (false, false, false)
              };
@@ -1973,13 +1976,13 @@ public static partial class OpenIddictClientHandlers
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code) &&
                      context.StateTokenPrincipal!.HasScope(Scopes.OpenId) => (true, true, true),
 
-                 // The resource owner password credentials grant doesn't have an equivalent in
-                 // OpenID Connect so an identity token is typically never returned when using it.
-                 // However, certain server implementations - like OpenIddict - allow returning it
-                 // as a non-standard artifact. As such, the identity token is not considered required
-                 // but will always be validated using the same routine (except nonce validation)
-                 // if it is present in the token response.
-                 GrantTypes.Password => (true, false, true),
+                 // The client credentials and resource owner password credentials grants don't have
+                 // an equivalent in OpenID Connect so an identity token is typically never returned
+                 // when using them. However, certain server implementations (like OpenIddict)
+                 // allow returning it as a non-standard artifact. As such, the identity token
+                 // is not considered required but will always be validated using the same routine
+                 // (except nonce validation) if it is present in the token response.
+                 GrantTypes.ClientCredentials or GrantTypes.Password => (true, false, true),
 
                  // An identity token may or may not be returned as part of refresh token responses
                  // depending on the policy adopted by the remote authorization server. As such,
@@ -2005,11 +2008,12 @@ public static partial class OpenIddictClientHandlers
                  GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
                     => (true, false, false),
 
-                 // A refresh token may or may not be returned as part of resource owner password
-                 // credentials and refresh token responses depending on the policy adopted by the
-                 // remote authorization server. As such, a refresh token is never considered
-                 // required for refresh token responses.
-                 GrantTypes.Password or GrantTypes.RefreshToken => (true, false, false),
+                 // A refresh token may or may not be returned as part of client credentials,
+                 // resource owner password credentials and refresh token responses depending
+                 // on the policy adopted by the remote authorization server. As such, a
+                 // refresh token is never considered required for such token responses.
+                 GrantTypes.ClientCredentials or GrantTypes.Password or GrantTypes.RefreshToken
+                    => (true, false, false),
 
                  _ => (false, false, false)
              };
@@ -4093,7 +4097,7 @@ public static partial class OpenIddictClientHandlers
 
             // Store the identity of the authorization server in the state token principal to allow
             // resolving it when handling the authorization callback. Note: additional security checks
-            // are generally required to ensure the state token was not replaced by a state token
+            // are generally required to ensure the state token was not replaced with a state token
             // meant to be used with a different authorization server (e.g using the "iss" parameter).
             //
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09

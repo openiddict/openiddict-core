@@ -332,6 +332,84 @@ public class OpenIddictClientService
     }
 
     /// <summary>
+    /// Authenticates using the client credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithClientCredentialsAsync(
+        OpenIddictClientRegistration registration, CancellationToken cancellationToken = default)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
+           !configuration.TokenEndpoint.IsWellFormedOriginalString())
+        {
+            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessAuthenticationContext(transaction)
+            {
+                Configuration = configuration,
+                GrantType = GrantTypes.ClientCredentials,
+                Issuer = registration.Issuer,
+                Registration = registration
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new OpenIddictExceptions.GenericException(
+                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            // Create a composite principal containing claims resolved from the
+            // backchannel identity token and the userinfo token, if available.
+            return (context.TokenResponse, CreatePrincipal(
+                context.BackchannelIdentityTokenPrincipal,
+                context.UserinfoTokenPrincipal));
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
     /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
     /// </summary>
     /// <param name="registration">The client registration.</param>
