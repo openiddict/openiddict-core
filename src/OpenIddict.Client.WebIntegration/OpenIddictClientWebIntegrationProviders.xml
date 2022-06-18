@@ -26,7 +26,17 @@
   </Provider>
 
   <Provider Name="Microsoft" Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
-    <Environment Issuer="https://login.microsoftonline.com/common/v2.0" />
+    <!--
+      Note: Microsoft is a multitenant provider that relies on virtual paths to identify instances.
+      As such, the issuer includes a {tenant} placeholder that will be dynamically replaced
+      by OpenIddict at runtime by the tenant configured in the Microsoft Account settings.
+      If no tenant is explicitly configured, the "common" tenant will be automatically used.
+    -->
+
+    <Environment Issuer="https://login.microsoftonline.com/{tenant}/v2.0" />
+
+    <Setting Name="Tenant" Type="String" Required="false" DefaultValue="common"
+             Description="Gets or sets the tenant used to identify the Azure AD instance (by default, the common tenant is used)." />
   </Provider>
 
   <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">

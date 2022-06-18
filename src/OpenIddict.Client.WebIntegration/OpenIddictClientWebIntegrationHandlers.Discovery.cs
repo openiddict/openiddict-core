@@ -19,7 +19,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              * Configuration response handling:
              */
             AmendIssuer.Descriptor,
-            AmendClientAuthenticationMethods.Descriptor);
+            AmendClientAuthenticationMethods.Descriptor,
+            AmendCodeChallengeMethods.Descriptor);
 
         /// <summary>
         /// Contains the logic responsible for amending the issuer for the providers that require it.
@@ -52,7 +53,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // is replaced by this handler to always use "https://login.microsoftonline.com/common/v2.0".
                 if (context.Registration.GetProviderName() is Providers.Microsoft)
                 {
-                    context.Response[Metadata.Issuer] = "https://login.microsoftonline.com/common/v2.0";
+                    var settings = context.Registration.GetMicrosoftSettings();
+                    if (string.Equals(settings.Tenant, "common", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Response[Metadata.Issuer] = "https://login.microsoftonline.com/common/v2.0";
+                    }
                 }
 
                 return default;
@@ -60,8 +65,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for amending the client
-        /// authentication methods for the providers that require it.
+        /// Contains the logic responsible for amending the supported
+        /// client authentication methods for the providers that require it.
         /// </summary>
         public class AmendClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -94,6 +99,44 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Configuration.TokenEndpointAuthMethodsSupported.Add(
                         ClientAuthenticationMethods.PrivateKeyJwt);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for amending the supported
+        /// code challenge methods for the providers that require it.
+        /// </summary>
+        public class AmendCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendCodeChallengeMethods>()
+                    .SetOrder(ExtractCodeChallengeMethods.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Microsoft Account supports both "plain" and "S256" code challenge methods but
+                // don't list them in the server configuration metadata. To ensure the OpenIddict
+                // client uses Proof Key for Code Exchange for the Microsoft provider, the 2 methods
+                // are manually added to the list of supported code challenge methods by this handler.
+                if (context.Registration.GetProviderName() is Providers.Microsoft)
+                {
+                    context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
+                    context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
                 }
 
                 return default;

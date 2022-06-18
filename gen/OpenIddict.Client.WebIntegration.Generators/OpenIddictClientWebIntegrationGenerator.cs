@@ -237,6 +237,46 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 {{~ end ~}}
                 {{~ end ~}}
 
+                {{~ for environment in provider.environments ~}}
+                if (settings.Environment is OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }})
+                {
+                    {{~ for scope in environment.scopes ~}}
+                    {{~ if scope.required ~}}
+                    settings.Scopes.Add(""{{ scope.name }}"");
+                    {{~ end ~}}
+
+                    {{~ if scope.default ~}}
+                    if (settings.Scopes.Count is 0)
+                    {
+                        settings.Scopes.Add(""{{ scope.name }}"");
+                    }
+                    {{~ end ~}}
+                    {{~ end ~}}
+                }
+                {{~ end ~}}
+
+                {{~ for setting in provider.settings ~}}
+                {{~ if setting.default_value ~}}
+                if (string.IsNullOrEmpty(settings.{{ setting.name }}))
+                {
+                    settings.{{ setting.name }} = ""{{ setting.default_value }}"";
+                }
+                {{~ end ~}}
+
+                {{~ for item in setting.collection_items ~}}
+                {{~ if item.required ~}}
+                settings.{{ setting.name }}.Add(""{{ item.value }}"");
+                {{~ end ~}}
+
+                {{~ if item.default ~}}
+                if (settings.{{ setting.name }}.Count is 0)
+                {
+                    settings.{{ setting.name }}.Add(""{{ item.value }}"");
+                }
+                {{~ end ~}}
+                {{~ end ~}}
+                {{~ end ~}}
+
                 var formatter = Smart.CreateDefaultSmartFormat(new SmartSettings
                 {
                     CaseSensitivity = CaseSensitivityType.CaseInsensitive
@@ -353,39 +393,6 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
                 registration.Scopes.UnionWith(settings.Scopes);
 
-                {{~ for environment in provider.environments ~}}
-                if (settings.Environment is OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }})
-                {
-                    {{~ for scope in environment.scopes ~}}
-                    {{~ if scope.required ~}}
-                    registration.Scopes.Add(""{{ scope.name }}"");
-                    {{~ end ~}}
-
-                    {{~ if scope.default ~}}
-                    if (registration.Scopes.Count is 0)
-                    {
-                        registration.Scopes.Add(""{{ scope.name }}"");
-                    }
-                    {{~ end ~}}
-                    {{~ end ~}}
-                }
-                {{~ end ~}}
-
-                {{~ for setting in provider.settings ~}}
-                {{~ for item in setting.collection_items ~}}
-                {{~ if item.required ~}}
-                settings.{{ setting.name }}.Add(""{{ item.value }}"");
-                {{~ end ~}}
-
-                {{~ if item.default ~}}
-                if (settings.{{ setting.name }}.Count is 0)
-                {
-                    settings.{{ setting.name }}.Add(""{{ item.value }}"");
-                }
-                {{~ end ~}}
-                {{~ end ~}}
-                {{~ end ~}}
-
                 options.Registrations.Add(registration);
             }
         }
@@ -480,6 +487,8 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
                                 EncryptionAlgorithm = (string?) setting.Element("EncryptionAlgorithm")?.Attribute("Value"),
                                 SigningAlgorithm = (string?) setting.Element("SigningAlgorithm")?.Attribute("Value"),
+
+                                DefaultValue = (string?) setting.Attribute("DefaultValue"),
 
                                 CollectionItems = setting.Elements("CollectionItem").Select(item => new
                                 {
