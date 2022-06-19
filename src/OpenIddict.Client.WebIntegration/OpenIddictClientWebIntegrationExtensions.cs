@@ -29,6 +29,9 @@ public static class OpenIddictClientWebIntegrationExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
+        // Register the System.Net.Http integration.
+        builder.UseSystemNetHttp();
+
         // Register the built-in event handlers used by the OpenIddict client Web components.
         // Note: the order used here is not important, as the actual order is set in the options.
         builder.Services.TryAdd(OpenIddictClientWebIntegrationHandlers.DefaultHandlers
