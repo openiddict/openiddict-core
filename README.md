@@ -44,15 +44,17 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 | Microsoft.Owin 4.2    | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
 | Microsoft.Owin 4.2    | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
 
-:exclamation: **ASP.NET Core 2.1 on .NET Core 2.1 and ASP.NET Core 5.0 on .NET 5.0 are no longer supported. While OpenIddict 4.x can still be
-used on .NET Core 2.1 thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
-ASP.NET Core 2.1 on .NET Framework 4.6.1 (and higher) is still fully supported.
+> **Warning**
+> **ASP.NET Core 2.1 on .NET Core 2.1 and ASP.NET Core 5.0 on .NET 5.0 are no longer supported. While OpenIddict 4.x can still be
+> used on .NET Core 2.1 thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
+> ASP.NET Core 2.1 on .NET Framework 4.6.1 (and higher) is still fully supported.
 
-:information_source: **Note: the following features are not available when targeting .NET Framework 4.6.1**:
- - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
-will result in a `PlatformNotSupportedException` being thrown at runtime if no valid development certificate can be found and a new one must be generated.
- - X.509 ECDSA signing certificates/keys: calling `AddSigningCertificate()` or `AddSigningKey()`
-with an ECDSA certificate/key will always result in a `PlatformNotSupportedException` being thrown at runtime.
+> **Note**
+> **The following features are not available when targeting .NET Framework 4.6.1**:
+>  - X.509 development encryption/signing certificates: calling `AddDevelopmentEncryptionCertificate()` or `AddDevelopmentSigningCertificate()`
+> will result in a `PlatformNotSupportedException` being thrown at runtime if no valid development certificate can be found and a new one must be generated.
+>  - X.509 ECDSA signing certificates/keys: calling `AddSigningCertificate()` or `AddSigningKey()`
+> with an ECDSA certificate/key will always result in a `PlatformNotSupportedException` being thrown at runtime.
 
 ## Certification
 
