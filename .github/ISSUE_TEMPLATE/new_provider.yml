@@ -1,0 +1,89 @@
+name: Request a new Web provider
+description: Suggest a new provider integration for the OpenIddict client
+labels: ["enhancement", "client stack", "web providers"]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Personal contribution
+    description: |
+      Important: new providers are typically added by external contributors.
+      For more information on how to add a new provider, read [Contributing a new Web provider](https://documentation.openiddict.com/guides/contributing-a-new-web-provider.html).
+
+      Providers requested by sponsors or existing contributors may be implemented by the OpenIddict team depending on the demand and difficulty.
+    options:
+    - label: "I'm not interested in submitting a pull request and understand that this provider may not be implemented in the near future without my contribution."
+      required: false
+
+- type: input
+  attributes:
+    label: Provider name
+    description: The name of the OAuth 2.0/OpenID Connect service you'd like to see supported (in English).
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Provider address
+    description: The base URL of the provider (typically, the "issuer" address).
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Documentation page
+    description: The URL of a public web page where relevant technical details about the provider are documented (e.g endpoint URLs, supported scopes, etc.).
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Supported environments
+    description: The environments supported by the provider (e.g Production, Testing, Development). Leave blank if only Production is supported.
+  validations:
+    required: false
+
+- type: checkboxes
+  attributes:
+    label: OpenID Connect discovery/OAuth 2.0 authorization server metadata support
+    description: >
+      Important: when available, dynamic configuration MUST be used. Integrations that use static configuration for
+      providers that support OpenID Connect discovery or OAuth 2.0 authorization server metadata will be rejected.
+    options:
+    - label: The provider doesn't support OpenID Connect discovery or OAuth 2.0 authorization server metadata and requires using static configuration.
+      required: false
+
+- type: textarea
+  attributes:
+    label: Authorization endpoint address (static configuration only)
+    description: The URL of the authorization endpoint, if discovery is not available. If multiple environments are supported, please list all the possible URLs.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Token endpoint address (static configuration only)
+    description: The URL of the token endpoint, if discovery is not available. If multiple environments are supported, please list all the possible URLs.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Userinfo endpoint address (static configuration only)
+    description: The URL of the userinfo endpoint, if discovery is not available. If multiple environments are supported, please list all the possible URLs.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Non-standard behaviors
+    description: If the provider requires one or multiple workarounds to work correctly, please list them.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Additional context
+    description: Add any other context (or screenshots, if applicable) about the provider request here.
+  validations:
+    required: false
