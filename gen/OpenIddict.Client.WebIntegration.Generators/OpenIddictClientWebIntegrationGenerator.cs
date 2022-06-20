@@ -238,39 +238,47 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 {{~ for environment in provider.environments ~}}
                 if (settings.Environment is OpenIddictClientWebIntegrationEnvironments.{{ provider.name }}.{{ environment.name }})
                 {
+                    if (settings.Scopes.Count is 0)
+                    {
+                        {{~ for scope in environment.scopes ~}}
+                        {{~ if scope.default && !scope.required ~}}
+                        settings.Scopes.Add(""{{ scope.name }}"");
+                        {{~ end ~}}
+                        {{~ end ~}}
+                    }
+
                     {{~ for scope in environment.scopes ~}}
                     {{~ if scope.required ~}}
                     settings.Scopes.Add(""{{ scope.name }}"");
-                    {{~ end ~}}
-
-                    {{~ if scope.default ~}}
-                    if (settings.Scopes.Count is 0)
-                    {
-                        settings.Scopes.Add(""{{ scope.name }}"");
-                    }
                     {{~ end ~}}
                     {{~ end ~}}
                 }
                 {{~ end ~}}
 
                 {{~ for setting in provider.settings ~}}
-                {{~ if setting.default_value ~}}
+                {{~ if setting.default_value && setting.type == 'String' ~}} 
                 if (string.IsNullOrEmpty(settings.{{ setting.name }}))
                 {
                     settings.{{ setting.name }} = ""{{ setting.default_value }}"";
+                }
+                {{~ end ~}}
+                {{~ end ~}}
+
+                {{~ for setting in provider.settings ~}}
+                {{~ if setting.collection ~}}
+                if (settings.{{ setting.name }}.Count is 0)
+                {
+                    {{~ for item in setting.collection_items ~}}
+                    {{~ if item.default && !item.required ~}}
+                    settings.{{ setting.name }}.Add(""{{ item.value }}"");
+                    {{~ end ~}}
+                    {{~ end ~}}
                 }
                 {{~ end ~}}
 
                 {{~ for item in setting.collection_items ~}}
                 {{~ if item.required ~}}
                 settings.{{ setting.name }}.Add(""{{ item.value }}"");
-                {{~ end ~}}
-
-                {{~ if item.default ~}}
-                if (settings.{{ setting.name }}.Count is 0)
-                {
-                    settings.{{ setting.name }}.Add(""{{ item.value }}"");
-                }
                 {{~ end ~}}
                 {{~ end ~}}
                 {{~ end ~}}
@@ -482,6 +490,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                                 Name = (string) setting.Attribute("Name"),
                                 Type = (string) setting.Attribute("Type"),
                                 Required = (bool?) setting.Attribute("Required") ?? false,
+                                Collection = (bool?) setting.Attribute("Collection") ?? false,
 
                                 EncryptionAlgorithm = (string?) setting.Element("EncryptionAlgorithm")?.Attribute("Value"),
                                 SigningAlgorithm = (string?) setting.Element("SigningAlgorithm")?.Attribute("Value"),
@@ -562,9 +571,9 @@ public partial class OpenIddictClientWebIntegrationSettings
         /// </summary>
         {{~ end ~}}
         {{~ if setting.collection ~}}
-        public HashSet<{{ setting.type }}> {{ setting.name }} { get; } = new();
+        public HashSet<{{ setting.clr_type }}> {{ setting.name }} { get; } = new();
         {{~ else ~}}
-        public {{ setting.type }}? {{ setting.name }} { get; set; }
+        public {{ setting.clr_type }}? {{ setting.name }} { get; set; }
         {{~ end ~}}
         {{~ end ~}}
 
@@ -588,7 +597,7 @@ public partial class OpenIddictClientWebIntegrationSettings
                                 Name = (string) setting.Attribute("Name"),
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
                                 Description = (string) setting.Attribute("Description"),
-                                Type = (string) setting.Attribute("Type") switch
+                                ClrType = (string) setting.Attribute("Type") switch
                                 {
                                     "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
                                         is "RS256" or "RS384" or "RS512" => "RsaSecurityKey",

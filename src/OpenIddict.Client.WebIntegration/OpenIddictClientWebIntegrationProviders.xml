@@ -85,14 +85,49 @@
     </Environment>
 
     <Setting Name="Expansions" Collection="true" Type="String"
-             Description="Gets the list of data objects to expand from the userinfo endpoint." />
+             Description="Gets the list of data objects to expand from the userinfo endpoint (by default, all known expansions are requested).">
+      <CollectionItem Value="pinned_tweet_id" Default="true" Required="false" />
+    </Setting>
 
     <Setting Name="TweetFields" Collection="true" Type="String"
-             Description="Gets the tweet fields that should be retrieved from the userinfo endpoint." />
+             Description="Gets the tweet fields that should be retrieved from the userinfo endpoint (by default, all known tweet fields are requested).">
+      <CollectionItem Value="attachments"         Default="true" Required="false" />
+      <CollectionItem Value="author_id"           Default="true" Required="false" />
+      <CollectionItem Value="context_annotations" Default="true" Required="false" />
+      <CollectionItem Value="conversation_id"     Default="true" Required="false" />
+      <CollectionItem Value="created_at"          Default="true" Required="false" />
+      <CollectionItem Value="entities"            Default="true" Required="false" />
+      <CollectionItem Value="geo"                 Default="true" Required="false" />
+      <CollectionItem Value="id"                  Default="true" Required="false" />
+      <CollectionItem Value="in_reply_to_user_id" Default="true" Required="false" />
+      <CollectionItem Value="lang"                Default="true" Required="false" />
+      <CollectionItem Value="non_public_metrics"  Default="true" Required="false" />
+      <CollectionItem Value="public_metrics"      Default="true" Required="false" />
+      <CollectionItem Value="organic_metrics"     Default="true" Required="false" />
+      <CollectionItem Value="promoted_metrics"    Default="true" Required="false" />
+      <CollectionItem Value="possibly_sensitive"  Default="true" Required="false" />
+      <CollectionItem Value="referenced_tweets"   Default="true" Required="false" />
+      <CollectionItem Value="reply_settings"      Default="true" Required="false" />
+      <CollectionItem Value="source"              Default="true" Required="false" />
+      <CollectionItem Value="text"                Default="true" Required="false" />
+      <CollectionItem Value="withheld"            Default="true" Required="false" />
+    </Setting>
 
     <Setting Name="UserFields" Collection="true" Type="String"
-             Description="Gets the user fields that should be retrieved from the userinfo endpoint.">
-      <CollectionItem Value="profile_image_url" Default="true" Required="false" />
+             Description="Gets the user fields that should be retrieved from the userinfo endpoint (by default, all known user fields are requested).">
+      <CollectionItem Value="created_at"      Default="true" Required="false" />
+      <CollectionItem Value="description"     Default="true" Required="false" />
+      <CollectionItem Value="entities"        Default="true" Required="false" />
+      <CollectionItem Value="id"              Default="true" Required="false" />
+      <CollectionItem Value="location"        Default="true" Required="false" />
+      <CollectionItem Value="name"            Default="true" Required="false" />
+      <CollectionItem Value="pinned_tweet_id" Default="true" Required="false" />
+      <CollectionItem Value="protected"       Default="true" Required="false" />
+      <CollectionItem Value="public_metrics"  Default="true" Required="false" />
+      <CollectionItem Value="url"             Default="true" Required="false" />
+      <CollectionItem Value="username"        Default="true" Required="false" />
+      <CollectionItem Value="verified"        Default="true" Required="false" />
+      <CollectionItem Value="withheld"        Default="true" Required="false" />
     </Setting>
   </Provider>
 
