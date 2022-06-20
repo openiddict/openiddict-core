@@ -43,6 +43,7 @@ public static partial class OpenIddictServerOwinHandlers
             RemoveCachedRequest.Descriptor,
             AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
             AttachOwinResponseChallenge<ApplyLogoutResponseContext>.Descriptor,
+            SuppressFormsAuthenticationRedirect<ApplyLogoutResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
             ProcessHostRedirectionResponse.Descriptor,
             ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,

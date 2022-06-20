@@ -34,6 +34,7 @@ public static partial class OpenIddictClientOwinHandlers
              */
             AttachHttpResponseCode<ApplyRedirectionResponseContext>.Descriptor,
             AttachOwinResponseChallenge<ApplyRedirectionResponseContext>.Descriptor,
+            SuppressFormsAuthenticationRedirect<ApplyRedirectionResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyRedirectionResponseContext>.Descriptor,
             ProcessPassthroughErrorResponse<ApplyRedirectionResponseContext, RequireRedirectionEndpointPassthroughEnabled>.Descriptor,
             ProcessLocalErrorResponse<ApplyRedirectionResponseContext>.Descriptor);
