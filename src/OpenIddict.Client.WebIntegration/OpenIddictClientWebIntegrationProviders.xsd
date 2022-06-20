@@ -241,7 +241,7 @@
 
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="CollectionItem" minOccurs="0" maxOccurs="1">
+                    <xs:element name="CollectionItem" minOccurs="0" maxOccurs="50">
                       <xs:annotation>
                         <xs:documentation>An item added by default to the collection, if applicable.</xs:documentation>
                       </xs:annotation>
