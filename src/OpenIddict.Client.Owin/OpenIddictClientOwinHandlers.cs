@@ -717,6 +717,73 @@ public static partial class OpenIddictClientOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for suppressing the redirection applied by FormsAuthenticationModule, if necessary.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public class SuppressFormsAuthenticationRedirect<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<SuppressFormsAuthenticationRedirect<TContext>>()
+                .SetOrder(AttachOwinResponseChallenge<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var response = context.Transaction.GetOwinRequest()?.Context.Response ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            // Similarly to the automatic authentication mode used by OWIN authentication middleware,
+            // the ASP.NET FormsAuthentication module aggressively intercepts 401 responses even if
+            // the request has already been fully handled by another component (like OpenIddict).
+            // To prevent that, this handler is responsible for suppressing the redirection enforced
+            // by FormsAuthenticationModule when the status code was set to 401 (the only status code
+            // used by the FormsAuthenticationModule) and the OWIN application is hosted on SystemWeb.
+            if (response.StatusCode is 401)
+            {
+                TrySuppressFormsAuthenticationRedirect(response.Environment);
+            }
+
+            return default;
+
+            static void TrySuppressFormsAuthenticationRedirect(IDictionary<string, object> environment)
+            {
+                // Note: the OWIN host cannot depend on the OWIN SystemWeb package but a direct access
+                // to the underlying ASP.NET 4.x context is required to be able to disable the redirection
+                // enforced by the FormsAuthentication module. To work around that, the HttpContextBase
+                // instance is resolved from the OWIN environment and SuppressFormsAuthenticationRedirect
+                // is set to true using a dynamic runtime resolution (that uses reflection under the hood).
+                if (environment.TryGetValue("System.Web.HttpContextBase", out dynamic context))
+                {
+                    try
+                    {
+                        // Note: the SuppressFormsAuthenticationRedirect property was introduced in ASP.NET 4.5
+                        // and thus should always be present, as OpenIddict requires targeting ASP.NET >= 4.6.1.
+                        context.Response.SuppressFormsAuthenticationRedirect = true;
+                    }
+
+                    catch
+                    {
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the appropriate HTTP response cache headers.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -729,7 +796,7 @@ public static partial class OpenIddictClientOwinHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
-                .SetOrder(AttachOwinResponseChallenge<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(SuppressFormsAuthenticationRedirect<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 

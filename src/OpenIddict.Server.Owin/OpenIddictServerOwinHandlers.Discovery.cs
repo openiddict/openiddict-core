@@ -23,6 +23,7 @@ public static partial class OpenIddictServerOwinHandlers
              */
             AttachHttpResponseCode<ApplyConfigurationResponseContext>.Descriptor,
             AttachOwinResponseChallenge<ApplyConfigurationResponseContext>.Descriptor,
+            SuppressFormsAuthenticationRedirect<ApplyConfigurationResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyConfigurationResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyConfigurationResponseContext>.Descriptor,
 
@@ -36,6 +37,7 @@ public static partial class OpenIddictServerOwinHandlers
              */
             AttachHttpResponseCode<ApplyCryptographyResponseContext>.Descriptor,
             AttachOwinResponseChallenge<ApplyCryptographyResponseContext>.Descriptor,
+            SuppressFormsAuthenticationRedirect<ApplyCryptographyResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyCryptographyResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyCryptographyResponseContext>.Descriptor);
     }

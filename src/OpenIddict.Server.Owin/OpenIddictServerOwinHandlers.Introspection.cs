@@ -24,6 +24,7 @@ public static partial class OpenIddictServerOwinHandlers
              */
             AttachHttpResponseCode<ApplyIntrospectionResponseContext>.Descriptor,
             AttachOwinResponseChallenge<ApplyIntrospectionResponseContext>.Descriptor,
+            SuppressFormsAuthenticationRedirect<ApplyIntrospectionResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyIntrospectionResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyIntrospectionResponseContext>.Descriptor);
     }
