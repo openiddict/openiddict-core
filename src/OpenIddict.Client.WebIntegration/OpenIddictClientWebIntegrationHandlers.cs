@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -201,10 +202,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for overriding the user agent for providers
-    /// that are known to require or encourage using custom values (e.g Reddit).
+    /// Contains the logic responsible for enriching the user agent with an optional product name/product version.
     /// </summary>
-    public class UseProductNameAsUserAgent<TContext> : IOpenIddictClientHandler<TContext>
+    public class AddProductNameToUserAgentHeader<TContext> : IOpenIddictClientHandler<TContext>
         where TContext : BaseExternalContext
     {
         /// <summary>
@@ -213,8 +213,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataAddress>()
-                .UseSingletonHandler<UseProductNameAsUserAgent<TContext>>()
-                .SetOrder(int.MaxValue - 200_000)
+                .UseSingletonHandler<AddProductNameToUserAgentHeader<TContext>>()
+                .SetOrder(AttachUserAgent<TContext>.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -234,14 +234,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // A few providers (like Reddit) are known to aggressively check user agents and encourage
             // developers to use unique user agents. While OpenIddict itself always adds a user agent,
             // the default value doesn't differ accross applications. To reduce the risks of seeing
-            // requests blocked by these providers, the user agent is replaced by a custom value
-            // containing the product name and version set by the user or by the client identifier.
-            if (context.Registration.GetProviderName() is Providers.Reddit)
+            // requests blocked by these providers, a more specific user agent header containing the
+            // product name/version set by the user (or the client identifier if unset) is appended.
+            var settings = context.Registration.GetProviderSettings();
+            if (settings is not null)
             {
-                var settings = context.Registration.GetRedditSettings();
-                request.Headers.UserAgent.Add(new ProductInfoHeaderValue(
-                    productName: settings.ProductName ?? context.Registration.ClientId!,
-                    productVersion: settings.ProductVersion));
+                var name = settings.ProductName ?? context.Registration.ClientId;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    request.Headers.UserAgent.Add(new ProductInfoHeaderValue(
+                        productName: name,
+                        productVersion: settings.ProductVersion));
+                }
             }
 
             return default;

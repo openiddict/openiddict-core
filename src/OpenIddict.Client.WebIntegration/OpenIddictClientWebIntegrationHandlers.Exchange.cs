@@ -16,6 +16,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Token request preparation:
              */
-            UseProductNameAsUserAgent<PrepareTokenRequestContext>.Descriptor);
+            AddProductNameToUserAgentHeader<PrepareTokenRequestContext>.Descriptor);
     }
 }

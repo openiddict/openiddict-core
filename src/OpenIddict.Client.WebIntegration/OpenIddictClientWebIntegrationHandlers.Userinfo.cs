@@ -19,7 +19,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Userinfo request preparation:
              */
-            UseProductNameAsUserAgent<PrepareUserinfoRequestContext>.Descriptor,
+            AddProductNameToUserAgentHeader<PrepareUserinfoRequestContext>.Descriptor,
             AttachNonStandardFieldParameter.Descriptor,
 
             /*

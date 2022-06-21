@@ -20,6 +20,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              * Userinfo request processing:
              */
             PrepareGetHttpRequest<PrepareUserinfoRequestContext>.Descriptor,
+            AttachUserAgent<PrepareUserinfoRequestContext>.Descriptor,
             AttachBearerAccessToken.Descriptor,
             AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor,
             SendHttpRequest<ApplyUserinfoRequestContext>.Descriptor,

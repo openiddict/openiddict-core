@@ -20,6 +20,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              * Token request processing:
              */
             PreparePostHttpRequest<PrepareTokenRequestContext>.Descriptor,
+            AttachUserAgent<PrepareTokenRequestContext>.Descriptor,
             AttachBasicAuthenticationCredentials.Descriptor,
             AttachFormParameters<PrepareTokenRequestContext>.Descriptor,
             SendHttpRequest<ApplyTokenRequestContext>.Descriptor,
@@ -45,7 +46,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
-                    .SetOrder(AttachFormParameters<PrepareTokenRequestContext>.Descriptor.Order - 1000)
+                    .SetOrder(AttachFormParameters<PrepareTokenRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

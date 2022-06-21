@@ -20,6 +20,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
              * Introspection request processing:
              */
             PreparePostHttpRequest<PrepareIntrospectionRequestContext>.Descriptor,
+            AttachUserAgent<PrepareIntrospectionRequestContext>.Descriptor,
             AttachBasicAuthenticationCredentials.Descriptor,
             AttachFormParameters<PrepareIntrospectionRequestContext>.Descriptor,
             SendHttpRequest<ApplyIntrospectionRequestContext>.Descriptor,
@@ -45,7 +46,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
-                    .SetOrder(AttachFormParameters<PrepareIntrospectionRequestContext>.Descriptor.Order - 1000)
+                    .SetOrder(AttachFormParameters<PrepareIntrospectionRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 

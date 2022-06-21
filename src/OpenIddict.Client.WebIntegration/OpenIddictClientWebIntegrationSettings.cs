@@ -22,6 +22,16 @@ public abstract partial class OpenIddictClientWebIntegrationSettings
     public virtual string? ClientSecret { get; set; }
 
     /// <summary>
+    /// Gets or sets the product name used in the user agent header.
+    /// </summary>
+    public string? ProductName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the product version used in the user agent header.
+    /// </summary>
+    public string? ProductVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the redirection URL.
     /// </summary>
     public virtual Uri? RedirectUri { get; set; }
