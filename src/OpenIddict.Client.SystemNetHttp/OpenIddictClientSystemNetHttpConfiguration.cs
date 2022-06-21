@@ -5,7 +5,6 @@
  */
 
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -52,13 +51,6 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
         {
             return;
         }
-
-        options.HttpClientActions.Add(client =>
-        {
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(
-                productName: assembly.Name!,
-                productVersion: assembly.Version!.ToString()));
-        });
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
         {

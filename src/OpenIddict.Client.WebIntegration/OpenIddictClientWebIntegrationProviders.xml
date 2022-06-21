@@ -56,12 +56,6 @@
 
       <Scope Name="identity" Default="true" Required="true" />
     </Environment>
-
-    <Setting Name="ProductName" Type="String" Required="false"
-             Description="Gets or sets the product name used in the user agent header." />
-
-    <Setting Name="ProductVersion" Type="String" Required="false"
-             Description="Gets or sets the product version used in the user agent header." />
   </Provider>
 
   <Provider Name="Twitter" Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">

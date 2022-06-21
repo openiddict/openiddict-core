@@ -110,6 +110,48 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the user agent to the HTTP request.
+    /// </summary>
+    public class AttachUserAgent<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataAddress>()
+                .UseSingletonHandler<AttachUserAgent<TContext>>()
+                .SetOrder(AttachQueryStringParameters<TContext>.Descriptor.Order - 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+
+            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var request = context.Transaction.GetHttpRequestMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            var assembly = typeof(OpenIddictClientSystemNetHttpHandlers).Assembly.GetName();
+
+            // Attach a user agent based on the assembly version of the System.Net.Http integration.
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(
+                productName: assembly.Name!,
+                productVersion: assembly.Version!.ToString()));
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the query string parameters to the HTTP request.
     /// </summary>
     public class AttachQueryStringParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext

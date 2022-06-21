@@ -17,6 +17,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              * Configuration request processing:
              */
             PrepareGetHttpRequest<PrepareConfigurationRequestContext>.Descriptor,
+            AttachUserAgent<PrepareConfigurationRequestContext>.Descriptor,
             AttachQueryStringParameters<PrepareConfigurationRequestContext>.Descriptor,
             SendHttpRequest<ApplyConfigurationRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyConfigurationRequestContext>.Descriptor,
@@ -33,6 +34,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              * Cryptography request processing:
              */
             PrepareGetHttpRequest<PrepareCryptographyRequestContext>.Descriptor,
+            AttachUserAgent<PrepareCryptographyRequestContext>.Descriptor,
             AttachQueryStringParameters<PrepareCryptographyRequestContext>.Descriptor,
             SendHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
