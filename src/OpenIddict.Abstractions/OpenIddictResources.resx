@@ -2293,6 +2293,36 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6185" xml:space="preserve">
     <value>An unsupported {StatusCode} response was returned by the remote HTTP server: {ContentType} {Payload}.</value>
   </data>
+  <data name="ID6186" xml:space="preserve">
+    <value>The configuration request was successfully sent to {Address}: {Request}.</value>
+  </data>
+  <data name="ID6187" xml:space="preserve">
+    <value>The configuration response returned by {Address} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6188" xml:space="preserve">
+    <value>The cryptography request was successfully sent to {Address}: {Request}.</value>
+  </data>
+  <data name="ID6189" xml:space="preserve">
+    <value>The cryptography response returned by {Address} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6190" xml:space="preserve">
+    <value>The introspection request was successfully sent to {Address}: {Request}.</value>
+  </data>
+  <data name="ID6191" xml:space="preserve">
+    <value>The introspection response returned by {Address} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6192" xml:space="preserve">
+    <value>The token request was successfully sent to {Address}: {Request}.</value>
+  </data>
+  <data name="ID6193" xml:space="preserve">
+    <value>The token response returned by {Address} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6194" xml:space="preserve">
+    <value>The userinfo request was successfully sent to {Address}: {Request}.</value>
+  </data>
+  <data name="ID6195" xml:space="preserve">
+    <value>The userinfo response returned by {Address} was successfully extracted: {Response}.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>

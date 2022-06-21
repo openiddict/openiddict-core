@@ -7,6 +7,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client;
@@ -111,6 +112,8 @@ public class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.Address, context.Request);
+
                 return context.Request;
             }
 
@@ -134,6 +137,8 @@ public class OpenIddictClientService
                 }
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.Address, context.Response);
 
                 return context.Response;
             }
@@ -266,6 +271,8 @@ public class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.Address, context.Request);
+
                 return context.Request;
             }
 
@@ -289,6 +296,8 @@ public class OpenIddictClientService
                 }
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.Address, context.Response);
 
                 return context.Response;
             }
@@ -686,6 +695,8 @@ public class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.Address, context.Request);
+
                 return context.Request;
             }
 
@@ -710,6 +721,8 @@ public class OpenIddictClientService
                 }
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.Address, context.Response);
 
                 return context.Response;
             }
@@ -853,6 +866,8 @@ public class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6194), context.Address, context.Request);
+
                 return context.Request;
             }
 
@@ -877,6 +892,8 @@ public class OpenIddictClientService
                 }
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6195), context.Address, context.Response);
 
                 return (context.Response, context.UserinfoToken);
             }
