@@ -75,6 +75,9 @@ Instead, **developers are encouraged to execute the conformance tests against th
 
 **Looking for additional resources to help you get started with OpenIddict?** Don't miss these interesting blog posts:
 
+- **[OpenIddict 4.0 preview1 is out](https://kevinchalet.com/2022/06/22/openiddict-4-0-preview1-is-out/)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Introducing the OpenIddict-powered providers](https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers/issues/694)** by [Kévin Chalet](https://github.com/kevinchalet)
+- **[Introducing the OpenIddict client](https://kevinchalet.com/2022/02/25/introducing-the-openiddict-client/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Secure a Blazor WASM ASP.NET Core hosted APP using BFF and OpenIddict](https://damienbod.com/2022/01/03/secure-a-blazor-wasm-asp-net-core-hosted-app-using-bff-and-openiddict/)** by [Damien Bowden](https://github.com/damienbod)
 - **[How to Secure ASP.NET Core Applications with OpenIddict Using Virto Commerce B2B eCommerce: Tech Case Study](https://virtocommerce.com/blog/how-to-secure-aspnet-core-applications-with-openiddict-using-virto-commerce-platform)** by [Virto Commerce](https://virtocommerce.com/)
 - **[OpenIddict 3.0 general availability](https://kevinchalet.com/2020/12/23/openiddict-3-0-general-availability/)** by [Kévin Chalet](https://github.com/kevinchalet)
