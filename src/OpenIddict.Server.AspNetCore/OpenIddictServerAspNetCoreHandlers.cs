@@ -752,7 +752,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             try
             {
                 var value = header.Substring("Basic ".Length).Trim();
-                var data = Encoding.ASCII.GetString(Convert.FromBase64String(value));
+                var data = Encoding.UTF8.GetString(Convert.FromBase64String(value));
 
                 var index = data.IndexOf(':');
                 if (index < 0)
