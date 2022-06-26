@@ -121,7 +121,9 @@ public static partial class OpenIddictValidationHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<ValidateRequiredTokens>()
-                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1_000)
+                // Note: this handler is registered with a high gap to allow handlers
+                // that do token extraction to be executed before this handler runs.
+                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 50_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 

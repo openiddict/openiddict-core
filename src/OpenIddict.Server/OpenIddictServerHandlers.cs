@@ -338,7 +338,9 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateValidatedTokens>()
-                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1_000)
+                // Note: this handler is registered with a high gap to allow handlers
+                // that do token extraction to be executed before this handler runs.
+                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 50_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
