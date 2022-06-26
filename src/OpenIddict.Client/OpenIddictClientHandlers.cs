@@ -278,7 +278,9 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<ValidateRequiredStateToken>()
-                .SetOrder(ResolveValidatedStateToken.Descriptor.Order + 1_000)
+                // Note: this handler is registered with a high gap to allow handlers
+                // that do token extraction to be executed before this handler runs.
+                .SetOrder(ResolveValidatedStateToken.Descriptor.Order + 50_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -795,7 +797,9 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<ValidateRequiredFrontchannelTokens>()
-                .SetOrder(ResolveValidatedFrontchannelTokens.Descriptor.Order + 1_000)
+                // Note: this handler is registered with a high gap to allow handlers
+                // that do token extraction to be executed before this handler runs.
+                .SetOrder(ResolveValidatedFrontchannelTokens.Descriptor.Order + 50_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2083,7 +2087,9 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
                 .UseSingletonHandler<ValidateRequiredBackchannelTokens>()
-                .SetOrder(ResolveValidatedBackchannelTokens.Descriptor.Order + 1_000)
+                // Note: this handler is registered with a high gap to allow handlers
+                // that do token extraction to be executed before this handler runs.
+                .SetOrder(ResolveValidatedBackchannelTokens.Descriptor.Order + 50_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -2947,7 +2953,9 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<ValidateRequiredUserinfoToken>()
-                .SetOrder(EvaluateValidatedUserinfoToken.Descriptor.Order + 1_000)
+                // Note: this handler is registered with a high gap to allow handlers
+                // that do token extraction to be executed before this handler runs.
+                .SetOrder(EvaluateValidatedUserinfoToken.Descriptor.Order + 50_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
