@@ -14,7 +14,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      Note: while brought transitively by the Microsoft.Extensions.Http.Polly package,
+      the Polly.Extensions.Http dependency is explicitly added to work around a breaking
+      change introduced between Polly 6.x and 7.x and force both this package and applications
+      that reference OpenIddict.Validation.SystemNetHttp to use the latest Polly version (7.x).
+    -->
+
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Polly.Extensions.Http" />
     <PackageReference Include="System.Net.Http.Json" />
   </ItemGroup>
 
