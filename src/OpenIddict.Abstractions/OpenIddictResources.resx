@@ -1316,6 +1316,18 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0339" xml:space="preserve">
     <value>The request forgery protection claim cannot be resolved from the state token.</value>
   </data>
+  <data name="ID0340" xml:space="preserve">
+    <value>An error occurred during the authentication process.</value>
+  </data>
+  <data name="ID0341" xml:space="preserve">
+    <value>The process identifier of the application instance that initiated the authentication process cannot be resolved from the state token.</value>
+  </data>
+  <data name="ID0342" xml:space="preserve">
+    <value>The protocol activation arguments cannot be resolved from the client transaction.</value>
+  </data>
+  <data name="ID0343" xml:space="preserve">
+    <value>The request forgery protection claim cannot be resolved from the challenge context.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1729,6 +1741,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID2138" xml:space="preserve">
     <value>The current address doesn't match the address of the redirection endpoint selected during the initial authorization request.</value>
+  </data>
+  <data name="ID2139" xml:space="preserve">
+    <value>No authentication operation associated with the specified state can be found. Please try logging in again.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>

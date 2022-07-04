@@ -62,6 +62,40 @@ public class Worker : IHostedService
                 });
             }
 
+            if (await manager.FindByClientIdAsync("maui") is null)
+            {
+                await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ClientId = "maui",
+                    ConsentType = ConsentTypes.Systematic,
+                    DisplayName = "MAUI client application",
+                    DisplayNames =
+                    {
+                        [CultureInfo.GetCultureInfo("fr-FR")] = "Application cliente MAUI"
+                    },
+                    RedirectUris =
+                    {
+                        new Uri("oi-sb-maui://openiddict/signin-local")
+                    },
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.ResponseTypes.Code,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        Permissions.Scopes.Roles,
+                        Permissions.Prefixes.Scope + "demo_api"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    }
+                });
+            }
+
             // Note: when using introspection instead of local token validation,
             // an application entry MUST be created to allow the resource server
             // to communicate with OpenIddict's introspection endpoint.

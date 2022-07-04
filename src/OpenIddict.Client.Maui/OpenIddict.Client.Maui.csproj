@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <IsShipping>false</IsShipping>
+    <SignAssembly>false</SignAssembly>
+    <PublicSign>false</PublicSign>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>MAUI integration package for the OpenIddict client services.</Description>
+    <PackageTags>$(PackageTags);client;maui</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Client\OpenIddict.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Client.OpenIddictClientEvents" Static="true" />
+    <Using Include="OpenIddict.Client.OpenIddictClientHandlers" Static="true" />
+    <Using Include="OpenIddict.Client.OpenIddictClientHandlerFilters" Static="true" />
+    <Using Include="OpenIddict.Client.Maui.OpenIddictClientMauiHandlers" Static="true" />
+    <Using Include="OpenIddict.Client.Maui.OpenIddictClientMauiHandlerFilters" Static="true" />
+  </ItemGroup>
+
+</Project>

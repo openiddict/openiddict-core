@@ -91,6 +91,11 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_NODES</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework))) == 'windows') ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_WINDOWS_APPLICATION_LIFECYCLE</DefineConstants>
+  </PropertyGroup>
+
   <!--
     Note: Entity Framework Core 2.x references System.Interactive.Async 3.x, that includes
     its own IAsyncEnumerable. To work around collisions between this type and the new type

@@ -132,6 +132,7 @@ public static class OpenIddictConstants
             public const string Issuer = "oi_iss";
             public const string Nonce = "oi_nce";
             public const string Presenter = "oi_prst";
+            public const string ProcessId = "oi_proc_id";
             public const string RedirectUri = "oi_reduri";
             public const string RefreshTokenLifetime = "oi_reft_lft";
             public const string Resource = "oi_rsrc";

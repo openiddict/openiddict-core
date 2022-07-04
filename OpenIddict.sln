@@ -130,7 +130,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.WebIntegr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gen", "gen", "{4CF2AFFA-A31B-4925-ADF4-062E9BDD1381}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Client.WebIntegration.Generators", "gen\OpenIddict.Client.WebIntegration.Generators\OpenIddict.Client.WebIntegration.Generators.csproj", "{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.WebIntegration.Generators", "gen\OpenIddict.Client.WebIntegration.Generators\OpenIddict.Client.WebIntegration.Generators.csproj", "{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Client.Maui", "src\OpenIddict.Client.Maui\OpenIddict.Client.Maui.csproj", "{2BC8A7BE-6420-42EC-88E7-C05A9FD8FE0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Sandbox.Maui.Client", "sandbox\OpenIddict.Sandbox.Maui.Client\OpenIddict.Sandbox.Maui.Client.csproj", "{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -314,6 +318,16 @@ Global
 		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BC8A7BE-6420-42EC-88E7-C05A9FD8FE0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BC8A7BE-6420-42EC-88E7-C05A9FD8FE0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BC8A7BE-6420-42EC-88E7-C05A9FD8FE0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BC8A7BE-6420-42EC-88E7-C05A9FD8FE0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -363,6 +377,8 @@ Global
 		{E4D77737-4C73-4520-99E8-8A9E586C69A1} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{867317E3-364E-4F4D-9D6D-A206E1F72B9F} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2} = {4CF2AFFA-A31B-4925-ADF4-062E9BDD1381}
+		{2BC8A7BE-6420-42EC-88E7-C05A9FD8FE0C} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{CD5EE836-ED56-48E3-B3B6-8D74C7C859B9} = {F47D1283-0EE9-4728-8026-58405C29B786}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}
