@@ -253,12 +253,10 @@ public static partial class OpenIddictClientOwinHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
             // Resolve the request forgery protection from the state token principal.
-            // If the claim cannot be found, this means the protection was disabled
-            // using a custom event handler. In this case, bypass the validation.
             var identifier = context.StateTokenPrincipal.GetClaim(Claims.RequestForgeryProtection);
             if (string.IsNullOrEmpty(identifier))
             {
-                return default;
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0339));
             }
 
             // Resolve the cookie manager and the cookie options from the OWIN integration options.

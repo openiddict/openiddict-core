@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 
 #if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
 using Org.BouncyCastle.Crypto;
@@ -1226,15 +1227,15 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 
             // To prevent issuer fixation attacks where a malicious client would specify an "iss" parameter
             // in the callback URL, ensure the query - if present - doesn't include an "iss" parameter.
-            if (!string.IsNullOrEmpty(uri.Query) && uri.Query.TrimStart(Separators.QuestionMark[0])
-                .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
-                .Select(parts => parts[0] is string value ? Uri.UnescapeDataString(value) : null)
-                .Contains(Parameters.Iss, StringComparer.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(uri.Query))
             {
-                yield return new ValidationResult(SR.FormatID2134(Parameters.Iss));
+                var parameters = OpenIddictHelpers.ParseQuery(uri.Query);
+                if (parameters.ContainsKey(Parameters.Iss))
+                {
+                    yield return new ValidationResult(SR.FormatID2134(Parameters.Iss));
 
-                break;
+                    break;
+                }
             }
         }
     }

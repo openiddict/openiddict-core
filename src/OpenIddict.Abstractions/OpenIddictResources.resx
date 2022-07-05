@@ -1313,6 +1313,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0338" xml:space="preserve">
     <value>A password must be specified when using the resource owner password credentials grant.</value>
   </data>
+  <data name="ID0339" xml:space="preserve">
+    <value>The request forgery protection claim cannot be resolved from the state token.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
