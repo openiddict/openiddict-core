@@ -31,7 +31,6 @@
     <PackageReference Include="Microsoft.AspNet.Mvc" />
     <PackageReference Include="Microsoft.AspNet.Web.Optimization" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Owin" />
-    <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Owin.Host.SystemWeb" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" />

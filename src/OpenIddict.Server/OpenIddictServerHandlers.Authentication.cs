@@ -9,6 +9,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -538,20 +539,20 @@ public static partial class OpenIddictServerHandlers
                 //
                 // Note: while OAuth 2.0 parameters are case-sentitive, the following check deliberately
                 // uses a case-insensitive comparison to ensure that all variations of "iss" are rejected.
-                if (!string.IsNullOrEmpty(uri.Query) && uri.Query.TrimStart(Separators.QuestionMark[0])
-                    .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(parts => parts[0] is string value ? Uri.UnescapeDataString(value) : null)
-                    .Contains(Parameters.Iss, StringComparer.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(uri.Query))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6181), Parameters.RedirectUri, Parameters.Iss);
+                    var parameters = OpenIddictHelpers.ParseQuery(uri.Query);
+                    if (parameters.ContainsKey(Parameters.Iss))
+                    {
+                        context.Logger.LogInformation(SR.GetResourceString(SR.ID6181), Parameters.RedirectUri, Parameters.Iss);
 
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: SR.FormatID2135(Parameters.RedirectUri, Parameters.Iss),
-                        uri: SR.FormatID8000(SR.ID2135));
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2135(Parameters.RedirectUri, Parameters.Iss),
+                            uri: SR.FormatID8000(SR.ID2135));
 
-                    return default;
+                        return default;
+                    }
                 }
 
                 return default;

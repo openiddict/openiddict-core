@@ -28,6 +28,10 @@ To use the server feature on ASP.NET Core or OWIN/Katana, reference the OpenIddi
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="OpenIddict.Abstractions" />
     <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
     <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />

@@ -9,7 +9,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants;
 using Properties = OpenIddict.Client.AspNetCore.OpenIddictClientAspNetCoreConstants.Properties;
 
@@ -145,7 +145,7 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
             {
                 // Create a composite principal containing claims resolved from the frontchannel
                 // and backchannel identity tokens and the userinfo token principal, if available.
-                OpenIddictClientEndpointType.Redirection => CreatePrincipal(
+                OpenIddictClientEndpointType.Redirection => OpenIddictHelpers.CreateMergedPrincipal(
                     context.FrontchannelIdentityTokenPrincipal,
                     context.BackchannelIdentityTokenPrincipal,
                     context.UserinfoTokenPrincipal),
@@ -303,45 +303,6 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
 
             return AuthenticateResult.Success(new AuthenticationTicket(principal, properties,
                 OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
-
-            static ClaimsPrincipal CreatePrincipal(params ClaimsPrincipal?[] principals)
-            {
-                // Note: the OpenIddict client handler can be used as a pure OAuth 2.0-only stack for
-                // delegation scenarios where the identity of the user is not needed. In this case,
-                // since no principal can be resolved from a token or a userinfo response to construct
-                // a user identity, a fake one containing an "unauthenticated" identity (i.e with its
-                // AuthenticationType property deliberately left to null) is used to allow the host
-                // to return a "successful" authentication result for these delegation-only scenarios.
-                if (!principals.Any(principal => principal?.Identity is ClaimsIdentity { IsAuthenticated: true }))
-                {
-                    return new ClaimsPrincipal(new ClaimsIdentity());
-                }
-
-                // Create a new composite identity containing the claims of all the principals.
-                var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
-
-                foreach (var principal in principals)
-                {
-                    // Note: the principal may be null if no value was extracted from the corresponding token.
-                    if (principal is null)
-                    {
-                        continue;
-                    }
-
-                    foreach (var claim in principal.Claims)
-                    {
-                        // If a claim with the same type and the same value already exist, skip it.
-                        if (identity.HasClaim(claim.Type, claim.Value))
-                        {
-                            continue;
-                        }
-
-                        identity.AddClaim(claim);
-                    }
-                }
-
-                return new ClaimsPrincipal(identity);
-            }
 
             static AuthenticationProperties CreateProperties(ClaimsPrincipal? principal)
             {
