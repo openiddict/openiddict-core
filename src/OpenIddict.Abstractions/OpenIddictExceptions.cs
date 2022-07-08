@@ -34,48 +34,48 @@ public static class OpenIddictExceptions
     }
 
     /// <summary>
-    /// Represents a generic OpenIddict exception.
+    /// Represents an OpenIddict protocol exception.
     /// </summary>
-    public class GenericException : Exception
+    public class ProtocolException : Exception
     {
         /// <summary>
-        /// Creates a new <see cref="GenericException"/>.
+        /// Creates a new <see cref="ProtocolException"/>.
         /// </summary>
         /// <param name="message">The exception message.</param>
-        public GenericException(string? message)
+        public ProtocolException(string? message)
             : this(message, null)
         {
         }
 
         /// <summary>
-        /// Creates a new <see cref="GenericException"/>.
+        /// Creates a new <see cref="ProtocolException"/>.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="error">The error type.</param>
-        public GenericException(string? message, string? error)
+        public ProtocolException(string? message, string? error)
             : this(message, error, description: null)
         {
         }
 
         /// <summary>
-        /// Creates a new <see cref="GenericException"/>.
+        /// Creates a new <see cref="ProtocolException"/>.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="error">The error type.</param>
         /// <param name="description">The error description.</param>
-        public GenericException(string? message, string? error, string? description)
+        public ProtocolException(string? message, string? error, string? description)
             : this(message, error, description, uri: null)
         {
         }
 
         /// <summary>
-        /// Creates a new <see cref="GenericException"/>.
+        /// Creates a new <see cref="ProtocolException"/>.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="error">The error type.</param>
         /// <param name="description">The error description.</param>
         /// <param name="uri">The error URI.</param>
-        public GenericException(string? message, string? error, string? description, string? uri)
+        public ProtocolException(string? message, string? error, string? description, string? uri)
             : base(message)
         {
             Error = error;

@@ -76,7 +76,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0148(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -96,7 +96,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0149(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -118,7 +118,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0150(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -143,7 +143,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0151(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -220,7 +220,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0152(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -240,7 +240,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0153(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -262,7 +262,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0154(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -286,7 +286,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0155(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -382,7 +382,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0158(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -402,7 +402,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0159(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -424,7 +424,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0160(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -450,7 +450,7 @@ public class OpenIddictValidationService
 
                 if (context.IsRejected)
                 {
-                    throw new OpenIddictExceptions.GenericException(
+                    throw new OpenIddictExceptions.ProtocolException(
                         SR.FormatID0161(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
@@ -513,7 +513,7 @@ public class OpenIddictValidationService
 
             if (context.IsRejected)
             {
-                throw new OpenIddictExceptions.GenericException(
+                throw new OpenIddictExceptions.ProtocolException(
                     SR.FormatID0163(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
