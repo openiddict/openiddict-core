@@ -13,7 +13,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
+using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 using Properties = OpenIddict.Client.Owin.OpenIddictClientOwinConstants.Properties;
@@ -377,7 +377,10 @@ public static partial class OpenIddictClientOwinHandlers
             // Ensure all the query string parameters that were part of the original redirect_uri
             // are present in the current request (parameters that were not part of the original
             // redirect_uri are assumed to be authorization response parameters and are ignored).
-            if (!string.IsNullOrEmpty(address.Query) && ParseQuery(address.Query)
+            if (!string.IsNullOrEmpty(address.Query) && OpenIddictHelpers.ParseQuery(address.Query)
+                // Note: ignore parameters that only include empty values
+                // to match the logic used by OWIN for IOwinRequest.Query.
+                .Where(parameter => parameter.Value.Any(value => !string.IsNullOrEmpty(value)))
                 .Any(parameter => request.Query[parameter.Key] != parameter.Value))
             {
                 context.Reject(
@@ -389,18 +392,6 @@ public static partial class OpenIddictClientOwinHandlers
             }
 
             return default;
-
-            static IReadOnlyDictionary<string, StringValues> ParseQuery(string query) =>
-                query.TrimStart(Separators.QuestionMark[0])
-                     .Split(new[] { Separators.Ampersand[0], Separators.Semicolon[0] }, StringSplitOptions.RemoveEmptyEntries)
-                     .Select(parameter => parameter.Split(Separators.EqualsSign, StringSplitOptions.RemoveEmptyEntries))
-                     .Select(parts => (
-                         Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
-                         Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
-                     // Note: ignore empty values to match the logic used by OWIN for IOwinRequest.Query.
-                     .Where(pair => !string.IsNullOrEmpty(pair.Key) && !string.IsNullOrEmpty(pair.Value))
-                     .GroupBy(pair => pair.Key)
-                     .ToDictionary(pair => pair.Key, pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
         }
     }
 

@@ -93,8 +93,7 @@ internal static class OpenIddictHelpers
             .Select(parts => (
                 Key: parts[0] is string key ? Uri.UnescapeDataString(key) : null,
                 Value: parts.Length > 1 && parts[1] is string value ? Uri.UnescapeDataString(value) : null))
-            // Note: ignore empty values to match the logic used by OWIN for IOwinRequest.Query.
-            .Where(pair => !string.IsNullOrEmpty(pair.Key) && !string.IsNullOrEmpty(pair.Value))
+            .Where(pair => !string.IsNullOrEmpty(pair.Key))
             .GroupBy(pair => pair.Key)
             .ToDictionary(pair => pair.Key!, pair => new StringValues(pair.Select(parts => parts.Value).ToArray()));
     }
