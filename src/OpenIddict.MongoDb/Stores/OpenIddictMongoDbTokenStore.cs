@@ -11,6 +11,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using OpenIddict.MongoDb.Models;
+using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.MongoDb;
 
@@ -92,7 +93,7 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
             entity.Id == token.Id &&
             entity.ConcurrencyToken == token.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
         {
-            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0247));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0247));
         }
     }
 
@@ -808,7 +809,7 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
             entity.Id == token.Id &&
             entity.ConcurrencyToken == timestamp, token, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
         {
-            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0247));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0247));
         }
     }
 }

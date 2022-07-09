@@ -14,6 +14,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFramework.Models;
+using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFramework;
 
@@ -139,7 +140,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
             Context.Entry(token).State = EntityState.Unchanged;
 
-            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0247), exception);
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0247), exception);
         }
     }
 
@@ -884,7 +885,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
             // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
             Context.Entry(token).State = EntityState.Unchanged;
 
-            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0247), exception);
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0247), exception);
         }
     }
 

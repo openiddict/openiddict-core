@@ -16,6 +16,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Extensions;
+using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
 #if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
 using Org.BouncyCastle.Crypto;
@@ -166,7 +167,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 builder.AppendLine(result.ErrorMessage);
             }
 
-            throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            throw new ValidationException(builder.ToString(), results);
         }
 
         await Store.CreateAsync(application, cancellationToken);
@@ -1035,7 +1036,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 builder.AppendLine(result.ErrorMessage);
             }
 
-            throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            throw new ValidationException(builder.ToString(), results);
         }
 
         await Store.UpdateAsync(application, cancellationToken);
@@ -1446,13 +1447,13 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         static bool VerifyHashedSecret(string hash, string secret)
         {
             var payload = new ReadOnlySpan<byte>(Convert.FromBase64String(hash));
-            if (payload.Length == 0)
+            if (payload.Length is 0)
             {
                 return false;
             }
 
             // Verify the hashing format version.
-            if (payload[0] != 0x01)
+            if (payload[0] is not 0x01)
             {
                 return false;
             }

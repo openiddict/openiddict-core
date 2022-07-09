@@ -13,6 +13,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
+using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
 namespace OpenIddict.Core;
 
@@ -132,7 +133,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
                 builder.AppendLine(result.ErrorMessage);
             }
 
-            throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            throw new ValidationException(builder.ToString(), results);
         }
 
         await Store.CreateAsync(token, cancellationToken);
@@ -1206,7 +1207,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
                 builder.AppendLine(result.ErrorMessage);
             }
 
-            throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            throw new ValidationException(builder.ToString(), results);
         }
 
         await Store.UpdateAsync(token, cancellationToken);
