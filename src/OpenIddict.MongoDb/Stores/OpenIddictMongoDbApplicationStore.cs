@@ -12,6 +12,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using OpenIddict.MongoDb.Models;
+using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.MongoDb;
 
@@ -93,7 +94,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             entity.Id == application.Id &&
             entity.ConcurrencyToken == application.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
         {
-            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0239));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
 
         // Delete the authorizations associated with the application.
@@ -661,7 +662,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             entity.Id == application.Id &&
             entity.ConcurrencyToken == timestamp, application, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
         {
-            throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0239));
+            throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
     }
 }

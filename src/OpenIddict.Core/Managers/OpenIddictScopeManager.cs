@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
 namespace OpenIddict.Core;
 
@@ -117,7 +118,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
                 builder.AppendLine(result.ErrorMessage);
             }
 
-            throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            throw new ValidationException(builder.ToString(), results);
         }
 
         await Store.CreateAsync(scope, cancellationToken);
@@ -858,7 +859,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
                 builder.AppendLine(result.ErrorMessage);
             }
 
-            throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            throw new ValidationException(builder.ToString(), results);
         }
 
         await Store.UpdateAsync(scope, cancellationToken);
