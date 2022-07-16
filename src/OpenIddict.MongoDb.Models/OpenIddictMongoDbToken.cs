@@ -88,7 +88,7 @@ public class OpenIddictMongoDbToken
     /// <summary>
     /// Gets or sets the subject associated with the current token.
     /// </summary>
-    [BsonElement("subject"), BsonIgnoreIfDefault]
+    [BsonElement("subject"), BsonIgnoreIfNull]
     public virtual string? Subject { get; set; }
 
     /// <summary>

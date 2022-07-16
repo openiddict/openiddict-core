@@ -91,7 +91,7 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
 
         if ((await collection.DeleteOneAsync(entity =>
             entity.Id == token.Id &&
-            entity.ConcurrencyToken == token.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
+            entity.ConcurrencyToken == token.ConcurrencyToken, cancellationToken)).DeletedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0247));
         }
@@ -807,7 +807,7 @@ public class OpenIddictMongoDbTokenStore<TToken> : IOpenIddictTokenStore<TToken>
 
         if ((await collection.ReplaceOneAsync(entity =>
             entity.Id == token.Id &&
-            entity.ConcurrencyToken == timestamp, token, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
+            entity.ConcurrencyToken == timestamp, token, null as ReplaceOptions, cancellationToken)).MatchedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0247));
         }

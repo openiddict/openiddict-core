@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace OpenIddict.MongoDb.Models;
 
@@ -32,8 +31,8 @@ public class OpenIddictMongoDbScope
     /// Gets or sets the localized public descriptions associated with the current scope.
     /// </summary>
     [BsonElement("descriptions"), BsonIgnoreIfNull]
-    public virtual IReadOnlyDictionary<CultureInfo, string> Descriptions { get; set; }
-        = ImmutableDictionary.Create<CultureInfo, string>();
+    public virtual IReadOnlyDictionary<string, string>? Descriptions { get; set; }
+        = ImmutableDictionary.Create<string, string>();
 
     /// <summary>
     /// Gets or sets the display name associated with the current scope.
@@ -45,8 +44,8 @@ public class OpenIddictMongoDbScope
     /// Gets or sets the localized display names associated with the current scope.
     /// </summary>
     [BsonElement("display_names"), BsonIgnoreIfNull]
-    public virtual IReadOnlyDictionary<CultureInfo, string> DisplayNames { get; set; }
-        = ImmutableDictionary.Create<CultureInfo, string>();
+    public virtual IReadOnlyDictionary<string, string>? DisplayNames { get; set; }
+        = ImmutableDictionary.Create<string, string>();
 
     /// <summary>
     /// Gets or sets the unique identifier associated with the current scope.
@@ -69,6 +68,6 @@ public class OpenIddictMongoDbScope
     /// <summary>
     /// Gets or sets the resources associated with the current scope.
     /// </summary>
-    [BsonElement("resources"), BsonIgnoreIfDefault]
-    public virtual IReadOnlyList<string> Resources { get; set; } = ImmutableList.Create<string>();
+    [BsonElement("resources"), BsonIgnoreIfNull]
+    public virtual IReadOnlyList<string>? Resources { get; set; } = ImmutableList.Create<string>();
 }

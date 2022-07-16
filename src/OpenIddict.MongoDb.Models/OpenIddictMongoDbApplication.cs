@@ -6,7 +6,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace OpenIddict.MongoDb.Models;
 
@@ -52,8 +51,8 @@ public class OpenIddictMongoDbApplication
     /// Gets or sets the localized display names associated with the current application.
     /// </summary>
     [BsonElement("display_names"), BsonIgnoreIfNull]
-    public virtual IReadOnlyDictionary<CultureInfo, string> DisplayNames { get; set; }
-        = ImmutableDictionary.Create<CultureInfo, string>();
+    public virtual IReadOnlyDictionary<string, string>? DisplayNames { get; set; }
+        = ImmutableDictionary.Create<string, string>();
 
     /// <summary>
     /// Gets or sets the unique identifier associated with the current application.
@@ -64,14 +63,14 @@ public class OpenIddictMongoDbApplication
     /// <summary>
     /// Gets or sets the permissions associated with the current application.
     /// </summary>
-    [BsonElement("permissions"), BsonIgnoreIfDefault]
-    public virtual IReadOnlyList<string> Permissions { get; set; } = ImmutableList.Create<string>();
+    [BsonElement("permissions"), BsonIgnoreIfNull]
+    public virtual IReadOnlyList<string>? Permissions { get; set; } = ImmutableList.Create<string>();
 
     /// <summary>
     /// Gets or sets the logout callback URLs associated with the current application.
     /// </summary>
-    [BsonElement("post_logout_redirect_uris"), BsonIgnoreIfDefault]
-    public virtual IReadOnlyList<string> PostLogoutRedirectUris { get; set; } = ImmutableList.Create<string>();
+    [BsonElement("post_logout_redirect_uris"), BsonIgnoreIfNull]
+    public virtual IReadOnlyList<string>? PostLogoutRedirectUris { get; set; } = ImmutableList.Create<string>();
 
     /// <summary>
     /// Gets or sets the additional properties associated with the current application.
@@ -82,14 +81,14 @@ public class OpenIddictMongoDbApplication
     /// <summary>
     /// Gets or sets the callback URLs associated with the current application.
     /// </summary>
-    [BsonElement("redirect_uris"), BsonIgnoreIfDefault]
-    public virtual IReadOnlyList<string> RedirectUris { get; set; } = ImmutableList.Create<string>();
+    [BsonElement("redirect_uris"), BsonIgnoreIfNull]
+    public virtual IReadOnlyList<string>? RedirectUris { get; set; } = ImmutableList.Create<string>();
 
     /// <summary>
     /// Gets or sets the requirements associated with the current application.
     /// </summary>
-    [BsonElement("requirements"), BsonIgnoreIfDefault]
-    public virtual IReadOnlyList<string> Requirements { get; set; } = ImmutableList.Create<string>();
+    [BsonElement("requirements"), BsonIgnoreIfNull]
+    public virtual IReadOnlyList<string>? Requirements { get; set; } = ImmutableList.Create<string>();
 
     /// <summary>
     /// Gets or sets the application type

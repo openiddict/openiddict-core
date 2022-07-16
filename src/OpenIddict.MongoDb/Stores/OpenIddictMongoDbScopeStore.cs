@@ -92,7 +92,7 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
 
         if ((await collection.DeleteOneAsync(entity =>
             entity.Id == scope.Id &&
-            entity.ConcurrencyToken == scope.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
+            entity.ConcurrencyToken == scope.ConcurrencyToken, cancellationToken)).DeletedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0245));
         }
@@ -165,7 +165,7 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            await foreach (var scope in collection.Find(scope => scope.Resources.Contains(resource)).ToAsyncEnumerable(cancellationToken))
+            await foreach (var scope in collection.Find(scope => scope.Resources!.Contains(resource)).ToAsyncEnumerable(cancellationToken))
             {
                 yield return scope;
             }
@@ -207,12 +207,14 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
             throw new ArgumentNullException(nameof(scope));
         }
 
-        if (scope.Descriptions is null || scope.Descriptions.Count == 0)
+        if (scope.Descriptions is not { Count: > 0 })
         {
             return new(ImmutableDictionary.Create<CultureInfo, string>());
         }
 
-        return new(scope.Descriptions.ToImmutableDictionary());
+        return new(scope.Descriptions.ToImmutableDictionary(
+            pair => CultureInfo.GetCultureInfo(pair.Key),
+            pair => pair.Value));
     }
 
     /// <inheritdoc/>
@@ -234,12 +236,14 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
             throw new ArgumentNullException(nameof(scope));
         }
 
-        if (scope.DisplayNames is null || scope.DisplayNames.Count == 0)
+        if (scope.DisplayNames is not { Count: > 0 })
         {
             return new(ImmutableDictionary.Create<CultureInfo, string>());
         }
 
-        return new(scope.DisplayNames.ToImmutableDictionary());
+        return new(scope.DisplayNames.ToImmutableDictionary(
+            pair => CultureInfo.GetCultureInfo(pair.Key),
+            pair => pair.Value));
     }
 
     /// <inheritdoc/>
@@ -296,7 +300,7 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
             throw new ArgumentNullException(nameof(scope));
         }
 
-        if (scope.Resources is null || scope.Resources.Count == 0)
+        if (scope.Resources is not { Count: > 0 })
         {
             return new(ImmutableArray.Create<string>());
         }
@@ -390,7 +394,16 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
             throw new ArgumentNullException(nameof(scope));
         }
 
-        scope.Descriptions = descriptions;
+        if (descriptions is not { Count: > 0 })
+        {
+            scope.Descriptions = null;
+
+            return default;
+        }
+
+        scope.Descriptions = descriptions.ToImmutableDictionary(
+            pair => pair.Key.Name,
+            pair => pair.Value);
 
         return default;
     }
@@ -404,7 +417,16 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
             throw new ArgumentNullException(nameof(scope));
         }
 
-        scope.DisplayNames = names;
+        if (names is not { Count: > 0 })
+        {
+            scope.DisplayNames = null;
+
+            return default;
+        }
+
+        scope.DisplayNames = names.ToImmutableDictionary(
+            pair => pair.Key.Name,
+            pair => pair.Value);
 
         return default;
     }
@@ -484,7 +506,7 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
 
         if (resources.IsDefaultOrEmpty)
         {
-            scope.Resources = ImmutableList.Create<string>();
+            scope.Resources = null;
 
             return default;
         }
@@ -512,7 +534,7 @@ public class OpenIddictMongoDbScopeStore<TScope> : IOpenIddictScopeStore<TScope>
 
         if ((await collection.ReplaceOneAsync(entity =>
             entity.Id == scope.Id &&
-            entity.ConcurrencyToken == timestamp, scope, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
+            entity.ConcurrencyToken == timestamp, scope, null as ReplaceOptions, cancellationToken)).MatchedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0245));
         }
