@@ -91,7 +91,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
 
         if ((await collection.DeleteOneAsync(entity =>
             entity.Id == authorization.Id &&
-            entity.ConcurrencyToken == authorization.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
+            entity.ConcurrencyToken == authorization.ConcurrencyToken, cancellationToken)).DeletedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0241));
         }
@@ -251,7 +251,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
                 authorization.ApplicationId == ObjectId.Parse(client) &&
                 authorization.Status == status &&
                 authorization.Type == type &&
-                Enumerable.All(scopes, scope => authorization.Scopes.Contains(scope))).ToAsyncEnumerable(cancellationToken))
+                Enumerable.All(scopes, scope => authorization.Scopes!.Contains(scope))).ToAsyncEnumerable(cancellationToken))
             {
                 yield return authorization;
             }
@@ -412,7 +412,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        if (authorization.Scopes is null || authorization.Scopes.Count == 0)
+        if (authorization.Scopes is not { Count: > 0 })
         {
             return new(ImmutableArray.Create<string>());
         }
@@ -653,7 +653,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
 
         if (scopes.IsDefaultOrEmpty)
         {
-            authorization.Scopes = ImmutableList.Create<string>();
+            authorization.Scopes = null;
 
             return default;
         }
@@ -720,7 +720,7 @@ public class OpenIddictMongoDbAuthorizationStore<TAuthorization> : IOpenIddictAu
 
         if ((await collection.ReplaceOneAsync(entity =>
             entity.Id == authorization.Id &&
-            entity.ConcurrencyToken == timestamp, authorization, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
+            entity.ConcurrencyToken == timestamp, authorization, null as ReplaceOptions, cancellationToken)).MatchedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0241));
         }

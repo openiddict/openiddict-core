@@ -92,7 +92,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if ((await collection.DeleteOneAsync(entity =>
             entity.Id == application.Id &&
-            entity.ConcurrencyToken == application.ConcurrencyToken, cancellationToken)).DeletedCount == 0)
+            entity.ConcurrencyToken == application.ConcurrencyToken, cancellationToken)).DeletedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
@@ -152,7 +152,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             await foreach (var application in collection.Find(application =>
-                application.PostLogoutRedirectUris.Contains(address)).ToAsyncEnumerable(cancellationToken))
+                application.PostLogoutRedirectUris!.Contains(address)).ToAsyncEnumerable(cancellationToken))
             {
                 yield return application;
             }
@@ -176,7 +176,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             await foreach (var application in collection.Find(application =>
-                application.RedirectUris.Contains(address)).ToAsyncEnumerable(cancellationToken))
+                application.RedirectUris!.Contains(address)).ToAsyncEnumerable(cancellationToken))
             {
                 yield return application;
             }
@@ -262,12 +262,14 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (application.DisplayNames is null || application.DisplayNames.Count == 0)
+        if (application.DisplayNames is not { Count: > 0 })
         {
             return new(ImmutableDictionary.Create<CultureInfo, string>());
         }
 
-        return new(application.DisplayNames.ToImmutableDictionary());
+        return new(application.DisplayNames.ToImmutableDictionary(
+            pair => CultureInfo.GetCultureInfo(pair.Key),
+            pair => pair.Value));
     }
 
     /// <inheritdoc/>
@@ -290,7 +292,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (application.Permissions is null || application.Permissions.Count == 0)
+        if (application.Permissions is not { Count: > 0 })
         {
             return new(ImmutableArray.Create<string>());
         }
@@ -307,7 +309,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (application.PostLogoutRedirectUris is null || application.PostLogoutRedirectUris.Count == 0)
+        if (application.PostLogoutRedirectUris is not { Count: > 0 })
         {
             return new(ImmutableArray.Create<string>());
         }
@@ -348,7 +350,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (application.RedirectUris is null || application.RedirectUris.Count == 0)
+        if (application.RedirectUris is not { Count: > 0 })
         {
             return new(ImmutableArray.Create<string>());
         }
@@ -364,7 +366,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (application.Requirements is null || application.Requirements.Count == 0)
+        if (application.Requirements is not { Count: > 0 })
         {
             return new(ImmutableArray.Create<string>());
         }
@@ -515,7 +517,16 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             throw new ArgumentNullException(nameof(application));
         }
 
-        application.DisplayNames = names;
+        if (names is not { Count: > 0 })
+        {
+            application.DisplayNames = null;
+
+            return default;
+        }
+
+        application.DisplayNames = names.ToImmutableDictionary(
+            pair => pair.Key.Name,
+            pair => pair.Value);
 
         return default;
     }
@@ -530,7 +541,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (permissions.IsDefaultOrEmpty)
         {
-            application.Permissions = ImmutableList.Create<string>();
+            application.Permissions = null;
 
             return default;
         }
@@ -551,7 +562,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (addresses.IsDefaultOrEmpty)
         {
-            application.PostLogoutRedirectUris = ImmutableList.Create<string>();
+            application.PostLogoutRedirectUris = null;
 
             return default;
         }
@@ -611,7 +622,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (addresses.IsDefaultOrEmpty)
         {
-            application.RedirectUris = ImmutableList.Create<string>();
+            application.RedirectUris = null;
 
             return default;
         }
@@ -632,7 +643,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if (requirements.IsDefaultOrEmpty)
         {
-            application.Requirements = ImmutableList.Create<string>();
+            application.Requirements = null;
 
             return default;
         }
@@ -660,7 +671,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
         if ((await collection.ReplaceOneAsync(entity =>
             entity.Id == application.Id &&
-            entity.ConcurrencyToken == timestamp, application, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
+            entity.ConcurrencyToken == timestamp, application, null as ReplaceOptions, cancellationToken)).MatchedCount is 0)
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }

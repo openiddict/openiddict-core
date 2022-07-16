@@ -30,6 +30,7 @@ public class OpenIddictMongoDbAuthorization
     /// <summary>
     /// Gets or sets the UTC creation date of the current authorization.
     /// </summary>
+    [BsonElement("creation_date"), BsonIgnoreIfNull]
     public virtual DateTime? CreationDate { get; set; }
 
     /// <summary>
@@ -47,8 +48,8 @@ public class OpenIddictMongoDbAuthorization
     /// <summary>
     /// Gets or sets the scopes associated with the current authorization.
     /// </summary>
-    [BsonElement("scopes"), BsonIgnoreIfDefault]
-    public virtual IReadOnlyList<string> Scopes { get; set; } = ImmutableList.Create<string>();
+    [BsonElement("scopes"), BsonIgnoreIfNull]
+    public virtual IReadOnlyList<string>? Scopes { get; set; } = ImmutableList.Create<string>();
 
     /// <summary>
     /// Gets or sets the status of the current authorization.
