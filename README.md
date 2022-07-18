@@ -16,6 +16,8 @@ OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/pac
 **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)**
 out-of-the-box and custom stores can be implemented to support other providers.
 
+--------------
+
 ## Getting started
 
 **Developers looking for a simple and turnkey solution are strongly encouraged to use [OrchardCore and its OpenID module](https://docs.orchardcore.net/en/dev/docs/reference/modules/OpenId/)**,
@@ -25,6 +27,8 @@ which is based on OpenIddict, comes with sensible defaults and offers a built-in
 
 **Samples demonstrating how to use OpenIddict with the different OAuth 2.0/OpenID Connect flows**
 can be found in the [dedicated repository](https://github.com/openiddict/openiddict-samples).
+
+--------------
 
 ## Compatibility matrix
 
@@ -55,6 +59,8 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 > will result in a `PlatformNotSupportedException` being thrown at runtime if no valid development certificate can be found and a new one must be generated.
 >  - X.509 ECDSA signing certificates/keys: calling `AddSigningCertificate()` or `AddSigningKey()`
 > with an ECDSA certificate/key will always result in a `PlatformNotSupportedException` being thrown at runtime.
+
+--------------
 
 ## Certification
 
@@ -98,10 +104,14 @@ Instead, **developers are encouraged to execute the conformance tests against th
 - **[P41.OpenIddict.CouchDB](https://github.com/panoukos41/couchdb-openiddict)** by [Panos Athanasiou](https://github.com/panoukos41): CouchDB stores for OpenIddict
 - **[pixel-identity](https://github.com/Nfactor26/pixel-identity)** by [Nishant Singh](https://github.com/Nfactor26): Ready to host OpenID Connect service using OpenIddict and ASP.NET Identity with a Blazor-based UI for managing users, roles, applications and scopes with support for multiple databases.
 
+--------------
+
 ## Security policy
 
 Security issues and bugs should be reported privately by emailing security@openiddict.com.
 You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+
+--------------
 
 ## Support
 
@@ -110,6 +120,8 @@ If you're not a sponsor, you can post your questions on Gitter or StackOverflow:
 
 - **Gitter: [https://gitter.im/openiddict/openiddict-core](https://gitter.im/openiddict/openiddict-core)**
 - **StackOverflow: [https://stackoverflow.com/questions/tagged/openiddict](https://stackoverflow.com/questions/tagged/openiddict)**
+
+--------------
 
 ## Nightly builds
 
@@ -132,7 +144,19 @@ To reference the OpenIddict MyGet feed, **create a `NuGet.config` file** (at the
 
 **Special thanks to [our sponsors](https://github.com/sponsors/kevinchalet#sponsors) for their incredible support**:
 
+<a href="https://volosoft.com/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://volosoft.com/assets/logos/volosoft-logo-light.svg">
+    <img src="https://volosoft.com/assets/logos/volosoft-logo-dark.svg" width="500px" alt="Volosoft logo" />
+  </picture>
+</a>
+
+<br />
+<br />
+
 <!-- sponsors --><a href="https://github.com/sebastienros"><img src="https://github.com/sebastienros.png" width="60px" alt="" /></a><a href="https://github.com/GDreyV"><img src="https://github.com/GDreyV.png" width="60px" alt="" /></a><a href="https://github.com/gustavdw"><img src="https://github.com/gustavdw.png" width="60px" alt="" /></a><a href="https://github.com/DovydasNavickas"><img src="https://github.com/DovydasNavickas.png" width="60px" alt="" /></a><a href="https://github.com/schmitch"><img src="https://github.com/schmitch.png" width="60px" alt="" /></a><a href="https://github.com/ThreeScreenStudios"><img src="https://github.com/ThreeScreenStudios.png" width="60px" alt="" /></a><a href="https://github.com/florianwachs"><img src="https://github.com/florianwachs.png" width="60px" alt="" /></a><a href="https://github.com/SebastianStehle"><img src="https://github.com/SebastianStehle.png" width="60px" alt="" /></a><a href="https://github.com/MichaelHochriegl"><img src="https://github.com/MichaelHochriegl.png" width="60px" alt="" /></a><a href="https://github.com/"><img src="https://github.com/.png" width="60px" alt="" /></a><a href="https://github.com/KeithT"><img src="https://github.com/KeithT.png" width="60px" alt="" /></a><a href="https://github.com/WGMurray"><img src="https://github.com/WGMurray.png" width="60px" alt="" /></a><a href="https://github.com/Skrypt"><img src="https://github.com/Skrypt.png" width="60px" alt="" /></a><a href="https://github.com/ThomasBjallas"><img src="https://github.com/ThomasBjallas.png" width="60px" alt="" /></a><a href="https://github.com/mcalasa"><img src="https://github.com/mcalasa.png" width="60px" alt="" /></a><a href="https://github.com/feededit"><img src="https://github.com/feededit.png" width="60px" alt="" /></a><a href="https://github.com/BlackSyc"><img src="https://github.com/BlackSyc.png" width="60px" alt="" /></a><a href="https://github.com/Huppiflu"><img src="https://github.com/Huppiflu.png" width="60px" alt="" /></a><a href="https://github.com/nbelley"><img src="https://github.com/nbelley.png" width="60px" alt="" /></a><a href="https://github.com/"><img src="https://github.com/.png" width="60px" alt="" /></a><!-- sponsors -->
+
+--------------
 
 ## License
 
