@@ -353,7 +353,7 @@ public static partial class OpenIddictServerHandlers
                 // See https://tools.ietf.org/html/rfc8628#section-3.1 for more information.
                 if (string.IsNullOrEmpty(context.ClientId))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6056));
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6056), Parameters.ClientId);
 
                     context.Reject(
                         error: Errors.InvalidClient,
