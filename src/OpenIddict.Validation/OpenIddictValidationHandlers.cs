@@ -25,7 +25,13 @@ public static partial class OpenIddictValidationHandlers
          * Challenge processing:
          */
         AttachDefaultChallengeError.Descriptor,
-        AttachChallengeParameters.Descriptor)
+        AttachCustomChallengeParameters.Descriptor,
+
+        /*
+         * Error processing:
+         */
+        AttachErrorParameters.Descriptor,
+        AttachCustomErrorParameters.Descriptor)
 
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Introspection.DefaultHandlers)
@@ -258,17 +264,18 @@ public static partial class OpenIddictValidationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching the appropriate parameters to the challenge response.
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the sign-out response.
     /// </summary>
-    public class AttachChallengeParameters : IOpenIddictValidationHandler<ProcessChallengeContext>
+    public class AttachCustomChallengeParameters : IOpenIddictValidationHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .UseSingletonHandler<AttachChallengeParameters>()
-                .SetOrder(AttachDefaultChallengeError.Descriptor.Order + 1_000)
+                .UseSingletonHandler<AttachCustomChallengeParameters>()
+                .SetOrder(100_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -318,6 +325,34 @@ public static partial class OpenIddictValidationHandlers
             context.Response.Error = context.Error;
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the error response.
+    /// </summary>
+    public class AttachCustomErrorParameters : IOpenIddictValidationHandler<ProcessErrorContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessErrorContext>()
+                .UseSingletonHandler<AttachCustomErrorParameters>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessErrorContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             if (context.Parameters.Count > 0)
             {

@@ -330,7 +330,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ResolveHostChallengeParameters>()
-                .SetOrder(AttachChallengeParameters.Descriptor.Order - 500)
+                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -385,7 +385,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ResolveHostSignInParameters>()
-                .SetOrder(AttachSignInParameters.Descriptor.Order - 500)
+                .SetOrder(AttachCustomSignInParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -448,7 +448,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ResolveHostSignOutParameters>()
-                .SetOrder(AttachSignOutParameters.Descriptor.Order - 500)
+                .SetOrder(AttachCustomSignOutParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

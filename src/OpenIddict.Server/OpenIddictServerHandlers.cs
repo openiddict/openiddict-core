@@ -41,7 +41,7 @@ public static partial class OpenIddictServerHandlers
         AttachDefaultChallengeError.Descriptor,
         RejectDeviceCodeEntry.Descriptor,
         RejectUserCodeEntry.Descriptor,
-        AttachChallengeParameters.Descriptor,
+        AttachCustomChallengeParameters.Descriptor,
 
         /*
         * Sign-in processing:
@@ -76,17 +76,19 @@ public static partial class OpenIddictServerHandlers
         GenerateIdentityToken.Descriptor,
 
         AttachSignInParameters.Descriptor,
+        AttachCustomSignInParameters.Descriptor,
 
         /*
          * Sign-out processing:
          */
         ValidateSignOutDemand.Descriptor,
-        AttachSignOutParameters.Descriptor,
+        AttachCustomSignOutParameters.Descriptor,
         
         /*
          * Error processing:
          */
-        AttachErrorParameters.Descriptor)
+        AttachErrorParameters.Descriptor,
+        AttachCustomErrorParameters.Descriptor)
 
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Device.DefaultHandlers)
@@ -1065,17 +1067,18 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching the appropriate parameters to the challenge response.
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the challenge response.
     /// </summary>
-    public class AttachChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
+    public class AttachCustomChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .UseSingletonHandler<AttachChallengeParameters>()
-                .SetOrder(RejectUserCodeEntry.Descriptor.Order + 1_000)
+                .UseSingletonHandler<AttachCustomChallengeParameters>()
+                .SetOrder(100_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -2932,14 +2935,6 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            if (context.Parameters.Count > 0)
-            {
-                foreach (var parameter in context.Parameters)
-                {
-                    context.Response.SetParameter(parameter.Key, parameter.Value);
-                }
-            }
-
             return default;
 
             static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri? endpoint)
@@ -2982,6 +2977,42 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the sign-in response.
+    /// </summary>
+    public class AttachCustomSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                .UseSingletonHandler<AttachCustomSignInParameters>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignInContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.Parameters.Count > 0)
+            {
+                foreach (var parameter in context.Parameters)
+                {
+                    context.Response.SetParameter(parameter.Key, parameter.Value);
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for ensuring that the sign-out demand
     /// is compatible with the type of the endpoint that handled the request.
     /// </summary>
@@ -3015,17 +3046,18 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching the appropriate parameters to the sign-out response.
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the sign-out response.
     /// </summary>
-    public class AttachSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
+    public class AttachCustomSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
-                .UseSingletonHandler<AttachSignOutParameters>()
-                .SetOrder(ValidateSignOutDemand.Descriptor.Order + 1_000)
+                .UseSingletonHandler<AttachCustomSignOutParameters>()
+                .SetOrder(100_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -3075,6 +3107,34 @@ public static partial class OpenIddictServerHandlers
             context.Response.Error = context.Error;
             context.Response.ErrorDescription = context.ErrorDescription;
             context.Response.ErrorUri = context.ErrorUri;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the error response.
+    /// </summary>
+    public class AttachCustomErrorParameters : IOpenIddictServerHandler<ProcessErrorContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessErrorContext>()
+                .UseSingletonHandler<AttachCustomErrorParameters>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessErrorContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             if (context.Parameters.Count > 0)
             {
