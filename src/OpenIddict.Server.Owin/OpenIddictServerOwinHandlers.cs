@@ -331,7 +331,7 @@ public static partial class OpenIddictServerOwinHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<ResolveHostChallengeParameters>()
-                .SetOrder(AttachChallengeParameters.Descriptor.Order - 500)
+                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -405,7 +405,7 @@ public static partial class OpenIddictServerOwinHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<ResolveHostSignInParameters>()
-                .SetOrder(AttachSignInParameters.Descriptor.Order - 500)
+                .SetOrder(AttachCustomSignInParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -487,7 +487,7 @@ public static partial class OpenIddictServerOwinHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireOwinRequest>()
                 .UseSingletonHandler<ResolveHostSignOutParameters>()
-                .SetOrder(AttachSignOutParameters.Descriptor.Order - 500)
+                .SetOrder(AttachCustomSignOutParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

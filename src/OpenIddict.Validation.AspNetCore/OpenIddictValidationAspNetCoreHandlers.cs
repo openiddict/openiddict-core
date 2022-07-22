@@ -56,12 +56,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         AttachHttpResponseCode<ProcessErrorContext>.Descriptor,
         AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
         AttachWwwAuthenticateHeader<ProcessErrorContext>.Descriptor,
-        ProcessChallengeErrorResponse<ProcessErrorContext>.Descriptor,
-
-        /*
-         * Error processing:
-         */
-        AttachErrorParameters.Descriptor);
+        ProcessChallengeErrorResponse<ProcessErrorContext>.Descriptor);
 
     /// <summary>
     /// Contains the logic responsible for infering the default issuer from the HTTP request host and validating it.
@@ -335,7 +330,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireHttpRequest>()
                 .UseSingletonHandler<ResolveHostChallengeParameters>()
-                .SetOrder(AttachChallengeParameters.Descriptor.Order - 500)
+                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order - 500)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
