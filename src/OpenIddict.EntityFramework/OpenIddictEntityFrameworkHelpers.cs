@@ -78,24 +78,14 @@ public static class OpenIddictEntityFrameworkHelpers
 
         static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var enumerator = ((IDbAsyncEnumerable<T>)source).GetAsyncEnumerator();
+            using var enumerator = ((IDbAsyncEnumerable<T>)source).GetAsyncEnumerator();
 
-            using (enumerator)
+            Task<bool> moveNextTask = enumerator.MoveNextAsync(cancellationToken);
+            while (await moveNextTask)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (await enumerator.MoveNextAsync(cancellationToken))
-                {
-                    Task<bool> moveNextTask;
-                    do
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var current = enumerator.Current;
-                        moveNextTask = enumerator.MoveNextAsync(cancellationToken);
-                        yield return current;
-                    }
-                    while (await moveNextTask);
-                }
+                var current = enumerator.Current;
+                moveNextTask = enumerator.MoveNextAsync(cancellationToken);
+                yield return current;
             }
         }
     }
