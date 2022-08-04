@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Data.Entity.Infrastructure;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
@@ -60,12 +61,12 @@ public static class OpenIddictEntityFrameworkHelpers
     }
 
     /// <summary>
-    /// Executes the query and returns the results as a non-streamed async enumeration.
+    /// Executes the query and returns the results as a streamed async enumeration.
     /// </summary>
     /// <typeparam name="T">The type of the returned entities.</typeparam>
     /// <param name="source">The query source.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The non-streamed async enumeration containing the results.</returns>
+    /// <returns>The streamed async enumeration containing the results.</returns>
     internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IQueryable<T> source, CancellationToken cancellationToken)
     {
         if (source is null)
@@ -77,9 +78,11 @@ public static class OpenIddictEntityFrameworkHelpers
 
         static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            foreach (var element in await source.ToListAsync(cancellationToken))
+            using var enumerator = ((IDbAsyncEnumerable<T>)source).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                yield return element;
+                yield return enumerator.Current;
             }
         }
     }
