@@ -80,12 +80,9 @@ public static class OpenIddictEntityFrameworkHelpers
         {
             using var enumerator = ((IDbAsyncEnumerable<T>)source).GetAsyncEnumerator();
 
-            Task<bool> moveNextTask = enumerator.MoveNextAsync(cancellationToken);
-            while (await moveNextTask)
+            while (await enumerator.MoveNextAsync(cancellationToken))
             {
-                var current = enumerator.Current;
-                moveNextTask = enumerator.MoveNextAsync(cancellationToken);
-                yield return current;
+                yield return enumerator.Current;
             }
         }
     }
