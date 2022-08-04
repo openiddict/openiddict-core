@@ -30,6 +30,7 @@ public static partial class OpenIddictClientHandlers
         ResolveValidatedStateToken.Descriptor,
         ValidateRequiredStateToken.Descriptor,
         ValidateStateToken.Descriptor,
+        RedeemStateTokenEntry.Descriptor,
         ResolveClientRegistrationFromStateToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
         ValidateFrontchannelErrorParameters.Descriptor,
@@ -84,8 +85,6 @@ public static partial class OpenIddictClientHandlers
         ValidateUserinfoToken.Descriptor,
         ValidateUserinfoTokenWellknownClaims.Descriptor,
         ValidateUserinfoTokenSubject.Descriptor,
-
-        RedeemStateTokenEntry.Descriptor,
 
         /*
          * Challenge processing:
@@ -375,6 +374,66 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for redeeming the token entry corresponding to the received state token.
+    /// Note: this handler is not used when the degraded mode is enabled.
+    /// </summary>
+    public class RedeemStateTokenEntry : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly IOpenIddictTokenManager _tokenManager;
+
+        public RedeemStateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0318));
+
+        public RedeemStateTokenEntry(IOpenIddictTokenManager tokenManager)
+            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenStorageEnabled>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .UseScopedHandler<RedeemStateTokenEntry>()
+                // Note: this handler is deliberately executed early in the pipeline to ensure
+                // that the state token entry is always marked as redeemed even if the authentication
+                // demand is rejected later in the pipeline (e.g because an error was returned).
+                .SetOrder(ValidateStateToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Extract the token identifier from the state token principal.
+            // If no token identifier can be found, this indicates that the token has no backing database entry.
+            var identifier = context.StateTokenPrincipal.GetTokenId();
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return;
+            }
+
+            // Mark the token as redeemed to prevent future reuses.
+            var token = await _tokenManager.FindByIdAsync(identifier);
+            if (token is not null && !await _tokenManager.TryRedeemAsync(token))
+            {
+                context.Reject(
+                    error: Errors.InvalidToken,
+                    description: SR.GetResourceString(SR.ID2139),
+                    uri: SR.FormatID8000(SR.ID2139));
+
+                return;
+            }
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the client registration
     /// based on the authorization server identity stored in the state token.
     /// </summary>
@@ -387,7 +446,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveClientRegistrationFromStateToken>()
-                .SetOrder(ValidateStateToken.Descriptor.Order + 1_000)
+                .SetOrder(RedeemStateTokenEntry.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -3191,56 +3250,6 @@ public static partial class OpenIddictClientHandlers
             }
 
             return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for redeeming the token entry corresponding to the received state token.
-    /// Note: this handler is not used when the degraded mode is enabled.
-    /// </summary>
-    public class RedeemStateTokenEntry : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public RedeemStateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0318));
-
-        public RedeemStateTokenEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireTokenStorageEnabled>()
-                .AddFilter<RequireStateTokenPrincipal>()
-                .UseScopedHandler<RedeemStateTokenEntry>()
-                .SetOrder(ValidateUserinfoTokenSubject.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-            // Extract the token identifier from the state token principal.
-            // If no token identifier can be found, this indicates that the token has no backing database entry.
-            var identifier = context.StateTokenPrincipal.GetTokenId();
-            if (!string.IsNullOrEmpty(identifier))
-            {
-                // Mark the token as redeemed to prevent future reuses.
-                var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token is not null)
-                {
-                    await _tokenManager.TryRedeemAsync(token);
-                }
-            }
         }
     }
 

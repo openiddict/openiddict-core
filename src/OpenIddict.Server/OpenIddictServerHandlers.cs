@@ -47,6 +47,7 @@ public static partial class OpenIddictServerHandlers
         * Sign-in processing:
         */
         ValidateSignInDemand.Descriptor,
+        RedeemTokenEntry.Descriptor,
         RestoreInternalClaims.Descriptor,
         AttachDefaultScopes.Descriptor,
         AttachDefaultPresenters.Descriptor,
@@ -60,8 +61,6 @@ public static partial class OpenIddictServerHandlers
         PrepareRefreshTokenPrincipal.Descriptor,
         PrepareIdentityTokenPrincipal.Descriptor,
         PrepareUserCodePrincipal.Descriptor,
-
-        RedeemTokenEntry.Descriptor,
 
         GenerateAccessToken.Descriptor,
         GenerateAuthorizationCode.Descriptor,
@@ -1173,6 +1172,124 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for redeeming the token entry corresponding to
+    /// the received authorization code, device code, user code or refresh token.
+    /// Note: this handler is not used when the degraded mode is enabled.
+    /// </summary>
+    public class RedeemTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
+    {
+        private readonly IOpenIddictTokenManager _tokenManager;
+
+        public RedeemTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+        public RedeemTokenEntry(IOpenIddictTokenManager tokenManager)
+            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                .AddFilter<RequireDegradedModeDisabled>()
+                .AddFilter<RequireTokenStorageEnabled>()
+                .UseScopedHandler<RedeemTokenEntry>()
+                // Note: this handler is deliberately executed early in the pipeline to ensure
+                // that the token database entry is always marked as redeemed even if the sign-in
+                // demand is rejected later in the pipeline (e.g because an error was returned).
+                .SetOrder(ValidateSignInDemand.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessSignInContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            switch (context.EndpointType)
+            {
+                case OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType():
+                case OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType():
+                case OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() &&
+                                                            !context.Options.DisableRollingRefreshTokens:
+                case OpenIddictServerEndpointType.Verification:
+                    break;
+
+                default: return;
+            }
+
+            var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
+                typeof(ProcessAuthenticationContext).FullName!) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+
+            var principal = context.EndpointType switch
+            {
+                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                    => notification.AuthorizationCodePrincipal,
+
+                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                    => notification.DeviceCodePrincipal,
+
+                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                    => notification.RefreshTokenPrincipal,
+
+                OpenIddictServerEndpointType.Verification => notification.UserCodePrincipal,
+
+                _ => null
+            };
+
+            Debug.Assert(principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Extract the token identifier from the authentication principal.
+            // If no token identifier can be found, this indicates that the token has no backing database entry.
+            var identifier = principal.GetTokenId();
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return;
+            }
+
+            var token = await _tokenManager.FindByIdAsync(identifier);
+            if (token is null)
+            {
+                return;
+            }
+
+            // Mark the token as redeemed to prevent future reuses. If the request is a refresh token request, ignore
+            // errors returned while trying to mark the entry as redeemed (that may be caused by concurrent requests).
+            if (context.EndpointType is OpenIddictServerEndpointType.Token && context.Request.IsRefreshTokenGrantType())
+            {
+                await _tokenManager.TryRedeemAsync(token);
+            }
+
+            else if (!await _tokenManager.TryRedeemAsync(token))
+            {
+                context.Reject(
+                    error: Errors.InvalidToken,
+                    description: principal.GetTokenType() switch
+                    {
+                        TokenTypeHints.AuthorizationCode => SR.GetResourceString(SR.ID2010),
+                        TokenTypeHints.DeviceCode        => SR.GetResourceString(SR.ID2011),
+                        TokenTypeHints.RefreshToken      => SR.GetResourceString(SR.ID2012),
+
+                        _ => SR.GetResourceString(SR.ID2013)
+                    },
+                    uri: principal.GetTokenType() switch
+                    {
+                        TokenTypeHints.AuthorizationCode => SR.FormatID8000(SR.ID2010),
+                        TokenTypeHints.DeviceCode        => SR.FormatID8000(SR.ID2011),
+                        TokenTypeHints.RefreshToken      => SR.FormatID8000(SR.ID2012),
+
+                        _ => SR.FormatID8000(SR.ID2013)
+                    });
+
+                return;
+            }
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for re-attaching internal claims to the authentication principal.
     /// </summary>
     public class RestoreInternalClaims : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1183,7 +1300,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .UseSingletonHandler<RestoreInternalClaims>()
-                .SetOrder(ValidateSignInDemand.Descriptor.Order + 1_000)
+                .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -2126,72 +2243,6 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for redeeming the token entry corresponding to
-    /// the received authorization code, device code, user code or refresh token.
-    /// Note: this handler is not used when the degraded mode is enabled.
-    /// </summary>
-    public class RedeemTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
-    {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public RedeemTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public RedeemTokenEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                .AddFilter<RequireDegradedModeDisabled>()
-                .AddFilter<RequireTokenStorageEnabled>()
-                .UseScopedHandler<RedeemTokenEntry>()
-                .SetOrder(100_000)
-                .SetType(OpenIddictServerHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public async ValueTask HandleAsync(ProcessSignInContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            switch (context.EndpointType)
-            {
-                case OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType():
-                case OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType():
-                case OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() &&
-                                                            !context.Options.DisableRollingRefreshTokens:
-                case OpenIddictServerEndpointType.Verification:
-                    break;
-
-                default: return;
-            }
-
-            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-            // Extract the token identifier from the authentication principal.
-            // If no token identifier can be found, this indicates that the token has no backing database entry.
-            var identifier = context.Principal.GetTokenId();
-            if (string.IsNullOrEmpty(identifier))
-            {
-                return;
-            }
-
-            // If rolling tokens are enabled or if the request is a a code or device code token request
-            // or a user code verification request, mark the token as redeemed to prevent future reuses.
-            var token = await _tokenManager.FindByIdAsync(identifier);
-            if (token is not null)
-            {
-                await _tokenManager.TryRedeemAsync(token);
-            }
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for generating an access token for the current sign-in operation.
     /// </summary>
     public class GenerateAccessToken : IOpenIddictServerHandler<ProcessSignInContext>
@@ -2208,7 +2259,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAccessTokenGenerated>()
                 .UseScopedHandler<GenerateAccessToken>()
-                .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
+                .SetOrder(100_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

@@ -575,8 +575,41 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
+                // If the token entry cannot be found, return a generic error.
                 var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token is null || !await _tokenManager.HasStatusAsync(token, Statuses.Valid))
+                if (token is null)
+                {
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2019),
+                        uri: SR.FormatID8000(SR.ID2019));
+
+                    return;
+                }
+
+                if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6002), identifier);
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: context.Principal.GetTokenType() switch
+                        {
+                            TokenTypeHints.StateToken => SR.GetResourceString(SR.ID2139),
+
+                            _ => SR.GetResourceString(SR.ID2013)
+                        },
+                        uri: context.Principal.GetTokenType() switch
+                        {
+                            TokenTypeHints.StateToken => SR.FormatID8000(SR.ID2139),
+
+                            _ => SR.FormatID8000(SR.ID2013)
+                        });
+
+                    return;
+                }
+
+                if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), identifier);
 
