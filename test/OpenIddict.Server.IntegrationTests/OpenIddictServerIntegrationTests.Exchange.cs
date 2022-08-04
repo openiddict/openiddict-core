@@ -3805,6 +3805,101 @@ public abstract partial class OpenIddictServerIntegrationTests
         Mock.Get(manager).Verify(manager => manager.HasStatusAsync(authorization, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
     }
 
+    [Fact]
+    public async Task HandleTokenRequest_RequestIsRejectedWhenAuthorizationCodeCannotBeRedeemed()
+    {
+        // Arrange
+        var token = new OpenIddictToken();
+
+        var manager = CreateTokenManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(token);
+
+            mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+            mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeHints.AuthorizationCode);
+
+            mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new OpenIddictToken());
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.AuthorizationCode)
+                        .SetPresenters("Fabrikam")
+                        .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+            {
+                var application = new OpenIddictApplication();
+
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            }));
+
+            options.Services.AddSingleton(manager);
+
+            options.DisableAuthorizationStorage();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Code = "SplxlOBeZQQYbYS6WxSbIA",
+            GrantType = GrantTypes.AuthorizationCode,
+            RedirectUri = "http://www.fabrikam.com/path"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2010), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2010), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
     [Theory]
     [InlineData(GrantTypes.AuthorizationCode)]
     [InlineData(GrantTypes.ClientCredentials)]
