@@ -51,6 +51,13 @@ public static partial class OpenIddictServerHandlers
             ValidateResponseTypePermissions.Descriptor,
             ValidateScopePermissions.Descriptor,
             ValidateProofKeyForCodeExchangeRequirement.Descriptor,
+            ValidateToken.Descriptor,
+            ValidateAuthorizedParty.Descriptor,
+
+            /*
+             * Authorization request handling:
+             */
+            AttachPrincipal.Descriptor,
 
             /*
              * Authorization response processing:
@@ -1617,6 +1624,152 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting authorization
+        /// requests that don't specify a valid id_token_hint.
+        /// </summary>
+        public class ValidateToken : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            private readonly IOpenIddictServerDispatcher _dispatcher;
+
+            public ValidateToken(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .UseScopedHandler<ValidateToken>()
+                    .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var notification = new ProcessAuthenticationContext(context.Transaction);
+                await _dispatcher.DispatchAsync(notification);
+
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the authentication result without triggering a new authentication flow.
+                context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName!, notification);
+
+                if (notification.IsRequestHandled)
+                {
+                    context.HandleRequest();
+                    return;
+                }
+
+                else if (notification.IsRequestSkipped)
+                {
+                    context.SkipRequest();
+                    return;
+                }
+
+                else if (notification.IsRejected)
+                {
+                    context.Reject(
+                        error: notification.Error ?? Errors.InvalidRequest,
+                        description: notification.ErrorDescription,
+                        uri: notification.ErrorUri);
+                    return;
+                }
+
+                // Attach the security principal extracted from the token to the validation context.
+                context.IdentityTokenHintPrincipal = notification.IdentityTokenPrincipal;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests that specify an identity
+        /// token hint that cannot be used by the client application sending the authorization request.
+        /// </summary>
+        public class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .UseSingletonHandler<ValidateAuthorizedParty>()
+                    .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.IdentityTokenHintPrincipal is null)
+                {
+                    return default;
+                }
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                // When an identity token hint is specified, the client_id (when present) must be
+                // listed either as a valid audience or as a presenter to be considered valid.
+                if (!context.IdentityTokenHintPrincipal.HasAudience(context.ClientId) &&
+                    !context.IdentityTokenHintPrincipal.HasPresenter(context.ClientId))
+                {
+                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6197));
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2141),
+                        uri: SR.FormatID8000(SR.ID2141));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for attaching the principal
+        /// extracted from the identity token hint to the event context.
+        /// </summary>
+        public class AttachPrincipal : IOpenIddictServerHandler<HandleAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleAuthorizationRequestContext>()
+                    .UseSingletonHandler<AttachPrincipal>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleAuthorizationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var notification = context.Transaction.GetProperty<ValidateAuthorizationRequestContext>(
+                    typeof(ValidateAuthorizationRequestContext).FullName!) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
+
+                context.IdentityTokenHintPrincipal ??= notification.IdentityTokenHintPrincipal;
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for inferring the redirect URL
         /// used to send the response back to the client application.
         /// </summary>
@@ -1650,7 +1803,7 @@ public static partial class OpenIddictServerHandlers
 
                 // Note: at this stage, the validated redirect URI property may be null (e.g if an error
                 // is returned from the ExtractAuthorizationRequest/ValidateAuthorizationRequest events).
-                if (notification is not null && !notification.IsRejected)
+                if (notification is { IsRejected: false })
                 {
                     context.RedirectUri = notification.RedirectUri;
                 }

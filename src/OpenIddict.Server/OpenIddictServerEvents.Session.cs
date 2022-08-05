@@ -4,6 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Security.Claims;
+
 namespace OpenIddict.Server;
 
 public static partial class OpenIddictServerEvents
@@ -56,9 +58,20 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
+        /// Gets the client_id specified by the client application, if available.
+        /// </summary>
+        public string? ClientId => Request?.ClientId;
+
+        /// <summary>
         /// Gets the post_logout_redirect_uri specified by the client application.
         /// </summary>
         public string? PostLogoutRedirectUri { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted
+        /// from the identity token hint, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? IdentityTokenHintPrincipal { get; set; }
 
         /// <summary>
         /// Populates the <see cref="PostLogoutRedirectUri"/> property with the specified redirect_uri.
@@ -105,6 +118,12 @@ public static partial class OpenIddictServerEvents
             get => Transaction.Request!;
             set => Transaction.Request = value;
         }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted
+        /// from the identity token hint, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? IdentityTokenHintPrincipal { get; set; }
 
         /// <summary>
         /// Gets a boolean indicating whether a sign-out should be triggered.

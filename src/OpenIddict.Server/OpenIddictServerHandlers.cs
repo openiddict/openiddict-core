@@ -181,7 +181,8 @@ public static partial class OpenIddictServerHandlers
              context.ValidateAuthorizationCode) = context.EndpointType switch
             {
                 // The authorization code grant requires sending a valid authorization code.
-                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType() => (true, true, true),
+                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                    => (true, true, true),
 
                 _ => (false, false, false)
             };
@@ -191,7 +192,8 @@ public static partial class OpenIddictServerHandlers
              context.ValidateDeviceCode) = context.EndpointType switch
             {
                 // The device code grant requires sending a valid device code.
-                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType() => (true, true, true),
+                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                    => (true, true, true),
 
                 _ => (false, false, false)
             };
@@ -202,7 +204,8 @@ public static partial class OpenIddictServerHandlers
             {
                 // Tokens received by the introspection and revocation endpoints can be of any type.
                 // Additional token type filtering is made by the endpoint themselves, if needed.
-                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation => (true, true, true),
+                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
+                    => (true, true, true),
 
                 _ => (false, false, false)
             };
@@ -213,7 +216,8 @@ public static partial class OpenIddictServerHandlers
             {
                 // The identity token received by the authorization and logout
                 // endpoints are not required and serve as optional hints.
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout => (true, false, true),
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout
+                    => (true, false, true),
 
                 _ => (false, false, true)
             };
@@ -223,7 +227,8 @@ public static partial class OpenIddictServerHandlers
              context.ValidateRefreshToken) = context.EndpointType switch
             {
                 // The refresh token grant requires sending a valid refresh token.
-                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() => (true, true, true),
+                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                    => (true, true, true),
 
                 _ => (false, false, false)
             };

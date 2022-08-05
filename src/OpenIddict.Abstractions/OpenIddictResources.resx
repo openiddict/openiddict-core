@@ -1733,6 +1733,12 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID2139" xml:space="preserve">
     <value>The specified state token has already been redeemed.</value>
   </data>
+  <data name="ID2140" xml:space="preserve">
+    <value>This client application is not allowed to use the logout endpoint.</value>
+  </data>
+  <data name="ID2141" xml:space="preserve">
+    <value>The client application is not allowed to use the specified identity token hint.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -2328,6 +2334,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6195" xml:space="preserve">
     <value>The userinfo response returned by {Address} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6196" xml:space="preserve">
+    <value>The logout request was rejected because the client application was not found: '{ClientId}'.</value>
+  </data>
+  <data name="ID6197" xml:space="preserve">
+    <value>The authorization request was rejected because the identity token used as a hint was issued to a different client.</value>
+  </data>
+  <data name="ID6198" xml:space="preserve">
+    <value>The logout request was rejected because the identity token used as a hint was issued to a different client.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

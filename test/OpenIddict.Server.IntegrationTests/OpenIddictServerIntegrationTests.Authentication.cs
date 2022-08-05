@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 
 namespace OpenIddict.Server.IntegrationTests;
 
@@ -483,7 +484,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateAuthorizationRequest_RequestIsValidateWhenPkceIsNotRequiredAndCodeChallengeIsMissing()
+    public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenPkceIsNotRequiredAndCodeChallengeIsMissing()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -1816,6 +1817,155 @@ public abstract partial class OpenIddictServerIntegrationTests
         Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
             Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_InvalidIdentityTokenHintCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Token
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidToken, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2009), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2009), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_IdentityTokenHintCausesAnErrorWhenCallerIsNotAuthorized()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("id_token", context.Token);
+                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetPresenters("Contoso")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Token
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2141), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2141), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenIdentityTokenHintIsExpired()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.HasPermissionAsync(application,
+                Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.DisableAuthorizationStorage();
+            options.DisableTokenStorage();
+            options.DisableSlidingRefreshTokenExpiration();
+
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+
+            options.Services.AddSingleton(manager);
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("id_token", context.Token);
+                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetPresenters("Fabrikam")
+                        .SetExpirationDate(new DateTimeOffset(2017, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("Bob le Bricoleur", context.IdentityTokenHintPrincipal
+                        ?.FindFirst(Claims.Subject)?.Value);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Token
+        });
+
+        // Assert
+        Assert.Null(response.Code);
+        Assert.NotNull(response.AccessToken);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
