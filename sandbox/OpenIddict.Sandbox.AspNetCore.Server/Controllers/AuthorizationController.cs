@@ -315,7 +315,7 @@ public class AuthorizationController : Controller
 
     #region Device flow
     // Note: to support the device flow, you must provide your own verification endpoint action:
-    [Authorize, HttpGet("~/connect/verify")]
+    [Authorize, HttpGet("~/connect/verify"), IgnoreAntiforgeryToken]
     public async Task<IActionResult> Verify()
     {
         var request = HttpContext.GetOpenIddictServerRequest() ??
@@ -446,7 +446,7 @@ public class AuthorizationController : Controller
     // Note: to support non-interactive flows like password,
     // you must provide your own token endpoint action:
 
-    [HttpPost("~/connect/token"), Produces("application/json")]
+    [HttpPost("~/connect/token"), IgnoreAntiforgeryToken, Produces("application/json")]
     public async Task<IActionResult> Exchange()
     {
         var request = HttpContext.GetOpenIddictServerRequest() ??
