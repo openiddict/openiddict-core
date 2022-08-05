@@ -70,6 +70,12 @@ public static partial class OpenIddictServerEvents
         public string? RedirectUri { get; private set; }
 
         /// <summary>
+        /// Gets or sets the security principal extracted
+        /// from the identity token hint, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? IdentityTokenHintPrincipal { get; set; }
+
+        /// <summary>
         /// Populates the <see cref="RedirectUri"/> property with the specified redirect_uri.
         /// </summary>
         /// <param name="address">The redirect_uri to use when redirecting the user agent.</param>
@@ -114,6 +120,12 @@ public static partial class OpenIddictServerEvents
             get => Transaction.Request!;
             set => Transaction.Request = value;
         }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted
+        /// from the identity token hint, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? IdentityTokenHintPrincipal { get; set; }
 
         /// <summary>
         /// Gets the additional parameters returned to the client application.

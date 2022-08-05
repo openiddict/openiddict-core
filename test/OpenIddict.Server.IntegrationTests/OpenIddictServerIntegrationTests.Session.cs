@@ -4,10 +4,13 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
+using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
 
 namespace OpenIddict.Server.IntegrationTests;
 
@@ -150,6 +153,39 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateLogoutRequest_RequestIsRejectedWhenClientCannotBeFound()
+    {
+        // Arrange
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
     public async Task ValidateLogoutRequest_RequestIsRejectedWhenNoMatchingApplicationIsFound()
     {
         // Arrange
@@ -285,6 +321,250 @@ public abstract partial class OpenIddictServerIntegrationTests
         Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(applications[0], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());
         Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(applications[1], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());
         Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(applications[2], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ValidateLogoutRequest_RequestIsRejectedWhenEndpointPermissionIsNotGranted()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.GetPostLogoutRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ImmutableArray.Create("http://www.fabrikam.com/path"));
+
+            mock.Setup(manager => manager.HasPermissionAsync(application,
+                Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam"
+        });
+
+        // Assert
+        Assert.Equal(Errors.UnauthorizedClient, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2140), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2140), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+            Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ValidateLogoutRequest_InvalidIdentityTokenHintCausesAnError()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidToken, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2009), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2009), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateLogoutRequest_IdentityTokenHintCausesAnErrorWhenExplicitCallerIsNotAuthorized()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("id_token", context.Token);
+                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetPresenters("Contoso")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2141), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2141), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateLogoutRequest_IdentityTokenHintCausesAnErrorWhenInferredCallerIsNotAuthorized()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .Returns(new[] { application }.ToAsyncEnumerable());
+
+            mock.Setup(manager => manager.HasPermissionAsync(application,
+                Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.GetClientIdAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Fabrikam");
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("id_token", context.Token);
+                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetPresenters("Contoso")
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            IdTokenHint = "id_token",
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2141), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2141), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.AtLeast(2));
+    }
+
+    [Fact]
+    public async Task ValidateLogoutRequest_RequestIsValidatedWhenIdentityTokenHintIsExpired()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.GetPostLogoutRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ImmutableArray.Create("http://www.fabrikam.com/path"));
+
+            mock.Setup(manager => manager.HasPermissionAsync(application,
+                Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+
+            options.SetLogoutEndpointUris("/signout");
+
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("id_token", context.Token);
+                    Assert.Equal(new[] { TokenTypeHints.IdToken }, context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeHints.IdToken)
+                        .SetPresenters("Fabrikam")
+                        .SetExpirationDate(new DateTimeOffset(2017, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                    return default;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("Bob le Bricoleur", context.IdentityTokenHintPrincipal
+                        ?.FindFirst(Claims.Subject)?.Value);
+
+                    context.SignOut();
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/signout", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            IdTokenHint = "id_token",
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path",
+            State = "af0ifjsldkj"
+        });
+
+        // Assert
+        Assert.Equal("af0ifjsldkj", response.State);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
