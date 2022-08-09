@@ -17,28 +17,6 @@ namespace OpenIddict.Client.AspNetCore;
 public static class OpenIddictClientAspNetCoreHandlerFilters
 {
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if the
-    /// pass-through mode was not enabled for the authorization endpoint.
-    /// </summary>
-    public class RequireRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
-    {
-        private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
-
-        public RequireRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
-        public ValueTask<bool> IsActiveAsync(BaseContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(_options.CurrentValue.EnableRedirectionEndpointPassthrough);
-        }
-    }
-
-    /// <summary>
     /// Represents a filter that excludes the associated handlers if error pass-through was not enabled.
     /// </summary>
     public class RequireErrorPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
@@ -72,6 +50,50 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
             }
 
             return new(context.Transaction.GetHttpRequest() is not null);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the
+    /// pass-through mode was not enabled for the post-logout redirection endpoint.
+    /// </summary>
+    public class RequirePostLogoutRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
+
+        public RequirePostLogoutRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnablePostLogoutRedirectionEndpointPassthrough);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the
+    /// pass-through mode was not enabled for the redirection endpoint.
+    /// </summary>
+    public class RequireRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
+
+        public RequireRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnableRedirectionEndpointPassthrough);
         }
     }
 

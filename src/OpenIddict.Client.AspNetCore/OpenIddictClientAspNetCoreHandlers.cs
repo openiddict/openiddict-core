@@ -37,14 +37,21 @@ public static partial class OpenIddictClientAspNetCoreHandlers
          * Authentication processing:
          */
         ValidateCorrelationCookie.Descriptor,
-        ValidateRedirectUri.Descriptor,
+        ValidateEndpointUri.Descriptor,
 
         /*
          * Challenge processing:
          */
-        GenerateCorrelationCookie.Descriptor,
-        ResolveHostChallengeParameters.Descriptor)
-        .AddRange(Authentication.DefaultHandlers);
+        ResolveHostChallengeParameters.Descriptor,
+        GenerateLoginCorrelationCookie.Descriptor,
+
+        /*
+         * Sign-out processing:
+         */
+        ResolveHostSignOutParameters.Descriptor,
+        GenerateLogoutCorrelationCookie.Descriptor)
+        .AddRange(Authentication.DefaultHandlers)
+        .AddRange(Session.DefaultHandlers);
 
     /// <summary>
     /// Contains the logic responsible for inferring the endpoint type from the request address.
@@ -76,8 +83,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
             context.EndpointType =
-                Matches(request, context.Options.RedirectionEndpointUris) ? OpenIddictClientEndpointType.Redirection :
-                                                                            OpenIddictClientEndpointType.Unknown;
+                Matches(request, context.Options.PostLogoutRedirectionEndpointUris) ? OpenIddictClientEndpointType.PostLogoutRedirection :
+                Matches(request, context.Options.RedirectionEndpointUris)           ? OpenIddictClientEndpointType.Redirection :
+                                                                                      OpenIddictClientEndpointType.Unknown;
 
             return default;
 
@@ -215,8 +223,8 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for validating the correlation cookie that serves as a
-    /// protection against state token injection, forged requests and session fixation attacks.
+    /// Contains the logic responsible for validating the correlation cookie that serves as a protection
+    /// against state token injection, forged requests, denial of service and session fixation attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
     public class ValidateCorrelationCookie : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -301,10 +309,10 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for comparing the current request URL to the redirect_uri stored in the state token.
+    /// Contains the logic responsible for comparing the current request URL to the expected URL stored in the state token.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ValidateRedirectUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class ValidateEndpointUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -313,7 +321,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireHttpRequest>()
                 .AddFilter<RequireStateTokenValidated>()
-                .UseSingletonHandler<ValidateRedirectUri>()
+                .UseSingletonHandler<ValidateEndpointUri>()
                 .SetOrder(ValidateCorrelationCookie.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -333,10 +341,29 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var request = context.Transaction.GetHttpRequest() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            // Try to resolve the original redirect_uri from the state token. If it cannot be resolved,
-            // this likely means the authorization request was sent without a redirect_uri attached.
-            if (!Uri.TryCreate(context.StateTokenPrincipal.GetClaim(Claims.Private.RedirectUri),
-                UriKind.Absolute, out Uri? address))
+            // Resolve the endpoint type allowed to be used with the state token.
+            if (!Enum.TryParse(context.StateTokenPrincipal.GetClaim(Claims.Private.EndpointType),
+                ignoreCase: true, out OpenIddictClientEndpointType type))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0340));
+            }
+
+            // Resolve the endpoint URI from either the redirect_uri or post_logout_redirect_uri
+            // depending on the type of endpoint meant to be used with the specified state token.
+            var value = type switch
+            {
+                OpenIddictClientEndpointType.PostLogoutRedirection =>
+                    context.StateTokenPrincipal.GetClaim(Claims.Private.PostLogoutRedirectUri),
+
+                OpenIddictClientEndpointType.Redirection =>
+                    context.StateTokenPrincipal.GetClaim(Claims.Private.RedirectUri),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0340))
+            };
+
+            // If the endpoint URI cannot be resolved, this likely means the authorization or
+            // logout request was sent without a redirect_uri/post_logout_redirect_uri attached.
+            if (string.IsNullOrEmpty(value))
             {
                 return default;
             }
@@ -345,17 +372,18 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var uri = new Uri(request.Scheme + Uri.SchemeDelimiter + request.Host +
                 request.PathBase + request.Path, UriKind.Absolute);
 
-            // Compare the current HTTP request address to the original redirect_uri. If the two don't
+            // Compare the current HTTP request address to the original endpoint URI. If the two don't
             // match, this may indicate a mix-up attack. While the authorization server is expected to
             // abort the authorization flow by rejecting the token request that may be eventually sent
-            // with the original redirect_uri, many servers are known to incorrectly implement this
-            // redirect_uri validation logic. This check also offers limited protection as it cannot
+            // with the original endpoint URI, many servers are known to incorrectly implement this
+            // endpoint URI validation logic. This check also offers limited protection as it cannot
             // prevent the authorization code from being leaked to a malicious authorization server.
-            // By comparing the redirect_uri directly in the client, a first layer of protection is
+            // By comparing the endpoint URI directly in the client, a first layer of protection is
             // provided independently of whether the authorization server will enforce this check.
             //
             // See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-4.4.2.2
             // for more information.
+            var address = new Uri(value, UriKind.Absolute);
             if (uri != new UriBuilder(address) { Query = null }.Uri)
             {
                 context.Reject(
@@ -366,9 +394,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 return default;
             }
 
-            // Ensure all the query string parameters that were part of the original redirect_uri
+            // Ensure all the query string parameters that were part of the original endpoint URI
             // are present in the current request (parameters that were not part of the original
-            // redirect_uri are assumed to be authorization response parameters and are ignored).
+            // endpoint URI are assumed to be authorization response parameters and are ignored).
             if (!string.IsNullOrEmpty(address.Query) && QueryHelpers.ParseQuery(address.Query)
                 .Any(parameter => request.Query[parameter.Key] != parameter.Value))
             {
@@ -436,6 +464,20 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 context.TargetLinkUri = properties.RedirectUri;
             }
 
+            // If an identity token hint was specified, attach it to the context.
+            if (properties.Items.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
+                !string.IsNullOrEmpty(token))
+            {
+                context.IdentityTokenHint = token;
+            }
+
+            // If a login hint was specified, attach it to the context.
+            if (properties.Items.TryGetValue(Properties.LoginHint, out string? hint) &&
+                !string.IsNullOrEmpty(hint))
+            {
+                context.LoginHint = hint;
+            }
+
             // Preserve the host properties in the principal.
             if (properties.Items.Count is not 0)
             {
@@ -470,11 +512,11 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     /// protection against state token injection, forged requests and session fixation attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class GenerateCorrelationCookie : IOpenIddictClientHandler<ProcessChallengeContext>
+    public class GenerateLoginCorrelationCookie : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
 
-        public GenerateCorrelationCookie(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+        public GenerateLoginCorrelationCookie(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
         /// <summary>
@@ -483,14 +525,182 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireHttpRequest>()
-                .AddFilter<RequireStateTokenGenerated>()
-                .UseSingletonHandler<GenerateCorrelationCookie>()
+                .AddFilter<RequireLoginStateTokenGenerated>()
+                .UseSingletonHandler<GenerateLoginCorrelationCookie>()
                 .SetOrder(AttachChallengeParameters.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
         public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: using a correlation cookie serves as an injection/antiforgery protection as the request
+            // will always be rejected if a cookie corresponding to the request forgery protection claim
+            // persisted in the state token cannot be found. This protection is considered essential
+            // in OpenIddict and cannot be disabled via the options. Applications that prefer implementing
+            // a different protection strategy can set the request forgery protection claim to null or
+            // remove this handler from the handlers list and add a custom one using a different approach.
+
+            if (string.IsNullOrEmpty(context.RequestForgeryProtection))
+            {
+                return default;
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var response = context.Transaction.GetHttpRequest()?.HttpContext.Response ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            // Resolve the cookie builder from the OWIN integration options.
+            var builder = _options.CurrentValue.CookieBuilder;
+
+            // Unless a value was explicitly set in the options, use the expiration date
+            // of the state token principal as the expiration date of the correlation cookie.
+            var options = builder.Build(response.HttpContext);
+            options.Expires ??= context.StateTokenPrincipal.GetExpirationDate();
+
+            // Compute a collision-resistant and hard-to-guess cookie name based on the prefix set
+            // in the options and the random request forgery protection claim generated earlier.
+            var name = new StringBuilder(builder.Name)
+                .Append(Separators.Dot)
+                .Append(context.RequestForgeryProtection)
+                .ToString();
+
+            // Add the correlation cookie to the response headers.
+            response.Cookies.Append(name, "v1", options);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the additional sign-out parameters stored in the ASP.NET
+    /// Core authentication properties specified by the application that triggered the sign-out operation.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public class ResolveHostSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ResolveHostSignOutParameters>()
+                .SetOrder(ValidateSignOutDemand.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+            if (properties is null)
+            {
+                return default;
+            }
+
+            // If an issuer was explicitly set, update the sign-out context to use it.
+            if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
+            {
+                // Ensure the issuer set by the application is a valid absolute URI.
+                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0306));
+                }
+
+                context.Issuer = uri;
+            }
+
+            // If a return URL was specified, use it as the target_link_uri claim.
+            if (!string.IsNullOrEmpty(properties.RedirectUri))
+            {
+                context.TargetLinkUri = properties.RedirectUri;
+            }
+
+            // If an identity token hint was specified, attach it to the context.
+            if (properties.Items.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
+                !string.IsNullOrEmpty(token))
+            {
+                context.IdentityTokenHint = token;
+            }
+
+            // If a login hint was specified, attach it to the context.
+            if (properties.Items.TryGetValue(Properties.LoginHint, out string? hint) &&
+                !string.IsNullOrEmpty(hint))
+            {
+                context.LoginHint = hint;
+            }
+
+            // Preserve the host properties in the principal.
+            if (properties.Items.Count is not 0)
+            {
+                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Items);
+            }
+
+            foreach (var parameter in properties.Parameters)
+            {
+                context.Parameters[parameter.Key] = parameter.Value switch
+                {
+                    OpenIddictParameter value => value,
+                    JsonElement value         => new OpenIddictParameter(value),
+                    bool value                => new OpenIddictParameter(value),
+                    int value                 => new OpenIddictParameter(value),
+                    long value                => new OpenIddictParameter(value),
+                    string value              => new OpenIddictParameter(value),
+                    string[] value            => new OpenIddictParameter(value),
+
+#if SUPPORTS_JSON_NODES
+                    JsonNode            value => new OpenIddictParameter(value),
+#endif
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
+                };
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for creating a correlation cookie that serves as a
+    /// protection against state token injection, forged requests and denial of service attacks.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public class GenerateLogoutCorrelationCookie : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
+
+        public GenerateLogoutCorrelationCookie(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireLogoutStateTokenGenerated>()
+                .UseSingletonHandler<GenerateLogoutCorrelationCookie>()
+                .SetOrder(AttachChallengeParameters.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
         {
             if (context is null)
             {

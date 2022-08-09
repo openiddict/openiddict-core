@@ -19,7 +19,8 @@ namespace OpenIddict.Client.AspNetCore;
 /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
 /// </summary>
 public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddictClientAspNetCoreOptions>,
-    IAuthenticationRequestHandler
+    IAuthenticationRequestHandler,
+    IAuthenticationSignOutHandler
 {
     private readonly IOpenIddictClientDispatcher _dispatcher;
     private readonly IOpenIddictClientFactory _factory;
@@ -149,6 +150,8 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
                     context.FrontchannelIdentityTokenPrincipal,
                     context.BackchannelIdentityTokenPrincipal,
                     context.UserinfoTokenPrincipal),
+
+                OpenIddictClientEndpointType.PostLogoutRedirection => context.StateTokenPrincipal,
 
                 _ => null
             };
@@ -374,4 +377,46 @@ public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddic
     /// <inheritdoc/>
     protected override Task HandleForbiddenAsync(AuthenticationProperties? properties)
         => HandleChallengeAsync(properties);
+
+    /// <inheritdoc/>
+    public async Task SignOutAsync(AuthenticationProperties? properties)
+    {
+        var transaction = Context.Features.Get<OpenIddictClientAspNetCoreFeature>()?.Transaction ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0112));
+
+        var context = new ProcessSignOutContext(transaction)
+        {
+            Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+            Request = new OpenIddictRequest()
+        };
+
+        transaction.Properties[typeof(AuthenticationProperties).FullName!] = properties ?? new AuthenticationProperties();
+
+        await _dispatcher.DispatchAsync(context);
+
+        if (context.IsRequestHandled || context.IsRequestSkipped)
+        {
+            return;
+        }
+
+        else if (context.IsRejected)
+        {
+            var notification = new ProcessErrorContext(transaction)
+            {
+                Error = context.Error ?? Errors.InvalidRequest,
+                ErrorDescription = context.ErrorDescription,
+                ErrorUri = context.ErrorUri,
+                Response = new OpenIddictResponse()
+            };
+
+            await _dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled || context.IsRequestSkipped)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
+        }
+    }
 }

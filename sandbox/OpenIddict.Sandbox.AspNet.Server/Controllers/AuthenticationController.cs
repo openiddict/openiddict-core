@@ -7,10 +7,8 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
-using OpenIddict.Abstractions;
 using OpenIddict.Client.Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Server.Controllers
 {
@@ -19,8 +17,8 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
         // Note: this controller uses the same callback action for all providers
         // but for users who prefer using a different action per provider,
         // the following action can be split into separate actions.
-        [AcceptVerbs("GET", "POST"), Route("~/signin-{provider}")]
-        public async Task<ActionResult> Callback()
+        [AcceptVerbs("GET", "POST"), Route("~/callback/login/{provider}")]
+        public async Task<ActionResult> LogInCallback()
         {
             var context = HttpContext.GetOwinContext();
 
@@ -76,12 +74,22 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                     { Type: Claims.Name }
                         => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
 
+                    // The antiforgery components require an "identityprovider" claim, which
+                    // is mapped from the authorization server claim returned by OpenIddict.
+                    { Type: Claims.AuthorizationServer }
+                        => new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                            claim.Value, claim.ValueType, claim.Issuer),
+
                     _ => claim
                 })
                 .Where(claim => claim switch
                 {
-                    // Preserve the nameidentifier and name claims.
-                    { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
+                    // Preserve the basic claims that are necessary for the application to work correctly.
+                    {
+                        Type: ClaimTypes.NameIdentifier or
+                              ClaimTypes.Name           or
+                              "http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider"
+                    } => true,
 
                     // Applications that use multiple client registrations can filter claims based on the issuer.
                     { Type: "bio", Issuer: "https://github.com/" } => true,
@@ -89,11 +97,6 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                     // Don't preserve the other claims.
                     _ => false
                 }));
-
-            // The antiforgery components require both the ClaimTypes.NameIdentifier and identityprovider claims
-            // so the latter is manually added using the issuer identity resolved from the remote server.
-            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
-                result.Identity.GetClaim(Claims.AuthorizationServer)));
 
             // Note: when using external authentication providers with ASP.NET Identity,
             // the user identity MUST be added to the external authentication cookie scheme.
@@ -110,7 +113,10 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                     { Key: ".redirect" } => true,
 
                     // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-                    { Key: Tokens.BackchannelAccessToken or Tokens.RefreshToken } => true,
+                    {
+                        Key: OpenIddictClientOwinConstants.Tokens.BackchannelAccessToken or
+                             OpenIddictClientOwinConstants.Tokens.RefreshToken
+                    } => true,
 
                     // Don't add the other properties to the external cookie.
                     _ => false

@@ -40,7 +40,11 @@ public class Worker : IHostedService
                     },
                     RedirectUris =
                     {
-                        new Uri("https://localhost:44381/signin-local")
+                        new Uri("https://localhost:44381/callback/login/local")
+                    },
+                    PostLogoutRedirectUris =
+                    {
+                        new Uri("https://localhost:44381/callback/logout/local")
                     },
                     Permissions =
                     {

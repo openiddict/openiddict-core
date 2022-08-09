@@ -30,6 +30,11 @@ public class OpenIddictClientRegistration
     public Uri? RedirectUri { get; set; }
 
     /// <summary>
+    /// Gets or sets the address of the post-logout redirection endpoint that will handle the callback.
+    /// </summary>
+    public Uri? PostLogoutRedirectUri { get; set; }
+
+    /// <summary>
     /// Gets the list of encryption credentials used to create tokens for this client.
     /// Multiple credentials can be added to support key rollover, but if X.509 keys
     /// are used, at least one of them must have a valid creation/expiration date.

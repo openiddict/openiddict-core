@@ -7,10 +7,8 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
-using OpenIddict.Abstractions;
 using OpenIddict.Client.Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 {
@@ -55,7 +53,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             {
                 // Note: the OWIN host requires appending the #string suffix to indicate
                 // that the "identity_provider" property is a public string parameter.
-                properties.Dictionary[Parameters.IdentityProvider + PropertyTypes.String] = "github";
+                properties.Dictionary[Parameters.IdentityProvider + OpenIddictClientOwinConstants.PropertyTypes.String] = "github";
             }
 
             // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
@@ -63,11 +61,58 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             return new EmptyResult();
         }
 
+        [HttpPost, Route("~/logout"), ValidateAntiForgeryToken]
+        public async Task<ActionResult> LogOut(string returnUrl)
+        {
+            var context = HttpContext.GetOwinContext();
+
+            // Retrieve the identity stored in the local authentication cookie. If it's not available,
+            // this indicate that the user is already logged out locally (or has not logged in yet).
+            var result = await context.Authentication.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationType);
+            if (result is not { Identity: ClaimsIdentity identity })
+            {
+                // Only allow local return URLs to prevent open redirect attacks.
+                return Redirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+            }
+
+            // Remove the local authentication cookie before triggering a redirection to the remote server.
+            context.Authentication.SignOut(CookieAuthenticationDefaults.AuthenticationType);
+
+            // Resolve the issuer of the user identifier claim stored in the local authentication cookie.
+            // If the issuer is known to support remote sign-out, ask OpenIddict to initiate a logout request.
+            var issuer = identity.Claims.Select(claim => claim.Issuer).First();
+            if (issuer is "https://localhost:44349/")
+            {
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    // Note: when only one client is registered in the client options,
+                    // setting the issuer property is not required and can be omitted.
+                    [OpenIddictClientOwinConstants.Properties.Issuer] = issuer,
+
+                    // While not required, the specification encourages sending an id_token_hint
+                    // parameter containing an identity token returned by the server for this user.
+                    [OpenIddictClientOwinConstants.Properties.IdentityTokenHint] =
+                        result.Properties.Dictionary[OpenIddictClientOwinConstants.Tokens.BackchannelIdentityToken]
+                })
+                {
+                    // Only allow local return URLs to prevent open redirect attacks.
+                    RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
+                };
+
+                // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+                context.Authentication.SignOut(properties, OpenIddictClientOwinDefaults.AuthenticationType);
+                return new EmptyResult();
+            }
+
+            // Only allow local return URLs to prevent open redirect attacks.
+            return Redirect(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
+        }
+
         // Note: this controller uses the same callback action for all providers
         // but for users who prefer using a different action per provider,
         // the following action can be split into separate actions.
-        [AcceptVerbs("GET", "POST"), Route("~/signin-{provider}")]
-        public async Task<ActionResult> Callback()
+        [AcceptVerbs("GET", "POST"), Route("~/callback/login/{provider}")]
+        public async Task<ActionResult> LogInCallback()
         {
             var context = HttpContext.GetOwinContext();
 
@@ -123,12 +168,22 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                     { Type: Claims.Name }
                         => new Claim(ClaimTypes.Name, claim.Value, claim.ValueType, claim.Issuer),
 
+                    // The antiforgery components require an "identityprovider" claim, which
+                    // is mapped from the authorization server claim returned by OpenIddict.
+                    { Type: Claims.AuthorizationServer }
+                        => new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
+                            claim.Value, claim.ValueType, claim.Issuer),
+
                     _ => claim
                 })
                 .Where(claim => claim switch
                 {
-                    // Preserve the nameidentifier and name claims.
-                    { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
+                    // Preserve the basic claims that are necessary for the application to work correctly.
+                    {
+                        Type: ClaimTypes.NameIdentifier or
+                              ClaimTypes.Name           or
+                              "http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider"
+                    } => true,
 
                     // Applications that use multiple client registrations can filter claims based on the issuer.
                     { Type: "bio", Issuer: "https://github.com/" } => true,
@@ -136,11 +191,6 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                     // Don't preserve the other claims.
                     _ => false
                 }));
-
-            // The antiforgery components require both the ClaimTypes.NameIdentifier and identityprovider claims
-            // so the latter is manually added using the issuer identity resolved from the remote server.
-            claims.Add(new Claim("http://schemas.microsoft.com/accesscontrolservice/2010/07/claims/identityprovider",
-                result.Identity.GetClaim(Claims.AuthorizationServer)));
 
             var identity = new ClaimsIdentity(claims,
                 authenticationType: CookieAuthenticationDefaults.AuthenticationType,
@@ -155,7 +205,11 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
                     { Key: ".redirect" } => true,
 
                     // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.
-                    { Key: Tokens.BackchannelAccessToken or Tokens.RefreshToken } => true,
+                    {
+                        Key: OpenIddictClientOwinConstants.Tokens.BackchannelAccessToken   or
+                             OpenIddictClientOwinConstants.Tokens.BackchannelIdentityToken or
+                             OpenIddictClientOwinConstants.Tokens.RefreshToken
+                    } => true,
 
                     // Don't add the other properties to the external cookie.
                     _ => false
@@ -166,20 +220,22 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
             return Redirect(properties.RedirectUri);
         }
 
-        [AcceptVerbs("GET", "POST"), Route("~/logout")]
-        public ActionResult LogOut()
+        // Note: this controller uses the same callback action for all providers
+        // but for users who prefer using a different action per provider,
+        // the following action can be split into separate actions.
+        [AcceptVerbs("GET", "POST"), Route("~/callback/logout/{provider}")]
+        public async Task<ActionResult> LogOutCallback()
         {
             var context = HttpContext.GetOwinContext();
 
-            // Ask the cookies middleware to delete the local cookie created when the user agent
-            // is redirected from the identity provider after a successful authorization flow.
-            var properties = new AuthenticationProperties
-            {
-                RedirectUri = "/"
-            };
+            // Retrieve the data stored by OpenIddict in the state token created when the logout was triggered.
+            var result = await context.Authentication.AuthenticateAsync(OpenIddictClientOwinDefaults.AuthenticationType);
 
-            context.Authentication.SignOut(properties, CookieAuthenticationDefaults.AuthenticationType);
-            return Redirect(properties.RedirectUri);
+            // In this sample, the local authentication cookie is always removed before the user agent is redirected
+            // to the authorization server. Applications that prefer delaying the removal of the local cookie can
+            // remove the corresponding code from the logout action and remove the authentication cookie in this action.
+
+            return Redirect(result.Properties.RedirectUri);
         }
     }
 }

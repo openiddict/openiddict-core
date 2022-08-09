@@ -23,9 +23,11 @@ public static class OpenIddictClientOwinConstants
     {
         public const string AuthorizationCodePrincipal = ".authorization_code_principal";
         public const string BackchannelAccessTokenPrincipal = ".backchannel_access_token_principal";
-        public const string BackchannelIdentityTokenPrincipal = ".backchannel_id_token_principal";
+        public const string BackchannelIdentityTokenPrincipal = ".backchannel_identity_token_principal";
         public const string FrontchannelAccessTokenPrincipal = ".frontchannel_access_token_principal";
-        public const string FrontchannelIdentityTokenPrincipal = ".frontchannel_id_token_principal";
+        public const string FrontchannelIdentityTokenPrincipal = ".frontchannel_identity_token_principal";
+        public const string IdentityTokenHint = ".identity_token_hint";
+        public const string LoginHint = ".login_hint";
         public const string Issuer = ".issuer";
         public const string Error = ".error";
         public const string ErrorDescription = ".error_description";
