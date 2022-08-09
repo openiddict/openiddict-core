@@ -173,6 +173,54 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no login state token is generated.
+    /// </summary>
+    public class RequireLoginStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateStateToken);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no logout state token is generated.
+    /// </summary>
+    public class RequireLogoutStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessSignOutContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.GenerateStateToken);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a post-logout redirection request.
+    /// </summary>
+    public class RequirePostLogoutRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(context.EndpointType is OpenIddictClientEndpointType.PostLogoutRedirection);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a redirection request.
     /// </summary>
     public class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
@@ -201,22 +249,6 @@ public static class OpenIddictClientHandlerFilters
             }
 
             return new(context.ValidateRefreshToken);
-        }
-    }
-
-    /// <summary>
-    /// Represents a filter that excludes the associated handlers if no state token is generated.
-    /// </summary>
-    public class RequireStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
-    {
-        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new(context.GenerateStateToken);
         }
     }
 

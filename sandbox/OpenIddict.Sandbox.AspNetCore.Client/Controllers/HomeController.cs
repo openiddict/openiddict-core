@@ -17,7 +17,7 @@ public class HomeController : Controller
     [HttpGet("~/")]
     public ActionResult Index() => View();
 
-    [Authorize, HttpPost("~/")]
+    [Authorize, HttpPost("~/"), ValidateAntiForgeryToken]
     public async Task<ActionResult> Index(CancellationToken cancellationToken)
     {
         var token = await HttpContext.GetTokenAsync(CookieAuthenticationDefaults.AuthenticationScheme,

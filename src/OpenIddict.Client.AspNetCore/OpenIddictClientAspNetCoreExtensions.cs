@@ -40,6 +40,7 @@ public static class OpenIddictClientAspNetCoreExtensions
         // Register the built-in filters used by the default OpenIddict ASP.NET Core client event handlers.
         builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireHttpRequest>();
+        builder.Services.TryAddSingleton<RequirePostLogoutRedirectionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireRedirectionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireStatusCodePagesIntegrationEnabled>();
 

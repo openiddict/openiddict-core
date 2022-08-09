@@ -18,7 +18,29 @@ public static class OpenIddictClientOwinHandlerFilters
 {
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the
-    /// pass-through mode was not enabled for the authorization endpoint.
+    /// pass-through mode was not enabled for the post-logout redirection endpoint.
+    /// </summary>
+    public class RequirePostLogoutRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
+
+        public RequirePostLogoutRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(_options.CurrentValue.EnablePostLogoutRedirectionEndpointPassthrough);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the
+    /// pass-through mode was not enabled for the redirection endpoint.
     /// </summary>
     public class RequireRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
     {

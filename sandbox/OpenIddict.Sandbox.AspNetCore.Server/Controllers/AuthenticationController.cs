@@ -12,8 +12,8 @@ public class AuthenticationController : Controller
     // Note: this controller uses the same callback action for all providers
     // but for users who prefer using a different action per provider,
     // the following action can be split into separate actions.
-    [HttpGet("~/signin-{provider}"), HttpPost("~/signin-{provider}")]
-    public async Task<ActionResult> Callback()
+    [HttpGet("~/callback/login/{provider}"), HttpPost("~/callback/login/{provider}"), IgnoreAntiforgeryToken]
+    public async Task<ActionResult> LogInCallback()
     {
         // Retrieve the authorization data validated by OpenIddict as part of the callback handling.
         var result = await HttpContext.AuthenticateAsync(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
@@ -71,7 +71,7 @@ public class AuthenticationController : Controller
             })
             .Where(claim => claim switch
             {
-                // Preserve the nameidentifier and name claims.
+                // Preserve the basic claims that are necessary for the application to work correctly.
                 { Type: ClaimTypes.NameIdentifier or ClaimTypes.Name } => true,
 
                 // Applications that use multiple client registrations can filter claims based on the issuer.

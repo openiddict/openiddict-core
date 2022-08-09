@@ -23,6 +23,7 @@ public static partial class OpenIddictClientHandlers
             ValidateIssuer.Descriptor,
             ExtractAuthorizationEndpoint.Descriptor,
             ExtractCryptographyEndpoint.Descriptor,
+            ExtractLogoutEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
             ExtractUserinfoEndpoint.Descriptor,
             ExtractGrantTypes.Descriptor,
@@ -89,6 +90,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     // The following parameters MUST be formatted as unique strings:
                     Metadata.AuthorizationEndpoint or
+                    Metadata.EndSessionEndpoint    or
                     Metadata.Issuer                or
                     Metadata.JwksUri               or
                     Metadata.TokenEndpoint         or
@@ -296,6 +298,49 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for extracting the logout endpoint address from the discovery document.
+        /// </summary>
+        public class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractLogoutEndpoint>()
+                    .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var address = (string?) context.Response[Metadata.EndSessionEndpoint];
+                if (!string.IsNullOrEmpty(address))
+                {
+                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.EndSessionEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
+
+                        return default;
+                    }
+
+                    context.Configuration.EndSessionEndpoint = uri;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the token endpoint address from the discovery document.
         /// </summary>
         public class ExtractTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -306,7 +351,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ExtractTokenEndpoint>()
-                    .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
+                    .SetOrder(ExtractLogoutEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

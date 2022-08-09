@@ -72,7 +72,11 @@ namespace OpenIddict.Sandbox.AspNet.Server
                         DisplayName = "MVC client application",
                         RedirectUris =
                         {
-                            new Uri("https://localhost:44378/signin-local")
+                            new Uri("https://localhost:44378/callback/login/local")
+                        },
+                        PostLogoutRedirectUris =
+                        {
+                            new Uri("https://localhost:44378/callback/logout/local")
                         },
                         Permissions =
                         {
@@ -86,10 +90,6 @@ namespace OpenIddict.Sandbox.AspNet.Server
                             Permissions.Scopes.Profile,
                             Permissions.Scopes.Roles,
                             Permissions.Prefixes.Scope + "demo_api"
-                        },
-                        PostLogoutRedirectUris =
-                        {
-                            new Uri("https://localhost:44378/Account/SignOutCallback")
                         },
                         Requirements =
                         {
@@ -129,7 +129,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
                     // address per provider, unless all the registered providers support returning an "iss"
                     // parameter containing their URL as part of authorization responses. For more information,
                     // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                    options.SetRedirectionEndpointUris("/signin-github");
+                    options.SetRedirectionEndpointUris("/callback/login/github");
 
                     // Register the signing and encryption credentials used to protect
                     // sensitive data like the state tokens produced by OpenIddict.
@@ -149,7 +149,7 @@ namespace OpenIddict.Sandbox.AspNet.Server
                            {
                                ClientId = "c4ade52327b01ddacff3",
                                ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
-                               RedirectUri = new Uri("https://localhost:44349/signin-github", UriKind.Absolute)
+                               RedirectUri = new Uri("https://localhost:44349/callback/login/github", UriKind.Absolute)
                            });
                 })
 

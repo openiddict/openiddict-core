@@ -14,6 +14,14 @@ namespace OpenIddict.Client.AspNetCore;
 public class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOptions
 {
     /// <summary>
+    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the post-logout redirection endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    public bool EnablePostLogoutRedirectionEndpointPassthrough { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the redirection endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

@@ -74,7 +74,7 @@ public class Startup
                 // address per provider, unless all the registered providers support returning an "iss"
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                options.SetRedirectionEndpointUris("/signin-github");
+                options.SetRedirectionEndpointUris("/callback/login/github");
 
                 // Register the signing and encryption credentials used to protect
                 // sensitive data like the state tokens produced by OpenIddict.
@@ -95,7 +95,7 @@ public class Startup
                        {
                            ClientId = "c4ade52327b01ddacff3",
                            ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
-                           RedirectUri = new Uri("https://localhost:44395/signin-github", UriKind.Absolute)
+                           RedirectUri = new Uri("https://localhost:44395/callback/login/github", UriKind.Absolute)
                        });
             })
 

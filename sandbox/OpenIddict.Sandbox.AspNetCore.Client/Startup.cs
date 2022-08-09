@@ -81,11 +81,15 @@ public class Startup
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                 options.SetRedirectionEndpointUris(
-                    "/signin-local",
-                    "/signin-github",
-                    "/signin-google",
-                    "/signin-reddit",
-                    "/signin-twitter");
+                    "/callback/login/local",
+                    "/callback/login/github",
+                    "/callback/login/google",
+                    "/callback/login/reddit",
+                    "/callback/login/twitter");
+
+                // Enable the post-logout redirection endpoints needed to handle the callback stage.
+                options.SetPostLogoutRedirectionEndpointUris(
+                    "/callback/logout/local");
 
                 // Register the signing and encryption credentials used to protect
                 // sensitive data like the state tokens produced by OpenIddict.
@@ -95,7 +99,8 @@ public class Startup
                 // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                 options.UseAspNetCore()
                        .EnableStatusCodePagesIntegration()
-                       .EnableRedirectionEndpointPassthrough();
+                       .EnableRedirectionEndpointPassthrough()
+                       .EnablePostLogoutRedirectionEndpointPassthrough();
 
                 // Register the System.Net.Http integration.
                 options.UseSystemNetHttp();
@@ -107,8 +112,10 @@ public class Startup
 
                     ClientId = "mvc",
                     ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                    RedirectUri = new Uri("https://localhost:44381/signin-local", UriKind.Absolute),
-                    Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
+                    Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" },
+
+                    RedirectUri = new Uri("https://localhost:44381/callback/login/local", UriKind.Absolute),
+                    PostLogoutRedirectUri = new Uri("https://localhost:44381/callback/logout/local", UriKind.Absolute),
                 });
 
                 // Register the Web providers integrations.
@@ -117,20 +124,20 @@ public class Startup
                        {
                            ClientId = "c4ade52327b01ddacff3",
                            ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
-                           RedirectUri = new Uri("https://localhost:44381/signin-github", UriKind.Absolute)
+                           RedirectUri = new Uri("https://localhost:44381/callback/login/github", UriKind.Absolute)
                        })
                        .AddGoogle(new()
                        {
                            ClientId = "1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com",
                            ClientSecret = "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",
-                           RedirectUri = new Uri("https://localhost:44381/signin-google", UriKind.Absolute),
+                           RedirectUri = new Uri("https://localhost:44381/callback/login/google", UriKind.Absolute),
                            Scopes = { Scopes.Profile }
                        })
                        .AddReddit(new()
                        {
                            ClientId = "vDLNqhrkwrvqHgnoBWF3og",
                            ClientSecret = "Tpab28Dz0upyZLqn7AN3GFD1O-zaAw",
-                           RedirectUri = new Uri("https://localhost:44381/signin-reddit", UriKind.Absolute),
+                           RedirectUri = new Uri("https://localhost:44381/callback/login/reddit", UriKind.Absolute),
                            ProductName = "DemoApp",
                            ProductVersion = "1.0.0"
                        })
@@ -138,7 +145,7 @@ public class Startup
                        {
                            ClientId = "bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ",
                            ClientSecret = "VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS",
-                           RedirectUri = new Uri("https://localhost:44381/signin-twitter", UriKind.Absolute)
+                           RedirectUri = new Uri("https://localhost:44381/callback/login/twitter", UriKind.Absolute)
                        });
             });
 

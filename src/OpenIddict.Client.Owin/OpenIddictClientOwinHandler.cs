@@ -166,6 +166,8 @@ public class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClien
                     context.BackchannelIdentityTokenPrincipal,
                     context.UserinfoTokenPrincipal),
 
+                OpenIddictClientEndpointType.PostLogoutRedirection => context.StateTokenPrincipal,
+
                 _ => null
             };
 
@@ -284,6 +286,48 @@ public class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClien
             transaction.Properties[typeof(AuthenticationProperties).FullName!] = challenge.Properties ?? new AuthenticationProperties();
 
             var context = new ProcessChallengeContext(transaction)
+            {
+                Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+                Request = new OpenIddictRequest()
+            };
+
+            await _dispatcher.DispatchAsync(context);
+
+            if (context.IsRequestHandled || context.IsRequestSkipped)
+            {
+                return;
+            }
+
+            else if (context.IsRejected)
+            {
+                var notification = new ProcessErrorContext(transaction)
+                {
+                    Error = context.Error ?? Errors.InvalidRequest,
+                    ErrorDescription = context.ErrorDescription,
+                    ErrorUri = context.ErrorUri,
+                    Response = new OpenIddictResponse()
+                };
+
+                await _dispatcher.DispatchAsync(notification);
+
+                if (notification.IsRequestHandled || context.IsRequestSkipped)
+                {
+                    return;
+                }
+
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0111));
+            }
+        }
+
+        var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode);
+        if (signout is not null)
+        {
+            var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
+
+            transaction.Properties[typeof(AuthenticationProperties).FullName!] = signout.Properties ?? new AuthenticationProperties();
+
+            var context = new ProcessSignOutContext(transaction)
             {
                 Principal = new ClaimsPrincipal(new ClaimsIdentity()),
                 Request = new OpenIddictRequest()

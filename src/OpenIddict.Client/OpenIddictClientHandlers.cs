@@ -31,6 +31,7 @@ public static partial class OpenIddictClientHandlers
         ValidateRequiredStateToken.Descriptor,
         ValidateStateToken.Descriptor,
         RedeemStateTokenEntry.Descriptor,
+        ValidateStateTokenEndpointType.Descriptor,
         ResolveClientRegistrationFromStateToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
         ValidateFrontchannelErrorParameters.Descriptor,
@@ -90,7 +91,7 @@ public static partial class OpenIddictClientHandlers
          * Challenge processing:
          */
         ValidateChallengeDemand.Descriptor,
-        ResolveClientRegistration.Descriptor,
+        ResolveClientRegistrationFromChallengeContext.Descriptor,
         AttachGrantType.Descriptor,
         EvaluateGeneratedChallengeTokens.Descriptor,
         AttachResponseType.Descriptor,
@@ -105,6 +106,21 @@ public static partial class OpenIddictClientHandlers
         ValidateRedirectUriParameter.Descriptor,
         GenerateStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
+        AttachCustomChallengeParameters.Descriptor,
+
+        /*
+         * Sign-out processing:
+         */
+        ValidateSignOutDemand.Descriptor,
+        ResolveClientRegistrationFromSignOutContext.Descriptor,
+        AttachOptionalClientId.Descriptor,
+        AttachPostLogoutRedirectUri.Descriptor,
+        EvaluateGeneratedLogoutTokens.Descriptor,
+        AttachLogoutRequestForgeryProtection.Descriptor,
+        PrepareLogoutStateTokenPrincipal.Descriptor,
+        GenerateLogoutStateToken.Descriptor,
+        AttachSignOutParameters.Descriptor,
+        AttachCustomSignOutParameters.Descriptor,
 
         /*
          * Error processing:
@@ -115,6 +131,7 @@ public static partial class OpenIddictClientHandlers
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
+        .AddRange(Session.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
@@ -140,13 +157,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Authentication demands can be triggered from the redirection endpoint
-            // to handle authorization callbacks but also from unknown endpoints
+            // Authentication demands can be triggered from the redirection endpoints
+            // to handle authorization/logout callbacks but also from unknown endpoints
             // when using the refresh token grant, to perform a token refresh dance.
 
             switch (context.EndpointType)
             {
                 case OpenIddictClientEndpointType.Redirection:
+                case OpenIddictClientEndpointType.PostLogoutRedirection:
                     break;
 
                 case OpenIddictClientEndpointType.Unknown:
@@ -224,6 +242,13 @@ public static partial class OpenIddictClientHandlers
                 // chosen authorization server), the state is always considered required at this point.
                 OpenIddictClientEndpointType.Redirection => (true, true, true),
 
+                // While the OpenID Connect RP-initiated logout specification doesn't require sending
+                // a state as part of logout requests, the identity provider MUST return the state
+                // if one was initially specified. Since OpenIddict always sends a state (used as a
+                // way to mitigate CSRF attacks and store per-logout values like the identity of the
+                // chosen authorization server), the state is always considered required at this point.
+                OpenIddictClientEndpointType.PostLogoutRedirection => (true, true, true),
+
                 _ => (false, false, false)
             };
 
@@ -256,8 +281,8 @@ public static partial class OpenIddictClientHandlers
 
             context.StateToken = context.EndpointType switch
             {
-                OpenIddictClientEndpointType.Redirection when context.ExtractStateToken
-                    => context.Request.State,
+                OpenIddictClientEndpointType.Redirection or OpenIddictClientEndpointType.PostLogoutRedirection
+                    when context.ExtractStateToken => context.Request.State,
 
                 _ => null
             };
@@ -434,6 +459,56 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for ensuring the resolved state
+    /// token is suitable for the requested authentication demand.
+    /// </summary>
+    public class ValidateStateTokenEndpointType : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenPrincipal>()
+                .UseSingletonHandler<ValidateStateTokenEndpointType>()
+                .SetOrder(RedeemStateTokenEntry.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Resolve the endpoint type allowed to be used with the state token.
+            if (!Enum.TryParse(context.StateTokenPrincipal.GetClaim(Claims.Private.EndpointType),
+                ignoreCase: true, out OpenIddictClientEndpointType type))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0340));
+            }
+
+            // Reject the authentication demand if the expected endpoint type doesn't
+            // match the current endpoint type as it may indicate a mix-up attack (e.g a
+            // state token created for a logout operation was used for a login operation).
+            if (type != context.EndpointType)
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2142),
+                    uri: SR.FormatID8000(SR.ID2142));
+
+                return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the client registration
     /// based on the authorization server identity stored in the state token.
     /// </summary>
@@ -446,7 +521,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveClientRegistrationFromStateToken>()
-                .SetOrder(RedeemStateTokenEntry.Descriptor.Order + 1_000)
+                .SetOrder(ValidateStateTokenEndpointType.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -636,6 +711,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveGrantTypeFromStateToken>()
                 .SetOrder(ValidateFrontchannelErrorParameters.Descriptor.Order + 1_000)
@@ -689,6 +765,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveResponseTypeFromStateToken>()
                 .SetOrder(ResolveGrantTypeFromStateToken.Descriptor.Order + 1_000)
@@ -3276,6 +3353,11 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
+            }
+
             // If an explicit grant type was specified, ensure it is supported by OpenIddict.
             if (!string.IsNullOrEmpty(context.GrantType) &&
                 context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
@@ -3300,14 +3382,14 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the client registration applicable to the challenge demand.
     /// </summary>
-    public class ResolveClientRegistration : IOpenIddictClientHandler<ProcessChallengeContext>
+    public class ResolveClientRegistrationFromChallengeContext : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .UseSingletonHandler<ResolveClientRegistration>()
+                .UseSingletonHandler<ResolveClientRegistrationFromChallengeContext>()
                 .SetOrder(ValidateChallengeDemand.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -3353,7 +3435,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .UseSingletonHandler<AttachGrantType>()
-                .SetOrder(ResolveClientRegistration.Descriptor.Order + 1_000)
+                .SetOrder(ResolveClientRegistrationFromChallengeContext.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -4062,7 +4144,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireStateTokenGenerated>()
+                .AddFilter<RequireLoginStateTokenGenerated>()
                 .UseSingletonHandler<PrepareStateTokenPrincipal>()
                 .SetOrder(AttachCodeChallengeParameters.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -4136,6 +4218,11 @@ public static partial class OpenIddictClientHandlers
             // help mitigate downgrade attacks (e.g authorization code flow -> implicit flow).
             principal.SetClaim(Claims.Private.ResponseType, context.ResponseType);
 
+            // Store the type of endpoint allowed to receive the generated state token.
+            principal.SetClaim(Claims.Private.EndpointType, Enum.GetName(
+                typeof(OpenIddictClientEndpointType),
+                OpenIddictClientEndpointType.Redirection)!.ToLowerInvariant());
+
             // Store the optional redirect_uri to allow sending it as part of the token request.
             principal.SetClaim(Claims.Private.RedirectUri, context.RedirectUri);
 
@@ -4174,7 +4261,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireStateTokenGenerated>()
+                .AddFilter<RequireLoginStateTokenGenerated>()
                 .UseScopedHandler<GenerateStateToken>()
                 .SetOrder(100_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -4304,9 +4391,40 @@ public static partial class OpenIddictClientHandlers
             context.Request.CodeChallenge = context.CodeChallenge;
             context.Request.CodeChallengeMethod = context.CodeChallengeMethod;
 
+            context.Request.IdTokenHint = context.IdentityTokenHint;
+            context.Request.LoginHint = context.LoginHint;
+
             if (context.IncludeStateToken)
             {
                 context.Request.State = context.StateToken;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the challenge response.
+    /// </summary>
+    public class AttachCustomChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<AttachCustomChallengeParameters>()
+                .SetOrder(AttachChallengeParameters.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
             }
 
             if (context.Parameters.Count > 0)
@@ -4314,6 +4432,440 @@ public static partial class OpenIddictClientHandlers
                 foreach (var parameter in context.Parameters)
                 {
                     context.Request.SetParameter(parameter.Key, parameter.Value);
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for ensuring that the sign-out demand
+    /// is compatible with the type of the endpoint that handled the request.
+    /// </summary>
+    public class ValidateSignOutDemand : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<ValidateSignOutDemand>()
+                .SetOrder(int.MinValue + 100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the client registration applicable to the sign-out demand.
+    /// </summary>
+    public class ResolveClientRegistrationFromSignOutContext : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<ResolveClientRegistrationFromSignOutContext>()
+                .SetOrder(ValidateSignOutDemand.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: if the static registration cannot be found in the options, this may indicate
+            // the client was removed after the authorization dance started and thus, can no longer
+            // be used to authenticate users. In this case, throw an exception to abort the flow.
+            context.Registration = context.Options.Registrations.Find(
+                registration => registration.Issuer == context.Issuer) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+            // Resolve and attach the server configuration to the context.
+            var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+            // Ensure the issuer resolved from the configuration matches the expected value.
+            if (configuration.Issuer != context.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+            }
+
+            context.Configuration = configuration;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the client identifier to the sign-out request.
+    /// </summary>
+    public class AttachOptionalClientId : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<AttachOptionalClientId>()
+                .SetOrder(ResolveClientRegistrationFromSignOutContext.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: the client_id parameter is optional.
+            context.ClientId ??= context.Registration.ClientId;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the post_logout_redirect_uri to the sign-out request.
+    /// </summary>
+    public class AttachPostLogoutRedirectUri : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<AttachPostLogoutRedirectUri>()
+                .SetOrder(AttachOptionalClientId.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: the post_logout_redirect_uri parameter is optional.
+            context.PostLogoutRedirectUri ??= context.Registration.PostLogoutRedirectUri?.AbsoluteUri;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for selecting the token types that
+    /// should be generated and optionally returned in the response.
+    /// </summary>
+    public class EvaluateGeneratedLogoutTokens : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<EvaluateGeneratedLogoutTokens>()
+                .SetOrder(AttachPostLogoutRedirectUri.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            (context.GenerateStateToken, context.IncludeStateToken) = (true, true);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching a request forgery protection to the authorization request.
+    /// </summary>
+    public class AttachLogoutRequestForgeryProtection : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<AttachLogoutRequestForgeryProtection>()
+                .SetOrder(EvaluateGeneratedLogoutTokens.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Generate a new crypto-secure random identifier that will
+            // be used as the non-guessable part of the state token.
+            var data = new byte[256 / 8];
+#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
+            RandomNumberGenerator.Fill(data);
+#else
+            using var generator = RandomNumberGenerator.Create();
+            generator.GetBytes(data);
+#endif
+            context.RequestForgeryProtection = Base64UrlEncoder.Encode(data);
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for preparing and attaching the claims principal
+    /// used to generate the logout state token, if one is going to be returned.
+    /// </summary>
+    public class PrepareLogoutStateTokenPrincipal : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireLogoutStateTokenGenerated>()
+                .UseSingletonHandler<PrepareLogoutStateTokenPrincipal>()
+                .SetOrder(AttachLogoutRequestForgeryProtection.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Create a new principal containing only the filtered claims.
+            // Actors identities are also filtered (delegation scenarios).
+            var principal = context.Principal.Clone(claim =>
+            {
+                // Never include the public or internal token identifiers to ensure the identifiers
+                // that are automatically inherited from the parent token are not reused for the new token.
+                if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Never include the creation and expiration dates that are automatically
+                // inherited from the parent token are not reused for the new token.
+                if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Other claims are always included in the state token, even private claims.
+                return true;
+            });
+
+            principal.SetCreationDate(DateTimeOffset.UtcNow);
+
+            var lifetime = context.Principal.GetStateTokenLifetime() ?? context.Options.StateTokenLifetime;
+            if (lifetime.HasValue)
+            {
+                principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
+            }
+
+            // Store the identity of the authorization server in the state token
+            // principal to allow resolving it when handling the post-logout callback.
+            //
+            // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09
+            // for more information about this special claim.
+            principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri);
+
+            // Store the request forgery protection in the state token so it can be later used to
+            // ensure the authorization response sent to the redirection endpoint is not forged.
+            principal.SetClaim(Claims.RequestForgeryProtection, context.RequestForgeryProtection);
+
+            // Store the optional return URL in the state token.
+            principal.SetClaim(Claims.TargetLinkUri, context.TargetLinkUri);
+
+            // Store the type of endpoint allowed to receive the generated state token.
+            principal.SetClaim(Claims.Private.EndpointType, Enum.GetName(
+                typeof(OpenIddictClientEndpointType),
+                OpenIddictClientEndpointType.PostLogoutRedirection)!.ToLowerInvariant());
+
+            // Store the post_logout_redirect_uri to allow comparing to the actual redirection URL.
+            principal.SetClaim(Claims.Private.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
+
+            context.StateTokenPrincipal = principal;
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for generating a logout state token for the current sign-out operation.
+    /// </summary>
+    public class GenerateLogoutStateToken : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        private readonly IOpenIddictClientDispatcher _dispatcher;
+
+        public GenerateLogoutStateToken(IOpenIddictClientDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireLogoutStateTokenGenerated>()
+                .UseScopedHandler<GenerateLogoutStateToken>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var notification = new GenerateTokenContext(context.Transaction)
+            {
+                CreateTokenEntry = !context.Options.DisableTokenStorage,
+                PersistTokenPayload = !context.Options.DisableTokenStorage,
+                Principal = context.StateTokenPrincipal!,
+                TokenFormat = TokenFormats.Jwt,
+                TokenType = TokenTypeHints.StateToken
+            };
+
+            await _dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled)
+            {
+                context.HandleRequest();
+                return;
+            }
+
+            else if (notification.IsRequestSkipped)
+            {
+                context.SkipRequest();
+                return;
+            }
+
+            else if (notification.IsRejected)
+            {
+                context.Reject(
+                    error: notification.Error ?? Errors.InvalidRequest,
+                    description: notification.ErrorDescription,
+                    uri: notification.ErrorUri);
+                return;
+            }
+
+            context.StateToken = notification.Token;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the appropriate parameters to the sign-out response.
+    /// </summary>
+    public class AttachSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<AttachSignOutParameters>()
+                .SetOrder(GenerateLogoutStateToken.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: while the exact order of the parameters has typically no effect on how requests
+            // are handled by an authorization server, client_id and post_logout_redirect_uri are
+            // set first so that they appear early in the URL (when GET requests are used), making
+            // mistyped values easier to spot when an error is returned by the identity provider.
+            context.Request.ClientId = context.ClientId;
+            context.Request.PostLogoutRedirectUri = context.PostLogoutRedirectUri;
+
+            context.Request.IdTokenHint = context.IdentityTokenHint;
+            context.Request.LoginHint = context.LoginHint;
+
+            if (context.IncludeStateToken)
+            {
+                context.Request.State = context.StateToken;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters
+    /// populated from user-defined handlers to the sign-out response.
+    /// </summary>
+    public class AttachCustomSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<AttachCustomSignOutParameters>()
+                .SetOrder(100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.Parameters.Count > 0)
+            {
+                foreach (var parameter in context.Parameters)
+                {
+                    context.Response.SetParameter(parameter.Key, parameter.Value);
                 }
             }
 

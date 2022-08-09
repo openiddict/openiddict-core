@@ -19,5 +19,10 @@ public enum OpenIddictClientEndpointType
     /// <summary>
     /// Redirection endpoint.
     /// </summary>
-    Redirection = 1
+    Redirection = 1,
+
+    /// <summary>
+    /// Post-logout redirection endpoint.
+    /// </summary>
+    PostLogoutRedirection = 2
 }

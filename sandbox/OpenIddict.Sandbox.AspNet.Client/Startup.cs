@@ -73,10 +73,14 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     // parameter containing their URL as part of authorization responses. For more information,
                     // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                     options.SetRedirectionEndpointUris(
-                        "/signin-local",
-                        "/signin-github",
-                        "/signin-google",
-                        "/signin-twitter");
+                        "/callback/login/local",
+                        "/callback/login/github",
+                        "/callback/login/google",
+                        "/callback/login/twitter");
+
+                    // Enable the post-logout redirection endpoints needed to handle the callback stage.
+                    options.SetPostLogoutRedirectionEndpointUris(
+                        "/callback/logout/local");
 
                     // Register the signing and encryption credentials used to protect
                     // sensitive data like the state tokens produced by OpenIddict.
@@ -85,7 +89,8 @@ namespace OpenIddict.Sandbox.AspNet.Client
 
                     // Register the OWIN host and configure the OWIN-specific options.
                     options.UseOwin()
-                           .EnableRedirectionEndpointPassthrough();
+                           .EnableRedirectionEndpointPassthrough()
+                           .EnablePostLogoutRedirectionEndpointPassthrough();
 
                     // Register the System.Net.Http integration.
                     options.UseSystemNetHttp();
@@ -97,8 +102,10 @@ namespace OpenIddict.Sandbox.AspNet.Client
 
                         ClientId = "mvc",
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                        RedirectUri = new Uri("https://localhost:44378/signin-local", UriKind.Absolute),
-                        Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" }
+                        Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" },
+
+                        RedirectUri = new Uri("https://localhost:44378/callback/login/local", UriKind.Absolute),
+                        PostLogoutRedirectUri = new Uri("https://localhost:44378/callback/logout/local", UriKind.Absolute)
                     });
 
                     // Register the Web providers integrations.
@@ -107,20 +114,20 @@ namespace OpenIddict.Sandbox.AspNet.Client
                            {
                                ClientId = "c4ade52327b01ddacff3",
                                ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
-                               RedirectUri = new Uri("https://localhost:44378/signin-github", UriKind.Absolute)
+                               RedirectUri = new Uri("https://localhost:44378/callback/login/github", UriKind.Absolute)
                            })
                            .AddGoogle(new()
                            {
                                ClientId = "1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com",
                                ClientSecret = "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",
-                               RedirectUri = new Uri("https://localhost:44378/signin-google", UriKind.Absolute),
+                               RedirectUri = new Uri("https://localhost:44378/callback/login/google", UriKind.Absolute),
                                Scopes = { Scopes.Profile }
                            })
                            .AddTwitter(new()
                            {
                                ClientId = "bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ",
                                ClientSecret = "VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS",
-                               RedirectUri = new Uri("https://localhost:44378/signin-twitter", UriKind.Absolute)
+                               RedirectUri = new Uri("https://localhost:44378/callback/login/twitter", UriKind.Absolute)
                            });
                 });
 

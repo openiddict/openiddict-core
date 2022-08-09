@@ -20,12 +20,14 @@
 
         if (User.FindFirst(ClaimTypes.NameIdentifier)?.Issuer is "https://localhost:44395/")
         {
-            <form action="/" method="post">
+            <form asp-action="Index" asp-controller="Home" method="post">
                 <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
             </form>
         }
 
-        <a class="btn btn-lg btn-danger" href="/logout">Sign out</a>
+        <form asp-action="Logout" asp-controller="Authentication" method="post">
+            <button class="btn btn-lg btn-danger" type="submit">Sign out</button>
+        </form>
     }
 
     else

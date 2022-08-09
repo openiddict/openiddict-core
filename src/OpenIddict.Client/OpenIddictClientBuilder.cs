@@ -1029,6 +1029,52 @@ public class OpenIddictClientBuilder
     }
 
     /// <summary>
+    /// Sets the relative or absolute URLs associated to the post-logout redirection endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
+    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(params string[] addresses)
+    {
+        if (addresses is null)
+        {
+            throw new ArgumentNullException(nameof(addresses));
+        }
+
+        return SetPostLogoutRedirectionEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URLs associated to the post-logout redirection endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
+    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(params Uri[] addresses)
+    {
+        if (addresses is null)
+        {
+            throw new ArgumentNullException(nameof(addresses));
+        }
+
+        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+        }
+
+        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+        }
+
+        return Configure(options =>
+        {
+            options.PostLogoutRedirectionEndpointUris.Clear();
+            options.PostLogoutRedirectionEndpointUris.AddRange(addresses);
+        });
+    }
+
+    /// <summary>
     /// Sets the client assertion token lifetime, after which backchannel requests
     /// using an expired state token should be automatically rejected by the server.
     /// Using long-lived state tokens or tokens that never expire is not recommended.

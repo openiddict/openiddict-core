@@ -1316,6 +1316,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0339" xml:space="preserve">
     <value>The request forgery protection claim cannot be resolved from the state token.</value>
   </data>
+  <data name="ID0340" xml:space="preserve">
+    <value>The endpoint type associated with the state token cannot be resolved.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1738,6 +1741,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID2141" xml:space="preserve">
     <value>The client application is not allowed to use the specified identity token hint.</value>
+  </data>
+  <data name="ID2142" xml:space="preserve">
+    <value>The specified state token is not suitable for the requested operation.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2343,6 +2349,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6198" xml:space="preserve">
     <value>The logout request was rejected because the identity token used as a hint was issued to a different client.</value>
+  </data>
+  <data name="ID6199" xml:space="preserve">
+    <value>The post-logout redirection request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID6200" xml:space="preserve">
+    <value>The post-logout redirection request was successfully validated.</value>
+  </data>
+  <data name="ID6201" xml:space="preserve">
+    <value>The post-logout redirection request was successfully validated.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

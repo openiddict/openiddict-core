@@ -21,14 +21,18 @@
         if (User is ClaimsPrincipal principal &&
             principal.FindFirst(ClaimTypes.NameIdentifier)?.Issuer is "https://localhost:44349/")
         {
-            <form action="~/" method="post">
+            <form action="/" method="post">
                 @Html.AntiForgeryToken()
 
                 <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
             </form>
         }
 
-        <a class="btn btn-lg btn-danger" href="/logout">Sign out</a>
+        <form action="/logout" method="post">
+            @Html.AntiForgeryToken()
+
+            <button class="btn btn-lg btn-danger" type="submit">Sign out</button>
+        </form>
     }
 
     else

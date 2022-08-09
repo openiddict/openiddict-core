@@ -34,7 +34,7 @@ public static class OpenIddictServerAspNetCoreConstants
         public const string Error = ".error";
         public const string ErrorDescription = ".error_description";
         public const string ErrorUri = ".error_uri";
-        public const string IdentityTokenPrincipal = ".id_token_principal";
+        public const string IdentityTokenPrincipal = ".identity_token_principal";
         public const string RefreshTokenPrincipal = ".refresh_token_principal";
         public const string Scope = ".scope";
         public const string UserCodePrincipal = ".user_code_principal";

@@ -125,12 +125,14 @@ public static class OpenIddictConstants
             public const string CreationDate = "oi_crt_dt";
             public const string DeviceCodeId = "oi_dvc_id";
             public const string DeviceCodeLifetime = "oi_dvc_lft";
+            public const string EndpointType = "oi_ept_typ";
             public const string ExpirationDate = "oi_exp_dt";
             public const string GrantType = "oi_grt_typ";
             public const string HostProperties = "oi_hst_props";
             public const string IdentityTokenLifetime = "oi_idt_lft";
             public const string Issuer = "oi_iss";
             public const string Nonce = "oi_nce";
+            public const string PostLogoutRedirectUri = "oi_pstlgt_reduri";
             public const string Presenter = "oi_prst";
             public const string RedirectUri = "oi_reduri";
             public const string RefreshTokenLifetime = "oi_reft_lft";

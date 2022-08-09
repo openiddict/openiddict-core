@@ -32,6 +32,11 @@ public class OpenIddictConfiguration
     public HashSet<string> CodeChallengeMethodsSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets the address of the end session endpoint.
+    /// </summary>
+    public Uri? EndSessionEndpoint { get; set; }
+
+    /// <summary>
     /// Gets the grant types supported by the server.
     /// </summary>
     public HashSet<string> GrantTypesSupported { get; } = new(StringComparer.Ordinal);
