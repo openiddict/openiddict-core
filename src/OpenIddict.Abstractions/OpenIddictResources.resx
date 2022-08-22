@@ -2359,6 +2359,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6201" xml:space="preserve">
     <value>The post-logout redirection request was successfully validated.</value>
   </data>
+  <data name="ID6202" xml:space="preserve">
+    <value>Client validation failed because '{PostLogoutRedirectUri}' was not a valid post_logout_redirect_uri for {Client}.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>

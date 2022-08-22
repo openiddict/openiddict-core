@@ -486,8 +486,7 @@ public static partial class OpenIddictServerHandlers
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-                    var addresses = await _applicationManager.GetPostLogoutRedirectUrisAsync(application);
-                    if (!addresses.Contains(context.PostLogoutRedirectUri, StringComparer.Ordinal))
+                    if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, context.PostLogoutRedirectUri))
                     {
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
 

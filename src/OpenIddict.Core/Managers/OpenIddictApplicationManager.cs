@@ -1290,6 +1290,44 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
+    /// Validates the post_logout_redirect_uri to ensure it's associated with an application.
+    /// </summary>
+    /// <param name="application">The application.</param>
+    /// <param name="address">The address that should be compared to one of the post_logout_redirect_uri stored in the database.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <remarks>Note: if no client_id parameter is specified in logout requests, this method may not be called.</remarks>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns a boolean indicating whether the post_logout_redirect_uri was valid.
+    /// </returns>
+    public virtual async ValueTask<bool> ValidatePostLogoutRedirectUriAsync(
+        TApplication application, string address, CancellationToken cancellationToken = default)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application));
+        }
+
+        if (string.IsNullOrEmpty(address))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+        }
+
+        foreach (var uri in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+        {
+            // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
+            if (string.Equals(uri, address, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        Logger.LogInformation(SR.GetResourceString(SR.ID6202), address, await GetClientIdAsync(application, cancellationToken));
+
+        return false;
+    }
+
+    /// <summary>
     /// Validates the redirect_uri to ensure it's associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
@@ -1680,6 +1718,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <inheritdoc/>
     ValueTask<bool> IOpenIddictApplicationManager.ValidateClientSecretAsync(object application, string secret, CancellationToken cancellationToken)
         => ValidateClientSecretAsync((TApplication) application, secret, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<bool> IOpenIddictApplicationManager.ValidatePostLogoutRedirectUriAsync(object application, string address, CancellationToken cancellationToken)
+        => ValidatePostLogoutRedirectUriAsync((TApplication) application, address, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, string address, CancellationToken cancellationToken)
