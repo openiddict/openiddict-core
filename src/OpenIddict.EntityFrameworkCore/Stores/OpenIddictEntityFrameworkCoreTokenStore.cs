@@ -674,13 +674,14 @@ public class OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuth
             // To work around this limitation, the threshold represented as a DateTimeOffset
             // instance is manually converted to a UTC DateTime instance outside the query.
             var date = threshold.UtcDateTime;
+            var expirationDate = DateTime.UtcNow;
 
             var tokens = await
                 (from token in Tokens.AsTracking()
                  where token.CreationDate < date
                  where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
                        (token.Authorization != null && token.Authorization.Status != Statuses.Valid) ||
-                        token.ExpirationDate < DateTime.UtcNow
+                        token.ExpirationDate < expirationDate 
                  orderby token.Id
                  select token).Take(1_000).ToListAsync(cancellationToken);
 
