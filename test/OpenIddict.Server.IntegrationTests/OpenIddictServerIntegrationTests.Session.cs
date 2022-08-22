@@ -217,6 +217,81 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateLogoutRequest_RequestIsRejectedWhenPostLogoutRedirectUriForExplicitClientIsInvalid()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.ValidatePostLogoutRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.ValidatePostLogoutRedirectUriAsync(application,
+            "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ValidateLogoutRequest_RequestIsRejectedWhenPostLogoutRedirectUriForImplicitClientIsInvalid()
+    {
+        // Arrange
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .Returns(AsyncEnumerable.Empty<OpenIddictApplication>());
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(manager);
+
+            options.Configure(options => options.IgnoreEndpointPermissions = false);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+        {
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync(
+            "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
     public async Task ValidateLogoutRequest_RequestIsRejectedWhenNoMatchingApplicationIsGrantedEndpointPermission()
     {
         // Arrange
@@ -502,8 +577,8 @@ public abstract partial class OpenIddictServerIntegrationTests
             mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(application);
 
-            mock.Setup(manager => manager.GetPostLogoutRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ImmutableArray.Create("http://www.fabrikam.com/path"));
+            mock.Setup(manager => manager.ValidatePostLogoutRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
             mock.Setup(manager => manager.HasPermissionAsync(application,
                 Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
@@ -564,6 +639,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("af0ifjsldkj", response.State);
 
         Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(manager).Verify(manager => manager.ValidatePostLogoutRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());
     }
 
