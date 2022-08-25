@@ -38,7 +38,7 @@ public class OpenIddictQuartzJob : IJob
     /// Gets the default identity assigned to this job.
     /// </summary>
     public static JobKey Identity { get; } = new JobKey(
-        name: typeof(OpenIddictQuartzJob).Name,
+        name: nameof(OpenIddictQuartzJob),
         group: typeof(OpenIddictQuartzJob).Assembly.GetName().Name!);
 
     /// <inheritdoc/>

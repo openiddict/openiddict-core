@@ -34,6 +34,7 @@ public class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
             // reached if the application is shut down or recycled. As such, this trigger is set up to fire
             // between 1 and 10 minutes after the application starts to ensure the job is executed at least once.
             builder.ForJob(OpenIddictQuartzJob.Identity)
+                   .WithIdentity(OpenIddictQuartzJob.Identity.Name, OpenIddictQuartzJob.Identity.Group)
                    .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
                    .WithDescription(SR.GetResourceString(SR.ID8002))
                    .StartAt(DateBuilder.FutureDate(new Random().Next(1, 10), IntervalUnit.Minute));
