@@ -4468,6 +4468,16 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
             }
 
+            // If no issuer was explicitly attached and a single client is registered, use it.
+            // Otherwise, throw an exception to indicate that setting an explicit issuer
+            // is required when multiple clients are registered.
+            context.Issuer ??= context.Options.Registrations.Count switch
+            {
+                0 => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                1 => context.Options.Registrations[0].Issuer,
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0341))
+            };
+
             return default;
         }
     }
