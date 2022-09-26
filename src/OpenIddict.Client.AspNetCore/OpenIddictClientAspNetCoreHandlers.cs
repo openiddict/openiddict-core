@@ -279,12 +279,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .ToString();
 
             // Try to find the cookie matching the request forgery protection stored in the state.
+            // The correlation cookie serves as a binding mechanism ensuring that a state token
+            // stolen from an authorization response with the other parameters cannot be validly
+            // used without sending the matching correlation identifier used as the cookie name.
             //
             // If the cookie cannot be found, this may indicate that the authorization response
-            // is unsolicited and potentially malicious. This may also be caused by an unadequate
-            // same-site configuration. The correlation cookie also serves as a binding mechanism 
-            // ensuring that a state token stolen from an authorization response with the other
-            // parameters cannot be validly used without sending the matching correlation identifier.
+            // is unsolicited and potentially malicious or be caused by an invalid or unadequate
+            // same-site configuration.
             //
             // In any case, the authentication demand MUST be rejected as it's impossible to ensure
             // it's not an injection or session fixation attack without the correlation cookie.
@@ -525,6 +526,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireInteractiveGrantType>()
                 .AddFilter<RequireLoginStateTokenGenerated>()
                 .UseSingletonHandler<GenerateLoginCorrelationCookie>()
                 .SetOrder(AttachChallengeParameters.Descriptor.Order + 1_000)
@@ -543,12 +545,12 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // will always be rejected if a cookie corresponding to the request forgery protection claim
             // persisted in the state token cannot be found. This protection is considered essential
             // in OpenIddict and cannot be disabled via the options. Applications that prefer implementing
-            // a different protection strategy can set the request forgery protection claim to null or
-            // remove this handler from the handlers list and add a custom one using a different approach.
+            // a different protection strategy can remove this handler from the handlers list and add
+            // a custom one using a different approach (e.g by storing the value in the session state).
 
             if (string.IsNullOrEmpty(context.RequestForgeryProtection))
             {
-                return default;
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0343));
             }
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
@@ -711,12 +713,12 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // will always be rejected if a cookie corresponding to the request forgery protection claim
             // persisted in the state token cannot be found. This protection is considered essential
             // in OpenIddict and cannot be disabled via the options. Applications that prefer implementing
-            // a different protection strategy can set the request forgery protection claim to null or
-            // remove this handler from the handlers list and add a custom one using a different approach.
+            // a different protection strategy can remove this handler from the handlers list and add
+            // a custom one using a different approach (e.g by storing the value in the session state).
 
             if (string.IsNullOrEmpty(context.RequestForgeryProtection))
             {
-                return default;
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0344));
             }
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
