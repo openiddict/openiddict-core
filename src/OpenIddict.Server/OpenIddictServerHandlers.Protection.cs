@@ -1230,7 +1230,7 @@ public static partial class OpenIddictServerHandlers
                                          TokenTypeHints.RefreshToken      or TokenTypeHints.UserCode)
                 {
                     var destinations = principal.GetDestinations();
-                    if (destinations.Count != 0)
+                    if (destinations.Count is not 0)
                     {
                         claims.Add(Claims.Private.ClaimDestinationsMap, destinations);
                     }

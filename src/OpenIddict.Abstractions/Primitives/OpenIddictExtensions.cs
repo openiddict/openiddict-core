@@ -176,7 +176,7 @@ public static class OpenIddictExtensions
         }
 
         var segment = Trim(new StringSegment(request.ResponseType), Separators.Space);
-        if (segment.Length == 0)
+        if (segment.Length is 0)
         {
             return false;
         }
@@ -203,7 +203,7 @@ public static class OpenIddictExtensions
         }
 
         var segment = Trim(new StringSegment(request.ResponseType), Separators.Space);
-        if (segment.Length == 0)
+        if (segment.Length is 0)
         {
             return false;
         }
@@ -235,7 +235,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(request.ResponseType, Separators.Space))
         {
             var segment = Trim(element, Separators.Space);
-            if (segment.Length == 0)
+            if (segment.Length is 0)
             {
                 continue;
             }
@@ -289,7 +289,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(request.ResponseType, Separators.Space))
         {
             var segment = Trim(element, Separators.Space);
-            if (segment.Length == 0)
+            if (segment.Length is 0)
             {
                 continue;
             }
@@ -649,7 +649,7 @@ public static class OpenIddictExtensions
             var claims = group.ToList();
 
             var destinations = new HashSet<string>(claims[0].GetDestinations(), StringComparer.OrdinalIgnoreCase);
-            if (destinations.Count != 0)
+            if (destinations.Count is not 0)
             {
                 // Ensure the other claims of the same type use the same exact destinations.
                 for (var index = 0; index < claims.Count; index++)
@@ -686,7 +686,7 @@ public static class OpenIddictExtensions
             var claims = group.ToList();
 
             var destinations = new HashSet<string>(claims[0].GetDestinations(), StringComparer.OrdinalIgnoreCase);
-            if (destinations.Count != 0)
+            if (destinations.Count is not 0)
             {
                 // Ensure the other claims of the same type use the same exact destinations.
                 for (var index = 0; index < claims.Count; index++)
@@ -2910,7 +2910,7 @@ public static class OpenIddictExtensions
 
     private static ImmutableArray<string> GetValues(string? source, char[] separators)
     {
-        Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
+        Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
 
         if (string.IsNullOrEmpty(source))
         {
@@ -2922,7 +2922,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(source, separators))
         {
             var segment = Trim(element, separators);
-            if (segment.Length == 0)
+            if (segment.Length is 0)
             {
                 continue;
             }
@@ -2941,7 +2941,7 @@ public static class OpenIddictExtensions
     private static bool HasValue(string? source, string value, char[] separators)
     {
         Debug.Assert(!string.IsNullOrEmpty(value), SR.GetResourceString(SR.ID4002));
-        Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
+        Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
 
         if (string.IsNullOrEmpty(source))
         {
@@ -2951,7 +2951,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(source, separators))
         {
             var segment = Trim(element, separators);
-            if (segment.Length == 0)
+            if (segment.Length is 0)
             {
                 continue;
             }
@@ -2967,7 +2967,7 @@ public static class OpenIddictExtensions
 
     private static StringSegment TrimStart(StringSegment segment, char[] separators)
     {
-        Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
+        Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
 
         var index = segment.Offset;
 
@@ -2986,7 +2986,7 @@ public static class OpenIddictExtensions
 
     private static StringSegment TrimEnd(StringSegment segment, char[] separators)
     {
-        Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
+        Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
 
         var index = segment.Offset + segment.Length - 1;
 
@@ -3005,14 +3005,14 @@ public static class OpenIddictExtensions
 
     private static StringSegment Trim(StringSegment segment, char[] separators)
     {
-        Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
+        Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
 
         return TrimEnd(TrimStart(segment, separators), separators);
     }
 
     private static bool IsSeparator(char character, char[] separators)
     {
-        Debug.Assert(separators is not null && separators.Length != 0, SR.GetResourceString(SR.ID4001));
+        Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
 
         for (var index = 0; index < separators!.Length; index++)
         {

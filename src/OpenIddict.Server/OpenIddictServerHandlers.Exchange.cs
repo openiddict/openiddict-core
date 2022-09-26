@@ -756,7 +756,7 @@ public static partial class OpenIddictServerHandlers
                 // Note: the remaining scopes are only checked if the degraded mode was not enabled,
                 // as this requires using the scope manager, which is never used with the degraded mode,
                 // even if the service was registered and resolved from the dependency injection container.
-                if (scopes.Count != 0 && !context.Options.EnableDegradedMode)
+                if (scopes.Count is not 0 && !context.Options.EnableDegradedMode)
                 {
                     if (_scopeManager is null)
                     {
@@ -774,7 +774,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // If at least one scope was not recognized, return an error.
-                if (scopes.Count != 0)
+                if (scopes.Count is not 0)
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6080), scopes);
 
@@ -1633,7 +1633,7 @@ public static partial class OpenIddictServerHandlers
                 // but was missing from the initial request, the request MUST be rejected.
                 // See http://tools.ietf.org/html/rfc6749#section-6 for more information.
                 var scopes = new HashSet<string>(context.Principal.GetScopes(), StringComparer.Ordinal);
-                if (scopes.Count == 0)
+                if (scopes.Count is 0)
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6094), Parameters.Scope);
 

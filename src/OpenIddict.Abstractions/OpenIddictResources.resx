@@ -1322,6 +1322,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0341" xml:space="preserve">
     <value>No issuer was specified in the sign-out properties. When multiple clients are registered, an issuer must be specified in the sign-out properties.</value>
   </data>
+  <data name="ID0342" xml:space="preserve">
+    <value>Identical issuers cannot be used in multiple client registrations.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

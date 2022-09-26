@@ -1159,7 +1159,7 @@ public static partial class OpenIddictServerHandlers
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
                     var addresses = await _applicationManager.GetRedirectUrisAsync(application);
-                    if (addresses.Length != 1)
+                    if (addresses.Length is not 1)
                     {
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
@@ -1238,7 +1238,7 @@ public static partial class OpenIddictServerHandlers
                 // Note: the remaining scopes are only checked if the degraded mode was not enabled,
                 // as this requires using the scope manager, which is never used with the degraded mode,
                 // even if the service was registered and resolved from the dependency injection container.
-                if (scopes.Count != 0 && !context.Options.EnableDegradedMode)
+                if (scopes.Count is not 0 && !context.Options.EnableDegradedMode)
                 {
                     if (_scopeManager is null)
                     {
@@ -1256,7 +1256,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // If at least one scope was not recognized, return an error.
-                if (scopes.Count != 0)
+                if (scopes.Count is not 0)
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6047), scopes);
 
@@ -1490,7 +1490,7 @@ public static partial class OpenIddictServerHandlers
                         var values = permission.Substring(prefix.Length, permission.Length - prefix.Length)
                                                .Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries);
 
-                        if (values.Length != 0 && new HashSet<string>(values, StringComparer.Ordinal).SetEquals(types))
+                        if (values.Length is not 0 && new HashSet<string>(values, StringComparer.Ordinal).SetEquals(types))
                         {
                             return true;
                         }

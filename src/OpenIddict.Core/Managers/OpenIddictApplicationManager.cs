@@ -560,7 +560,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         }
 
         var names = await Store.GetDisplayNamesAsync(application, cancellationToken);
-        if (names is null || names.Count == 0)
+        if (names is not { Count: > 0 })
         {
             return ImmutableDictionary.Create<CultureInfo, string>();
         }

@@ -147,7 +147,7 @@ public static partial class OpenIddictValidationHandlers
 
                 // Reference tokens are base64url-encoded payloads of exactly 256 bits (generated using a
                 // crypto-secure RNG). If the token length differs, the token cannot be a reference token.
-                if (context.Token.Length != 43)
+                if (context.Token.Length is not 43)
                 {
                     return;
                 }
@@ -699,7 +699,7 @@ public static partial class OpenIddictValidationHandlers
 
                 // If no explicit audience has been configured,
                 // skip the default audience validation.
-                if (context.Options.Audiences.Count == 0)
+                if (context.Options.Audiences.Count is 0)
                 {
                     return default;
                 }

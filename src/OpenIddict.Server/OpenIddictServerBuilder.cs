@@ -375,7 +375,7 @@ public class OpenIddictServerBuilder
         if (certificate.Version >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
-            if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
+            if (extensions.Count is not 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0060));
             }
@@ -803,7 +803,7 @@ public class OpenIddictServerBuilder
         if (certificate.Version >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
-            if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
+            if (extensions.Count is not 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0070));
             }

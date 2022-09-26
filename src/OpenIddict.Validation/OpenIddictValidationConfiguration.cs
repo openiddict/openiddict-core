@@ -78,7 +78,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
         }
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.Count != 0 &&
+        if (options.EncryptionCredentials.Count is not 0 &&
             options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                 (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
         {

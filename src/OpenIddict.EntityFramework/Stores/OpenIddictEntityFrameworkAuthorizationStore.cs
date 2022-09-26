@@ -638,7 +638,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
                        orderby authorization.Id
                        select authorization).Take(1_000).ToListAsync(cancellationToken);
 
-            if (authorizations.Count == 0)
+            if (authorizations.Count is 0)
             {
                 break;
             }
