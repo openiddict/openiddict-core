@@ -957,7 +957,7 @@ public static partial class OpenIddictServerHandlers
                     if (!string.IsNullOrEmpty(key.X5t)) writer.WriteString(JsonWebKeyParameterNames.X5t, key.X5t);
                     if (!string.IsNullOrEmpty(key.X5u)) writer.WriteString(JsonWebKeyParameterNames.X5u, key.X5u);
 
-                    if (key.KeyOps.Count != 0)
+                    if (key.KeyOps.Count is not 0)
                     {
                         writer.WritePropertyName(JsonWebKeyParameterNames.KeyOps);
                         writer.WriteStartArray();
@@ -970,7 +970,7 @@ public static partial class OpenIddictServerHandlers
                         writer.WriteEndArray();
                     }
 
-                    if (key.X5c.Count != 0)
+                    if (key.X5c.Count is not 0)
                     {
                         writer.WritePropertyName(JsonWebKeyParameterNames.X5c);
                         writer.WriteStartArray();

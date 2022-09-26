@@ -430,7 +430,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         }
 
         var descriptions = await Store.GetDescriptionsAsync(scope, cancellationToken);
-        if (descriptions is null || descriptions.Count == 0)
+        if (descriptions is not { Count: > 0 })
         {
             return ImmutableDictionary.Create<CultureInfo, string>();
         }
@@ -475,7 +475,7 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
         }
 
         var names = await Store.GetDisplayNamesAsync(scope, cancellationToken);
-        if (names is null || names.Count == 0)
+        if (names is not { Count: > 0 })
         {
             return ImmutableDictionary.Create<CultureInfo, string>();
         }

@@ -262,7 +262,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
             }
         }
 
-        if (method == HttpMethod.Get && parameters.Count != 0)
+        if (method == HttpMethod.Get && parameters.Count is not 0)
         {
             var builder = new StringBuilder();
 
@@ -273,7 +273,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
                     continue;
                 }
 
-                if (builder.Length != 0)
+                if (builder.Length is not 0)
                 {
                     builder.Append('&');
                 }
@@ -380,19 +380,19 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
             foreach (var element in new StringTokenizer(payload, Separators.Ampersand))
             {
                 var segment = element;
-                if (segment.Length == 0)
+                if (segment.Length is 0)
                 {
                     continue;
                 }
 
                 // Always skip the first char (# or ?).
-                if (segment.Offset == 0)
+                if (segment.Offset is 0)
                 {
                     segment = segment.Subsegment(1, segment.Length - 1);
                 }
 
                 var index = segment.IndexOf('=');
-                if (index == -1)
+                if (index is -1)
                 {
                     continue;
                 }
@@ -474,7 +474,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
             for (var line = await reader.ReadLineAsync(); line is not null; line = await reader.ReadLineAsync())
             {
                 var index = line.IndexOf(':');
-                if (index == -1)
+                if (index is -1)
                 {
                     continue;
                 }

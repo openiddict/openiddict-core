@@ -99,6 +99,14 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
             }
         }
 
+        // Ensure issuers are not used in multiple client registrations.
+        if (options.Registrations.Count != options.Registrations.Select(registration => registration.Issuer)
+                                                                .Distinct()
+                                                                .Count())
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0342));
+        }
+
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
@@ -135,7 +143,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
             (SecurityKey, SymmetricSecurityKey) => 1,
 
             // If one of the keys is backed by a X.509 certificate, don't prefer it if it's not valid yet.
-            (X509SecurityKey first, SecurityKey) when first.Certificate.NotBefore > DateTime.Now => 1,
+            (X509SecurityKey first, SecurityKey)  when first.Certificate.NotBefore  > DateTime.Now => 1,
             (SecurityKey, X509SecurityKey second) when second.Certificate.NotBefore > DateTime.Now => 1,
 
             // If the two keys are backed by a X.509 certificate, prefer the one with the furthest expiration date.

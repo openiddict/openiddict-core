@@ -85,7 +85,7 @@ public class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
         {
             // Note: the descriptors collection is sorted during options initialization for performance reasons.
             var descriptors = _options.CurrentValue.Handlers;
-            if (descriptors.Count == 0)
+            if (descriptors.Count is 0)
             {
                 yield break;
             }
