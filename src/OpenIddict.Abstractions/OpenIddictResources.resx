@@ -1325,6 +1325,12 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0342" xml:space="preserve">
     <value>Identical issuers cannot be used in multiple client registrations.</value>
   </data>
+  <data name="ID0343" xml:space="preserve">
+    <value>The request forgery protection claim cannot be resolved from the challenge context.</value>
+  </data>
+  <data name="ID0344" xml:space="preserve">
+    <value>The request forgery protection claim cannot be resolved from the sign-out context.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
