@@ -53,8 +53,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // is replaced by this handler to always use "https://login.microsoftonline.com/common/v2.0".
                 if (context.Registration.GetProviderName() is Providers.Microsoft)
                 {
-                    var settings = context.Registration.GetMicrosoftSettings();
-                    if (string.Equals(settings.Tenant, "common", StringComparison.OrdinalIgnoreCase))
+                    var options = context.Registration.GetMicrosoftOptions();
+                    if (string.Equals(options.Tenant, "common", StringComparison.OrdinalIgnoreCase))
                     {
                         context.Response[Metadata.Issuer] = "https://login.microsoftonline.com/common/v2.0";
                     }

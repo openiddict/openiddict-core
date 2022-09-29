@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Net.Http.Headers;
 using OpenIddict.Client.SystemNetHttp;
 using Polly;
 
@@ -51,28 +52,37 @@ public class OpenIddictClientSystemNetHttpBuilder
     /// </summary>
     /// <param name="policy">The HTTP Polly error policy.</param>
     /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/>.</returns>
-    public OpenIddictClientSystemNetHttpBuilder SetHttpErrorPolicy(IAsyncPolicy<HttpResponseMessage> policy)
+    public OpenIddictClientSystemNetHttpBuilder SetHttpErrorPolicy(IAsyncPolicy<HttpResponseMessage>? policy)
         => Configure(options => options.HttpErrorPolicy = policy);
 
     /// <summary>
-    /// Determines whether the specified object is equal to the current object.
+    /// Sets the product information used in the user agent header that is attached
+    /// to the backchannel HTTP requests sent to the authorization server.
     /// </summary>
-    /// <param name="obj">The object to compare with the current object.</param>
-    /// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, false.</returns>
+    /// <param name="information">The product information.</param>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/>.</returns>
+    public OpenIddictClientSystemNetHttpBuilder SetProductInformation(ProductInfoHeaderValue? information)
+        => Configure(options => options.ProductInformation = information);
+
+    /// <summary>
+    /// Sets the product information used in the user agent header that is attached
+    /// to the backchannel HTTP requests sent to the authorization server.
+    /// </summary>
+    /// <param name="name">The product name.</param>
+    /// <param name="version">The product version.</param>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/>.</returns>
+    public OpenIddictClientSystemNetHttpBuilder SetProductInformation(string? name, string? version)
+        => SetProductInformation(!string.IsNullOrEmpty(name) ? new ProductInfoHeaderValue(name, version) : null);
+
+    /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);
 
-    /// <summary>
-    /// Serves as the default hash function.
-    /// </summary>
-    /// <returns>A hash code for the current object.</returns>
+    /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode() => base.GetHashCode();
 
-    /// <summary>
-    /// Returns a string that represents the current object.
-    /// </summary>
-    /// <returns>A string that represents the current object.</returns>
+    /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override string? ToString() => base.ToString();
 }
