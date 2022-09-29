@@ -7,10 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Security.Claims;
-using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
-using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -31,7 +28,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         AttachNonDefaultResponseMode.Descriptor,
         FormatNonStandardScopeParameter.Descriptor)
         .AddRange(Discovery.DefaultHandlers)
-        .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
 
@@ -70,8 +66,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // see https://developer.apple.com/documentation/sign_in_with_apple/generate_and_validate_tokens.
             if (context.Registration.GetProviderName() is Providers.Apple)
             {
-                var settings = context.Registration.GetAppleSettings();
-                context.ClientAssertionTokenPrincipal.SetClaim(Claims.Private.Issuer, settings.TeamId);
+                var options = context.Registration.GetAppleOptions();
+                context.ClientAssertionTokenPrincipal.SetClaim(Claims.Private.Issuer, options.TeamId);
                 context.ClientAssertionTokenPrincipal.SetAudiences("https://appleid.apple.com");
             }
 
@@ -196,57 +192,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 _ => context.Request.Scope
             };
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for enriching the user agent with an optional product name/product version.
-    /// </summary>
-    public class AddProductNameToUserAgentHeader<TContext> : IOpenIddictClientHandler<TContext>
-        where TContext : BaseExternalContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
-                .UseSingletonHandler<AddProductNameToUserAgentHeader<TContext>>()
-                .SetOrder(AttachUserAgent<TContext>.Descriptor.Order + 500)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another client stack.
-            var request = context.Transaction.GetHttpRequestMessage() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
-
-            // A few providers (like Reddit) are known to aggressively check user agents and encourage
-            // developers to use unique user agents. While OpenIddict itself always adds a user agent,
-            // the default value doesn't differ accross applications. To reduce the risks of seeing
-            // requests blocked by these providers, a more specific user agent header containing the
-            // product name/version set by the user (or the client identifier if unset) is appended.
-            var settings = context.Registration.GetProviderSettings();
-            if (settings is not null)
-            {
-                var name = settings.ProductName ?? context.Registration.ClientId;
-                if (!string.IsNullOrEmpty(name))
-                {
-                    request.Headers.UserAgent.Add(new ProductInfoHeaderValue(
-                        productName: name,
-                        productVersion: settings.ProductVersion));
-                }
-            }
 
             return default;
         }

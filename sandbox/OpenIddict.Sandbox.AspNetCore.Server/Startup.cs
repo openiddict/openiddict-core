@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
@@ -86,16 +87,17 @@ public class Startup
                        .EnableStatusCodePagesIntegration()
                        .EnableRedirectionEndpointPassthrough();
 
-                // Register the System.Net.Http integration.
-                options.UseSystemNetHttp();
+                // Register the System.Net.Http integration and configure the HTTP options.
+                options.UseSystemNetHttp()
+                       .SetProductInformation("DemoApp", "1.0.0");
 
                 // Register the Web providers integrations.
                 options.UseWebProviders()
-                       .AddGitHub(new()
+                       .UseGitHub(options =>
                        {
-                           ClientId = "c4ade52327b01ddacff3",
-                           ClientSecret = "da6bed851b75e317bf6b2cb67013679d9467c122",
-                           RedirectUri = new Uri("https://localhost:44395/callback/login/github", UriKind.Absolute)
+                           options.SetClientId("c4ade52327b01ddacff3")
+                                  .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
+                                  .SetRedirectUri("https://localhost:44395/callback/login/github");
                        });
             })
 

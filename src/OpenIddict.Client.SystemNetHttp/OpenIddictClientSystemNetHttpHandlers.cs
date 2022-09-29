@@ -11,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
@@ -114,6 +115,11 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// </summary>
     public class AttachUserAgent<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
+        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
+
+        public AttachUserAgent(IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -140,9 +146,18 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             var request = context.Transaction.GetHttpRequestMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
-            var assembly = typeof(OpenIddictClientSystemNetHttpHandlers).Assembly.GetName();
+            // Some authorization servers are known to aggressively check user agents and encourage
+            // developers to use unique user agents. While a default user agent is always added,
+            // the default value doesn't differ accross applications. To reduce the risks of seeing
+            // requests blocked, a more specific user agent header can be configured by the developer.
+            // In this case, the value specified by the developer always appears first in the list.
+            if (_options.CurrentValue.ProductInformation is ProductInfoHeaderValue information)
+            {
+                request.Headers.UserAgent.Add(information);
+            }
 
             // Attach a user agent based on the assembly version of the System.Net.Http integration.
+            var assembly = typeof(OpenIddictClientSystemNetHttpHandlers).Assembly.GetName();
             request.Headers.UserAgent.Add(new ProductInfoHeaderValue(
                 productName: assembly.Name!,
                 productVersion: assembly.Version!.ToString()));

@@ -57,7 +57,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // that is associated with the client application. Since the tenant cannot be
                     // inferred when targeting the common tenant instance, issuer validation is disabled.
                     Providers.Microsoft when string.Equals(
-                        context.Registration.GetMicrosoftSettings().Tenant,
+                        context.Registration.GetMicrosoftOptions().Tenant,
                         "common", StringComparison.OrdinalIgnoreCase)
                         => false,
 

@@ -35,8 +35,7 @@ public class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<
         options.Handlers.AddRange(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers);
     }
 
-    public void Configure(HttpClientFactoryOptions options)
-        => Debug.Fail("This infrastructure method shouldn't be called.");
+    public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
 
     public void Configure(string name, HttpClientFactoryOptions options)
     {
@@ -45,8 +44,8 @@ public class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<
             throw new ArgumentNullException(nameof(options));
         }
 
+        // Only amend the HTTP client factory options if the instance is managed by OpenIddict.
         var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
-
         if (!string.Equals(name, assembly.Name, StringComparison.Ordinal))
         {
             return;

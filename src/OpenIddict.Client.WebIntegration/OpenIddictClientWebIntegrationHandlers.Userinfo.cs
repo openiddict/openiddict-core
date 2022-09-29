@@ -19,7 +19,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Userinfo request preparation:
              */
-            AddProductNameToUserAgentHeader<PrepareUserinfoRequestContext>.Descriptor,
             AttachNonStandardFieldParameter.Descriptor,
 
             /*
@@ -59,11 +58,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 if (context.Registration.GetProviderName() is Providers.Twitter)
                 {
-                    var settings = context.Registration.GetTwitterSettings();
+                    var options = context.Registration.GetTwitterOptions();
 
-                    context.Request["expansions"] = string.Join(",", settings.Expansions);
-                    context.Request["tweet.fields"] = string.Join(",", settings.TweetFields);
-                    context.Request["user.fields"] = string.Join(",", settings.UserFields);
+                    context.Request["expansions"] = string.Join(",", options.Expansions);
+                    context.Request["tweet.fields"] = string.Join(",", options.TweetFields);
+                    context.Request["user.fields"] = string.Join(",", options.UserFields);
                 }
 
                 return default;
@@ -97,7 +96,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
                 // Some providers are known to wrap their userinfo payloads in top-level JSON nodes
-                // (generally named "d", "data" or "content"), which prevents the default extraction
+                // (generally named "d", "data" or "response"), which prevents the default extraction
                 // logic from mapping the parameters to CLR claims. To work around that, this handler
                 // is responsible for extracting the nested payload and replacing the userinfo response.
 

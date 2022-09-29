@@ -18,10 +18,10 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
                                                           IConfigureNamedOptions<HttpClientFactoryOptions>
 {
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _provider;
 
-    public OpenIddictClientSystemNetHttpConfiguration(IServiceProvider serviceProvider)
-        => _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+    public OpenIddictClientSystemNetHttpConfiguration(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 #endif
 
     public void Configure(OpenIddictClientOptions options)
@@ -35,8 +35,7 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
         options.Handlers.AddRange(OpenIddictClientSystemNetHttpHandlers.DefaultHandlers);
     }
 
-    public void Configure(HttpClientFactoryOptions options)
-        => Debug.Fail("This infrastructure method shouldn't be called.");
+    public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
 
     public void Configure(string name, HttpClientFactoryOptions options)
     {
@@ -45,8 +44,8 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
             throw new ArgumentNullException(nameof(options));
         }
 
+        // Only amend the HTTP client factory options if the instance is managed by OpenIddict.
         var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
-
         if (!string.Equals(name, assembly.Name, StringComparison.Ordinal))
         {
             return;
@@ -57,7 +56,7 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
 #if SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
             var options = builder.Services.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>();
 #else
-            var options = _serviceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>();
+            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>();
 #endif
             var policy = options.CurrentValue.HttpErrorPolicy;
             if (policy is not null)

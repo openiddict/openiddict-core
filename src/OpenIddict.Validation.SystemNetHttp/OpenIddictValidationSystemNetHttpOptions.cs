@@ -5,6 +5,7 @@
  */
 
 using System.Net;
+using System.Net.Http.Headers;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -22,4 +23,10 @@ public class OpenIddictValidationSystemNetHttpOptions
         = HttpPolicyExtensions.HandleTransientHttpError()
             .OrResult(response => response.StatusCode == HttpStatusCode.NotFound)
             .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
+
+    /// <summary>
+    /// Gets or sets the product information used in the user agent header that is
+    /// attached to the backchannel HTTP requests sent to the authorization server.
+    /// </summary>
+    public ProductInfoHeaderValue? ProductInformation { get; set; }
 }

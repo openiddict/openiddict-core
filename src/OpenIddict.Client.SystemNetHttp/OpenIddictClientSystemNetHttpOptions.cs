@@ -5,6 +5,7 @@
  */
 
 using System.Net;
+using System.Net.Http.Headers;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -18,8 +19,14 @@ public class OpenIddictClientSystemNetHttpOptions
     /// <summary>
     /// Gets or sets the HTTP Polly error policy used by the internal OpenIddict HTTP clients.
     /// </summary>
-    public IAsyncPolicy<HttpResponseMessage> HttpErrorPolicy { get; set; }
+    public IAsyncPolicy<HttpResponseMessage>? HttpErrorPolicy { get; set; }
         = HttpPolicyExtensions.HandleTransientHttpError()
             .OrResult(response => response.StatusCode == HttpStatusCode.NotFound)
             .WaitAndRetryAsync(4, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)));
+
+    /// <summary>
+    /// Gets or sets the product information used in the user agent header that is
+    /// attached to the backchannel HTTP requests sent to the authorization server.
+    /// </summary>
+    public ProductInfoHeaderValue? ProductInformation { get; set; }
 }
