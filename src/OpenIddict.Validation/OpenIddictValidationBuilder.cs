@@ -358,7 +358,7 @@ public class OpenIddictValidationBuilder
             throw new ArgumentNullException(nameof(audiences));
         }
 
-        if (audiences.Any(audience => string.IsNullOrEmpty(audience)))
+        if (audiences.Any(string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0123), nameof(audiences));
         }

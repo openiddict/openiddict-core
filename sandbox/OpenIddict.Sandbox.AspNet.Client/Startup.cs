@@ -92,9 +92,11 @@ namespace OpenIddict.Sandbox.AspNet.Client
                            .EnableRedirectionEndpointPassthrough()
                            .EnablePostLogoutRedirectionEndpointPassthrough();
 
-                    // Register the System.Net.Http integration and configure the HTTP options.
+                    // Register the System.Net.Http integration and use the identity of the current
+                    // assembly as a more specific user agent, which can be useful when dealing with
+                    // providers that use the user agent as a way to throttle requests (e.g Reddit).
                     options.UseSystemNetHttp()
-                           .SetProductInformation("DemoApp", "1.0.0");
+                           .SetProductInformation(typeof(Startup).Assembly);
 
                     // Add a client registration matching the client application definition in the server project.
                     options.AddRegistration(new OpenIddictClientRegistration

@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
@@ -87,9 +86,11 @@ public class Startup
                        .EnableStatusCodePagesIntegration()
                        .EnableRedirectionEndpointPassthrough();
 
-                // Register the System.Net.Http integration and configure the HTTP options.
+                // Register the System.Net.Http integration and use the identity of the current
+                // assembly as a more specific user agent, which can be useful when dealing with
+                // providers that use the user agent as a way to throttle requests (e.g Reddit).
                 options.UseSystemNetHttp()
-                       .SetProductInformation("DemoApp", "1.0.0");
+                       .SetProductInformation(typeof(Startup).Assembly);
 
                 // Register the Web providers integrations.
                 options.UseWebProviders()

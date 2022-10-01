@@ -1676,7 +1676,7 @@ public class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(claims));
         }
 
-        if (claims.Any(claim => string.IsNullOrEmpty(claim)))
+        if (claims.Any(string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0073), nameof(claims));
         }
@@ -1697,7 +1697,7 @@ public class OpenIddictServerBuilder
             throw new ArgumentNullException(nameof(scopes));
         }
 
-        if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
+        if (scopes.Any(string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
