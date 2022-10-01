@@ -61,7 +61,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
 {
     {{~ for provider in providers ~}}
     /// <summary>
-    /// Enables {{ provider.name }} integration using the specified options.
+    /// Enables the {{ provider.name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
     /// For more information, visit <see href=""{{ provider.documentation }}"">the official website</see>.
     /// </summary>
@@ -83,7 +83,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     }
 
     /// <summary>
-    /// Enables {{ provider.name }} integration using the specified options.
+    /// Enables the {{ provider.name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
     /// For more information, visit <see href=""{{ provider.documentation }}"">the official website</see>.
     /// </summary>
@@ -147,7 +147,14 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""identifier"">The client identifier.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
         public {{ provider.name }} SetClientId(string identifier)
-            => Configure(options => options.ClientId = identifier);
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0124), nameof(identifier));
+            }
+
+            return Configure(options => options.ClientId = identifier);
+        }
 
         /// <summary>
         /// Sets the client secret, if applicable.
@@ -155,23 +162,49 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""secret"">The client secret.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
         public {{ provider.name }} SetClientSecret(string secret)
-            => Configure(options => options.ClientSecret = secret);
+        {
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0125), nameof(secret));
+            }
+
+            return Configure(options => options.ClientSecret = secret);
+        }
 
         /// <summary>
         /// Sets the redirection URI, if applicable.
         /// </summary>
         /// <param name=""address"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
-        public {{ provider.name }} SetRedirectUri(Uri? address)
-            => Configure(options => options.RedirectUri = address);
+        public {{ provider.name }} SetRedirectUri(Uri address)
+        {
+            if (address is null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            return Configure(options => options.RedirectUri = address);
+        }
 
         /// <summary>
         /// Sets the redirection URI, if applicable.
         /// </summary>
         /// <param name=""address"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
-        public {{ provider.name }} SetRedirectUri(string? address)
-            => SetRedirectUri(!string.IsNullOrEmpty(address) ? new Uri(address, UriKind.RelativeOrAbsolute) : null);
+        public {{ provider.name }} SetRedirectUri(string address)
+        {
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            }
+
+            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
+            }
+
+            return SetRedirectUri(uri);
+        }
 
         /// <summary>
         /// Adds one or more scopes to the list of requested scopes, if applicable.
@@ -179,7 +212,14 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""scopes"">The scopes.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
         public {{ provider.name }} AddScopes(params string[] scopes)
-            => Configure(options => options.Scopes.UnionWith(scopes));
+        {
+            if (scopes is null)
+            {
+                throw new ArgumentNullException(nameof(scopes));
+            }
+
+            return Configure(options => options.Scopes.UnionWith(scopes));
+        }
 
         {{~ for environment in provider.environments ~}}
         /// <summary>
@@ -429,13 +469,13 @@ public partial class OpenIddictClientWebIntegrationConfiguration
         /// <param name=""options"">The options instance to initialize.</param>
         public void Configure(OpenIddictClientOptions options)
         {
+            // Resolve the provider options from the service provider and create a registration based on the specified settings.
+            var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>>().CurrentValue;
+
             var formatter = Smart.CreateDefaultSmartFormat(new SmartSettings
             {
                 CaseSensitivity = CaseSensitivityType.CaseInsensitive
             });
-
-            // Resolve the provider options from the service provider and create a registration based on the specified settings.
-            var settings = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>>().CurrentValue;
 
             var registration = new OpenIddictClientRegistration
             {
@@ -443,7 +483,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     {{~ for environment in provider.environments ~}}
                     OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
-                        => new Uri(formatter.Format(""{{ environment.issuer }}"", options), UriKind.Absolute),
+                        => new Uri(formatter.Format(""{{ environment.issuer }}"", settings), UriKind.Absolute),
                     {{~ end ~}}
 
                     _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
@@ -460,15 +500,15 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                     OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} => new OpenIddictConfiguration
                     {
                         {{~ if environment.configuration.authorization_endpoint ~}}
-                        AuthorizationEndpoint = new Uri(formatter.Format(""{{ environment.configuration.authorization_endpoint }}"", options), UriKind.Absolute),
+                        AuthorizationEndpoint = new Uri(formatter.Format(""{{ environment.configuration.authorization_endpoint }}"", settings), UriKind.Absolute),
                         {{~ end ~}}
 
                         {{~ if environment.configuration.token_endpoint ~}}
-                        TokenEndpoint = new Uri(formatter.Format(""{{ environment.configuration.token_endpoint }}"", options), UriKind.Absolute),
+                        TokenEndpoint = new Uri(formatter.Format(""{{ environment.configuration.token_endpoint }}"", settings), UriKind.Absolute),
                         {{~ end ~}}
 
                         {{~ if environment.configuration.userinfo_endpoint ~}}
-                        UserinfoEndpoint = new Uri(formatter.Format(""{{ environment.configuration.userinfo_endpoint }}"", options), UriKind.Absolute),
+                        UserinfoEndpoint = new Uri(formatter.Format(""{{ environment.configuration.userinfo_endpoint }}"", settings), UriKind.Absolute),
                         {{~ end ~}}
 
                         CodeChallengeMethodsSupported =
