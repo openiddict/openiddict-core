@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Net.Http.Headers;
+using System.Reflection;
 using OpenIddict.Validation.SystemNetHttp;
 using Polly;
 
@@ -48,12 +49,19 @@ public class OpenIddictValidationSystemNetHttpBuilder
     }
 
     /// <summary>
-    /// Replaces the default HTTP error policy used by the OpenIddict validation services.
+    /// Replaces the default HTTP error policy used by the OpenIddict client services.
     /// </summary>
     /// <param name="policy">The HTTP Polly error policy.</param>
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
-    public OpenIddictValidationSystemNetHttpBuilder SetHttpErrorPolicy(IAsyncPolicy<HttpResponseMessage>? policy)
-        => Configure(options => options.HttpErrorPolicy = policy);
+    public OpenIddictValidationSystemNetHttpBuilder SetHttpErrorPolicy(IAsyncPolicy<HttpResponseMessage> policy)
+    {
+        if (policy is null)
+        {
+            throw new ArgumentNullException(nameof(policy));
+        }
+
+        return Configure(options => options.HttpErrorPolicy = policy);
+    }
 
     /// <summary>
     /// Sets the product information used in the user agent header that is attached
@@ -61,8 +69,15 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// </summary>
     /// <param name="information">The product information.</param>
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
-    public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(ProductInfoHeaderValue? information)
-        => Configure(options => options.ProductInformation = information);
+    public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(ProductInfoHeaderValue information)
+    {
+        if (information is null)
+        {
+            throw new ArgumentNullException(nameof(information));
+        }
+
+        return Configure(options => options.ProductInformation = information);
+    }
 
     /// <summary>
     /// Sets the product information used in the user agent header that is attached
@@ -71,8 +86,34 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// <param name="name">The product name.</param>
     /// <param name="version">The product version.</param>
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
-    public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(string? name, string? version)
-        => SetProductInformation(!string.IsNullOrEmpty(name) ? new ProductInfoHeaderValue(name, version) : null);
+    public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(string name, string? version)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0345), nameof(name));
+        }
+
+        return SetProductInformation(new ProductInfoHeaderValue(name, version));
+    }
+
+    /// <summary>
+    /// Sets the product information used in the user agent header that is attached
+    /// to the backchannel HTTP requests sent to the authorization server based
+    /// on the identity of the specified .NET assembly (name and version).
+    /// </summary>
+    /// <param name="assembly">The assembly from which the product information is created.</param>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
+    public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(Assembly assembly)
+    {
+        if (assembly is null)
+        {
+            throw new ArgumentNullException(nameof(assembly));
+        }
+
+        return SetProductInformation(new ProductInfoHeaderValue(
+            productName: assembly.GetName().Name!,
+            productVersion: assembly.GetName().Version!.ToString()));
+    }
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
