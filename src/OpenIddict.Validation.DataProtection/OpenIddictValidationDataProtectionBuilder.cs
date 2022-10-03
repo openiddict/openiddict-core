@@ -34,7 +34,7 @@ public class OpenIddictValidationDataProtectionBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/> instance.</returns>
     public OpenIddictValidationDataProtectionBuilder Configure(Action<OpenIddictValidationDataProtectionOptions> configuration)
     {
         if (configuration is null)
@@ -52,7 +52,7 @@ public class OpenIddictValidationDataProtectionBuilder
     /// instead of relying on the default instance provided by the DI container.
     /// </summary>
     /// <param name="provider">The data protection provider used to create token protectors.</param>
-    /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/> instance.</returns>
     public OpenIddictValidationDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
     {
         if (provider is null)
@@ -67,7 +67,7 @@ public class OpenIddictValidationDataProtectionBuilder
     /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
     /// </summary>
     /// <param name="formatter">The formatter used to read tokens.</param>
-    /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationDataProtectionBuilder"/> instance.</returns>
     public OpenIddictValidationDataProtectionBuilder UseFormatter(IOpenIddictValidationDataProtectionFormatter formatter)
     {
         if (formatter is null)

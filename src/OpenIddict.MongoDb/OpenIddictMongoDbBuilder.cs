@@ -34,7 +34,7 @@ public class OpenIddictMongoDbBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder Configure(Action<OpenIddictMongoDbOptions> configuration)
     {
         if (configuration is null)
@@ -50,7 +50,7 @@ public class OpenIddictMongoDbBuilder
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default application entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder ReplaceDefaultApplicationEntity<TApplication>()
         where TApplication : OpenIddictMongoDbApplication
     {
@@ -62,7 +62,7 @@ public class OpenIddictMongoDbBuilder
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default authorization entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder ReplaceDefaultAuthorizationEntity<TAuthorization>()
         where TAuthorization : OpenIddictMongoDbAuthorization
     {
@@ -74,7 +74,7 @@ public class OpenIddictMongoDbBuilder
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default scope entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder ReplaceDefaultScopeEntity<TScope>()
         where TScope : OpenIddictMongoDbScope
     {
@@ -86,7 +86,7 @@ public class OpenIddictMongoDbBuilder
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default token entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder ReplaceDefaultTokenEntity<TToken>()
         where TToken : OpenIddictMongoDbToken
     {
@@ -99,7 +99,7 @@ public class OpenIddictMongoDbBuilder
     /// Replaces the default applications collection name (by default, openiddict.applications).
     /// </summary>
     /// <param name="name">The collection name</param>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetApplicationsCollectionName(string name)
     {
         if (string.IsNullOrEmpty(name))
@@ -114,7 +114,7 @@ public class OpenIddictMongoDbBuilder
     /// Replaces the default authorizations collection name (by default, openiddict.authorizations).
     /// </summary>
     /// <param name="name">The collection name</param>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetAuthorizationsCollectionName(string name)
     {
         if (string.IsNullOrEmpty(name))
@@ -129,7 +129,7 @@ public class OpenIddictMongoDbBuilder
     /// Replaces the default scopes collection name (by default, openiddict.scopes).
     /// </summary>
     /// <param name="name">The collection name</param>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetScopesCollectionName(string name)
     {
         if (string.IsNullOrEmpty(name))
@@ -144,7 +144,7 @@ public class OpenIddictMongoDbBuilder
     /// Replaces the default tokens collection name (by default, openiddict.tokens).
     /// </summary>
     /// <param name="name">The collection name</param>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder SetTokensCollectionName(string name)
     {
         if (string.IsNullOrEmpty(name))
@@ -160,7 +160,7 @@ public class OpenIddictMongoDbBuilder
     /// instead of retrieving it from the dependency injection container.
     /// </summary>
     /// <param name="database">The <see cref="IMongoDatabase"/>.</param>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public OpenIddictMongoDbBuilder UseDatabase(IMongoDatabase database)
     {
         if (database is null)

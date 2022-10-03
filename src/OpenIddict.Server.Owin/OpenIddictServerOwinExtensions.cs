@@ -21,7 +21,7 @@ public static class OpenIddictServerOwinExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public static OpenIddictServerOwinBuilder UseOwin(this OpenIddictServerBuilder builder)
     {
         if (builder is null)
@@ -69,7 +69,7 @@ public static class OpenIddictServerOwinExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the server services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public static OpenIddictServerBuilder UseOwin(
         this OpenIddictServerBuilder builder, Action<OpenIddictServerOwinBuilder> configuration)
     {

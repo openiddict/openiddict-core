@@ -21,7 +21,7 @@ public static class OpenIddictClientAspNetCoreExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
     public static OpenIddictClientAspNetCoreBuilder UseAspNetCore(this OpenIddictClientBuilder builder)
     {
         if (builder is null)
@@ -63,7 +63,7 @@ public static class OpenIddictClientAspNetCoreExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the client services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public static OpenIddictClientBuilder UseAspNetCore(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientAspNetCoreBuilder> configuration)
     {

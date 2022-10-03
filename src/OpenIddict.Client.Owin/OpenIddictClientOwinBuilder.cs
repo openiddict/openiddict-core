@@ -34,7 +34,7 @@ public class OpenIddictClientOwinBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     public OpenIddictClientOwinBuilder Configure(Action<OpenIddictClientOwinOptions> configuration)
     {
         if (configuration is null)
@@ -53,7 +53,7 @@ public class OpenIddictClientOwinBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     public OpenIddictClientOwinBuilder EnablePostLogoutRedirectionEndpointPassthrough()
         => Configure(options => options.EnablePostLogoutRedirectionEndpointPassthrough = true);
 
@@ -63,7 +63,7 @@ public class OpenIddictClientOwinBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     public OpenIddictClientOwinBuilder EnableRedirectionEndpointPassthrough()
         => Configure(options => options.EnableRedirectionEndpointPassthrough = true);
 
@@ -76,7 +76,7 @@ public class OpenIddictClientOwinBuilder
     /// <remarks>
     /// Important: the error pass-through mode cannot be used when the status code pages integration is enabled.
     /// </remarks>
-    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictClientOwinBuilder EnableErrorPassthrough()
         => Configure(options => options.EnableErrorPassthrough = true);

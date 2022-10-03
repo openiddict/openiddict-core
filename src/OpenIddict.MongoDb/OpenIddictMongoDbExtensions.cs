@@ -21,7 +21,7 @@ public static class OpenIddictMongoDbExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
     public static OpenIddictMongoDbBuilder UseMongoDb(this OpenIddictCoreBuilder builder)
     {
         if (builder is null)
@@ -62,7 +62,7 @@ public static class OpenIddictMongoDbExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the MongoDB services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public static OpenIddictCoreBuilder UseMongoDb(
         this OpenIddictCoreBuilder builder, Action<OpenIddictMongoDbBuilder> configuration)
     {

@@ -33,7 +33,7 @@ public class OpenIddictValidationOwinBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
     public OpenIddictValidationOwinBuilder Configure(Action<OpenIddictValidationOwinOptions> configuration)
     {
         if (configuration is null)
@@ -57,7 +57,7 @@ public class OpenIddictValidationOwinBuilder
     /// authentication middleware configured to use active authentication, as both middleware
     /// will be invoked when handling 401 responses, which will result in invalid responses.
     /// </remarks>
-    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
     public OpenIddictValidationOwinBuilder UseActiveAuthentication()
         => Configure(options => options.AuthenticationMode = AuthenticationMode.Active);
 
@@ -65,7 +65,7 @@ public class OpenIddictValidationOwinBuilder
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     /// <param name="realm">The issuer address.</param>
-    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/> instance.</returns>
     public OpenIddictValidationOwinBuilder SetRealm(string realm)
     {
         if (string.IsNullOrEmpty(realm))

@@ -16,7 +16,7 @@ public static class OpenIddictExtensions
     /// </summary>
     /// <param name="services">The services collection.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictBuilder"/> instance.</returns>
     public static OpenIddictBuilder AddOpenIddict(this IServiceCollection services)
     {
         if (services is null)

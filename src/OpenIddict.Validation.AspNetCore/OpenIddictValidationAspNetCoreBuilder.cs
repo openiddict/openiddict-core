@@ -33,7 +33,7 @@ public class OpenIddictValidationAspNetCoreBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictValidationAspNetCoreBuilder Configure(Action<OpenIddictValidationAspNetCoreOptions> configuration)
     {
         if (configuration is null)
@@ -50,7 +50,7 @@ public class OpenIddictValidationAspNetCoreBuilder
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     /// <param name="realm">The issuer address.</param>
-    /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictValidationAspNetCoreBuilder SetRealm(string realm)
     {
         if (string.IsNullOrEmpty(realm))

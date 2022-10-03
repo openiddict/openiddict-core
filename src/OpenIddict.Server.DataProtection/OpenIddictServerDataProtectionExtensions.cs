@@ -22,7 +22,7 @@ public static class OpenIddictServerDataProtectionExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public static OpenIddictServerDataProtectionBuilder UseDataProtection(this OpenIddictServerBuilder builder)
     {
         if (builder is null)
@@ -56,7 +56,7 @@ public static class OpenIddictServerDataProtectionExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the server services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public static OpenIddictServerBuilder UseDataProtection(
         this OpenIddictServerBuilder builder, Action<OpenIddictServerDataProtectionBuilder> configuration)
     {

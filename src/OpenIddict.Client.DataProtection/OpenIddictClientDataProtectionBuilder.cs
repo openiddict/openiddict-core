@@ -34,7 +34,7 @@ public class OpenIddictClientDataProtectionBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/> instance.</returns>
     public OpenIddictClientDataProtectionBuilder Configure(Action<OpenIddictClientDataProtectionOptions> configuration)
     {
         if (configuration is null)
@@ -52,7 +52,7 @@ public class OpenIddictClientDataProtectionBuilder
     /// instead of relying on the default instance provided by the DI container.
     /// </summary>
     /// <param name="provider">The data protection provider used to create token protectors.</param>
-    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/> instance.</returns>
     public OpenIddictClientDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
     {
         if (provider is null)
@@ -67,7 +67,7 @@ public class OpenIddictClientDataProtectionBuilder
     /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
     /// </summary>
     /// <param name="formatter">The formatter used to read and write tokens.</param>
-    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/> instance.</returns>
     public OpenIddictClientDataProtectionBuilder UseFormatter(IOpenIddictClientDataProtectionFormatter formatter)
     {
         if (formatter is null)
@@ -81,7 +81,7 @@ public class OpenIddictClientDataProtectionBuilder
     /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new state tokens.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientDataProtectionBuilder"/> instance.</returns>
     public OpenIddictClientDataProtectionBuilder PreferDefaultStateTokenFormat()
         => Configure(options => options.PreferDefaultStateTokenFormat = true);
 

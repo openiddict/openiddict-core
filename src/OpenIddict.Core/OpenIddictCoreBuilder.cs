@@ -34,7 +34,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder Configure(Action<OpenIddictCoreOptions> configuration)
     {
         if (configuration is null)
@@ -55,7 +55,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TStore">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddApplicationStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TStore : class
         => AddApplicationStore(typeof(TStore), lifetime);
@@ -68,7 +68,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddApplicationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         if (type is null)
@@ -108,7 +108,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TStore">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddAuthorizationStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TStore : class
         => AddAuthorizationStore(typeof(TStore), lifetime);
@@ -121,7 +121,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddAuthorizationStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         if (type is null)
@@ -161,7 +161,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TStore">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddScopeStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TStore : class
         => AddScopeStore(typeof(TStore), lifetime);
@@ -174,7 +174,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddScopeStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         if (type is null)
@@ -214,7 +214,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TStore">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddTokenStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TStore : class
         => AddTokenStore(typeof(TStore), lifetime);
@@ -227,7 +227,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder AddTokenStore(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         if (type is null)
@@ -266,7 +266,7 @@ public class OpenIddictCoreBuilder
     /// must be either a non-generic or closed generic service.
     /// </summary>
     /// <typeparam name="TManager">The type of the custom manager.</typeparam>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceApplicationManager<TManager>()
         where TManager : class
         => ReplaceApplicationManager(typeof(TManager));
@@ -278,7 +278,7 @@ public class OpenIddictCoreBuilder
     /// either a non-generic, a closed or an open generic service.
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceApplicationManager(Type type)
     {
         if (type is null)
@@ -321,7 +321,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TResolver">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceApplicationStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TResolver : IOpenIddictApplicationStoreResolver
         => ReplaceApplicationStoreResolver(typeof(TResolver), lifetime);
@@ -331,7 +331,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceApplicationStoreResolver(
         Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
@@ -357,7 +357,7 @@ public class OpenIddictCoreBuilder
     /// must be either a non-generic or closed generic service.
     /// </summary>
     /// <typeparam name="TManager">The type of the custom manager.</typeparam>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceAuthorizationManager<TManager>()
         where TManager : class
         => ReplaceAuthorizationManager(typeof(TManager));
@@ -369,7 +369,7 @@ public class OpenIddictCoreBuilder
     /// either a non-generic, a closed or an open generic service.
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceAuthorizationManager(Type type)
     {
         if (type is null)
@@ -412,7 +412,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TResolver">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TResolver : IOpenIddictAuthorizationStoreResolver
         => ReplaceAuthorizationStoreResolver(typeof(TResolver), lifetime);
@@ -422,7 +422,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver(
         Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
@@ -448,7 +448,7 @@ public class OpenIddictCoreBuilder
     /// must be either a non-generic or closed generic service.
     /// </summary>
     /// <typeparam name="TManager">The type of the custom manager.</typeparam>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceScopeManager<TManager>()
         where TManager : class
         => ReplaceScopeManager(typeof(TManager));
@@ -460,7 +460,7 @@ public class OpenIddictCoreBuilder
     /// either a non-generic, a closed or an open generic service.
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceScopeManager(Type type)
     {
         if (type is null)
@@ -503,7 +503,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TResolver">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceScopeStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TResolver : IOpenIddictScopeStoreResolver
         => ReplaceScopeStoreResolver(typeof(TResolver), lifetime);
@@ -513,7 +513,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceScopeStoreResolver(
         Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
@@ -539,7 +539,7 @@ public class OpenIddictCoreBuilder
     /// must be either a non-generic or closed generic service.
     /// </summary>
     /// <typeparam name="TManager">The type of the custom manager.</typeparam>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceTokenManager<TManager>()
         where TManager : class
         => ReplaceTokenManager(typeof(TManager));
@@ -551,7 +551,7 @@ public class OpenIddictCoreBuilder
     /// either a non-generic, a closed or an open generic service.
     /// </summary>
     /// <param name="type">The type of the custom manager.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceTokenManager(Type type)
     {
         if (type is null)
@@ -594,7 +594,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <typeparam name="TResolver">The type of the custom store.</typeparam>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceTokenStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
         where TResolver : IOpenIddictTokenStoreResolver
         => ReplaceTokenStoreResolver(typeof(TResolver), lifetime);
@@ -604,7 +604,7 @@ public class OpenIddictCoreBuilder
     /// </summary>
     /// <param name="type">The type of the custom store.</param>
     /// <param name="lifetime">The lifetime of the registered service.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder ReplaceTokenStoreResolver(
         Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
@@ -630,7 +630,7 @@ public class OpenIddictCoreBuilder
     /// stores are guaranteed to execute case-sensitive filtering at the database level.
     /// Disabling this feature MAY result in security vulnerabilities in the other cases.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder DisableAdditionalFiltering()
         => Configure(options => options.DisableAdditionalFiltering = true);
 
@@ -639,14 +639,14 @@ public class OpenIddictCoreBuilder
     /// Disabling entity caching may have a noticeable impact on the performance
     /// of your application and result in multiple queries being sent by the stores.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder DisableEntityCaching()
         => Configure(options => options.DisableEntityCaching = true);
 
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default application entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultApplicationEntity<TApplication>() where TApplication : class
         => SetDefaultApplicationEntity(typeof(TApplication));
 
@@ -654,7 +654,7 @@ public class OpenIddictCoreBuilder
     /// Configures OpenIddict to use the specified entity as the default application entity.
     /// </summary>
     /// <param name="type">The application entity type.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultApplicationEntity(Type type)
     {
         if (type is null)
@@ -673,7 +673,7 @@ public class OpenIddictCoreBuilder
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default authorization entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultAuthorizationEntity<TAuthorization>() where TAuthorization : class
         => SetDefaultAuthorizationEntity(typeof(TAuthorization));
 
@@ -681,7 +681,7 @@ public class OpenIddictCoreBuilder
     /// Configures OpenIddict to use the specified entity as the default authorization entity.
     /// </summary>
     /// <param name="type">The authorization entity type.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultAuthorizationEntity(Type type)
     {
         if (type is null)
@@ -700,7 +700,7 @@ public class OpenIddictCoreBuilder
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default scope entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultScopeEntity<TScope>() where TScope : class
         => SetDefaultScopeEntity(typeof(TScope));
 
@@ -708,7 +708,7 @@ public class OpenIddictCoreBuilder
     /// Configures OpenIddict to use the specified entity as the default scope entity.
     /// </summary>
     /// <param name="type">The scope entity type.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultScopeEntity(Type type)
     {
         if (type is null)
@@ -727,7 +727,7 @@ public class OpenIddictCoreBuilder
     /// <summary>
     /// Configures OpenIddict to use the specified entity as the default token entity.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultTokenEntity<TToken>() where TToken : class
         => SetDefaultTokenEntity(typeof(TToken));
 
@@ -735,7 +735,7 @@ public class OpenIddictCoreBuilder
     /// Configures OpenIddict to use the specified entity as the default token entity.
     /// </summary>
     /// <param name="type">The token entity type.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetDefaultTokenEntity(Type type)
     {
         if (type is null)
@@ -756,7 +756,7 @@ public class OpenIddictCoreBuilder
     /// after which the internal cache is automatically compacted.
     /// </summary>
     /// <param name="limit">The cache limit, in number of entries.</param>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public OpenIddictCoreBuilder SetEntityCacheLimit(int limit)
     {
         if (limit < 10)

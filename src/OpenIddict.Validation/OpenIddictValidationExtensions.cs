@@ -21,7 +21,7 @@ public static class OpenIddictValidationExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public static OpenIddictValidationBuilder AddValidation(this OpenIddictBuilder builder)
     {
         if (builder is null)
@@ -61,7 +61,7 @@ public static class OpenIddictValidationExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the validation services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictBuilder"/> instance.</returns>
     public static OpenIddictBuilder AddValidation(
         this OpenIddictBuilder builder,
         Action<OpenIddictValidationBuilder> configuration)

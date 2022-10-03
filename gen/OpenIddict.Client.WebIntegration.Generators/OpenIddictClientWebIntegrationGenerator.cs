@@ -67,7 +67,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// </summary>
     {{~ end ~}}
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
     public OpenIddictClientWebIntegrationBuilder.{{ provider.name }} Use{{ provider.name }}()
     {
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
@@ -90,7 +90,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     {{~ end ~}}
     /// <remarks>This extension can be safely called multiple times.</remarks>
     /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.name }} options.</param>
-    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/>.</returns>
+    /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>
     public OpenIddictClientWebIntegrationBuilder Use{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
     {
         if (configuration is null)
@@ -108,7 +108,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// <summary>
     /// Exposes the necessary methods required to configure the {{ provider.name }} integration.
     /// </summary>
-    public class {{ provider.name }}
+    public partial class {{ provider.name }}
     {
         /// <summary>
         /// Initializes a new instance of <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.
@@ -128,7 +128,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""configuration"">The delegate used to configure the OpenIddict options.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} Configure(Action<OpenIddictClientWebIntegrationOptions.{{ provider.name }}> configuration)
         {
             if (configuration is null)
@@ -145,7 +145,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Sets the client identifier.
         /// </summary>
         /// <param name=""identifier"">The client identifier.</param>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetClientId(string identifier)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -160,7 +160,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Sets the client secret, if applicable.
         /// </summary>
         /// <param name=""secret"">The client secret.</param>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetClientSecret(string secret)
         {
             if (string.IsNullOrEmpty(secret))
@@ -175,7 +175,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Sets the redirection URI, if applicable.
         /// </summary>
         /// <param name=""address"">The redirection URI.</param>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetRedirectUri(Uri address)
         {
             if (address is null)
@@ -190,7 +190,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Sets the redirection URI, if applicable.
         /// </summary>
         /// <param name=""address"">The redirection URI.</param>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetRedirectUri(string address)
         {
             if (string.IsNullOrEmpty(address))
@@ -210,7 +210,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Adds one or more scopes to the list of requested scopes, if applicable.
         /// </summary>
         /// <param name=""scopes"">The scopes.</param>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} AddScopes(params string[] scopes)
         {
             if (scopes is null)
@@ -225,7 +225,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures the provider to use the ""{{ environment.name }}"" environment.
         /// </summary>
-        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.</returns>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} Use{{ environment.name }}Environment()
             => Configure(options => options.Environment = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }});
         {{~ end ~}}
@@ -237,11 +237,25 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         {{~ end ~}}
         {{~ if setting.collection ~}}
-        public {{ provider.name }} Add{{ setting.name }}(params {{ setting.clr_type }}[] values)
-            => Configure(options => options.{{ setting.name }}.UnionWith(values));
+        public {{ provider.name }} Add{{ setting.property_name }}(params {{ setting.clr_type }}[] {{ setting.parameter_name }})
+        {
+            if ({{ setting.parameter_name }} is null)
+            {
+                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
+            }
+
+            return Configure(options => options.{{ setting.property_name }}.UnionWith({{ setting.parameter_name }}));
+        }
         {{~ else ~}}
-        public {{ provider.name }} Set{{ setting.name }}({{ setting.clr_type }}? value)
-            => Configure(options => options.{{ setting.name }} = value);
+        public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
+        {
+            if ({{ setting.parameter_name }} is null)
+            {
+                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
+            }
+
+            return Configure(options => options.{{ setting.property_name }} = {{ setting.parameter_name }});
+        }
         {{~ end ~}}
 
         {{~ end ~}}
@@ -277,7 +291,9 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Name = (string) setting.Attribute("Name"),
+                                PropertyName = (string) setting.Attribute("PropertyName"),
+                                ParameterName = (string) setting.Attribute("ParameterName"),
+
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
                                 Description = (string) setting.Attribute("Description") is string description ?
                                     char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description.Substring(1) : null,
@@ -404,12 +420,12 @@ public partial class OpenIddictClientWebIntegrationConfiguration
             {{~ for setting in provider.settings ~}}
             {{~ if setting.required ~}}
             {{~ if setting.type == 'String' ~}} 
-            if (string.IsNullOrEmpty(options.{{ setting.name }}))
+            if (string.IsNullOrEmpty(options.{{ setting.property_name }}))
             {{~ else ~}}
-            if (options.{{ setting.name }} is null)
+            if (options.{{ setting.property_name }} is null)
             {{~ end ~}}
             {
-                throw new InvalidOperationException(SR.FormatID0332(nameof(options.{{ setting.name }}), Providers.{{ provider.name }}));
+                throw new InvalidOperationException(SR.FormatID0332(nameof(options.{{ setting.property_name }}), Providers.{{ provider.name }}));
             }
             {{~ end ~}}
             {{~ end ~}}
@@ -436,20 +452,20 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
             {{~ for setting in provider.settings ~}}
             {{~ if setting.default_value && setting.type == 'String' ~}} 
-            if (string.IsNullOrEmpty(options.{{ setting.name }}))
+            if (string.IsNullOrEmpty(options.{{ setting.property_name }}))
             {
-                options.{{ setting.name }} = ""{{ setting.default_value }}"";
+                options.{{ setting.property_name }} = ""{{ setting.default_value }}"";
             }
             {{~ end ~}}
             {{~ end ~}}
 
             {{~ for setting in provider.settings ~}}
             {{~ if setting.collection ~}}
-            if (options.{{ setting.name }}.Count is 0)
+            if (options.{{ setting.property_name }}.Count is 0)
             {
                 {{~ for item in setting.collection_items ~}}
                 {{~ if item.default && !item.required ~}}
-                options.{{ setting.name }}.Add(""{{ item.value }}"");
+                options.{{ setting.property_name }}.Add(""{{ item.value }}"");
                 {{~ end ~}}
                 {{~ end ~}}
             }
@@ -457,7 +473,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
             {{~ for item in setting.collection_items ~}}
             {{~ if item.required ~}}
-            options.{{ setting.name }}.Add(""{{ item.value }}"");
+            options.{{ setting.property_name }}.Add(""{{ item.value }}"");
             {{~ end ~}}
             {{~ end ~}}
             {{~ end ~}}
@@ -565,7 +581,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     {{~ for setting in provider.settings ~}}
                     {{~ if setting.type == 'EncryptionKey' ~}}
-                    new EncryptingCredentials(settings.{{ setting.name }}, ""{{ setting.encryption_algorithm }}"", SecurityAlgorithms.Aes256CbcHmacSha512),
+                    new EncryptingCredentials(settings.{{ setting.property_name }}, ""{{ setting.encryption_algorithm }}"", SecurityAlgorithms.Aes256CbcHmacSha512),
                     {{~ end ~}}
                     {{~ end ~}}
                 },
@@ -574,7 +590,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     {{~ for setting in provider.settings ~}}
                     {{~ if setting.type == 'SigningKey' ~}}
-                    new SigningCredentials(settings.{{ setting.name }}, ""{{ setting.signing_algorithm }}""),
+                    new SigningCredentials(settings.{{ setting.property_name }}, ""{{ setting.signing_algorithm }}""),
                     {{~ end ~}}
                     {{~ end ~}}
                 },
@@ -675,7 +691,8 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Name = (string) setting.Attribute("Name"),
+                                PropertyName = (string) setting.Attribute("PropertyName"),
+
                                 Type = (string) setting.Attribute("Type"),
                                 Required = (bool?) setting.Attribute("Required") ?? false,
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
@@ -785,9 +802,9 @@ public partial class OpenIddictClientWebIntegrationOptions
         /// </summary>
         {{~ end ~}}
         {{~ if setting.collection ~}}
-        public HashSet<{{ setting.clr_type }}> {{ setting.name }} { get; } = new();
+        public HashSet<{{ setting.clr_type }}> {{ setting.property_name }} { get; } = new();
         {{~ else ~}}
-        public {{ setting.clr_type }}? {{ setting.name }} { get; set; }
+        public {{ setting.clr_type }}? {{ setting.property_name }} { get; set; }
         {{~ end ~}}
 
         {{~ end ~}}
@@ -804,7 +821,8 @@ public partial class OpenIddictClientWebIntegrationOptions
 
                             Settings = provider.Elements("Setting").Select(setting => new
                             {
-                                Name = (string) setting.Attribute("Name"),
+                                PropertyName = (string) setting.Attribute("PropertyName"),
+
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
                                 Description = (string) setting.Attribute("Description") is string description ?
                                     char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description.Substring(1) : null,

@@ -21,7 +21,7 @@ public static class OpenIddictEntityFrameworkExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public static OpenIddictEntityFrameworkBuilder UseEntityFramework(this OpenIddictCoreBuilder builder)
     {
         if (builder is null)
@@ -64,7 +64,7 @@ public static class OpenIddictEntityFrameworkExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the Entity Framework 6.x services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public static OpenIddictCoreBuilder UseEntityFramework(
         this OpenIddictCoreBuilder builder, Action<OpenIddictEntityFrameworkBuilder> configuration)
     {

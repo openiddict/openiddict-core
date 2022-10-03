@@ -32,7 +32,7 @@ public class OpenIddictQuartzBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder Configure(Action<OpenIddictQuartzOptions> configuration)
     {
         if (configuration is null)
@@ -48,14 +48,14 @@ public class OpenIddictQuartzBuilder
     /// <summary>
     /// Disables authorizations pruning.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder DisableAuthorizationPruning()
         => Configure(options => options.DisableAuthorizationPruning = true);
 
     /// <summary>
     /// Disables tokens pruning.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder DisableTokenPruning()
         => Configure(options => options.DisableTokenPruning = true);
 
@@ -63,7 +63,7 @@ public class OpenIddictQuartzBuilder
     /// Sets the number of times a failed Quartz.NET job can be retried.
     /// </summary>
     /// <param name="count">The number of times a failed Quartz.NET job can be retried.</param>
-    /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder SetMaximumRefireCount(int count)
     {
         if (count < 0)
@@ -78,7 +78,7 @@ public class OpenIddictQuartzBuilder
     /// Sets the minimum lifespan authorizations must have to be pruned.
     /// </summary>
     /// <param name="lifespan">The minimum lifespan authorizations must have to be pruned.</param>
-    /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder SetMinimumAuthorizationLifespan(TimeSpan lifespan)
     {
         if (lifespan < TimeSpan.FromMinutes(10))
@@ -93,7 +93,7 @@ public class OpenIddictQuartzBuilder
     /// Sets the minimum lifespan tokens must have to be pruned.
     /// </summary>
     /// <param name="lifespan">The minimum lifespan tokens must have to be pruned.</param>
-    /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public OpenIddictQuartzBuilder SetMinimumTokenLifespan(TimeSpan lifespan)
     {
         if (lifespan < TimeSpan.FromMinutes(10))

@@ -21,7 +21,7 @@ public static class OpenIddictValidationDataProtectionExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public static OpenIddictValidationDataProtectionBuilder UseDataProtection(this OpenIddictValidationBuilder builder)
     {
         if (builder is null)
@@ -51,7 +51,7 @@ public static class OpenIddictValidationDataProtectionExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the validation services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public static OpenIddictValidationBuilder UseDataProtection(
         this OpenIddictValidationBuilder builder, Action<OpenIddictValidationDataProtectionBuilder> configuration)
     {

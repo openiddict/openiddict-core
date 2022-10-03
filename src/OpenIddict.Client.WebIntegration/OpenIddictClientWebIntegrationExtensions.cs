@@ -21,7 +21,7 @@ public static class OpenIddictClientWebIntegrationExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/> instance.</returns>
     public static OpenIddictClientWebIntegrationBuilder UseWebProviders(this OpenIddictClientBuilder builder)
     {
         if (builder is null)
@@ -52,7 +52,7 @@ public static class OpenIddictClientWebIntegrationExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the validation services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public static OpenIddictClientBuilder UseWebProviders(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientWebIntegrationBuilder> configuration)
     {

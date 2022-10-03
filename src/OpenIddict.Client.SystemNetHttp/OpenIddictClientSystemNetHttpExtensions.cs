@@ -22,7 +22,7 @@ public static class OpenIddictClientSystemNetHttpExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictClientBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public static OpenIddictClientSystemNetHttpBuilder UseSystemNetHttp(this OpenIddictClientBuilder builder)
     {
         if (builder is null)
@@ -55,7 +55,7 @@ public static class OpenIddictClientSystemNetHttpExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the client services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictBuilder"/> instance.</returns>
     public static OpenIddictClientBuilder UseSystemNetHttp(
         this OpenIddictClientBuilder builder, Action<OpenIddictClientSystemNetHttpBuilder> configuration)
     {
