@@ -35,7 +35,7 @@ public class OpenIddictEntityFrameworkBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkBuilder Configure(Action<OpenIddictEntityFrameworkOptions> configuration)
     {
         if (configuration is null)
@@ -52,7 +52,7 @@ public class OpenIddictEntityFrameworkBuilder
     /// Configures OpenIddict to use the specified entities, derived
     /// from the default OpenIddict Entity Framework 6.x entities.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
         where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
@@ -84,7 +84,7 @@ public class OpenIddictEntityFrameworkBuilder
     /// Configures the OpenIddict Entity Framework 6.x stores to use the specified database context type.
     /// </summary>
     /// <typeparam name="TContext">The type of the <see cref="DbContext"/> used by OpenIddict.</typeparam>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkBuilder UseDbContext<TContext>()
         where TContext : DbContext
         => UseDbContext(typeof(TContext));
@@ -93,7 +93,7 @@ public class OpenIddictEntityFrameworkBuilder
     /// Configures the OpenIddict Entity Framework 6.x stores to use the specified database context type.
     /// </summary>
     /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkBuilder UseDbContext(Type type)
     {
         if (type is null)

@@ -1334,6 +1334,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0345" xml:space="preserve">
     <value>The product name cannot be null or empty.</value>
   </data>
+  <data name="ID0346" xml:space="preserve">
+    <value>The PEM-encoded key cannot be empty.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

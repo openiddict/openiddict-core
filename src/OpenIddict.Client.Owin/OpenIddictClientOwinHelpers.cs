@@ -20,7 +20,7 @@ public static class OpenIddictClientOwinHelpers
     /// middleware resolution (like Autofac), calling this method is NOT recommended.
     /// </summary>
     /// <param name="app">The application builder used to register middleware instances.</param>
-    /// <returns>The <see cref="IAppBuilder"/>.</returns>
+    /// <returns>The <see cref="IAppBuilder"/> instance.</returns>
     public static IAppBuilder UseOpenIddictClient(this IAppBuilder app)
     {
         if (app is null)

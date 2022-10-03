@@ -35,7 +35,7 @@ public class OpenIddictServerOwinBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder Configure(Action<OpenIddictServerOwinOptions> configuration)
     {
         if (configuration is null)
@@ -51,7 +51,7 @@ public class OpenIddictServerOwinBuilder
     /// <summary>
     /// Disables the transport security requirement (HTTPS).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder DisableTransportSecurityRequirement()
         => Configure(options => options.DisableTransportSecurityRequirement = true);
 
@@ -61,7 +61,7 @@ public class OpenIddictServerOwinBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder EnableAuthorizationEndpointPassthrough()
         => Configure(options => options.EnableAuthorizationEndpointPassthrough = true);
 
@@ -71,7 +71,7 @@ public class OpenIddictServerOwinBuilder
     /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
     /// retrieved using <see cref="OpenIddictServerOwinHelpers.GetOpenIddictServerResponse(IOwinContext)"/>
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerOwinBuilder EnableErrorPassthrough()
         => Configure(options => options.EnableErrorPassthrough = true);
@@ -82,7 +82,7 @@ public class OpenIddictServerOwinBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder EnableLogoutEndpointPassthrough()
         => Configure(options => options.EnableLogoutEndpointPassthrough = true);
 
@@ -92,7 +92,7 @@ public class OpenIddictServerOwinBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder EnableTokenEndpointPassthrough()
         => Configure(options => options.EnableTokenEndpointPassthrough = true);
 
@@ -102,7 +102,7 @@ public class OpenIddictServerOwinBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder EnableUserinfoEndpointPassthrough()
         => Configure(options => options.EnableUserinfoEndpointPassthrough = true);
 
@@ -112,7 +112,7 @@ public class OpenIddictServerOwinBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder EnableVerificationEndpointPassthrough()
         => Configure(options => options.EnableVerificationEndpointPassthrough = true);
 
@@ -123,7 +123,7 @@ public class OpenIddictServerOwinBuilder
     /// when using external authentication providers or when large GET or POST
     /// OpenID Connect authorization requests support is required.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder EnableAuthorizationRequestCaching()
         => Configure(options => options.EnableAuthorizationRequestCaching = true);
 
@@ -131,7 +131,7 @@ public class OpenIddictServerOwinBuilder
     /// Enables logout request caching, so that logout requests
     /// are automatically stored in the distributed cache.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder EnableLogoutRequestCaching()
         => Configure(options => options.EnableLogoutRequestCaching = true);
 
@@ -139,7 +139,7 @@ public class OpenIddictServerOwinBuilder
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     /// <param name="realm">The issuer address.</param>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder SetRealm(string realm)
     {
         if (string.IsNullOrEmpty(realm))
@@ -155,7 +155,7 @@ public class OpenIddictServerOwinBuilder
     /// Note: the specified policy is only used when caching is explicitly enabled.
     /// </summary>
     /// <param name="policy">The caching policy.</param>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)
@@ -171,7 +171,7 @@ public class OpenIddictServerOwinBuilder
     /// Note: the specified policy is only used when caching is explicitly enabled.
     /// </summary>
     /// <param name="policy">The caching policy.</param>
-    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)

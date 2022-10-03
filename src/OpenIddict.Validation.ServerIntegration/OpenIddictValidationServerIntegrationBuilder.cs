@@ -32,7 +32,7 @@ public class OpenIddictValidationServerIntegrationBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationServerIntegrationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationServerIntegrationBuilder"/> instance.</returns>
     public OpenIddictValidationServerIntegrationBuilder Configure(Action<OpenIddictValidationServerIntegrationOptions> configuration)
     {
         if (configuration is null)

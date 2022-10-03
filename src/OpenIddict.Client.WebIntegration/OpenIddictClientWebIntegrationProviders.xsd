@@ -329,14 +329,26 @@
                     </xs:element>
                   </xs:sequence>
 
-                  <xs:attribute name="Name" use="required">
+                  <xs:attribute name="PropertyName" use="required">
                     <xs:annotation>
-                      <xs:documentation>The setting name.</xs:documentation>
+                      <xs:documentation>The name of the property used to reference the setting in the options class.</xs:documentation>
                     </xs:annotation>
 
                     <xs:simpleType>
                       <xs:restriction base="xs:string">
                         <xs:pattern value="^[A-Z][a-zA-Z0-9]*$" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+
+                  <xs:attribute name="ParameterName" use="required">
+                    <xs:annotation>
+                      <xs:documentation>The name of the parameter used to reference the setting in the builder methods.</xs:documentation>
+                    </xs:annotation>
+
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:pattern value="^[a-z][a-zA-Z0-9]*$" />
                       </xs:restriction>
                     </xs:simpleType>
                   </xs:attribute>

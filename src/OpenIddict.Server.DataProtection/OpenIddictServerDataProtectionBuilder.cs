@@ -34,7 +34,7 @@ public class OpenIddictServerDataProtectionBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder Configure(Action<OpenIddictServerDataProtectionOptions> configuration)
     {
         if (configuration is null)
@@ -52,7 +52,7 @@ public class OpenIddictServerDataProtectionBuilder
     /// instead of relying on the default instance provided by the DI container.
     /// </summary>
     /// <param name="provider">The data protection provider used to create token protectors.</param>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder UseDataProtectionProvider(IDataProtectionProvider provider)
     {
         if (provider is null)
@@ -67,7 +67,7 @@ public class OpenIddictServerDataProtectionBuilder
     /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
     /// </summary>
     /// <param name="formatter">The formatter used to read and write tokens.</param>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder UseFormatter(IOpenIddictServerDataProtectionFormatter formatter)
     {
         if (formatter is null)
@@ -81,35 +81,35 @@ public class OpenIddictServerDataProtectionBuilder
     /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new access tokens.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder PreferDefaultAccessTokenFormat()
         => Configure(options => options.PreferDefaultAccessTokenFormat = true);
 
     /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new authorization codes.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder PreferDefaultAuthorizationCodeFormat()
         => Configure(options => options.PreferDefaultAuthorizationCodeFormat = true);
 
     /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new device codes.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder PreferDefaultDeviceCodeFormat()
         => Configure(options => options.PreferDefaultDeviceCodeFormat = true);
 
     /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new refresh tokens.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder PreferDefaultRefreshTokenFormat()
         => Configure(options => options.PreferDefaultRefreshTokenFormat = true);
 
     /// <summary>
     /// Configures OpenIddict to use the default token format (JWT) when issuing new user codes.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/> instance.</returns>
     public OpenIddictServerDataProtectionBuilder PreferDefaultUserCodeFormat()
         => Configure(options => options.PreferDefaultUserCodeFormat = true);
 

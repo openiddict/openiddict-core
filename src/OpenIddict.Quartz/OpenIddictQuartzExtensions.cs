@@ -20,7 +20,7 @@ public static class OpenIddictQuartzExtensions
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictQuartzBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
     public static OpenIddictQuartzBuilder UseQuartz(this OpenIddictCoreBuilder builder)
     {
         if (builder is null)
@@ -47,7 +47,7 @@ public static class OpenIddictQuartzExtensions
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <param name="configuration">The configuration delegate used to configure the Quartz.NET services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
     public static OpenIddictCoreBuilder UseQuartz(
         this OpenIddictCoreBuilder builder, Action<OpenIddictQuartzBuilder> configuration)
     {

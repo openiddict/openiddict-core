@@ -35,7 +35,7 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictValidationSystemNetHttpBuilder Configure(Action<OpenIddictValidationSystemNetHttpOptions> configuration)
     {
         if (configuration is null)
@@ -52,7 +52,7 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// Replaces the default HTTP error policy used by the OpenIddict client services.
     /// </summary>
     /// <param name="policy">The HTTP Polly error policy.</param>
-    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictValidationSystemNetHttpBuilder SetHttpErrorPolicy(IAsyncPolicy<HttpResponseMessage> policy)
     {
         if (policy is null)
@@ -68,7 +68,7 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// to the backchannel HTTP requests sent to the authorization server.
     /// </summary>
     /// <param name="information">The product information.</param>
-    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(ProductInfoHeaderValue information)
     {
         if (information is null)
@@ -85,7 +85,7 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// </summary>
     /// <param name="name">The product name.</param>
     /// <param name="version">The product version.</param>
-    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(string name, string? version)
     {
         if (string.IsNullOrEmpty(name))
@@ -102,7 +102,7 @@ public class OpenIddictValidationSystemNetHttpBuilder
     /// on the identity of the specified .NET assembly (name and version).
     /// </summary>
     /// <param name="assembly">The assembly from which the product information is created.</param>
-    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictValidationSystemNetHttpBuilder SetProductInformation(Assembly assembly)
     {
         if (assembly is null)

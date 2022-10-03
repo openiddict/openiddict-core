@@ -34,7 +34,7 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkCoreBuilder Configure(Action<OpenIddictEntityFrameworkCoreOptions> configuration)
     {
         if (configuration is null)
@@ -51,7 +51,7 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// Configures OpenIddict to use the default OpenIddict
     /// Entity Framework Core entities, with the specified key type.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkCoreBuilder ReplaceDefaultEntities<TKey>()
         where TKey : notnull, IEquatable<TKey>
         => ReplaceDefaultEntities<OpenIddictEntityFrameworkCoreApplication<TKey>,
@@ -63,7 +63,7 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// Configures OpenIddict to use the specified entities, derived
     /// from the default OpenIddict Entity Framework Core entities.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkCoreBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
         where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
@@ -86,7 +86,7 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// Configures the OpenIddict Entity Framework Core stores to use the specified database context type.
     /// </summary>
     /// <typeparam name="TContext">The type of the <see cref="DbContext"/> used by OpenIddict.</typeparam>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkCoreBuilder UseDbContext<TContext>()
         where TContext : DbContext
         => UseDbContext(typeof(TContext));
@@ -95,7 +95,7 @@ public class OpenIddictEntityFrameworkCoreBuilder
     /// Configures the OpenIddict Entity Framework Core stores to use the specified database context type.
     /// </summary>
     /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
-    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/> instance.</returns>
     public OpenIddictEntityFrameworkCoreBuilder UseDbContext(Type type)
     {
         if (type is null)

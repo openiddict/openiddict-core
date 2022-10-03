@@ -38,7 +38,7 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <typeparam name="TContext">The event context type.</typeparam>
     /// <param name="configuration">The configuration delegate.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder AddEventHandler<TContext>(
         Action<OpenIddictValidationHandlerDescriptor.Builder<TContext>> configuration)
@@ -62,7 +62,7 @@ public class OpenIddictValidationBuilder
     /// Registers an event handler using the specified descriptor.
     /// </summary>
     /// <param name="descriptor">The handler descriptor.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder AddEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
     {
@@ -81,7 +81,7 @@ public class OpenIddictValidationBuilder
     /// Removes the event handler that matches the specified descriptor.
     /// </summary>
     /// <param name="descriptor">The descriptor corresponding to the handler to remove.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictValidationBuilder RemoveEventHandler(OpenIddictValidationHandlerDescriptor descriptor)
     {
@@ -111,7 +111,7 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder Configure(Action<OpenIddictValidationOptions> configuration)
     {
         if (configuration is null)
@@ -128,7 +128,7 @@ public class OpenIddictValidationBuilder
     /// Registers encryption credentials.
     /// </summary>
     /// <param name="credentials">The encrypting credentials.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCredentials(EncryptingCredentials credentials)
     {
         if (credentials is null)
@@ -143,7 +143,7 @@ public class OpenIddictValidationBuilder
     /// Registers an encryption key.
     /// </summary>
     /// <param name="key">The security key.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionKey(SecurityKey key)
     {
         if (key is null)
@@ -177,7 +177,7 @@ public class OpenIddictValidationBuilder
     /// Registers an encryption certificate.
     /// </summary>
     /// <param name="certificate">The encryption certificate.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(X509Certificate2 certificate)
     {
         if (certificate is null)
@@ -210,7 +210,7 @@ public class OpenIddictValidationBuilder
     /// <param name="assembly">The assembly containing the certificate.</param>
     /// <param name="resource">The name of the embedded resource.</param>
     /// <param name="password">The password used to open the certificate.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         Assembly assembly, string resource, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
@@ -229,7 +229,7 @@ public class OpenIddictValidationBuilder
     /// <param name="resource">The name of the embedded resource.</param>
     /// <param name="password">The password used to open the certificate.</param>
     /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         Assembly assembly, string resource,
         string? password, X509KeyStorageFlags flags)
@@ -255,7 +255,7 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="stream">The stream containing the certificate.</param>
     /// <param name="password">The password used to open the certificate.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(Stream stream, string? password)
 #if SUPPORTS_EPHEMERAL_KEY_SETS
         // Note: ephemeral key sets are currently not supported on macOS.
@@ -275,7 +275,7 @@ public class OpenIddictValidationBuilder
     /// An enumeration of flags indicating how and where
     /// to store the private key of the certificate.
     /// </param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictValidationBuilder AddEncryptionCertificate(
@@ -296,7 +296,7 @@ public class OpenIddictValidationBuilder
     /// Registers an encryption certificate retrieved from the X.509 user or machine store.
     /// </summary>
     /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(string thumbprint)
     {
         if (string.IsNullOrEmpty(thumbprint))
@@ -326,7 +326,7 @@ public class OpenIddictValidationBuilder
     /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
     /// <param name="name">The name of the X.509 store.</param>
     /// <param name="location">The location of the X.509 store.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         string thumbprint, StoreName name, StoreLocation location)
     {
@@ -350,7 +350,7 @@ public class OpenIddictValidationBuilder
     /// when the authorization server issues access tokens for multiple distinct resource servers.
     /// </summary>
     /// <param name="audiences">The audiences valid for this resource server.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder AddAudiences(params string[] audiences)
     {
         if (audiences is null)
@@ -372,7 +372,7 @@ public class OpenIddictValidationBuilder
     /// Note: enabling this option may have an impact on performance and
     /// can only be used with an OpenIddict-based authorization server.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder EnableAuthorizationEntryValidation()
         => Configure(options => options.EnableAuthorizationEntryValidation = true);
 
@@ -382,7 +382,7 @@ public class OpenIddictValidationBuilder
     /// Note: enabling this option may have an impact on performance but is required
     /// when the OpenIddict server is configured to use reference tokens.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder EnableTokenEntryValidation()
         => Configure(options => options.EnableTokenEntryValidation = true);
 
@@ -391,7 +391,7 @@ public class OpenIddictValidationBuilder
     /// resolve the metadata/introspection endpoints and the issuer signing keys.
     /// </summary>
     /// <param name="configuration">The server configuration.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetConfiguration(OpenIddictConfiguration configuration)
     {
         if (configuration is null)
@@ -407,7 +407,7 @@ public class OpenIddictValidationBuilder
     /// with the remote authorization server (e.g for introspection).
     /// </summary>
     /// <param name="identifier">The client identifier.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetClientId(string identifier)
     {
         if (string.IsNullOrEmpty(identifier))
@@ -423,7 +423,7 @@ public class OpenIddictValidationBuilder
     /// with the remote authorization server (e.g for introspection).
     /// </summary>
     /// <param name="secret">The client secret.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetClientSecret(string secret)
     {
         if (string.IsNullOrEmpty(secret))
@@ -439,7 +439,7 @@ public class OpenIddictValidationBuilder
     /// OAuth 2.0/OpenID Connect configuration document when using provider discovery.
     /// </summary>
     /// <param name="address">The issuer address.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetIssuer(Uri address)
     {
         if (address is null)
@@ -455,7 +455,7 @@ public class OpenIddictValidationBuilder
     /// OAuth 2.0/OpenID Connect configuration document when using provider discovery.
     /// </summary>
     /// <param name="address">The issuer address.</param>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder SetIssuer(string address)
     {
         if (string.IsNullOrEmpty(address))
@@ -474,7 +474,7 @@ public class OpenIddictValidationBuilder
     /// <summary>
     /// Configures OpenIddict to use introspection instead of local/direct validation.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
     public OpenIddictValidationBuilder UseIntrospection()
         => Configure(options => options.ValidationType = OpenIddictValidationType.Introspection);
 

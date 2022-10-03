@@ -35,7 +35,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// </summary>
     /// <param name="configuration">The delegate used to configure the OpenIddict options.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder Configure(Action<OpenIddictServerAspNetCoreOptions> configuration)
     {
         if (configuration is null)
@@ -51,7 +51,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// <summary>
     /// Disables the transport security requirement (HTTPS).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder DisableTransportSecurityRequirement()
         => Configure(options => options.DisableTransportSecurityRequirement = true);
 
@@ -61,7 +61,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableAuthorizationEndpointPassthrough()
         => Configure(options => options.EnableAuthorizationEndpointPassthrough = true);
 
@@ -74,7 +74,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// <remarks>
     /// Important: the error pass-through mode cannot be used when the status code pages integration is enabled.
     /// </remarks>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public OpenIddictServerAspNetCoreBuilder EnableErrorPassthrough()
         => Configure(options => options.EnableErrorPassthrough = true);
@@ -85,7 +85,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableLogoutEndpointPassthrough()
         => Configure(options => options.EnableLogoutEndpointPassthrough = true);
 
@@ -95,7 +95,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableTokenEndpointPassthrough()
         => Configure(options => options.EnableTokenEndpointPassthrough = true);
 
@@ -105,7 +105,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableUserinfoEndpointPassthrough()
         => Configure(options => options.EnableUserinfoEndpointPassthrough = true);
 
@@ -115,7 +115,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
     /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableVerificationEndpointPassthrough()
         => Configure(options => options.EnableVerificationEndpointPassthrough = true);
 
@@ -126,7 +126,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// when using external authentication providers or when large GET or POST
     /// OpenID Connect authorization requests support is required.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableAuthorizationRequestCaching()
         => Configure(options => options.EnableAuthorizationRequestCaching = true);
 
@@ -134,7 +134,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Enables logout request caching, so that logout requests
     /// are automatically stored in the distributed cache.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableLogoutRequestCaching()
         => Configure(options => options.EnableLogoutRequestCaching = true);
 
@@ -142,7 +142,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Enables status code pages integration support. Once enabled, errors
     /// generated by the interactive endpoints can be handled by ASP.NET Core.
     /// </summary>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder EnableStatusCodePagesIntegration()
         => Configure(options => options.EnableStatusCodePagesIntegration = true);
 
@@ -150,7 +150,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
     /// <param name="realm">The issuer address.</param>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder SetRealm(string realm)
     {
         if (string.IsNullOrEmpty(realm))
@@ -166,7 +166,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Note: the specified policy is only used when caching is explicitly enabled.
     /// </summary>
     /// <param name="policy">The caching policy.</param>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder SetAuthorizationRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)
@@ -182,7 +182,7 @@ public class OpenIddictServerAspNetCoreBuilder
     /// Note: the specified policy is only used when caching is explicitly enabled.
     /// </summary>
     /// <param name="policy">The caching policy.</param>
-    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+    /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictServerAspNetCoreBuilder SetLogoutRequestCachingPolicy(DistributedCacheEntryOptions policy)
     {
         if (policy is null)

@@ -4,12 +4,12 @@
   <Provider Name="Apple" Documentation="https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api">
     <Environment Issuer="https://appleid.apple.com/" />
 
-    <Setting Name="SigningKey" Type="SigningKey" Required="true"
+    <Setting PropertyName="SigningKey" ParameterName="key" Type="SigningKey" Required="true"
              Description="The Elliptic Curve Digital Signature Algorithm (ECDSA) signing key associated with the developer account">
       <SigningAlgorithm Value="ES256" />
     </Setting>
 
-    <Setting Name="TeamId" Type="String" Required="true"
+    <Setting PropertyName="TeamId" ParameterName="identifier" Type="String" Required="true"
              Description="The team ID associated with the developer account" />
   </Provider>
 
@@ -35,7 +35,7 @@
 
     <Environment Issuer="https://login.microsoftonline.com/{tenant}/v2.0" />
 
-    <Setting Name="Tenant" Type="String" Required="false" DefaultValue="common"
+    <Setting PropertyName="Tenant" ParameterName="tenant" Type="String" Required="false" DefaultValue="common"
              Description="The tenant used to identify the Azure AD instance (by default, the common tenant is used)" />
   </Provider>
 
@@ -78,12 +78,12 @@
       <Scope Name="users.read" Default="true" Required="true" />
     </Environment>
 
-    <Setting Name="Expansions" Collection="true" Type="String"
+    <Setting PropertyName="Expansions" ParameterName="expansions" Collection="true" Type="String"
              Description="The list of data objects to expand from the userinfo endpoint (by default, all known expansions are requested)">
       <CollectionItem Value="pinned_tweet_id" Default="true" Required="false" />
     </Setting>
 
-    <Setting Name="TweetFields" Collection="true" Type="String"
+    <Setting PropertyName="TweetFields" ParameterName="fields" Collection="true" Type="String"
              Description="The tweet fields that should be retrieved from the userinfo endpoint (by default, all known tweet fields are requested)">
       <CollectionItem Value="attachments"         Default="true" Required="false" />
       <CollectionItem Value="author_id"           Default="true" Required="false" />
@@ -107,7 +107,7 @@
       <CollectionItem Value="withheld"            Default="true" Required="false" />
     </Setting>
 
-    <Setting Name="UserFields" Collection="true" Type="String"
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
              Description="The user fields that should be retrieved from the userinfo endpoint (by default, all known user fields are requested)">
       <CollectionItem Value="created_at"      Default="true" Required="false" />
       <CollectionItem Value="description"     Default="true" Required="false" />
