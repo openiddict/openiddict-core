@@ -14,7 +14,6 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin.Security;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.Owin;
@@ -23,6 +22,7 @@ using OpenIddict.Sandbox.AspNet.Server.ViewModels.Authorization;
 using OpenIddict.Server.Owin;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Server.Controllers
 {
@@ -60,14 +60,7 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                 // that will be used to authenticate the user, the identity_provider parameter can be used for that.
                 if (!string.IsNullOrEmpty(request.IdentityProvider))
                 {
-                    var issuer = request.IdentityProvider switch
-                    {
-                        "github" => "https://github.com/",
-
-                        _ => null
-                    };
-
-                    if (string.IsNullOrEmpty(issuer))
+                    if (!string.Equals(request.IdentityProvider, Providers.GitHub, StringComparison.Ordinal))
                     {
                         context.Authentication.Challenge(
                             authenticationTypes: OpenIddictServerOwinDefaults.AuthenticationType,
@@ -84,8 +77,8 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                     var properties = new AuthenticationProperties(new Dictionary<string, string>
                     {
                         // Note: when only one client is registered in the client options,
-                        // setting the issuer property is not required and can be omitted.
-                        [OpenIddictClientOwinConstants.Properties.Issuer] = issuer
+                        // specifying the issuer URI or the provider name is not required.
+                        [OpenIddictClientOwinConstants.Properties.ProviderName] = request.IdentityProvider
                     })
                     {
                         // Once the callback is handled, redirect the user agent to the ASP.NET Identity

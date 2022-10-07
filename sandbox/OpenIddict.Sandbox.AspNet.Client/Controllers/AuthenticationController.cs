@@ -9,6 +9,7 @@ using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using OpenIddict.Client.Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 {
@@ -19,46 +20,60 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
         {
             var context = HttpContext.GetOwinContext();
 
-            var issuer = provider switch
-            {
-                "local" or "local-github" => "https://localhost:44349/",
-                "github"                  => "https://github.com/",
-                "google"                  => "https://accounts.google.com/",
-                "twitter"                 => "https://twitter.com/",
-
-                _ => null
-            };
-
-            if (string.IsNullOrEmpty(issuer))
+            // Note: OpenIddict always validates the specified provider name when handling the challenge operation,
+            // but the provider can also be validated earlier to return an error page or a special HTTP error code.
+            if (!string.Equals(provider, "Local",           StringComparison.Ordinal) &&
+                !string.Equals(provider, "Local+GitHub",    StringComparison.Ordinal) &&
+                !string.Equals(provider, Providers.GitHub,  StringComparison.Ordinal) &&
+                !string.Equals(provider, Providers.Google,  StringComparison.Ordinal) &&
+                !string.Equals(provider, Providers.Twitter, StringComparison.Ordinal))
             {
                 return new HttpStatusCodeResult(400);
             }
-
-            var properties = new AuthenticationProperties(new Dictionary<string, string>
-            {
-                // Note: when only one client is registered in the client options,
-                // setting the issuer property is not required and can be omitted.
-                [OpenIddictClientOwinConstants.Properties.Issuer] = issuer
-            })
-            {
-                // Only allow local return URLs to prevent open redirect attacks.
-                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
-            };
 
             // The local authorization server sample allows the client to select the external
             // identity provider that will be used to eventually authenticate the user. For that,
             // a custom "identity_provider" parameter is sent to the authorization server so that
             // the user is directly redirected to GitHub (in this case, no login page is shown).
-            if (provider is "local-github")
+            if (string.Equals(provider, "Local+GitHub", StringComparison.Ordinal))
             {
-                // Note: the OWIN host requires appending the #string suffix to indicate
-                // that the "identity_provider" property is a public string parameter.
-                properties.Dictionary[Parameters.IdentityProvider + OpenIddictClientOwinConstants.PropertyTypes.String] = "github";
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    // Note: when only one client is registered in the client options,
+                    // specifying the issuer URI or the provider name is not required.
+                    [OpenIddictClientOwinConstants.Properties.ProviderName] = "Local",
+
+                    // Note: the OWIN host requires appending the #string suffix to indicate
+                    // that the "identity_provider" property is a public string parameter.
+                    [Parameters.IdentityProvider + OpenIddictClientOwinConstants.PropertyTypes.String] = "GitHub"
+                })
+                {
+                    // Only allow local return URLs to prevent open redirect attacks.
+                    RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
+                };
+
+                // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+                context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
+                return new EmptyResult();
             }
 
-            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-            context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
-            return new EmptyResult();
+            else
+            {
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    // Note: when only one client is registered in the client options,
+                    // specifying the issuer URI or the provider name is not required.
+                    [OpenIddictClientOwinConstants.Properties.ProviderName] = provider
+                })
+                {
+                    // Only allow local return URLs to prevent open redirect attacks.
+                    RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
+                };
+
+                // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+                context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
+                return new EmptyResult();
+            }
         }
 
         [HttpPost, Route("~/logout"), ValidateAntiForgeryToken]

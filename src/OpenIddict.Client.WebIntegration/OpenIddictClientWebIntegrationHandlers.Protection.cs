@@ -50,7 +50,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     return default;
                 }
 
-                context.TokenValidationParameters.ValidateIssuer = context.Registration.GetProviderName() switch
+                context.TokenValidationParameters.ValidateIssuer = context.Registration.ProviderName switch
                 {
                     // When the Microsoft Account provider is configured to use the "common" tenant,
                     // the returned tokens include a dynamic issuer claim corresponding to the tenant

@@ -5,9 +5,12 @@
  */
 
 using System.ComponentModel;
+using OpenIddict.Client.WebIntegration;
+
+#if SUPPORTS_PEM_ENCODED_KEY_IMPORT
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Client.WebIntegration;
+#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -59,7 +62,10 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Configures the Elliptic Curve Digital Signature Algorithm
         /// (ECDSA) signing key associated with the developer account.
         /// </summary>
-        /// <param name="key">The PEM-encoded ECDSA signing key.</param>
+        /// <param name="key">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm
+        /// (ECDSA) signing key associated with the developer account.
+        /// </param>
         /// <returns>The <see cref="Apple"/> instance.</returns>
         public Apple SetSigningKey(string key) => SetSigningKey(key.AsMemory());
 
@@ -67,7 +73,10 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Configures the Elliptic Curve Digital Signature Algorithm
         /// (ECDSA) signing key associated with the developer account.
         /// </summary>
-        /// <param name="key">The PEM-encoded ECDSA signing key.</param>
+        /// <param name="key">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm
+        /// (ECDSA) signing key associated with the developer account.
+        /// </param>
         /// <returns>The <see cref="Apple"/> instance.</returns>
         public Apple SetSigningKey(ReadOnlyMemory<char> key) => SetSigningKey(key.Span);
 
@@ -75,7 +84,10 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// Configures the Elliptic Curve Digital Signature Algorithm
         /// (ECDSA) signing key associated with the developer account.
         /// </summary>
-        /// <param name="key">The PEM-encoded ECDSA signing key.</param>
+        /// <param name="key">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm
+        /// (ECDSA) signing key associated with the developer account.
+        /// </param>
         /// <returns>The <see cref="Apple"/> instance.</returns>
         public Apple SetSigningKey(ReadOnlySpan<char> key)
         {

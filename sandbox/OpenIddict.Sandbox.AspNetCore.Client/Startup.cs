@@ -111,6 +111,7 @@ public class Startup
                 // Add a client registration matching the client application definition in the server project.
                 options.AddRegistration(new OpenIddictClientRegistration
                 {
+                    ProviderName = "Local",
                     Issuer = new Uri("https://localhost:44395/", UriKind.Absolute),
 
                     ClientId = "mvc",

@@ -39,14 +39,14 @@
     {
         <h1>Welcome, anonymous</h1>
         @Html.ActionLink("Sign in using the local OIDC server", "Login", "Authentication",
-            new { provider = "local" }, new { @class = "btn btn-lg btn-success" })
+            new { provider = "Local" }, new { @class = "btn btn-lg btn-success" })
         @Html.ActionLink("Sign in using the local OIDC server (using GitHub delegation)", "Login", "Authentication",
-            new { provider = "local-github" }, new { @class = "btn btn-lg btn-success" })
+            new { provider = "Local+GitHub" }, new { @class = "btn btn-lg btn-success" })
         @Html.ActionLink("Sign in using GitHub", "Login", "Authentication",
-            new { provider = "github" }, new { @class = "btn btn-lg btn-success" })
+            new { provider = "GitHub" }, new { @class = "btn btn-lg btn-success" })
         @Html.ActionLink("Sign in using Google", "Login", "Authentication",
-            new { provider = "google" }, new { @class = "btn btn-lg btn-success" })
+            new { provider = "Google" }, new { @class = "btn btn-lg btn-success" })
         @Html.ActionLink("Sign in using Twitter", "Login", "Authentication",
-            new { provider = "twitter" }, new { @class = "btn btn-lg btn-success" })
+            new { provider = "Twitter" }, new { @class = "btn btn-lg btn-success" })
     }
 </div>

@@ -20,6 +20,7 @@ using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Sandbox.AspNetCore.Server.ViewModels.Authorization;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Sandbox.AspNetCore.Server;
 
@@ -95,14 +96,7 @@ public class AuthorizationController : Controller
             // that will be used to authenticate the user, the identity_provider parameter can be used for that.
             if (!string.IsNullOrEmpty(request.IdentityProvider))
             {
-                var issuer = request.IdentityProvider switch
-                {
-                    "github" => "https://github.com/",
-
-                    _ => null
-                };
-
-                if (string.IsNullOrEmpty(issuer))
+                if (!string.Equals(request.IdentityProvider, Providers.GitHub, StringComparison.Ordinal))
                 {
                     return Forbid(
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
@@ -115,15 +109,15 @@ public class AuthorizationController : Controller
                 }
 
                 var properties = _signInManager.ConfigureExternalAuthenticationProperties(
-                    provider: issuer,
+                    provider: request.IdentityProvider,
                     redirectUrl: Url.Action("ExternalLoginCallback", "Account", new
                     {
                         ReturnUrl = Request.PathBase + Request.Path + QueryString.Create(parameters)
                     }));
 
                 // Note: when only one client is registered in the client options,
-                // setting the issuer property is not required and can be omitted.
-                properties.SetString(OpenIddictClientAspNetCoreConstants.Properties.Issuer, issuer);
+                // specifying the issuer URI or the provider name is not required.
+                properties.SetString(OpenIddictClientAspNetCoreConstants.Properties.ProviderName, request.IdentityProvider);
 
                 // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
                 return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);

@@ -56,7 +56,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // that determines what fields will be returned as part of the userinfo response. This handler is
                 // responsible for resolving the fields from the provider settings and attaching them to the request.
 
-                if (context.Registration.GetProviderName() is Providers.Twitter)
+                if (context.Registration.ProviderName is Providers.Twitter)
                 {
                     var options = context.Registration.GetTwitterOptions();
 
@@ -100,7 +100,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // logic from mapping the parameters to CLR claims. To work around that, this handler
                 // is responsible for extracting the nested payload and replacing the userinfo response.
 
-                var parameter = context.Registration.GetProviderName() switch
+                var parameter = context.Registration.ProviderName switch
                 {
                     Providers.Twitter => "data",
 
