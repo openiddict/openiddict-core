@@ -63,7 +63,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// <summary>
     /// Enables the {{ provider.name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
-    /// For more information, visit <see href=""{{ provider.documentation }}"">the official website</see>.
+    /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
     /// </summary>
     {{~ end ~}}
     /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -85,7 +85,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// <summary>
     /// Enables the {{ provider.name }} integration and registers the associated services in the DI container.
     {{~ if provider.documentation ~}}
-    /// For more information, visit <see href=""{{ provider.documentation }}"">the official website</see>.
+    /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
     /// </summary>
     {{~ end ~}}
     /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -231,11 +231,11 @@ public partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
 
         {{~ for setting in provider.settings ~}}
-        {{~ if setting.description ~}}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        {{~ end ~}}
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         {{~ if setting.collection ~}}
         public {{ provider.name }} Add{{ setting.property_name }}(params {{ setting.clr_type }}[] {{ setting.parameter_name }})
         {
@@ -495,6 +495,8 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
             var registration = new OpenIddictClientRegistration
             {
+                ProviderName = Providers.{{ provider.name }},
+
                 Issuer = settings.Environment switch
                 {
                     {{~ for environment in provider.environments ~}}
@@ -597,7 +599,6 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
                 Properties =
                 {
-                    [Properties.ProviderName] = Providers.{{ provider.name }},
                     [Properties.ProviderOptions] = settings
                 }
             };
@@ -796,11 +797,9 @@ public partial class OpenIddictClientWebIntegrationOptions
         public string? Environment { get; set; } = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.Production;
 
         {{~ for setting in provider.settings ~}}
-        {{~ if setting.description ~}}
         /// <summary>
         /// Gets or sets {{ setting.description }}.
         /// </summary>
-        {{~ end ~}}
         {{~ if setting.collection ~}}
         public HashSet<{{ setting.clr_type }}> {{ setting.property_name }} { get; } = new();
         {{~ else ~}}

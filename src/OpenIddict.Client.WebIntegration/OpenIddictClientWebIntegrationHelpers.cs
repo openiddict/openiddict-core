@@ -14,24 +14,6 @@ namespace OpenIddict.Client.WebIntegration;
 public static partial class OpenIddictClientWebIntegrationHelpers
 {
     /// <summary>
-    /// Resolves the name of the provider associated with the client registration or
-    /// <see langword="null" /> if no provider information is attached to the registration.
-    /// </summary>
-    /// <param name="registration">The client registration.</param>
-    /// <returns>The provider name, if applicable.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="registration"/> is null.</exception>
-    public static string? GetProviderName(this OpenIddictClientRegistration registration)
-    {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        return registration.Properties.TryGetValue(Properties.ProviderName, out var provider)
-            && provider is string value ? value : null;
-    }
-
-    /// <summary>
     /// Resolves the provider options associated with the client registration or
     /// <see langword="null" /> if no provider information is attached to the registration or if
     /// the actual setting information doesn't match the specified <typeparamref name="TOptions"/>.

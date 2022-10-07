@@ -694,6 +694,12 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets or sets the name of the provider that will be
+        /// used to resolve the issuer identity, if applicable.
+        /// </summary>
+        public string? ProviderName { get; set; }
+
+        /// <summary>
         /// Gets the additional parameters returned to caller.
         /// </summary>
         public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
@@ -836,6 +842,12 @@ public static partial class OpenIddictClientEvents
             get => Transaction.Response!;
             set => Transaction.Response = value;
         }
+
+        /// <summary>
+        /// Gets or sets the name of the provider that will be
+        /// used to resolve the issuer identity, if applicable.
+        /// </summary>
+        public string? ProviderName { get; set; }
 
         /// <summary>
         /// Gets or sets the client identifier that will be used for the sign-out demand.

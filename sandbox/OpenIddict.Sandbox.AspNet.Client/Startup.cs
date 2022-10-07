@@ -101,6 +101,7 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     // Add a client registration matching the client application definition in the server project.
                     options.AddRegistration(new OpenIddictClientRegistration
                     {
+                        ProviderName = "Local",
                         Issuer = new Uri("https://localhost:44349/", UriKind.Absolute),
 
                         ClientId = "mvc",

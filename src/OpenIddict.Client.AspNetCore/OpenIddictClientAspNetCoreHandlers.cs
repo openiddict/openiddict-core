@@ -459,6 +459,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 context.Issuer = uri;
             }
 
+            // If a provider name was explicitly set, update the challenge context to use it.
+            if (properties.Items.TryGetValue(Properties.ProviderName, out string? provider) &&
+                !string.IsNullOrEmpty(provider))
+            {
+                context.ProviderName = provider;
+            }
+
             // If a return URL was specified, use it as the target_link_uri claim.
             if (!string.IsNullOrEmpty(properties.RedirectUri))
             {
@@ -626,6 +633,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 }
 
                 context.Issuer = uri;
+            }
+
+            // If a provider name was explicitly set, update the sign-out context to use it.
+            if (properties.Items.TryGetValue(Properties.ProviderName, out string? provider) &&
+                !string.IsNullOrEmpty(provider))
+            {
+                context.ProviderName = provider;
             }
 
             // If a return URL was specified, use it as the target_link_uri claim.

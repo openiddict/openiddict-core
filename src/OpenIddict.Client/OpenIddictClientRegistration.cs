@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
 
@@ -12,6 +13,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Contains the properties used to configure a client/server link.
 /// </summary>
+[DebuggerDisplay("{Issuer,nq}")]
 public class OpenIddictClientRegistration
 {
     /// <summary>
@@ -92,6 +94,15 @@ public class OpenIddictClientRegistration
     /// Gets or sets the address of the authorization server.
     /// </summary>
     public Uri? Issuer { get; set; }
+
+    /// <summary>
+    /// Gets or sets the provider name, if applicable.
+    /// </summary>
+    /// <remarks>
+    /// If a Web provider integration with the same name was enabled, the
+    /// provider-specific options will be automatically imported and applied.
+    /// </remarks>
+    public string? ProviderName { get; set; }
 
     /// <summary>
     /// Gets or sets the static server configuration, if applicable.

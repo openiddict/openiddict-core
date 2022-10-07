@@ -3365,6 +3365,22 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0296));
             }
 
+            // If a provider name was specified, resolve the corresponding issuer.
+            if (!string.IsNullOrEmpty(context.ProviderName))
+            {
+                var registration = context.Options.Registrations.Find(registration => string.Equals(
+                    registration.ProviderName, context.ProviderName, StringComparison.Ordinal)) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+
+                // If an explicit issuer was also attached, ensure the two values point to the same instance.
+                if (context.Issuer is not null && context.Issuer != registration.Issuer)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
+                }
+
+                context.Issuer = registration.Issuer;
+            }
+
             // If no issuer was explicitly attached and a single client is registered, use it.
             // Otherwise, throw an exception to indicate that setting an explicit issuer
             // is required when multiple clients are registered.
@@ -4466,6 +4482,22 @@ public static partial class OpenIddictClientHandlers
             if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
+            }
+
+            // If a provider name was specified, resolve the corresponding issuer.
+            if (!string.IsNullOrEmpty(context.ProviderName))
+            {
+                var registration = context.Options.Registrations.Find(registration => string.Equals(
+                    registration.ProviderName, context.ProviderName, StringComparison.Ordinal)) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+
+                // If an explicit issuer was also attached, ensure the two values point to the same instance.
+                if (context.Issuer is not null && context.Issuer != registration.Issuer)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0349));
+                }
+
+                context.Issuer = registration.Issuer;
             }
 
             // If no issuer was explicitly attached and a single client is registered, use it.

@@ -107,6 +107,20 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0342));
         }
 
+        // Ensure provider names are not used in multiple client registrations.
+        //
+        // Note: a string comparer ignoring casing is deliberately used to prevent
+        // two providers using the same name with a different casing from being added.
+        if (options.Registrations
+            .Where(registration => !string.IsNullOrEmpty(registration.ProviderName))
+            .Count() != options.Registrations.Select(registration => registration.ProviderName)
+                                             .Where(name => !string.IsNullOrEmpty(name))
+                                             .Distinct(StringComparer.OrdinalIgnoreCase)
+                                             .Count())
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0347));
+        }
+
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
