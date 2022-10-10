@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -52,17 +53,9 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Get, context.Address)
-            {
-                Headers =
-                {
-                    Accept = { new MediaTypeWithQualityHeaderValue("application/json") },
-                    AcceptCharset = { new StringWithQualityHeaderValue("utf-8") }
-                }
-            };
-
             // Store the HttpRequestMessage in the transaction properties.
-            context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!, request);
+            context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
+                new HttpRequestMessage(HttpMethod.Get, context.Address));
 
             return default;
         }
@@ -94,40 +87,28 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Post, context.Address)
-            {
-                Headers =
-                {
-                    Accept = { new MediaTypeWithQualityHeaderValue("application/json") },
-                    AcceptCharset = { new StringWithQualityHeaderValue("utf-8") }
-                }
-            };
-
             // Store the HttpRequestMessage in the transaction properties.
-            context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!, request);
+            context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
+                new HttpRequestMessage(HttpMethod.Post, context.Address));
 
             return default;
         }
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching the user agent to the HTTP request.
+    /// Contains the logic responsible for attaching the appropriate HTTP
+    /// Accept-* headers to the HTTP request message to receive JSON responses.
     /// </summary>
-    public class AttachUserAgent<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public class AttachJsonAcceptHeaders<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
-        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
-
-        public AttachUserAgent(IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
-            => _options = options ?? throw new ArgumentNullException(nameof(options));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataAddress>()
-                .UseSingletonHandler<AttachUserAgent<TContext>>()
-                .SetOrder(AttachQueryStringParameters<TContext>.Descriptor.Order - 1_000)
+                .UseSingletonHandler<AttachJsonAcceptHeaders<TContext>>()
+                .SetOrder(PreparePostHttpRequest<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -139,7 +120,50 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
+            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var request = context.Transaction.GetHttpRequestMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypes.Json));
+            request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue(Charsets.Utf8));
+
+            // Note: for security reasons, HTTP compression is never opted-in by default. Providers
+            // that require using HTTP compression that register a custom event handler to send an
+            // Accept-Encoding header containing the supported algorithms (e.g GZip/Deflate/Brotli).
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the user agent to the HTTP request.
+    /// </summary>
+    public class AttachUserAgentHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
+
+        public AttachUserAgentHeader(IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataAddress>()
+                .UseSingletonHandler<AttachUserAgentHeader<TContext>>()
+                .SetOrder(AttachJsonAcceptHeaders<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
             // this may indicate that the request was incorrectly processed by another client stack.
@@ -289,7 +313,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataAddress>()
                 .UseSingletonHandler<SendHttpRequest<TContext>>()
-                .SetOrder(DisposeHttpRequest<TContext>.Descriptor.Order - 50_000)
+                .SetOrder(DecompressResponseContent<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -381,6 +405,140 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             context.Transaction.SetProperty<HttpRequestMessage>(typeof(HttpRequestMessage).FullName!, null);
 
             return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for decompressing the returned HTTP content.
+    /// </summary>
+    public class DecompressResponseContent<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataAddress>()
+                .UseSingletonHandler<DecompressResponseContent<TContext>>()
+                .SetOrder(ExtractJsonHttpResponse<TContext>.Descriptor.Order - 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: automatic content decompression can be enabled by constructing an HttpClient wrapping
+            // a generic HttpClientHandler, a SocketsHttpHandler or a WinHttpHandler instance with the
+            // AutomaticDecompression property set to the desired algorithms (e.g GZip, Deflate or Brotli).
+            //
+            // Unfortunately, while convenient and efficient, relying on this property has two downsides:
+            //
+            //   - By being specific to HttpClientHandler/SocketsHttpHandler/WinHttpHandler, the automatic
+            //     decompression feature cannot be used with any other type of client handler, forcing users
+            //     to use a specific instance configured with decompression support enforced and preventing
+            //     them from chosing their own implementation (e.g via ConfigurePrimaryHttpMessageHandler()).
+            //
+            //   - Setting AutomaticDecompression always overrides the Accept-Encoding header of all requests
+            //     to include the selected algorithms without offering a way to make this behavior opt-in.
+            //     Sadly, using HTTP content compression with transport security enabled has security implications
+            //     that could potentially lead to compression side-channel attacks if the client is used with
+            //     remote endpoints that reflect user-defined data and contain secret values (e.g BREACH attacks).
+            //
+            // Since OpenIddict itself cannot safely assume such scenarios will never happen (e.g a token request
+            // will typically be sent with an authorization code that can be defined by a malicious user and can
+            // potentially be reflected in the token response depending on the configuration of the remote server),
+            // it is safer to disable compression by default by not sending an Accept-Encoding header while
+            // still allowing encoded responses to be processed (e.g StackExchange forces content compression
+            // for all the supported HTTP APIs even if no Accept-Encoding header is explicitly sent by the client).
+            //
+            // For these reasons, OpenIddict doesn't rely on the automatic decompression feature and uses
+            // a custom event handler to deal with GZip/Deflate/Brotli-encoded responses, so that providers
+            // that require using HTTP compression can be supported without having to use it for all providers.
+
+            // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var response = context.Transaction.GetHttpResponseMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            // If no Content-Encoding header was returned, keep the response stream as-is.
+            if (response.Content is not { Headers.ContentEncoding.Count: > 0 })
+            {
+                return;
+            }
+
+            Stream? stream = null;
+
+            // Iterate the returned encodings and wrap the response stream using the specified algorithm.
+            // If one of the returned algorithms cannot be recognized, immediately return an error.
+            foreach (var encoding in response.Content.Headers.ContentEncoding.Reverse())
+            {
+                if (string.Equals(encoding, ContentEncodings.Identity, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                else if (string.Equals(encoding, ContentEncodings.Gzip, StringComparison.OrdinalIgnoreCase))
+                {
+                    stream ??= await response.Content.ReadAsStreamAsync();
+                    stream = new GZipStream(stream, CompressionMode.Decompress);
+                }
+
+#if SUPPORTS_ZLIB_COMPRESSION
+                // Note: some server implementations are known to incorrectly implement the "Deflate" compression
+                // algorithm and don't wrap the compressed data in a ZLib frame as required by the specifications.
+                //
+                // Such implementations are deliberately not supported here. In this case, it is recommended to avoid
+                // including "deflate" in the Accept-Encoding header if the server is known to be non-compliant.
+                //
+                // For more information, read https://www.rfc-editor.org/rfc/rfc9110.html#name-deflate-coding.
+                else if (string.Equals(encoding, ContentEncodings.Deflate, StringComparison.OrdinalIgnoreCase))
+                {
+                    stream ??= await response.Content.ReadAsStreamAsync();
+                    stream = new ZLibStream(stream, CompressionMode.Decompress);
+                }
+#endif
+#if SUPPORTS_BROTLI_COMPRESSION
+                else if (string.Equals(encoding, ContentEncodings.Brotli, StringComparison.OrdinalIgnoreCase))
+                {
+                    stream ??= await response.Content.ReadAsStreamAsync();
+                    stream = new BrotliStream(stream, CompressionMode.Decompress);
+                }
+#endif
+                else
+                {
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2143),
+                        uri: SR.FormatID8000(SR.ID2143));
+
+                    return;
+                }
+            }
+
+            // At this point, if the stream was wrapped, replace the content attached
+            // to the HTTP response message to use the specified stream transformations.
+            if (stream is not null)
+            {
+                var content = new StreamContent(stream);
+
+                // Copy the headers from the original content to the new instance.
+                foreach (var header in response.Content.Headers)
+                {
+                    content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+
+                // Reset the Content-Length and Content-Encoding headers to indicate
+                // the content was successfully decoded using the specified algorithms.
+                content.Headers.ContentLength = null;
+                content.Headers.ContentEncoding.Clear();
+
+                response.Content = content;
+            }
         }
     }
 

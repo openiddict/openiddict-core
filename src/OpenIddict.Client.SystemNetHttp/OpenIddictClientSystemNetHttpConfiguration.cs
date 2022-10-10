@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -50,6 +49,15 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
         {
             return;
         }
+
+        options.HttpClientActions.Add(options =>
+        {
+            // By default, HttpClient uses a default timeout of 100 seconds and allows payloads of up to 2GB.
+            // To help reduce the effects of malicious responses (e.g responses returned at a very slow pace
+            // or containing an infine amount of data), the default values are amended to use lower values.
+            options.MaxResponseContentBufferSize = 10 * 1024 * 1024;
+            options.Timeout = TimeSpan.FromMinutes(1);
+        });
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
         {

@@ -1772,6 +1772,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID2142" xml:space="preserve">
     <value>The specified state token is not suitable for the requested operation.</value>
   </data>
+  <data name="ID2143" xml:space="preserve">
+    <value>An unsupported content encoding was returned by the remote server.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
