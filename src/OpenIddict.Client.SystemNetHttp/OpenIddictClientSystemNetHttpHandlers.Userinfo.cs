@@ -20,7 +20,8 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
              * Userinfo request processing:
              */
             PrepareGetHttpRequest<PrepareUserinfoRequestContext>.Descriptor,
-            AttachUserAgent<PrepareUserinfoRequestContext>.Descriptor,
+            AttachJsonAcceptHeaders<PrepareUserinfoRequestContext>.Descriptor,
+            AttachUserAgentHeader<PrepareUserinfoRequestContext>.Descriptor,
             AttachBearerAccessToken.Descriptor,
             AttachQueryStringParameters<PrepareUserinfoRequestContext>.Descriptor,
             SendHttpRequest<ApplyUserinfoRequestContext>.Descriptor,
@@ -29,6 +30,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /*
              * Userinfo response processing:
              */
+            DecompressResponseContent<ExtractUserinfoResponseContext>.Descriptor,
             ExtractUserinfoTokenHttpResponse.Descriptor,
             ExtractJsonHttpResponse<ExtractUserinfoResponseContext>.Descriptor,
             ExtractWwwAuthenticateHeader<ExtractUserinfoResponseContext>.Descriptor,

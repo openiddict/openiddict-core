@@ -11,6 +11,19 @@ namespace OpenIddict.Validation.SystemNetHttp;
 /// </summary>
 public static class OpenIddictValidationSystemNetHttpConstants
 {
+    public static class Charsets
+    {
+        public const string Utf8 = "utf-8";
+    }
+
+    public static class ContentEncodings
+    {
+        public const string Brotli = "br";
+        public const string Deflate = "deflate";
+        public const string Gzip = "gzip";
+        public const string Identity = "identity";
+    }
+
     public static class MediaTypes
     {
         public const string Json = "application/json";
