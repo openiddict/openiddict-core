@@ -694,13 +694,18 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets the name of the provider that will be
         /// used to resolve the issuer identity, if applicable.
         /// </summary>
         public string? ProviderName { get; set; }
 
         /// <summary>
-        /// Gets the additional parameters returned to caller.
+        /// Gets the additional parameters returned to the caller.
         /// </summary>
         public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
 
@@ -844,6 +849,11 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets the name of the provider that will be
         /// used to resolve the issuer identity, if applicable.
         /// </summary>
@@ -884,7 +894,7 @@ public static partial class OpenIddictClientEvents
         public string? RequestForgeryProtection { get; set; }
 
         /// <summary>
-        /// Gets the additional parameters returned to caller.
+        /// Gets the additional parameters returned to the caller.
         /// </summary>
         public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
 

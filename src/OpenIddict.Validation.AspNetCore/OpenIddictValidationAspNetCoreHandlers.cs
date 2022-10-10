@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore;
 using Microsoft.Extensions.Logging;
@@ -42,8 +41,8 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         /*
          * Challenge processing:
          */
+        ResolveHostChallengeProperties.Descriptor,
         AttachHostChallengeError.Descriptor,
-        ResolveHostChallengeParameters.Descriptor,
 
         /*
          * Response processing:
@@ -279,6 +278,67 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
+    /// ASP.NET Core authentication properties specified by the application that triggered the challenge operation.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public class ResolveHostChallengeProperties : IOpenIddictValidationHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ResolveHostChallengeProperties>()
+                .SetOrder(AttachHostChallengeError.Descriptor.Order - 500)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+            if (properties is { Items.Count: > 0 })
+            {
+                foreach (var property in properties.Items)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            if (properties is { Parameters.Count: > 0 })
+            {
+                foreach (var parameter in properties.Parameters)
+                {
+                    context.Parameters[parameter.Key] = parameter.Value switch
+                    {
+                        OpenIddictParameter value => value,
+                        JsonElement         value => new OpenIddictParameter(value),
+                        bool                value => new OpenIddictParameter(value),
+                        int                 value => new OpenIddictParameter(value),
+                        long                value => new OpenIddictParameter(value),
+                        string              value => new OpenIddictParameter(value),
+                        string[]            value => new OpenIddictParameter(value),
+
+    #if SUPPORTS_JSON_NODES
+                        JsonNode            value => new OpenIddictParameter(value),
+    #endif
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
+                    };
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the error details using the ASP.NET Core authentication properties.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
@@ -310,61 +370,6 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
                 context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
                 context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
                 context.Response.Scope = properties.GetString(Properties.Scope);
-            }
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for resolving the additional sign-in parameters stored in the ASP.NET
-    /// Core authentication properties specified by the application that triggered the sign-in operation.
-    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-    /// </summary>
-    public class ResolveHostChallengeParameters : IOpenIddictValidationHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<ResolveHostChallengeParameters>()
-                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order - 500)
-                .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is null)
-            {
-                return default;
-            }
-
-            foreach (var parameter in properties.Parameters)
-            {
-                context.Parameters[parameter.Key] = parameter.Value switch
-                {
-                    OpenIddictParameter value => value,
-                    JsonElement         value => new OpenIddictParameter(value),
-                    bool                value => new OpenIddictParameter(value),
-                    int                 value => new OpenIddictParameter(value),
-                    long                value => new OpenIddictParameter(value),
-                    string              value => new OpenIddictParameter(value),
-                    string[]            value => new OpenIddictParameter(value),
-
-#if SUPPORTS_JSON_NODES
-                    JsonNode            value => new OpenIddictParameter(value),
-#endif
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
-                };
             }
 
             return default;

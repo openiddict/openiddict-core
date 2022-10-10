@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -34,18 +33,18 @@ public static partial class OpenIddictServerOwinHandlers
         /*
          * Challenge processing:
          */
+        ResolveHostChallengeProperties.Descriptor,
         AttachHostChallengeError.Descriptor,
-        ResolveHostChallengeParameters.Descriptor,
 
         /*
          * Sign-in processing:
          */
-        ResolveHostSignInParameters.Descriptor,
+        ResolveHostSignInProperties.Descriptor,
 
         /*
          * Sign-out processing:
          */
-        ResolveHostSignOutParameters.Descriptor)
+        ResolveHostSignOutProperties.Descriptor)
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Device.DefaultHandlers)
         .AddRange(Discovery.DefaultHandlers)
@@ -277,6 +276,85 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
+    /// OWIN authentication properties specified by the application that triggered the challenge operation.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public class ResolveHostChallengeProperties : IOpenIddictServerHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<ResolveHostChallengeProperties>()
+                .SetOrder(ValidateChallengeDemand.Descriptor.Order - 500)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+            if (properties is not { Dictionary.Count: > 0 })
+            {
+                return default;
+            }
+
+            // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
+            // dictionary that allows flowing parameters while preserving their original types. To allow
+            // returning custom parameters, the OWIN host allows using AuthenticationProperties.Dictionary
+            // but requires suffixing the properties that are meant to be used as parameters using a special
+            // suffix that indicates that the property is public and determines its actual representation.
+            foreach (var property in properties.Dictionary)
+            {
+                var (name, value) = property.Key switch
+                {
+                    // If the property ends with #string, represent it as a string parameter.
+                    string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
+                        Value: new OpenIddictParameter(property.Value)),
+
+                    // If the property ends with #boolean, return it as a boolean parameter.
+                    string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
+                        Value: new OpenIddictParameter(bool.Parse(property.Value))),
+
+                    // If the property ends with #integer, return it as an integer parameter.
+                    string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
+                        Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
+
+                    // If the property ends with #json, return it as a JSON parameter.
+                    string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
+                        Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
+
+                    _ => default
+                };
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    context.Parameters[name] = value;
+                }
+
+                else
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the error details using the OWIN authentication properties.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
@@ -318,85 +396,11 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the additional challenge parameters stored in the
+    /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
     /// OWIN authentication properties specified by the application that triggered the sign-in operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ResolveHostChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireOwinRequest>()
-                .UseSingletonHandler<ResolveHostChallengeParameters>()
-                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order - 500)
-                .SetType(OpenIddictServerHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is null)
-            {
-                return default;
-            }
-
-            // Note: unlike ASP.NET Core, Owin's AuthenticationProperties doesn't offer a strongly-typed
-            // dictionary that allows flowing parameters while preserving their original types. To allow
-            // returning custom parameters, the OWIN host allows using AuthenticationProperties.Dictionary
-            // but requires suffixing the properties that are meant to be used as parameters using a special
-            // suffix that indicates that the property is public and determines its actual representation.
-            foreach (var property in properties.Dictionary)
-            {
-                var (name, value) = property.Key switch
-                {
-                    // If the property ends with #string, represent it as a string parameter.
-                    string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
-                        Value: new OpenIddictParameter(property.Value)),
-
-                    // If the property ends with #boolean, return it as a boolean parameter.
-                    string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
-                        Value: new OpenIddictParameter(bool.Parse(property.Value))),
-
-                    // If the property ends with #integer, return it as an integer parameter.
-                    string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
-                        Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
-
-                    // If the property ends with #json, return it as a JSON parameter.
-                    string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
-                        Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
-
-                    _ => default
-                };
-
-                if (!string.IsNullOrEmpty(name))
-                {
-                    context.Parameters[name] = value;
-                }
-            }
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for resolving the additional sign-in parameters stored in the
-    /// OWIN authentication properties specified by the application that triggered the sign-in operation.
-    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-    /// </summary>
-    public class ResolveHostSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
+    public class ResolveHostSignInProperties : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -404,8 +408,8 @@ public static partial class OpenIddictServerOwinHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireOwinRequest>()
-                .UseSingletonHandler<ResolveHostSignInParameters>()
-                .SetOrder(AttachCustomSignInParameters.Descriptor.Order - 500)
+                .UseSingletonHandler<ResolveHostSignInProperties>()
+                .SetOrder(ValidateSignInDemand.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -417,21 +421,13 @@ public static partial class OpenIddictServerOwinHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is null)
+            if (properties is not { Dictionary.Count: > 0 })
             {
                 return default;
             }
 
-            // Preserve the host properties in the principal.
-            if (properties.Dictionary.Count is not 0)
-            {
-                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Dictionary);
-            }
-
-            // Note: unlike ASP.NET Core, Owin's AuthenticationProperties doesn't offer a strongly-typed
+            // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
             // dictionary that allows flowing parameters while preserving their original types. To allow
             // returning custom parameters, the OWIN host allows using AuthenticationProperties.Dictionary
             // but requires suffixing the properties that are meant to be used as parameters using a special
@@ -467,6 +463,11 @@ public static partial class OpenIddictServerOwinHandlers
                 {
                     context.Parameters[name] = value;
                 }
+
+                else
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
             }
 
             return default;
@@ -474,11 +475,11 @@ public static partial class OpenIddictServerOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the additional sign-out parameters stored in the
+    /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
     /// OWIN authentication properties specified by the application that triggered the sign-out operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ResolveHostSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
+    public class ResolveHostSignOutProperties : IOpenIddictServerHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -486,8 +487,8 @@ public static partial class OpenIddictServerOwinHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireOwinRequest>()
-                .UseSingletonHandler<ResolveHostSignOutParameters>()
-                .SetOrder(AttachCustomSignOutParameters.Descriptor.Order - 500)
+                .UseSingletonHandler<ResolveHostSignOutProperties>()
+                .SetOrder(ValidateSignOutDemand.Descriptor.Order - 500)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -500,12 +501,12 @@ public static partial class OpenIddictServerOwinHandlers
             }
 
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is null)
+            if (properties is not { Dictionary.Count: > 0 })
             {
                 return default;
             }
 
-            // Note: unlike ASP.NET Core, Owin's AuthenticationProperties doesn't offer a strongly-typed
+            // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
             // dictionary that allows flowing parameters while preserving their original types. To allow
             // returning custom parameters, the OWIN host allows using AuthenticationProperties.Dictionary
             // but requires suffixing the properties that are meant to be used as parameters using a special
@@ -540,6 +541,11 @@ public static partial class OpenIddictServerOwinHandlers
                 if (!string.IsNullOrEmpty(name))
                 {
                     context.Parameters[name] = value;
+                }
+
+                else
+                {
+                    context.Properties[property.Key] = property.Value;
                 }
             }
 

@@ -31,6 +31,8 @@
         <form action="/logout" method="post">
             @Html.AntiForgeryToken()
 
+            <input type="hidden" name="returnUrl" value="@Request.RawUrl" />
+
             <button class="btn btn-lg btn-danger" type="submit">Sign out</button>
         </form>
     }
@@ -38,15 +40,31 @@
     else
     {
         <h1>Welcome, anonymous</h1>
-        @Html.ActionLink("Sign in using the local OIDC server", "Login", "Authentication",
-            new { provider = "Local" }, new { @class = "btn btn-lg btn-success" })
-        @Html.ActionLink("Sign in using the local OIDC server (using GitHub delegation)", "Login", "Authentication",
-            new { provider = "Local+GitHub" }, new { @class = "btn btn-lg btn-success" })
-        @Html.ActionLink("Sign in using GitHub", "Login", "Authentication",
-            new { provider = "GitHub" }, new { @class = "btn btn-lg btn-success" })
-        @Html.ActionLink("Sign in using Google", "Login", "Authentication",
-            new { provider = "Google" }, new { @class = "btn btn-lg btn-success" })
-        @Html.ActionLink("Sign in using Twitter", "Login", "Authentication",
-            new { provider = "Twitter" }, new { @class = "btn btn-lg btn-success" })
+
+        <form action="/login" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="returnUrl" value="@Request.RawUrl" />
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local">
+                Sign in using the local OIDC server
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local+GitHub">
+                Sign in using the local OIDC server (using GitHub delegation)
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="GitHub">
+                Sign in using GitHub
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Google">
+                Sign in using Google
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Twitter">
+                Sign in using Twitter
+            </button>
+        </form>
     }
 </div>

@@ -33,17 +33,33 @@
     else
     {
         <h1>Welcome, anonymous</h1>
-        <a class="btn btn-lg btn-success" asp-controller="Authentication"
-            asp-action="Login" asp-route-provider="Local">Sign in using the local OIDC server</a>
-        <a class="btn btn-lg btn-success" asp-controller="Authentication"
-            asp-action="Login" asp-route-provider="Local+GitHub">Sign in using the local OIDC server (using GitHub delegation)</a>
-        <a class="btn btn-lg btn-success" asp-controller="Authentication"
-            asp-action="Login" asp-route-provider="GitHub">Sign in using GitHub</a>
-        <a class="btn btn-lg btn-success" asp-controller="Authentication"
-            asp-action="Login" asp-route-provider="Google">Sign in using Google</a>
-        <a class="btn btn-lg btn-success" asp-controller="Authentication"
-            asp-action="Login" asp-route-provider="Reddit">Sign in using Reddit</a>
-        <a class="btn btn-lg btn-success" asp-controller="Authentication"
-            asp-action="Login" asp-route-provider="Twitter">Sign in using Twitter</a>
+
+        <form asp-action="Login" asp-controller="Authentication" method="post">
+            <input type="hidden" name="returnUrl" value="@(Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString)" />
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local">
+                Sign in using the local OIDC server
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Local+GitHub">
+                Sign in using the local OIDC server (using GitHub delegation)
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="GitHub">
+                Sign in using GitHub
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Google">
+                Sign in using Google
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Reddit">
+                Sign in using Reddit
+            </button>
+
+            <button class="btn btn-lg btn-success" type="submit" name="provider" value="Twitter">
+                Sign in using Twitter
+            </button>
+        </form>
     }
 </div>

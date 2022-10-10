@@ -42,13 +42,13 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /*
          * Challenge processing:
          */
-        ResolveHostChallengeParameters.Descriptor,
+        ResolveHostChallengeProperties.Descriptor,
         GenerateLoginCorrelationCookie.Descriptor,
 
         /*
          * Sign-out processing:
          */
-        ResolveHostSignOutParameters.Descriptor,
+        ResolveHostSignOutProperties.Descriptor,
         GenerateLogoutCorrelationCookie.Descriptor)
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Session.DefaultHandlers);
@@ -414,11 +414,11 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the additional challenge parameters stored in the ASP.NET
-    /// Core authentication properties specified by the application that triggered the challenge operation.
+    /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
+    /// ASP.NET Core authentication properties specified by the application that triggered the challenge operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ResolveHostChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    public class ResolveHostChallengeProperties : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -426,7 +426,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<ResolveHostChallengeParameters>()
+                .UseSingletonHandler<ResolveHostChallengeProperties>()
                 .SetOrder(ValidateChallengeDemand.Descriptor.Order - 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -439,76 +439,74 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is null)
+            if (properties is { Items.Count: > 0 })
             {
-                return default;
-            }
-
-            // If an issuer was explicitly set, update the challenge context to use it.
-            if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
-            {
-                // Ensure the issuer set by the application is a valid absolute URI.
-                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                // If an issuer was explicitly set, update the challenge context to use it.
+                if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0306));
+                    // Ensure the issuer set by the application is a valid absolute URI.
+                    if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0306));
+                    }
+
+                    context.Issuer = uri;
                 }
 
-                context.Issuer = uri;
-            }
-
-            // If a provider name was explicitly set, update the challenge context to use it.
-            if (properties.Items.TryGetValue(Properties.ProviderName, out string? provider) &&
-                !string.IsNullOrEmpty(provider))
-            {
-                context.ProviderName = provider;
-            }
-
-            // If a return URL was specified, use it as the target_link_uri claim.
-            if (!string.IsNullOrEmpty(properties.RedirectUri))
-            {
-                context.TargetLinkUri = properties.RedirectUri;
-            }
-
-            // If an identity token hint was specified, attach it to the context.
-            if (properties.Items.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
-                !string.IsNullOrEmpty(token))
-            {
-                context.IdentityTokenHint = token;
-            }
-
-            // If a login hint was specified, attach it to the context.
-            if (properties.Items.TryGetValue(Properties.LoginHint, out string? hint) &&
-                !string.IsNullOrEmpty(hint))
-            {
-                context.LoginHint = hint;
-            }
-
-            // Preserve the host properties in the principal.
-            if (properties.Items.Count is not 0)
-            {
-                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Items);
-            }
-
-            foreach (var parameter in properties.Parameters)
-            {
-                context.Parameters[parameter.Key] = parameter.Value switch
+                // If a provider name was explicitly set, update the challenge context to use it.
+                if (properties.Items.TryGetValue(Properties.ProviderName, out string? provider) &&
+                    !string.IsNullOrEmpty(provider))
                 {
-                    OpenIddictParameter value => value,
-                    JsonElement         value => new OpenIddictParameter(value),
-                    bool                value => new OpenIddictParameter(value),
-                    int                 value => new OpenIddictParameter(value),
-                    long                value => new OpenIddictParameter(value),
-                    string              value => new OpenIddictParameter(value),
-                    string[]            value => new OpenIddictParameter(value),
+                    context.ProviderName = provider;
+                }
+
+                // If a return URL was specified, use it as the target_link_uri claim.
+                if (!string.IsNullOrEmpty(properties.RedirectUri))
+                {
+                    context.TargetLinkUri = properties.RedirectUri;
+                }
+
+                // If an identity token hint was specified, attach it to the context.
+                if (properties.Items.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
+                    !string.IsNullOrEmpty(token))
+                {
+                    context.IdentityTokenHint = token;
+                }
+
+                // If a login hint was specified, attach it to the context.
+                if (properties.Items.TryGetValue(Properties.LoginHint, out string? hint) &&
+                    !string.IsNullOrEmpty(hint))
+                {
+                    context.LoginHint = hint;
+                }
+
+                foreach (var property in properties.Items)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            if (properties is { Parameters.Count: > 0 })
+            {
+                foreach (var parameter in properties.Parameters)
+                {
+                    context.Parameters[parameter.Key] = parameter.Value switch
+                    {
+                        OpenIddictParameter value => value,
+                        JsonElement         value => new OpenIddictParameter(value),
+                        bool                value => new OpenIddictParameter(value),
+                        int                 value => new OpenIddictParameter(value),
+                        long                value => new OpenIddictParameter(value),
+                        string              value => new OpenIddictParameter(value),
+                        string[]            value => new OpenIddictParameter(value),
 
 #if SUPPORTS_JSON_NODES
-                    JsonNode            value => new OpenIddictParameter(value),
+                        JsonNode            value => new OpenIddictParameter(value),
 #endif
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
-                };
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
+                    };
+                }
             }
 
             return default;
@@ -590,11 +588,11 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the additional sign-out parameters stored in the ASP.NET
-    /// Core authentication properties specified by the application that triggered the sign-out operation.
+    /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
+    /// ASP.NET Core authentication properties specified by the application that triggered the sign-out operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ResolveHostSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
+    public class ResolveHostSignOutProperties : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -602,7 +600,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<ResolveHostSignOutParameters>()
+                .UseSingletonHandler<ResolveHostSignOutProperties>()
                 .SetOrder(ValidateSignOutDemand.Descriptor.Order - 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -615,76 +613,74 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
             var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
-            if (properties is null)
+            if (properties is { Items.Count: > 0 })
             {
-                return default;
-            }
-
-            // If an issuer was explicitly set, update the sign-out context to use it.
-            if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
-            {
-                // Ensure the issuer set by the application is a valid absolute URI.
-                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                // If an issuer was explicitly set, update the sign-out context to use it.
+                if (properties.Items.TryGetValue(Properties.Issuer, out string? issuer) && !string.IsNullOrEmpty(issuer))
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0306));
+                    // Ensure the issuer set by the application is a valid absolute URI.
+                    if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0306));
+                    }
+
+                    context.Issuer = uri;
                 }
 
-                context.Issuer = uri;
-            }
-
-            // If a provider name was explicitly set, update the sign-out context to use it.
-            if (properties.Items.TryGetValue(Properties.ProviderName, out string? provider) &&
-                !string.IsNullOrEmpty(provider))
-            {
-                context.ProviderName = provider;
-            }
-
-            // If a return URL was specified, use it as the target_link_uri claim.
-            if (!string.IsNullOrEmpty(properties.RedirectUri))
-            {
-                context.TargetLinkUri = properties.RedirectUri;
-            }
-
-            // If an identity token hint was specified, attach it to the context.
-            if (properties.Items.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
-                !string.IsNullOrEmpty(token))
-            {
-                context.IdentityTokenHint = token;
-            }
-
-            // If a login hint was specified, attach it to the context.
-            if (properties.Items.TryGetValue(Properties.LoginHint, out string? hint) &&
-                !string.IsNullOrEmpty(hint))
-            {
-                context.LoginHint = hint;
-            }
-
-            // Preserve the host properties in the principal.
-            if (properties.Items.Count is not 0)
-            {
-                context.Principal.SetClaim(Claims.Private.HostProperties, properties.Items);
-            }
-
-            foreach (var parameter in properties.Parameters)
-            {
-                context.Parameters[parameter.Key] = parameter.Value switch
+                // If a provider name was explicitly set, update the sign-out context to use it.
+                if (properties.Items.TryGetValue(Properties.ProviderName, out string? provider) &&
+                    !string.IsNullOrEmpty(provider))
                 {
-                    OpenIddictParameter value => value,
-                    JsonElement value         => new OpenIddictParameter(value),
-                    bool value                => new OpenIddictParameter(value),
-                    int value                 => new OpenIddictParameter(value),
-                    long value                => new OpenIddictParameter(value),
-                    string value              => new OpenIddictParameter(value),
-                    string[] value            => new OpenIddictParameter(value),
+                    context.ProviderName = provider;
+                }
+
+                // If a return URL was specified, use it as the target_link_uri claim.
+                if (!string.IsNullOrEmpty(properties.RedirectUri))
+                {
+                    context.TargetLinkUri = properties.RedirectUri;
+                }
+
+                // If an identity token hint was specified, attach it to the context.
+                if (properties.Items.TryGetValue(Properties.IdentityTokenHint, out string? token) &&
+                    !string.IsNullOrEmpty(token))
+                {
+                    context.IdentityTokenHint = token;
+                }
+
+                // If a login hint was specified, attach it to the context.
+                if (properties.Items.TryGetValue(Properties.LoginHint, out string? hint) &&
+                    !string.IsNullOrEmpty(hint))
+                {
+                    context.LoginHint = hint;
+                }
+
+                foreach (var property in properties.Items)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            if (properties is { Parameters.Count: > 0 })
+            {
+                foreach (var parameter in properties.Parameters)
+                {
+                    context.Parameters[parameter.Key] = parameter.Value switch
+                    {
+                        OpenIddictParameter value => value,
+                        JsonElement         value => new OpenIddictParameter(value),
+                        bool                value => new OpenIddictParameter(value),
+                        int                 value => new OpenIddictParameter(value),
+                        long                value => new OpenIddictParameter(value),
+                        string              value => new OpenIddictParameter(value),
+                        string[]            value => new OpenIddictParameter(value),
 
 #if SUPPORTS_JSON_NODES
-                    JsonNode            value => new OpenIddictParameter(value),
+                        JsonNode            value => new OpenIddictParameter(value),
 #endif
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
-                };
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
+                    };
+                }
             }
 
             return default;

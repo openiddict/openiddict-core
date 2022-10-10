@@ -7,7 +7,9 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Owin;
@@ -35,6 +37,7 @@ public static partial class OpenIddictValidationOwinHandlers
         /*
          * Challenge processing:
          */
+        ResolveHostChallengeProperties.Descriptor,
         AttachHostChallengeError.Descriptor,
 
         /*
@@ -270,6 +273,85 @@ public static partial class OpenIddictValidationOwinHandlers
                 context.AccessToken = token;
 
                 return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
+    /// OWIN authentication properties specified by the application that triggered the challenge operation.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public class ResolveHostChallengeProperties : IOpenIddictValidationHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<ResolveHostChallengeProperties>()
+                .SetOrder(AttachHostChallengeError.Descriptor.Order - 500)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName!);
+            if (properties is not { Dictionary.Count: > 0 })
+            {
+                return default;
+            }
+
+            // Note: unlike ASP.NET Core, OWIN's AuthenticationProperties doesn't offer a strongly-typed
+            // dictionary that allows flowing parameters while preserving their original types. To allow
+            // returning custom parameters, the OWIN host allows using AuthenticationProperties.Dictionary
+            // but requires suffixing the properties that are meant to be used as parameters using a special
+            // suffix that indicates that the property is public and determines its actual representation.
+            foreach (var property in properties.Dictionary)
+            {
+                var (name, value) = property.Key switch
+                {
+                    // If the property ends with #string, represent it as a string parameter.
+                    string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
+                        Value: new OpenIddictParameter(property.Value)),
+
+                    // If the property ends with #boolean, return it as a boolean parameter.
+                    string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
+                        Value: new OpenIddictParameter(bool.Parse(property.Value))),
+
+                    // If the property ends with #integer, return it as an integer parameter.
+                    string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
+                        Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
+
+                    // If the property ends with #json, return it as a JSON parameter.
+                    string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
+                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
+                        Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
+
+                    _ => default
+                };
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    context.Parameters[name] = value;
+                }
+
+                else
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
             }
 
             return default;

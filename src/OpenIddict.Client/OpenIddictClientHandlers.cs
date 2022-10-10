@@ -94,6 +94,7 @@ public static partial class OpenIddictClientHandlers
         ResolveClientRegistrationFromChallengeContext.Descriptor,
         AttachGrantType.Descriptor,
         EvaluateGeneratedChallengeTokens.Descriptor,
+        AttachChallengeHostProperties.Descriptor,
         AttachResponseType.Descriptor,
         AttachResponseMode.Descriptor,
         AttachClientId.Descriptor,
@@ -116,6 +117,7 @@ public static partial class OpenIddictClientHandlers
         AttachOptionalClientId.Descriptor,
         AttachPostLogoutRedirectUri.Descriptor,
         EvaluateGeneratedLogoutTokens.Descriptor,
+        AttachSignOutHostProperties.Descriptor,
         AttachLogoutRequestForgeryProtection.Descriptor,
         PrepareLogoutStateTokenPrincipal.Descriptor,
         GenerateLogoutStateToken.Descriptor,
@@ -3568,6 +3570,37 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the user-defined properties to the authentication principal.
+    /// </summary>
+    public class AttachChallengeHostProperties : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<AttachChallengeHostProperties>()
+                .SetOrder(EvaluateGeneratedChallengeTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            context.Principal.SetClaim(Claims.Private.HostProperties, context.Properties);
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the response type to the challenge request.
     /// </summary>
     public class AttachResponseType : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -3579,7 +3612,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<AttachResponseType>()
-                .SetOrder(EvaluateGeneratedChallengeTokens.Descriptor.Order + 1_000)
+                .SetOrder(AttachChallengeHostProperties.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -4647,6 +4680,37 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the user-defined properties to the authentication principal.
+    /// </summary>
+    public class AttachSignOutHostProperties : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<AttachSignOutHostProperties>()
+                .SetOrder(EvaluateGeneratedLogoutTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            context.Principal.SetClaim(Claims.Private.HostProperties, context.Properties);
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching a request forgery protection to the authorization request.
     /// </summary>
     public class AttachLogoutRequestForgeryProtection : IOpenIddictClientHandler<ProcessSignOutContext>
@@ -4657,7 +4721,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .UseSingletonHandler<AttachLogoutRequestForgeryProtection>()
-                .SetOrder(EvaluateGeneratedLogoutTokens.Descriptor.Order + 1_000)
+                .SetOrder(AttachSignOutHostProperties.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>

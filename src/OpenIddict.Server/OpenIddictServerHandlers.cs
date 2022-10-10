@@ -49,6 +49,7 @@ public static partial class OpenIddictServerHandlers
         ValidateSignInDemand.Descriptor,
         RedeemTokenEntry.Descriptor,
         RestoreInternalClaims.Descriptor,
+        AttachHostProperties.Descriptor,
         AttachDefaultScopes.Descriptor,
         AttachDefaultPresenters.Descriptor,
         InferResources.Descriptor,
@@ -1383,6 +1384,37 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the user-defined properties to the authentication principal.
+    /// </summary>
+    public class AttachHostProperties : IOpenIddictServerHandler<ProcessSignInContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                .UseSingletonHandler<AttachHostProperties>()
+                .SetOrder(RestoreInternalClaims.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignInContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            context.Principal.SetClaim(Claims.Private.HostProperties, context.Properties);
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching default scopes to the authentication principal.
     /// </summary>
     public class AttachDefaultScopes : IOpenIddictServerHandler<ProcessSignInContext>
@@ -1393,7 +1425,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .UseSingletonHandler<AttachDefaultScopes>()
-                .SetOrder(RestoreInternalClaims.Descriptor.Order + 1_000)
+                .SetOrder(AttachHostProperties.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
