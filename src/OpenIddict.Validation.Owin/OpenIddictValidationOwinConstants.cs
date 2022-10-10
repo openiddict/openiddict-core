@@ -36,4 +36,12 @@ public static class OpenIddictValidationOwinConstants
         public const string ErrorUri = ".error_uri";
         public const string Scope = ".scope";
     }
+
+    public static class PropertyTypes
+    {
+        public const string Boolean = "#boolean";
+        public const string Integer = "#integer";
+        public const string Json = "#json";
+        public const string String = "#string";
+    }
 }

@@ -15,7 +15,7 @@ namespace OpenIddict.Sandbox.AspNet.Client.Controllers
 {
     public class AuthenticationController : Controller
     {
-        [HttpGet, Route("~/login")]
+        [HttpPost, Route("~/login"), ValidateAntiForgeryToken]
         public ActionResult LogIn(string provider, string returnUrl)
         {
             var context = HttpContext.GetOwinContext();

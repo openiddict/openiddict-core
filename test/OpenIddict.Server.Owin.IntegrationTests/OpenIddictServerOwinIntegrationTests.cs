@@ -131,6 +131,48 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
     }
 
     [Fact]
+    public async Task ProcessChallenge_ImportsAuthenticationProperties()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetTokenEndpointUris("/challenge/custom");
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ProcessChallengeContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("value", context.Properties["custom_property"]);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w"
+        });
+
+        // Assert
+        Assert.NotEmpty(response.Error);
+        Assert.NotEmpty(response.ErrorDescription);
+        Assert.NotEmpty(response.ErrorUri);
+    }
+
+    [Fact]
     public async Task ProcessChallenge_ReturnsParametersFromAuthenticationProperties()
     {
         // Arrange
@@ -720,6 +762,46 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
     }
 
     [Fact]
+    public async Task ProcessSignIn_ImportsAuthenticationProperties()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetTokenEndpointUris("/signin/custom");
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ProcessSignInContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("value", context.Properties["custom_property"]);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/signin/custom", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w"
+        });
+
+        // Assert
+        Assert.NotEmpty(response.AccessToken);
+    }
+
+    [Fact]
     public async Task ProcessSignIn_ReturnsParametersFromAuthenticationProperties()
     {
         // Arrange
@@ -756,6 +838,45 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         Assert.Equal(JsonValueKind.String, ((JsonElement) response["string_parameter"]).ValueKind);
         Assert.Equal(new[] { "Contoso", "Fabrikam" }, (string[]?) response["json_parameter"]);
         Assert.Equal(JsonValueKind.Array, ((JsonElement) response["json_parameter"]).ValueKind);
+    }
+
+    [Fact]
+    public async Task ProcessSignOut_ImportsAuthenticationProperties()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetLogoutEndpointUris("/signout/custom");
+
+            options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return default;
+                }));
+
+            options.AddEventHandler<ProcessSignOutContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("value", context.Properties["custom_property"]);
+
+                    return default;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/signout/custom", new OpenIddictRequest
+        {
+            PostLogoutRedirectUri = "http://www.fabrikam.com/path",
+            State = "af0ifjsldkj"
+        });
+
+        // Assert
+        Assert.NotEmpty(response.State);
     }
 
     [Fact]
@@ -866,6 +987,8 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
                     var properties = new AuthenticationProperties(new Dictionary<string, string?>
                     {
+                        ["custom_property"] = "value",
+
                         ["boolean_parameter#boolean"] = "true",
                         ["integer_parameter#integer"] = "42",
                         ["string_parameter#string"] = "Bob l'Eponge",
@@ -887,6 +1010,8 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
 
                     var properties = new AuthenticationProperties(new Dictionary<string, string?>
                     {
+                        ["custom_property"] = "value",
+
                         ["boolean_parameter#boolean"] = "true",
                         ["integer_parameter#integer"] = "42",
                         ["string_parameter#string"] = "Bob l'Eponge"
@@ -909,6 +1034,8 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                         [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
                         [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
                         [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri",
+
+                        ["custom_property"] = "value",
 
                         ["boolean_parameter#boolean"] = "true",
                         ["integer_parameter#integer"] = "42",

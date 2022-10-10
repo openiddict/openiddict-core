@@ -565,7 +565,12 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets the additional parameters returned to caller.
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the additional parameters returned to the caller.
         /// </summary>
         public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
     }
@@ -602,7 +607,12 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets the additional parameters returned to caller.
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the additional parameters returned to the caller.
         /// </summary>
         public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
 
@@ -813,7 +823,12 @@ public static partial class OpenIddictServerEvents
         }
 
         /// <summary>
-        /// Gets the additional parameters returned to caller.
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the additional parameters returned to the caller.
         /// </summary>
         public Dictionary<string, OpenIddictParameter> Parameters { get; } = new(StringComparer.Ordinal);
     }

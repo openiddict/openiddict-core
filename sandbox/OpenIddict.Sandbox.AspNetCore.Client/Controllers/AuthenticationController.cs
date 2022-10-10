@@ -10,7 +10,7 @@ namespace OpenIddict.Sandbox.AspNetCore.Client.Controllers;
 
 public class AuthenticationController : Controller
 {
-    [HttpGet("~/login")]
+    [HttpPost("~/login"), ValidateAntiForgeryToken]
     public ActionResult LogIn(string provider, string returnUrl)
     {
         // Note: OpenIddict always validates the specified provider name when handling the challenge operation,
@@ -41,7 +41,10 @@ public class AuthenticationController : Controller
                 // Only allow local return URLs to prevent open redirect attacks.
                 RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/",
 
-                Parameters = { [Parameters.IdentityProvider] = "GitHub" }
+                Parameters =
+                {
+                    [Parameters.IdentityProvider] = "GitHub"
+                }
             };
 
             // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
@@ -146,7 +149,7 @@ public class AuthenticationController : Controller
         // Such identities cannot be used as-is to build an authentication cookie in ASP.NET Core (as the
         // antiforgery stack requires at least a name claim to bind CSRF cookies to the user's identity) but
         // the access/refresh tokens can be retrieved using result.Properties.GetTokens() to make API calls.
-        if (result.Principal.Identity is not ClaimsIdentity { IsAuthenticated: true })
+        if (result.Principal is not ClaimsPrincipal { Identity.IsAuthenticated: true })
         {
             throw new InvalidOperationException("The external authorization data cannot be used for authentication.");
         }
