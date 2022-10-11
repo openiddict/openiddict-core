@@ -1277,7 +1277,7 @@ public static class OpenIddictExtensions
 
         foreach (var element in value.EnumerateArray())
         {
-            var item = element.ToString();
+            var item = element.GetString()!;
             if (set.Add(item))
             {
                 identity.AddClaim(new Claim(
