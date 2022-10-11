@@ -103,7 +103,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Response = context.Registration.ProviderName switch
                 {
                     // Twitter uses a nested object.
-                    Providers.Twitter => (JsonElement?) context.Response["data"]
+                    Providers.Twitter => (JsonElement) context.Response["data"]
                         is { ValueKind: JsonValueKind.Object } element ?
                         new(element) : throw new InvalidOperationException(SR.FormatID0334("data")),
 
