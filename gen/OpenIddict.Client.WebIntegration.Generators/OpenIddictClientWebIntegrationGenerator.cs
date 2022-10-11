@@ -407,6 +407,32 @@ public partial class OpenIddictClientWebIntegrationConfiguration
         /// <param name=""options"">The options instance to initialize.</param>
         public void PostConfigure(string name, OpenIddictClientWebIntegrationOptions.{{ provider.name }} options)
         {
+            {{~ for setting in provider.settings ~}}
+            {{~ if setting.default_value && setting.type == 'String' ~}} 
+            if (string.IsNullOrEmpty(options.{{ setting.property_name }}))
+            {
+                options.{{ setting.property_name }} = ""{{ setting.default_value }}"";
+            }
+            {{~ end ~}}
+
+            {{~ if setting.collection ~}}
+            if (options.{{ setting.property_name }}.Count is 0)
+            {
+                {{~ for item in setting.collection_items ~}}
+                {{~ if item.default && !item.required ~}}
+                options.{{ setting.property_name }}.Add(""{{ item.value }}"");
+                {{~ end ~}}
+                {{~ end ~}}
+            }
+            {{~ end ~}}
+
+            {{~ for item in setting.collection_items ~}}
+            {{~ if item.required ~}}
+            options.{{ setting.property_name }}.Add(""{{ item.value }}"");
+            {{~ end ~}}
+            {{~ end ~}}
+            {{~ end ~}}
+
             if (string.IsNullOrEmpty(options.ClientId))
             {
                 throw new InvalidOperationException(SR.FormatID0332(nameof(options.ClientId), Providers.{{ provider.name }}));
@@ -448,34 +474,6 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 {{~ end ~}}
                 {{~ end ~}}
             }
-            {{~ end ~}}
-
-            {{~ for setting in provider.settings ~}}
-            {{~ if setting.default_value && setting.type == 'String' ~}} 
-            if (string.IsNullOrEmpty(options.{{ setting.property_name }}))
-            {
-                options.{{ setting.property_name }} = ""{{ setting.default_value }}"";
-            }
-            {{~ end ~}}
-            {{~ end ~}}
-
-            {{~ for setting in provider.settings ~}}
-            {{~ if setting.collection ~}}
-            if (options.{{ setting.property_name }}.Count is 0)
-            {
-                {{~ for item in setting.collection_items ~}}
-                {{~ if item.default && !item.required ~}}
-                options.{{ setting.property_name }}.Add(""{{ item.value }}"");
-                {{~ end ~}}
-                {{~ end ~}}
-            }
-            {{~ end ~}}
-
-            {{~ for item in setting.collection_items ~}}
-            {{~ if item.required ~}}
-            options.{{ setting.property_name }}.Add(""{{ item.value }}"");
-            {{~ end ~}}
-            {{~ end ~}}
             {{~ end ~}}
         }
 
