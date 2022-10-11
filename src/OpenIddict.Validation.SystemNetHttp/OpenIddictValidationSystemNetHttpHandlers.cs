@@ -348,6 +348,10 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
             try
             {
+                // Note: HttpCompletionOption.ResponseContentRead is deliberately used to force the
+                // response stream to be buffered so that can it can be read multiple times if needed
+                // (e.g if the JSON deserialization process fails, the stream is read as a string
+                // during a second pass a second time for logging/debuggability purposes).
                 response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
             }
 
@@ -525,7 +529,12 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // to the HTTP response message to use the specified stream transformations.
             if (stream is not null)
             {
+                // Note: StreamContent.LoadIntoBufferAsync is deliberately used to force the stream
+                // content to be buffered so that can it can be read multiple times if needed
+                // (e.g if the JSON deserialization process fails, the stream is read as a string
+                // during a second pass a second time for logging/debuggability purposes).
                 var content = new StreamContent(stream);
+                await content.LoadIntoBufferAsync();
 
                 // Copy the headers from the original content to the new instance.
                 foreach (var header in response.Content.Headers)
