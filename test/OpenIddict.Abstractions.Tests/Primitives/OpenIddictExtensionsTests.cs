@@ -2127,7 +2127,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.AddClaims("type", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"), "issuer");
+        identity.AddClaims("type", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso"",42]"), "issuer");
 
         // Assert
         var claims = identity.FindAll("type").ToArray();
@@ -2137,6 +2137,9 @@ public class OpenIddictExtensionsTests
         Assert.Equal("Contoso", claims[1].Value);
         Assert.Equal(ClaimValueTypes.String, claims[1].ValueType);
         Assert.Equal("issuer", claims[1].Issuer);
+        Assert.Equal("42", claims[2].Value);
+        Assert.Equal(ClaimValueTypes.Integer32, claims[2].ValueType);
+        Assert.Equal("issuer", claims[2].Issuer);
     }
 
     [Fact]
