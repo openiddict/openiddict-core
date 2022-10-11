@@ -433,6 +433,26 @@ public partial class OpenIddictClientWebIntegrationConfiguration
             {{~ end ~}}
             {{~ end ~}}
 
+            {{~ for environment in provider.environments ~}}
+            if (options.Environment is OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }})
+            {
+                if (options.Scopes.Count is 0)
+                {
+                    {{~ for scope in environment.scopes ~}}
+                    {{~ if scope.default && !scope.required ~}}
+                    options.Scopes.Add(""{{ scope.name }}"");
+                    {{~ end ~}}
+                    {{~ end ~}}
+                }
+
+                {{~ for scope in environment.scopes ~}}
+                {{~ if scope.required ~}}
+                options.Scopes.Add(""{{ scope.name }}"");
+                {{~ end ~}}
+                {{~ end ~}}
+            }
+            {{~ end ~}}
+
             if (string.IsNullOrEmpty(options.ClientId))
             {
                 throw new InvalidOperationException(SR.FormatID0332(nameof(options.ClientId), Providers.{{ provider.name }}));
@@ -454,26 +474,6 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 throw new InvalidOperationException(SR.FormatID0332(nameof(options.{{ setting.property_name }}), Providers.{{ provider.name }}));
             }
             {{~ end ~}}
-            {{~ end ~}}
-
-            {{~ for environment in provider.environments ~}}
-            if (options.Environment is OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }})
-            {
-                if (options.Scopes.Count is 0)
-                {
-                    {{~ for scope in environment.scopes ~}}
-                    {{~ if scope.default && !scope.required ~}}
-                    options.Scopes.Add(""{{ scope.name }}"");
-                    {{~ end ~}}
-                    {{~ end ~}}
-                }
-
-                {{~ for scope in environment.scopes ~}}
-                {{~ if scope.required ~}}
-                options.Scopes.Add(""{{ scope.name }}"");
-                {{~ end ~}}
-                {{~ end ~}}
-            }
             {{~ end ~}}
         }
 
