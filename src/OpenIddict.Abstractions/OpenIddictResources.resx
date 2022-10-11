@@ -1299,7 +1299,7 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
     <value>The '{0}' provider settings cannot be resolved from the event context. Make sure the provider was correctly registered using 'services.AddOpenIddict().AddClient().UseWebProviders().Add{0}()'.</value>
   </data>
   <data name="ID0334" xml:space="preserve">
-    <value>The '{0}' node cannot be extracted from the response.</value>
+    <value>The '{0}' node cannot be extracted from the response or is not of the expected type.</value>
   </data>
   <data name="ID0335" xml:space="preserve">
     <value>The username cannot be null or empty.</value>
