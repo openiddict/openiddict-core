@@ -58,6 +58,20 @@
     </Environment>
   </Provider>
 
+  <Provider Name="StackExchange" Documentation="https://api.stackexchange.com/docs/authentication">
+    <Environment Issuer="https://api.stackexchange.com/">
+      <Configuration AuthorizationEndpoint="https://stackoverflow.com/oauth"
+                     TokenEndpoint="https://stackoverflow.com/oauth/access_token/json"
+                     UserinfoEndpoint="https://api.stackexchange.com/2.3/me" />
+    </Environment>
+
+    <Setting PropertyName="ApplicationKey" ParameterName="key" Type="String" Required="true"
+             Description="The application key used to communicate with the StackExchange API" />
+
+    <Setting PropertyName="Site" ParameterName="site" Type="String" Required="true" DefaultValue="stackoverflow"
+             Description="The site specified in userinfo requests (by default, 'stackoverflow')" />
+  </Provider>
+
   <Provider Name="Twitter" Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">
     <Environment Issuer="https://twitter.com/">
       <Configuration AuthorizationEndpoint="https://twitter.com/i/oauth2/authorize"

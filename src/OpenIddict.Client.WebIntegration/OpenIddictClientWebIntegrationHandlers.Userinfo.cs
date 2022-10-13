@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using static OpenIddict.Client.OpenIddictClientHandlers.Userinfo;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.Userinfo;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -18,9 +19,57 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     {
         public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
             /*
+             * Userinfo request preparation:
+             */
+            AttachAccessTokenParameter.Descriptor,
+
+            /*
              * Userinfo response extraction:
              */
             UnwrapUserinfoResponse.Descriptor);
+
+        /// <summary>
+        /// Contains the logic responsible for attaching the access token
+        /// parameter to the request for the providers that require it.
+        /// </summary>
+        public class AttachAccessTokenParameter : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                    .UseSingletonHandler<AttachAccessTokenParameter>()
+                    .SetOrder(AttachBearerAccessToken.Descriptor.Order + 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                // By default, OpenIddict sends the access token as part of the Authorization header
+                // using the Bearer authentication scheme. Some providers don't support this method
+                // and require sending the access token as part of the userinfo request payload.
+
+                if (context.Registration.ProviderName is Providers.StackExchange)
+                {
+                    context.Request.AccessToken = request.Headers.Authorization?.Parameter;
+                    request.Headers.Authorization = null;
+                }
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for extracting the userinfo response
@@ -55,6 +104,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.Response = context.Registration.ProviderName switch
                 {
+                    // StackExchange returns an "items" array containing a single element.
+                    Providers.StackExchange => (JsonElement) context.Response["items"]
+                        is { ValueKind: JsonValueKind.Array } element && element.GetArrayLength() is 1 ?
+                        new(element[0]) : throw new InvalidOperationException(SR.FormatID0334("items")),
+
                     // Twitter returns a nested "data" object.
                     Providers.Twitter => (JsonElement) context.Response["data"]
                         is { ValueKind: JsonValueKind.Object } element ?

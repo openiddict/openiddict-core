@@ -148,7 +148,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            if (context.Registration.ProviderName is Providers.Twitter)
+            if (context.Registration.ProviderName is Providers.StackExchange)
+            {
+                var options = context.Registration.GetStackExchangeOptions();
+
+                context.UserinfoRequest["key"] = options.ApplicationKey;
+                context.UserinfoRequest["site"] = options.Site;
+            }
+
+            else if (context.Registration.ProviderName is Providers.Twitter)
             {
                 var options = context.Registration.GetTwitterOptions();
 
