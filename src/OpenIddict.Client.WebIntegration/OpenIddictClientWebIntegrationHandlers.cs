@@ -21,6 +21,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
          */
         AttachNonStandardClientAssertionTokenClaims.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
+        AttachAdditionalUserinfoRequestParameters.Descriptor,
 
         /*
          * Challenge processing:
@@ -114,6 +115,49 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.TokenRequest.ClientSecret = context.TokenRequest.ClientAssertion;
                 context.TokenRequest.ClientAssertion = null;
                 context.TokenRequest.ClientAssertionType = null;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching additional parameters
+    /// to the userinfo request for the providers that require it.
+    /// </summary>
+    public class AttachAdditionalUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireUserinfoRequest>()
+                .UseSingletonHandler<AttachAdditionalUserinfoRequestParameters>()
+                .SetOrder(AttachUserinfoRequestParameters.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            if (context.Registration.ProviderName is Providers.Twitter)
+            {
+                var options = context.Registration.GetTwitterOptions();
+
+                // Twitter limits the number of fields returned by the userinfo endpoint
+                // but allows returning additional information using special parameters that
+                // determine what fields will be returned as part of the userinfo response.
+                context.UserinfoRequest["expansions"] = string.Join(",", options.Expansions);
+                context.UserinfoRequest["tweet.fields"] = string.Join(",", options.TweetFields);
+                context.UserinfoRequest["user.fields"] = string.Join(",", options.UserFields);
             }
 
             return default;
