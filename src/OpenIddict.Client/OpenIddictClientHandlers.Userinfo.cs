@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Client;
 
@@ -18,21 +19,21 @@ public static partial class OpenIddictClientHandlers
             /*
              * Userinfo response handling:
              */
-            HandleErrorResponse<HandleUserinfoResponseContext>.Descriptor,
-            ValidateWellKnownClaims.Descriptor,
+            ValidateWellKnownParameters.Descriptor,
+            HandleErrorResponse.Descriptor,
             PopulateClaims.Descriptor);
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the userinfo response.
         /// </summary>
-        public class ValidateWellKnownClaims : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
-                    .UseSingletonHandler<ValidateWellKnownClaims>()
+                    .UseSingletonHandler<ValidateWellKnownParameters>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -75,12 +76,62 @@ public static partial class OpenIddictClientHandlers
                 // JsonElement instance using the same value type as the original parameter value.
                 static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
+                    // Error parameters MUST be formatted as unique strings:
+                    Parameters.Error or Parameters.ErrorDescription or Parameters.ErrorUri
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
                     // The following parameters MUST be formatted as unique strings:
                     Claims.Subject => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true
                 };
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for surfacing potential errors from the userinfo response.
+        /// </summary>
+        public class HandleErrorResponse : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
+                    .UseSingletonHandler<HandleErrorResponse>()
+                    .SetOrder(ValidateWellKnownParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleUserinfoResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // For more information, see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6207), context.Response);
+
+                    context.Reject(
+                        error: context.Response.Error switch
+                        {
+                            Errors.InsufficientScope => Errors.InsufficientScope,
+                            Errors.InvalidRequest    => Errors.InvalidToken,
+                            Errors.InvalidToken      => Errors.InvalidToken,
+                            _                        => Errors.ServerError
+                        },
+                        description: SR.GetResourceString(SR.ID2148),
+                        uri: SR.FormatID8000(SR.ID2148));
+
+                    return default;
+                }
+
+                return default;
             }
         }
 
@@ -95,7 +146,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
                     .UseSingletonHandler<PopulateClaims>()
-                    .SetOrder(ValidateWellKnownClaims.Descriptor.Order + 1_000)
+                    .SetOrder(HandleErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

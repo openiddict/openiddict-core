@@ -10,7 +10,9 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 #if !SUPPORTS_TIME_CONSTANT_COMPARISONS
 using Org.BouncyCastle.Utilities;
@@ -60,7 +62,6 @@ public static partial class OpenIddictClientHandlers
         GenerateClientAssertionToken.Descriptor,
         AttachTokenRequestClientCredentials.Descriptor,
         SendTokenRequest.Descriptor,
-        ValidateTokenErrorParameters.Descriptor,
 
         EvaluateValidatedBackchannelTokens.Descriptor,
         ResolveValidatedBackchannelTokens.Descriptor,
@@ -80,7 +81,6 @@ public static partial class OpenIddictClientHandlers
         EvaluateUserinfoRequest.Descriptor,
         AttachUserinfoRequestParameters.Descriptor,
         SendUserinfoRequest.Descriptor,
-        ValidateUserinfoErrorParameters.Descriptor,
         EvaluateValidatedUserinfoToken.Descriptor,
         ValidateRequiredUserinfoToken.Descriptor,
         ValidateUserinfoToken.Descriptor,
@@ -2017,47 +2017,21 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
             }
 
-            context.TokenResponse = await _service.SendTokenRequestAsync(
-                context.Registration, context.TokenEndpoint, context.TokenRequest);
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for rejecting errored token responses.
-    /// </summary>
-    public class ValidateTokenErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireTokenRequest>()
-                .UseSingletonHandler<ValidateTokenErrorParameters>()
-                .SetOrder(SendTokenRequest.Descriptor.Order + 1_000)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
+            try
             {
-                throw new ArgumentNullException(nameof(context));
+                context.TokenResponse = await _service.SendTokenRequestAsync(
+                    context.Registration, context.TokenEndpoint, context.TokenRequest);
             }
 
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            if (!string.IsNullOrEmpty(context.TokenResponse.Error))
+            catch (ProtocolException exception)
             {
                 context.Reject(
-                    error: context.TokenResponse.Error,
-                    description: context.TokenResponse.ErrorDescription,
-                    uri: context.TokenResponse.ErrorUri);
+                    error: exception.Error,
+                    description: exception.ErrorDescription,
+                    uri: exception.ErrorUri);
 
-                return default;
+                return;
             }
-
-            return default;
         }
     }
 
@@ -2073,7 +2047,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireTokenRequest>()
                 .UseSingletonHandler<EvaluateValidatedBackchannelTokens>()
-                .SetOrder(ValidateTokenErrorParameters.Descriptor.Order + 1_000)
+                .SetOrder(SendTokenRequest.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -3002,47 +2976,21 @@ public static partial class OpenIddictClientHandlers
             //  - application/json responses containing a JSON object listing the user claims as-is.
             //  - application/jwt responses containing a signed/encrypted JSON Web Token containing the user claims.
 
-            (context.UserinfoResponse, (context.UserinfoTokenPrincipal, context.UserinfoToken)) =
-                await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoEndpoint, context.UserinfoRequest);
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for rejecting errored userinfo responses.
-    /// </summary>
-    public class ValidateUserinfoErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireUserinfoRequest>()
-                .UseSingletonHandler<ValidateUserinfoErrorParameters>()
-                .SetOrder(SendUserinfoRequest.Descriptor.Order + 1_000)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
+            try
             {
-                throw new ArgumentNullException(nameof(context));
+                (context.UserinfoResponse, (context.UserinfoTokenPrincipal, context.UserinfoToken)) =
+                    await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoEndpoint, context.UserinfoRequest);
             }
 
-            Debug.Assert(context.UserinfoResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            if (!string.IsNullOrEmpty(context.UserinfoResponse.Error))
+            catch (ProtocolException exception)
             {
                 context.Reject(
-                    error: context.UserinfoResponse.Error,
-                    description: context.UserinfoResponse.ErrorDescription,
-                    uri: context.UserinfoResponse.ErrorUri);
+                    error: exception.Error,
+                    description: exception.ErrorDescription,
+                    uri: exception.ErrorUri);
 
-                return default;
+                return;
             }
-
-            return default;
         }
     }
 
@@ -3058,7 +3006,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireUserinfoRequest>()
                 .UseSingletonHandler<EvaluateValidatedUserinfoToken>()
-                .SetOrder(ValidateUserinfoErrorParameters.Descriptor.Order + 1_000)
+                .SetOrder(SendUserinfoRequest.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -4973,43 +4921,6 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Response.SetParameter(parameter.Key, parameter.Value);
                 }
-            }
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for extracting potential errors from the response.
-    /// </summary>
-    public class HandleErrorResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
-                .UseSingletonHandler<HandleErrorResponse<TContext>>()
-                .SetOrder(int.MinValue + 100_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (!string.IsNullOrEmpty(context.Transaction.Response?.Error))
-            {
-                context.Reject(
-                    error: context.Transaction.Response.Error,
-                    description: context.Transaction.Response.ErrorDescription,
-                    uri: context.Transaction.Response.ErrorUri);
-
-                return default;
             }
 
             return default;

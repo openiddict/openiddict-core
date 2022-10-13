@@ -1775,6 +1775,21 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID2143" xml:space="preserve">
     <value>An unsupported content encoding was returned by the remote server.</value>
   </data>
+  <data name="ID2144" xml:space="preserve">
+    <value>The configuration request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2145" xml:space="preserve">
+    <value>The cryptography request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2146" xml:space="preserve">
+    <value>The introspection request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2147" xml:space="preserve">
+    <value>The token request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2148" xml:space="preserve">
+    <value>The userinfo request was rejected by the remote server.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -2391,6 +2406,21 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6202" xml:space="preserve">
     <value>Client validation failed because '{PostLogoutRedirectUri}' was not a valid post_logout_redirect_uri for {Client}.</value>
+  </data>
+  <data name="ID6203" xml:space="preserve">
+    <value>The configuration request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6204" xml:space="preserve">
+    <value>The cryptography request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6205" xml:space="preserve">
+    <value>The introspection request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6206" xml:space="preserve">
+    <value>The token request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6207" xml:space="preserve">
+    <value>The userinfo request was rejected by the remote authorization server: {Response}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

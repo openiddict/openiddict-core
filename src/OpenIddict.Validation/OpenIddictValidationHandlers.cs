@@ -365,41 +365,4 @@ public static partial class OpenIddictValidationHandlers
             return default;
         }
     }
-
-    /// <summary>
-    /// Contains the logic responsible for extracting potential errors from the response.
-    /// </summary>
-    public class HandleErrorResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseValidatingContext
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-            = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .UseSingletonHandler<HandleErrorResponse<TContext>>()
-                .SetOrder(int.MinValue + 100_000)
-                .SetType(OpenIddictValidationHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(TContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (!string.IsNullOrEmpty(context.Transaction.Response?.Error))
-            {
-                context.Reject(
-                    error: context.Transaction.Response.Error,
-                    description: context.Transaction.Response.ErrorDescription,
-                    uri: context.Transaction.Response.ErrorUri);
-
-                return default;
-            }
-
-            return default;
-        }
-    }
 }
