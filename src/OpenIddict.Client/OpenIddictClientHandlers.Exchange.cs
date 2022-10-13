@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Client;
 
@@ -17,8 +18,8 @@ public static partial class OpenIddictClientHandlers
             /*
              * Token response handling:
              */
-            HandleErrorResponse<HandleTokenResponseContext>.Descriptor,
-            ValidateWellKnownParameters.Descriptor);
+            ValidateWellKnownParameters.Descriptor,
+            HandleErrorResponse.Descriptor);
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the token response.
@@ -67,6 +68,10 @@ public static partial class OpenIddictClientHandlers
                 // JsonElement instance using the same value type as the original parameter value.
                 static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
+                    // Error parameters MUST be formatted as unique strings:
+                    Parameters.Error or Parameters.ErrorDescription or Parameters.ErrorUri
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
                     // The following parameters MUST be formatted as unique strings:
                     Parameters.AccessToken or Parameters.IdToken or Parameters.RefreshToken
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
@@ -77,6 +82,55 @@ public static partial class OpenIddictClientHandlers
                     // Parameters that are not in the well-known list can be of any type.
                     _ => true
                 };
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for surfacing potential errors from the token response.
+        /// </summary>
+        public class HandleErrorResponse : IOpenIddictClientHandler<HandleTokenResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleTokenResponseContext>()
+                    .UseSingletonHandler<HandleErrorResponse>()
+                    .SetOrder(ValidateWellKnownParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleTokenResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // For more information, see https://datatracker.ietf.org/doc/html/rfc6749#section-5.2.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6206), context.Response);
+
+                    context.Reject(
+                        error: context.Response.Error switch
+                        {
+                            Errors.InvalidClient        => Errors.InvalidRequest,
+                            Errors.InvalidGrant         => Errors.InvalidGrant,
+                            Errors.InvalidScope         => Errors.InvalidScope,
+                            Errors.InvalidRequest       => Errors.InvalidRequest,
+                            Errors.UnauthorizedClient   => Errors.UnauthorizedClient,
+                            Errors.UnsupportedGrantType => Errors.UnsupportedGrantType,
+                            _                           => Errors.ServerError
+                        },
+                        description: SR.GetResourceString(SR.ID2147),
+                        uri: SR.FormatID8000(SR.ID2147));
+
+                    return default;
+                }
+
+                return default;
             }
         }
     }

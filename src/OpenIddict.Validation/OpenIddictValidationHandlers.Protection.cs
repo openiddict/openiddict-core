@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Validation;
 
@@ -336,14 +337,14 @@ public static partial class OpenIddictValidationHandlers
                     }) ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0141));
                 }
 
-                catch (Exception exception)
+                catch (ProtocolException exception)
                 {
                     context.Logger.LogDebug(exception, SR.GetResourceString(SR.ID6155));
 
                     context.Reject(
-                        error: Errors.InvalidToken,
-                        description: SR.GetResourceString(SR.ID2004),
-                        uri: SR.FormatID8000(SR.ID2004));
+                        error: exception.Error,
+                        description: exception.ErrorDescription,
+                        uri: exception.ErrorUri);
 
                     return;
                 }

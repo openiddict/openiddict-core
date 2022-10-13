@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client;
@@ -18,8 +19,8 @@ public static partial class OpenIddictClientHandlers
             /*
              * Configuration response handling:
              */
-            HandleErrorResponse<HandleConfigurationResponseContext>.Descriptor,
             ValidateWellKnownConfigurationParameters.Descriptor,
+            HandleConfigurationErrorResponse.Descriptor,
             ValidateIssuer.Descriptor,
             ExtractAuthorizationEndpoint.Descriptor,
             ExtractCryptographyEndpoint.Descriptor,
@@ -37,8 +38,8 @@ public static partial class OpenIddictClientHandlers
             /*
              * Cryptography response handling:
              */
-            HandleErrorResponse<HandleCryptographyResponseContext>.Descriptor,
             ValidateWellKnownCryptographyParameters.Descriptor,
+            HandleCryptographyErrorResponse.Descriptor,
             ExtractSigningKeys.Descriptor);
 
         /// <summary>
@@ -52,7 +53,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ValidateWellKnownConfigurationParameters>()
-                    .SetOrder(HandleErrorResponse<HandleConfigurationResponseContext>.Descriptor.Order + 1_000)
+                    .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -88,6 +89,10 @@ public static partial class OpenIddictClientHandlers
                 // JsonElement instance using the same value type as the original parameter value.
                 static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
+                    // Error parameters MUST be formatted as unique strings:
+                    Parameters.Error or Parameters.ErrorDescription or Parameters.ErrorUri
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
                     // The following parameters MUST be formatted as unique strings:
                     Metadata.AuthorizationEndpoint or
                     Metadata.EndSessionEndpoint    or
@@ -131,6 +136,49 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for surfacing potential errors from the configuration response.
+        /// </summary>
+        public class HandleConfigurationErrorResponse : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<HandleConfigurationErrorResponse>()
+                    .SetOrder(ValidateWellKnownConfigurationParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: the specification doesn't define a standard way to return an error other than
+                // returning a 4xx status code. That said, some implementations are known to return
+                // JSON payloads similar to standard errored token responses. For more information, see
+                // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6203), context.Response);
+
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2144),
+                        uri: SR.FormatID8000(SR.ID2144));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the issuer from the discovery document.
         /// </summary>
         public class ValidateIssuer : IOpenIddictClientHandler<HandleConfigurationResponseContext>
@@ -141,7 +189,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
                     .UseSingletonHandler<ValidateIssuer>()
-                    .SetOrder(ValidateWellKnownConfigurationParameters.Descriptor.Order + 1_000)
+                    .SetOrder(HandleConfigurationErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -721,7 +769,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
                     .UseSingletonHandler<ValidateWellKnownCryptographyParameters>()
-                    .SetOrder(HandleErrorResponse<HandleCryptographyResponseContext>.Descriptor.Order + 1_000)
+                    .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
@@ -757,6 +805,10 @@ public static partial class OpenIddictClientHandlers
                 // JsonElement instance using the same value type as the original parameter value.
                 static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
+                    // Error parameters MUST be formatted as unique strings:
+                    Parameters.Error or Parameters.ErrorDescription or Parameters.ErrorUri
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
                     // The following parameters MUST be formatted as arrays of objects:
                     JsonWebKeySetParameterNames.Keys => ((JsonElement) value) is JsonElement element &&
                         element.ValueKind is JsonValueKind.Array && ValidateObjectArray(element),
@@ -781,6 +833,49 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for surfacing potential errors from the cryptography response.
+        /// </summary>
+        public class HandleCryptographyErrorResponse : IOpenIddictClientHandler<HandleCryptographyResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
+                    .UseSingletonHandler<HandleCryptographyErrorResponse>()
+                    .SetOrder(ValidateWellKnownCryptographyParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleCryptographyResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: the specification doesn't define a standard way to return an error other than
+                // returning a 4xx status code. That said, some implementations are known to return
+                // JSON payloads similar to standard errored token responses. For more information, see
+                // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6204), context.Response);
+
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2145),
+                        uri: SR.FormatID8000(SR.ID2145));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the signing keys from the JWKS document.
         /// </summary>
         public class ExtractSigningKeys : IOpenIddictClientHandler<HandleCryptographyResponseContext>
@@ -791,7 +886,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleCryptographyResponseContext>()
                     .UseSingletonHandler<ExtractSigningKeys>()
-                    .SetOrder(ValidateWellKnownCryptographyParameters.Descriptor.Order + 1_000)
+                    .SetOrder(HandleCryptographyErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 

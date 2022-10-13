@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Validation;
 
@@ -24,8 +25,8 @@ public static partial class OpenIddictValidationHandlers
             /*
              * Introspection response handling:
              */
-            HandleErrorResponse<HandleIntrospectionResponseContext>.Descriptor,
             ValidateWellKnownParameters.Descriptor,
+            HandleErrorResponse.Descriptor,
             HandleInactiveResponse.Descriptor,
             ValidateIssuer.Descriptor,
             ValidateTokenUsage.Descriptor,
@@ -102,7 +103,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<ValidateWellKnownParameters>()
-                    .SetOrder(HandleErrorResponse<HandleIntrospectionResponseContext>.Descriptor.Order + 1_000)
+                    .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -138,25 +139,29 @@ public static partial class OpenIddictValidationHandlers
                 // JsonElement instance using the same value type as the original parameter value.
                 static bool ValidateParameterType(string name, OpenIddictParameter value) => name switch
                 {
-                    // The following parameters MUST be formatted as booleans:
+                    // Error parameters MUST be formatted as unique strings:
+                    Parameters.Error or Parameters.ErrorDescription or Parameters.ErrorUri
+                        => ((JsonElement) value).ValueKind is JsonValueKind.String,
+
+                    // The following claims MUST be formatted as booleans:
                     Claims.Active => ((JsonElement) value).ValueKind is JsonValueKind.True or JsonValueKind.False,
 
-                    // The following parameters MUST be formatted as unique strings:
+                    // The following claims MUST be formatted as unique strings:
                     Claims.JwtId or Claims.Issuer or Claims.Scope or Claims.TokenUsage
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
-                    // The following parameters MUST be formatted as strings or arrays of strings:
+                    // The following claims MUST be formatted as strings or arrays of strings:
                     //
                     // Note: empty arrays and arrays that contain a single value are also considered valid.
                     Claims.Audience => ((JsonElement) value) is JsonElement element &&
                         element.ValueKind is JsonValueKind.String ||
                        (element.ValueKind is JsonValueKind.Array && ValidateStringArray(element)),
 
-                    // The following parameters MUST be formatted as numeric dates:
+                    // The following claims MUST be formatted as numeric dates:
                     Claims.ExpiresAt or Claims.IssuedAt or Claims.NotBefore
                         => ((JsonElement) value).ValueKind is JsonValueKind.Number,
 
-                    // Parameters that are not in the well-known list can be of any type.
+                    // Claims that are not in the well-known list can be of any type.
                     _ => true
                 };
 
@@ -176,6 +181,52 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for surfacing potential errors from the introspection response.
+        /// </summary>
+        public class HandleErrorResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+                    .UseSingletonHandler<HandleErrorResponse>()
+                    .SetOrder(ValidateWellKnownParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: the specification requires returning most errors (e.g invalid token errors)
+                // as "active: false" responses instead of as proper OAuth 2.0 error responses.
+                // For more information, see https://datatracker.ietf.org/doc/html/rfc7662#section-2.3.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6205), context.Response);
+
+                    context.Reject(
+                        error: context.Response.Error switch
+                        {
+                            Errors.UnauthorizedClient => Errors.UnauthorizedClient,
+                            _                         => Errors.ServerError
+                        },
+                        description: SR.GetResourceString(SR.ID2146),
+                        uri: SR.FormatID8000(SR.ID2146));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for extracting the active: false marker from the response.
         /// </summary>
         public class HandleInactiveResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
@@ -186,7 +237,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
                     .UseSingletonHandler<HandleInactiveResponse>()
-                    .SetOrder(ValidateWellKnownParameters.Descriptor.Order + 1_000)
+                    .SetOrder(HandleErrorResponse.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
