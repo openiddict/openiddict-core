@@ -121,7 +121,7 @@ public static partial class OpenIddictClientHandlers
                         error: context.Response.Error switch
                         {
                             Errors.InsufficientScope => Errors.InsufficientScope,
-                            Errors.InvalidRequest    => Errors.InvalidToken,
+                            Errors.InvalidRequest    => Errors.InvalidRequest,
                             Errors.InvalidToken      => Errors.InvalidToken,
                             _                        => Errors.ServerError
                         },

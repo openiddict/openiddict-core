@@ -750,8 +750,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                         503 => Errors.TemporarilyUnavailable,
                         _   => Errors.ServerError
                     },
-                    description: SR.GetResourceString(SR.ID0328),
-                    uri: SR.FormatID8000(SR.ID0328));
+                    description: SR.FormatID2161((int) response.StatusCode),
+                    uri: SR.FormatID8000(SR.ID2161));
 
                 return;
             }
@@ -765,8 +765,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
                 context.Reject(
                     error: Errors.ServerError,
-                    description: SR.GetResourceString(SR.ID0329),
-                    uri: SR.FormatID8000(SR.ID0329));
+                    description: SR.GetResourceString(SR.ID2162),
+                    uri: SR.FormatID8000(SR.ID2162));
 
                 return;
             }

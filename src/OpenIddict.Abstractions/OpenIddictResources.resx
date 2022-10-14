@@ -1280,12 +1280,6 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   Error description: {1}
   Error URI: {2}</value>
   </data>
-  <data name="ID0328" xml:space="preserve">
-    <value>A generic error was returned by the remote authorization server.</value>
-  </data>
-  <data name="ID0329" xml:space="preserve">
-    <value>An unsupported response was returned by the remote authorization server.</value>
-  </data>
   <data name="ID0330" xml:space="preserve">
     <value>The provider name cannot be null or empty.</value>
   </data>
@@ -1789,6 +1783,48 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID2148" xml:space="preserve">
     <value>The userinfo request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2149" xml:space="preserve">
+    <value>The authorization demand was denied by the user or by the identity provider.</value>
+  </data>
+  <data name="ID2150" xml:space="preserve">
+    <value>The authorization request was rejected due to a missing or invalid parameter.</value>
+  </data>
+  <data name="ID2151" xml:space="preserve">
+    <value>The authorization request was rejected due to an invalid scope.</value>
+  </data>
+  <data name="ID2152" xml:space="preserve">
+    <value>The authorization request was rejected due to a remote server error.</value>
+  </data>
+  <data name="ID2153" xml:space="preserve">
+    <value>The authorization request was rejected due to a transient error.</value>
+  </data>
+  <data name="ID2154" xml:space="preserve">
+    <value>The authorization request was rejected due to the use of an incorrect or unauthorized grant type.</value>
+  </data>
+  <data name="ID2155" xml:space="preserve">
+    <value>The authorization request was rejected due to an unsupported response type.</value>
+  </data>
+  <data name="ID2156" xml:space="preserve">
+    <value>The authorization request was rejected because the user didn't select a user account.</value>
+  </data>
+  <data name="ID2157" xml:space="preserve">
+    <value>The authorization request was rejected because user consent was required to proceed the request.</value>
+  </data>
+  <data name="ID2158" xml:space="preserve">
+    <value>The authorization request was rejected because user interaction was required to proceed the request.</value>
+  </data>
+  <data name="ID2159" xml:space="preserve">
+    <value>The authorization request was rejected because user (re-)authentication was required to proceed the request.</value>
+  </data>
+  <data name="ID2160" xml:space="preserve">
+    <value>The authorization request was rejected by the identity provider.</value>
+  </data>
+  <data name="ID2161" xml:space="preserve">
+    <value>A generic {StatusCode} error was returned by the remote authorization server.</value>
+  </data>
+  <data name="ID2162" xml:space="preserve">
+    <value>An unsupported response was returned by the remote authorization server.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -2421,6 +2457,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6207" xml:space="preserve">
     <value>The userinfo request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6208" xml:space="preserve">
+    <value>The authorization request was rejected by the remote authorization server: {Response}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
