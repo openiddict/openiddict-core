@@ -25,6 +25,31 @@
     <Environment Issuer="https://accounts.google.com/" />
   </Provider>
 
+  <Provider Name="LinkedIn" Documentation="https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin">
+    <Environment Issuer="https://www.linkedin.com/">
+      <Configuration AuthorizationEndpoint="https://www.linkedin.com/oauth/v2/authorization"
+                     TokenEndpoint="https://www.linkedin.com/oauth/v2/accessToken"
+                     UserinfoEndpoint="https://api.linkedin.com/v2/me" />
+      <!--
+        Note: LinkedIn requires sending at least one scope element. If no scope is set, an error is
+        returned to the caller. To prevent that, the "r_liteprofile" scope (that is required by the
+        userinfo endpoint) is always added even if another scope was explicitly registered by the user.
+      -->
+
+      <Scope Name="r_liteprofile" Default="true" Required="true" />
+    </Environment>
+
+    <Setting PropertyName="Fields" ParameterName="fields" Collection="true" Type="String"
+             Description="The fields that should be retrieved from the userinfo endpoint (by default, all known basic fields are requested)">
+      <CollectionItem Value="firstName"                                     Default="true" Required="false" />
+      <CollectionItem Value="id"                                            Default="true" Required="false" />
+      <CollectionItem Value="lastName"                                      Default="true" Required="false" />
+      <CollectionItem Value="localizedFirstName"                            Default="true" Required="false" />
+      <CollectionItem Value="localizedLastName"                             Default="true" Required="false" />
+      <CollectionItem Value="profilePicture(displayImage~:playableStreams)" Default="true" Required="false" />
+    </Setting>
+  </Provider>
+
   <Provider Name="Microsoft" Documentation="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">
     <!--
       Note: Microsoft is a multitenant provider that relies on virtual paths to identify instances.
