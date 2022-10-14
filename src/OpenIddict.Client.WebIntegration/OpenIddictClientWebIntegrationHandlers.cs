@@ -19,6 +19,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /*
          * Authentication processing:
          */
+        HandleNonStandardFrontchannelErrorResponse.Descriptor,
         AttachNonStandardClientAssertionTokenClaims.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
@@ -31,6 +32,61 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
+
+    /// <summary>
+    /// Contains the logic responsible for handling non-standard
+    /// authorization errors for the providers that require it.
+    /// </summary>
+    public class HandleNonStandardFrontchannelErrorResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<HandleNonStandardFrontchannelErrorResponse>()
+                .SetOrder(HandleFrontchannelErrorResponse.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: some providers are known to return non-standard errors.
+            // To normalize the set of errors handled by the OpenIddict client,
+            // the non-standard errors are mapped to their standard equivalent.
+            //
+            // Errors that are not handled here will be automatically handled
+            // by the standard handler present in the core OpenIddict client.
+
+            if (context.Registration.ProviderName is Providers.LinkedIn)
+            {
+                var error = (string?) context.Request[Parameters.Error];
+                if (string.IsNullOrEmpty(error))
+                {
+                    return default;
+                }
+
+                if (string.Equals(error, "user_cancelled_authorize", StringComparison.Ordinal) ||
+                    string.Equals(error, "user_cancelled_login", StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.AccessDenied,
+                        description: SR.GetResourceString(SR.ID2149),
+                        uri: SR.FormatID8000(SR.ID2149));
+
+                    return default;
+                }
+            }
+
+            return default;
+        }
+    }
 
     /// <summary>
     /// Contains the logic responsible for amending the client
@@ -148,7 +204,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            if (context.Registration.ProviderName is Providers.StackExchange)
+            if (context.Registration.ProviderName is Providers.LinkedIn)
+            {
+                var options = context.Registration.GetLinkedInOptions();
+
+                // By default, LinkedIn returns all the basic fields except the profile image.
+                // To retrieve the profile image, a projection parameter must be sent with
+                // all the parameters that should be returned from the userinfo endpoint.
+                context.UserinfoRequest["projection"] = string.Concat("(", string.Join(",", options.Fields), ")");
+            }
+
+            else if (context.Registration.ProviderName is Providers.StackExchange)
             {
                 var options = context.Registration.GetStackExchangeOptions();
 
