@@ -36,7 +36,7 @@ public static partial class OpenIddictClientHandlers
         ValidateStateTokenEndpointType.Descriptor,
         ResolveClientRegistrationFromStateToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
-        ValidateFrontchannelErrorParameters.Descriptor,
+        HandleFrontchannelErrorResponse.Descriptor,
         ResolveGrantTypeFromStateToken.Descriptor,
         ResolveResponseTypeFromStateToken.Descriptor,
 
@@ -663,7 +663,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting errored authorization responses.
     /// </summary>
-    public class ValidateFrontchannelErrorParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public class HandleFrontchannelErrorResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -671,7 +671,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireRedirectionRequest>()
-                .UseSingletonHandler<ValidateFrontchannelErrorParameters>()
+                .UseSingletonHandler<HandleFrontchannelErrorResponse>()
                 .SetOrder(ValidateIssuerParameter.Descriptor.Order + 1_000)
                 .Build();
 
@@ -683,17 +683,60 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var (error, description, uri) = (
-                (string?) context.Request[Parameters.Error],
-                (string?) context.Request[Parameters.ErrorDescription],
-                (string?) context.Request[Parameters.ErrorUri]);
-
+            // Note: for more information about the standard error codes,
+            // see https://www.rfc-editor.org/rfc/rfc6749#section-4.1.2.1 and
+            // https://openid.net/specs/openid-connect-core-1_0.html#AuthError.
+            var error = (string?) context.Request[Parameters.Error];
             if (!string.IsNullOrEmpty(error))
             {
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6208), context.Request);
+
                 context.Reject(
-                    error: error ?? Errors.InvalidRequest,
-                    description: description,
-                    uri: uri);
+                    error: error switch
+                    {
+                        Errors.AccessDenied             => Errors.AccessDenied,
+                        Errors.AccountSelectionRequired => Errors.AccountSelectionRequired,
+                        Errors.ConsentRequired          => Errors.ConsentRequired,
+                        Errors.InteractionRequired      => Errors.InteractionRequired,
+                        Errors.InvalidRequest           => Errors.InvalidRequest,
+                        Errors.InvalidScope             => Errors.InvalidScope,
+                        Errors.LoginRequired            => Errors.LoginRequired,
+                        Errors.ServerError              => Errors.ServerError,
+                        Errors.TemporarilyUnavailable   => Errors.TemporarilyUnavailable,
+                        Errors.UnauthorizedClient       => Errors.UnauthorizedClient,
+                        Errors.UnsupportedResponseType  => Errors.UnsupportedResponseType,
+                        _                               => Errors.InvalidRequest
+                    },
+                    description: error switch
+                    {
+                        Errors.AccessDenied             => SR.GetResourceString(SR.ID2149),
+                        Errors.AccountSelectionRequired => SR.GetResourceString(SR.ID2156),
+                        Errors.ConsentRequired          => SR.GetResourceString(SR.ID2157),
+                        Errors.InteractionRequired      => SR.GetResourceString(SR.ID2158),
+                        Errors.InvalidRequest           => SR.GetResourceString(SR.ID2150),
+                        Errors.InvalidScope             => SR.GetResourceString(SR.ID2151),
+                        Errors.LoginRequired            => SR.GetResourceString(SR.ID2159),
+                        Errors.ServerError              => SR.GetResourceString(SR.ID2152),
+                        Errors.TemporarilyUnavailable   => SR.GetResourceString(SR.ID2153),
+                        Errors.UnauthorizedClient       => SR.GetResourceString(SR.ID2154),
+                        Errors.UnsupportedResponseType  => SR.GetResourceString(SR.ID2155),
+                        _                               => SR.GetResourceString(SR.ID2160)
+                    },
+                    uri: error switch
+                    {
+                        Errors.AccessDenied             => SR.FormatID8000(SR.ID2149),
+                        Errors.AccountSelectionRequired => SR.FormatID8000(SR.ID2156),
+                        Errors.ConsentRequired          => SR.FormatID8000(SR.ID2157),
+                        Errors.InteractionRequired      => SR.FormatID8000(SR.ID2158),
+                        Errors.InvalidRequest           => SR.FormatID8000(SR.ID2150),
+                        Errors.InvalidScope             => SR.FormatID8000(SR.ID2151),
+                        Errors.LoginRequired            => SR.FormatID8000(SR.ID2159),
+                        Errors.ServerError              => SR.FormatID8000(SR.ID2152),
+                        Errors.TemporarilyUnavailable   => SR.FormatID8000(SR.ID2153),
+                        Errors.UnauthorizedClient       => SR.FormatID8000(SR.ID2154),
+                        Errors.UnsupportedResponseType  => SR.FormatID8000(SR.ID2155),
+                        _                               => SR.FormatID8000(SR.ID2160)
+                    });
 
                 return default;
             }
@@ -716,7 +759,7 @@ public static partial class OpenIddictClientHandlers
                 .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveGrantTypeFromStateToken>()
-                .SetOrder(ValidateFrontchannelErrorParameters.Descriptor.Order + 1_000)
+                .SetOrder(HandleFrontchannelErrorResponse.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
