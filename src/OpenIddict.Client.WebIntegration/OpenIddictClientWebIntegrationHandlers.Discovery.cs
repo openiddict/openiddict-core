@@ -20,7 +20,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              */
             AmendIssuer.Descriptor,
             AmendClientAuthenticationMethods.Descriptor,
-            AmendCodeChallengeMethods.Descriptor);
+            AmendCodeChallengeMethods.Descriptor,
+            AmendEndpoints.Descriptor);
 
         /// <summary>
         /// Contains the logic responsible for amending the issuer for the providers that require it.
@@ -137,6 +138,53 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Plain);
                     context.Configuration.CodeChallengeMethodsSupported.Add(CodeChallengeMethods.Sha256);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for amending the endpoint URIs for the providers that require it.
+        /// </summary>
+        public class AmendEndpoints : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendEndpoints>()
+                    .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // While PayPal supports OpenID Connect discovery, the configuration document returned
+                // by the sandbox environment always contains the production endpoints, which would
+                // prevent the OpenIddict integration from working properly when using the sandbox mode.
+                // To work around that, the endpoints are manually overriden when this environment is used.
+                if (context.Registration.ProviderName is Providers.PayPal)
+                {
+                    var options = context.Registration.GetPayPalOptions();
+                    if (options.Environment is PayPal.Environments.Sandbox)
+                    {
+                        context.Configuration.AuthorizationEndpoint =
+                            new Uri("https://www.sandbox.paypal.com/signin/authorize", UriKind.Absolute);
+                        context.Configuration.JwksUri =
+                            new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/certs", UriKind.Absolute);
+                        context.Configuration.TokenEndpoint =
+                            new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token", UriKind.Absolute);
+                        context.Configuration.UserinfoEndpoint =
+                            new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token/userinfo", UriKind.Absolute);
+                    }
                 }
 
                 return default;

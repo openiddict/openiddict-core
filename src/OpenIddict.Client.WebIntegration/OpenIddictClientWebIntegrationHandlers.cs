@@ -22,6 +22,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         HandleNonStandardFrontchannelErrorResponse.Descriptor,
         AttachNonStandardClientAssertionTokenClaims.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
+        OverrideValidatedBackchannelTokens.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
 
         /*
@@ -178,6 +179,47 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for overriding the set
+    /// of required tokens for the providers that require it.
+    /// </summary>
+    public class OverrideValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<OverrideValidatedBackchannelTokens>()
+                .SetOrder(EvaluateValidatedBackchannelTokens.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            (context.ExtractBackchannelIdentityToken,
+             context.RequireBackchannelIdentityToken,
+             context.ValidateBackchannelIdentityToken) = context.Registration.ProviderName switch
+             {
+                 // While PayPal claims the OpenID Connect flavor of the code flow is supported,
+                 // their implementation doesn't return an id_token from the token endpoint.
+                 Providers.PayPal => (false, false, false),
+
+                 _ => (context.ExtractBackchannelIdentityToken,
+                       context.RequireBackchannelIdentityToken,
+                       context.ValidateBackchannelIdentityToken)
+             };
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching additional parameters
     /// to the userinfo request for the providers that require it.
     /// </summary>
@@ -204,16 +246,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
+            // By default, LinkedIn returns all the basic fields except the profile image.
+            // To retrieve the profile image, a projection parameter must be sent with
+            // all the parameters that should be returned from the userinfo endpoint.
             if (context.Registration.ProviderName is Providers.LinkedIn)
             {
                 var options = context.Registration.GetLinkedInOptions();
 
-                // By default, LinkedIn returns all the basic fields except the profile image.
-                // To retrieve the profile image, a projection parameter must be sent with
-                // all the parameters that should be returned from the userinfo endpoint.
                 context.UserinfoRequest["projection"] = string.Concat("(", string.Join(",", options.Fields), ")");
             }
 
+            // StackOverflow requires sending an application key and a site parameter
+            // containing the name of the site from which the user profile is retrieved.
             else if (context.Registration.ProviderName is Providers.StackExchange)
             {
                 var options = context.Registration.GetStackExchangeOptions();
@@ -222,13 +266,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.UserinfoRequest["site"] = options.Site;
             }
 
+            // Twitter limits the number of fields returned by the userinfo endpoint
+            // but allows returning additional information using special parameters that
+            // determine what fields will be returned as part of the userinfo response.
             else if (context.Registration.ProviderName is Providers.Twitter)
             {
                 var options = context.Registration.GetTwitterOptions();
 
-                // Twitter limits the number of fields returned by the userinfo endpoint
-                // but allows returning additional information using special parameters that
-                // determine what fields will be returned as part of the userinfo response.
                 context.UserinfoRequest["expansions"] = string.Join(",", options.Expansions);
                 context.UserinfoRequest["tweet.fields"] = string.Join(",", options.TweetFields);
                 context.UserinfoRequest["user.fields"] = string.Join(",", options.UserFields);
