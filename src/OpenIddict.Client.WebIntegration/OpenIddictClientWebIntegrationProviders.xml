@@ -76,6 +76,19 @@
              Description="The tenant used to identify the Azure AD instance (by default, the common tenant is used)" />
   </Provider>
 
+  <Provider Name="PayPal" Documentation="https://developer.paypal.com/docs/log-in-with-paypal/">
+    <!--
+      Note: PayPal offers a production and a sandbox environment, but the sandbox server metadata
+      document doesn't reflect the configuration used by the sandbox environment (e.g the production
+      endpoints are always returned and the issuer is shared by both environments). To work around that,
+      the issuer configured globally is the same for both environments but the returned configuration
+      is amended by a dedicated handler to use the correct endpoints when the sandbox mode is used.
+    -->
+
+    <Environment Name="Production" Issuer="https://www.paypal.com/" />
+    <Environment Name="Sandbox"    Issuer="https://www.paypal.com/" />
+  </Provider>
+
   <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
     <Environment Issuer="https://www.reddit.com/">
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
