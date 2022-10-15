@@ -469,7 +469,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
             {{~ if setting.collection ~}}
             if (options.{{ setting.property_name }}.Count is 0)
             {
-                {{~ for item in setting.collection_items ~}}
+                {{~ for item in setting.items ~}}
                 {{~ if item.default && !item.required ~}}
                 options.{{ setting.property_name }}.Add(""{{ item.value }}"");
                 {{~ end ~}}
@@ -477,7 +477,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
             }
             {{~ end ~}}
 
-            {{~ for item in setting.collection_items ~}}
+            {{~ for item in setting.items ~}}
             {{~ if item.required ~}}
             options.{{ setting.property_name }}.Add(""{{ item.value }}"");
             {{~ end ~}}
@@ -754,7 +754,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
 
                                 DefaultValue = (string?) setting.Attribute("DefaultValue"),
 
-                                CollectionItems = setting.Elements("CollectionItem").Select(item => new
+                                Items = setting.Elements("Item").Select(item => new
                                 {
                                     Value = (string) item.Attribute("Value"),
                                     Default = (bool?) item.Attribute("Default") ?? false,
