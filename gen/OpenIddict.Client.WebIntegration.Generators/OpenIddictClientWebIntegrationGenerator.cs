@@ -183,6 +183,11 @@ public partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentNullException(nameof(address));
             }
 
+            if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
+            }
+
             return Configure(options => options.RedirectUri = address);
         }
 
@@ -198,7 +203,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
             }
@@ -231,12 +236,12 @@ public partial class OpenIddictClientWebIntegrationBuilder
         {{~ end ~}}
 
         {{~ for setting in provider.settings ~}}
+        {{~ if setting.collection ~}}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
         /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.collection ~}}
         public {{ provider.name }} Add{{ setting.property_name }}(params {{ setting.clr_type }}[] {{ setting.parameter_name }})
         {
             if ({{ setting.parameter_name }} is null)
@@ -246,7 +251,52 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
             return Configure(options => options.{{ setting.property_name }}.UnionWith({{ setting.parameter_name }}));
         }
+        {{~ else if setting.clr_type == 'Uri' ~}}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(Uri {{ setting.parameter_name }})
+        {
+            if ({{ setting.parameter_name }} is null)
+            {
+                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
+            }
+
+            if (!{{ setting.parameter_name }}.IsAbsoluteUri || !{{ setting.parameter_name }}.IsWellFormedOriginalString())
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof({{ setting.parameter_name }}));
+            }
+
+            return Configure(options => options.{{ setting.property_name }} = {{ setting.parameter_name }});
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(string {{ setting.parameter_name }})
+        {
+            if (string.IsNullOrEmpty({{ setting.parameter_name }}))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof({{ setting.parameter_name }}));
+            }
+
+            if (!Uri.TryCreate({{ setting.parameter_name }}, UriKind.Absolute, out Uri? uri))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof({{ setting.parameter_name }}));
+            }
+
+            return Set{{ setting.property_name }}(uri);
+        }
         {{~ else ~}}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
         {
             if ({{ setting.parameter_name }} is null)
@@ -311,6 +361,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                                     "String" => "string",
                                     "StringHashSet" => "HashSet<string>",
+                                    "Uri" => "Uri",
 
                                     string value => value
                                 }
@@ -458,20 +509,22 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                 throw new InvalidOperationException(SR.FormatID0332(nameof(options.ClientId), Providers.{{ provider.name }}));
             }
 
-            if (options.RedirectUri is null)
-            {
-                throw new InvalidOperationException(SR.FormatID0332(nameof(options.RedirectUri), Providers.{{ provider.name }}));
-            }
-
             {{~ for setting in provider.settings ~}}
             {{~ if setting.required ~}}
-            {{~ if setting.type == 'String' ~}} 
+            {{~ if setting.type == 'String' ~}}
             if (string.IsNullOrEmpty(options.{{ setting.property_name }}))
             {{~ else ~}}
             if (options.{{ setting.property_name }} is null)
             {{~ end ~}}
             {
                 throw new InvalidOperationException(SR.FormatID0332(nameof(options.{{ setting.property_name }}), Providers.{{ provider.name }}));
+            }
+            {{~ end ~}}
+
+            {{~ if setting.type == 'Uri' ~}}
+            if (!options.{{ setting.property_name }}.IsAbsoluteUri || !options.{{ setting.property_name }}.IsWellFormedOriginalString())
+            {
+                throw new InvalidOperationException(SR.FormatID0350(nameof(options.{{ setting.property_name }}), Providers.{{ provider.name }}));
             }
             {{~ end ~}}
             {{~ end ~}}
@@ -837,6 +890,7 @@ public partial class OpenIddictClientWebIntegrationOptions
 
                                     "String" => "string",
                                     "StringHashSet" => "HashSet<string>",
+                                    "Uri" => "Uri",
 
                                     string value => value
                                 }

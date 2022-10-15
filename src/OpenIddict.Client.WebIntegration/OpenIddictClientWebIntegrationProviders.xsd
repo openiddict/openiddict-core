@@ -373,6 +373,7 @@
                         <xs:enumeration value="EncryptionKey" />
                         <xs:enumeration value="SigningKey" />
                         <xs:enumeration value="String" />
+                        <xs:enumeration value="Uri" />
                       </xs:restriction>
                     </xs:simpleType>
                   </xs:attribute>

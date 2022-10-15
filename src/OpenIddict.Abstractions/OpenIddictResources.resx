@@ -1340,6 +1340,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0349" xml:space="preserve">
     <value>The issuer associated with the resolved client registration doesn't match the specified provider name.</value>
   </data>
+  <data name="ID0350" xml:space="preserve">
+    <value>The '{0}' setting required by the {1} provider integration must be a valid absolute URI.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
