@@ -56,9 +56,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     // the returned tokens include a dynamic issuer claim corresponding to the tenant
                     // that is associated with the client application. Since the tenant cannot be
                     // inferred when targeting the common tenant instance, issuer validation is disabled.
-                    Providers.Microsoft when string.Equals(
-                        context.Registration.GetMicrosoftOptions().Tenant,
-                        "common", StringComparison.OrdinalIgnoreCase)
+                    Providers.Microsoft when
+                        context.Registration.GetMicrosoftOptions() is { Tenant: string tenant } &&
+                        string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase)
                         => false,
 
                     _ => context.TokenValidationParameters.ValidateIssuer

@@ -52,13 +52,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // based on the client identity. As required by RFC8414, OpenIddict would automatically reject
                 // such responses as the issuer wouldn't match the expected value. To work around that, the issuer
                 // is replaced by this handler to always use "https://login.microsoftonline.com/common/v2.0".
-                if (context.Registration.ProviderName is Providers.Microsoft)
+                if (context.Registration.ProviderName is Providers.Microsoft &&
+                    context.Registration.GetMicrosoftOptions() is { Tenant: string tenant } &&
+                    string.Equals(tenant, "common", StringComparison.OrdinalIgnoreCase))
                 {
-                    var options = context.Registration.GetMicrosoftOptions();
-                    if (string.Equals(options.Tenant, "common", StringComparison.OrdinalIgnoreCase))
-                    {
-                        context.Response[Metadata.Issuer] = "https://login.microsoftonline.com/common/v2.0";
-                    }
+                    context.Response[Metadata.Issuer] = "https://login.microsoftonline.com/common/v2.0";
                 }
 
                 return default;
@@ -130,8 +128,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Microsoft Account supports both "plain" and "S256" code challenge methods but
-                // don't list them in the server configuration metadata. To ensure the OpenIddict
+                // Microsoft Account supports both the "plain" and "S256" code challenge methods but
+                // doesn't list them in the server configuration metadata. To ensure the OpenIddict
                 // client uses Proof Key for Code Exchange for the Microsoft provider, the 2 methods
                 // are manually added to the list of supported code challenge methods by this handler.
                 if (context.Registration.ProviderName is Providers.Microsoft)
@@ -171,20 +169,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // by the sandbox environment always contains the production endpoints, which would
                 // prevent the OpenIddict integration from working properly when using the sandbox mode.
                 // To work around that, the endpoints are manually overriden when this environment is used.
-                if (context.Registration.ProviderName is Providers.PayPal)
+                if (context.Registration.ProviderName is Providers.PayPal &&
+                    context.Registration.GetPayPalOptions() is { Environment: PayPal.Environments.Sandbox })
                 {
-                    var options = context.Registration.GetPayPalOptions();
-                    if (options.Environment is PayPal.Environments.Sandbox)
-                    {
-                        context.Configuration.AuthorizationEndpoint =
-                            new Uri("https://www.sandbox.paypal.com/signin/authorize", UriKind.Absolute);
-                        context.Configuration.JwksUri =
-                            new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/certs", UriKind.Absolute);
-                        context.Configuration.TokenEndpoint =
-                            new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token", UriKind.Absolute);
-                        context.Configuration.UserinfoEndpoint =
-                            new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token/userinfo", UriKind.Absolute);
-                    }
+                    context.Configuration.AuthorizationEndpoint =
+                        new Uri("https://www.sandbox.paypal.com/signin/authorize", UriKind.Absolute);
+                    context.Configuration.JwksUri =
+                        new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/certs", UriKind.Absolute);
+                    context.Configuration.TokenEndpoint =
+                        new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token", UriKind.Absolute);
+                    context.Configuration.UserinfoEndpoint =
+                        new Uri("https://api-m.sandbox.paypal.com/v1/oauth2/token/userinfo", UriKind.Absolute);
                 }
 
                 return default;
