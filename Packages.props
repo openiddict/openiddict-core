@@ -26,9 +26,9 @@
     <PackageReference Update="Microsoft.Extensions.Options" Version="2.1.1" />
     <PackageReference Update="Microsoft.Extensions.Primitives" Version="2.1.6" />
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="2.1.1" />
-    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.16.0" />
+    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.24.0" />
     <PackageReference Update="Microsoft.Owin.Security" Version="4.2.2" />
     <PackageReference Update="MongoDB.Bson" Version="2.11.6" />
     <PackageReference Update="MongoDB.Driver" Version="2.11.6" />
@@ -92,9 +92,9 @@
     <PackageReference Update="Microsoft.Extensions.Options" Version="2.1.1" />
     <PackageReference Update="Microsoft.Extensions.Primitives" Version="2.1.6" />
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="2.1.1" />
-    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.16.0" />
+    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.24.0" />
     <PackageReference Update="MongoDB.Bson" Version="2.11.6" />
     <PackageReference Update="MongoDB.Driver" Version="2.11.6" />
     <PackageReference Update="Polly.Extensions.Http" Version="3.0.0" />
@@ -140,9 +140,9 @@
     <PackageReference Update="Microsoft.Extensions.Options" Version="3.1.30" />
     <PackageReference Update="Microsoft.Extensions.Primitives" Version="3.1.30" />
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="3.1.30" />
-    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.16.0" />
+    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.24.0" />
     <PackageReference Update="MongoDB.Driver" Version="2.11.6" />
     <PackageReference Update="Quartz.Extensions.DependencyInjection" Version="3.5.0" />
     <PackageReference Update="SmartFormat" Version="3.2.0" />
@@ -175,9 +175,9 @@
     <PackageReference Update="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.Primitives" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.WebEncoders" Version="6.0.10" />
-    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.16.0" />
-    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.16.0" />
+    <PackageReference Update="Microsoft.IdentityModel.JsonWebTokens" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Protocols" Version="6.24.0" />
+    <PackageReference Update="Microsoft.IdentityModel.Tokens" Version="6.24.0" />
     <PackageReference Update="MongoDB.Driver" Version="2.18.0" />
     <PackageReference Update="Quartz.Extensions.DependencyInjection" Version="3.5.0" />
     <PackageReference Update="SmartFormat" Version="3.2.0" />
