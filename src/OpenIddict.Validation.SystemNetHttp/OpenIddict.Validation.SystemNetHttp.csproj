@@ -14,15 +14,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--
-      Note: while brought transitively by the Microsoft.Extensions.Http.Polly package,
-      the Polly.Extensions.Http dependency is explicitly added to work around a breaking
-      change introduced between Polly 6.x and 7.x and force both this package and applications
-      that reference OpenIddict.Validation.SystemNetHttp to use the latest Polly version (7.x).
-    -->
-    
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
+    <!--
+      Note: while brought transitively by the Microsoft.Extensions.Http.Polly package, the Polly.Extensions.Http
+      dependency is explicitly added on .NET Standard <2.1, .NET Framework and .NET Core <3.0 to work around a
+      breaking change introduced between Polly 6.x and 7.x and force both this package and applications that
+      reference OpenIddict.Validation.SystemNetHttp to use the latest Polly version (7.x) on these platforms.
+    -->
+
     <PackageReference Include="Polly.Extensions.Http" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '5.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <PackageReference Include="System.Net.Http.Json" />
   </ItemGroup>
 

@@ -18,7 +18,8 @@ To use the validation feature on ASP.NET Core or OWIN/Katana, reference the Open
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols" />
   </ItemGroup>
 
   <ItemGroup>

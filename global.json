@@ -1,15 +1,15 @@
 {
   "sdk": {
-    "version": "6.0.301"
+    "version": "6.0.402"
   },
 
   "tools": {
-    "dotnet": "6.0.301",
+    "dotnet": "6.0.402",
 
     "runtimes": {
       "aspnetcore": [
         "2.1.30",
-        "3.1.26"
+        "3.1.30"
       ]
     }
   },
