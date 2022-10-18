@@ -13,9 +13,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Primitives" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
-    <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="System.Text.Encodings.Web" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup
@@ -24,12 +21,26 @@
     <PackageReference Include="Microsoft.Bcl.HashCode" />
   </ItemGroup>
 
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+    <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Text.Encodings.Web" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
     <PackageReference Include="System.ComponentModel.Annotations" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '3.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
