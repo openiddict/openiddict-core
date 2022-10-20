@@ -53,7 +53,7 @@ public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<Aut
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, AuthenticationOptions options)
+    public void PostConfigure(string? name, AuthenticationOptions options)
     {
         if (options is null)
         {

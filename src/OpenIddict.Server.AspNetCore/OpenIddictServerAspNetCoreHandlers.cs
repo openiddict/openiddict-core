@@ -737,7 +737,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             var request = context.Transaction.GetHttpRequest() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            string header = request.Headers[HeaderNames.Authorization];
+            string? header = request.Headers[HeaderNames.Authorization];
             if (string.IsNullOrEmpty(header) || !header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
             {
                 return default;
@@ -836,7 +836,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
-            string header = request.Headers[HeaderNames.Authorization];
+            string? header = request.Headers[HeaderNames.Authorization];
             if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
                 return default;

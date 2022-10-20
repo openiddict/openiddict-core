@@ -176,7 +176,7 @@ public static class OpenIddictExtensions
         }
 
         var segment = Trim(new StringSegment(request.ResponseType), Separators.Space);
-        if (segment.Length is 0)
+        if (!segment.HasValue || segment.Length is 0)
         {
             return false;
         }
@@ -203,7 +203,7 @@ public static class OpenIddictExtensions
         }
 
         var segment = Trim(new StringSegment(request.ResponseType), Separators.Space);
-        if (segment.Length is 0)
+        if (!segment.HasValue || segment.Length is 0)
         {
             return false;
         }
@@ -235,7 +235,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(request.ResponseType, Separators.Space))
         {
             var segment = Trim(element, Separators.Space);
-            if (segment.Length is 0)
+            if (!segment.HasValue || segment.Length is 0)
             {
                 continue;
             }
@@ -289,7 +289,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(request.ResponseType, Separators.Space))
         {
             var segment = Trim(element, Separators.Space);
-            if (segment.Length is 0)
+            if (!segment.HasValue || segment.Length is 0)
             {
                 continue;
             }
@@ -2922,7 +2922,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(source, separators))
         {
             var segment = Trim(element, separators);
-            if (segment.Length is 0)
+            if (!segment.HasValue || segment.Length is 0)
             {
                 continue;
             }
@@ -2951,7 +2951,7 @@ public static class OpenIddictExtensions
         foreach (var element in new StringTokenizer(source, separators))
         {
             var segment = Trim(element, separators);
-            if (segment.Length is 0)
+            if (!segment.HasValue || segment.Length is 0)
             {
                 continue;
             }
@@ -2968,6 +2968,11 @@ public static class OpenIddictExtensions
     private static StringSegment TrimStart(StringSegment segment, char[] separators)
     {
         Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
+
+        if (!segment.HasValue || segment.Length is 0)
+        {
+            return segment;
+        }
 
         var index = segment.Offset;
 
@@ -2987,6 +2992,11 @@ public static class OpenIddictExtensions
     private static StringSegment TrimEnd(StringSegment segment, char[] separators)
     {
         Debug.Assert(separators is { Length: > 0 }, SR.GetResourceString(SR.ID4001));
+
+        if (!segment.HasValue || segment.Length is 0)
+        {
+            return segment;
+        }
 
         var index = segment.Offset + segment.Length - 1;
 

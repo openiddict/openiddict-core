@@ -380,7 +380,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
             foreach (var element in new StringTokenizer(payload, Separators.Ampersand))
             {
                 var segment = element;
-                if (segment.Length is 0)
+                if (!segment.HasValue || segment.Length is 0)
                 {
                     continue;
                 }

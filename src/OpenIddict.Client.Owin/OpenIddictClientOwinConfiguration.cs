@@ -25,7 +25,7 @@ public class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenIddictCli
         options.Handlers.AddRange(OpenIddictClientOwinHandlers.DefaultHandlers);
     }
 
-    public void PostConfigure(string name, OpenIddictClientOwinOptions options)
+    public void PostConfigure(string? name, OpenIddictClientOwinOptions options)
     {
         if (options is null)
         {
