@@ -27,7 +27,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
     /// </summary>
     /// <param name="name">The authentication scheme associated with the handler instance.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictClientOptions options)
+    public void PostConfigure(string? name, OpenIddictClientOptions options)
     {
         if (options is null)
         {

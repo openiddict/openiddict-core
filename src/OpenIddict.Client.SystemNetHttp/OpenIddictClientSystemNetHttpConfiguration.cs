@@ -36,7 +36,7 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
 
     public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
 
-    public void Configure(string name, HttpClientFactoryOptions options)
+    public void Configure(string? name, HttpClientFactoryOptions options)
     {
         if (options is null)
         {

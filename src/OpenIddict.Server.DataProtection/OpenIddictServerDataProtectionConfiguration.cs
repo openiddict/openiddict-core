@@ -41,7 +41,7 @@ public class OpenIddictServerDataProtectionConfiguration : IConfigureOptions<Ope
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictServerDataProtectionOptions options)
+    public void PostConfigure(string? name, OpenIddictServerDataProtectionOptions options)
     {
         if (options is null)
         {

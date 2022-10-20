@@ -456,7 +456,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
         /// </summary>
         /// <param name=""name"">The name of the options instance to configure, if applicable.</param>
         /// <param name=""options"">The options instance to initialize.</param>
-        public void PostConfigure(string name, OpenIddictClientWebIntegrationOptions.{{ provider.name }} options)
+        public void PostConfigure(string? name, OpenIddictClientWebIntegrationOptions.{{ provider.name }} options)
         {
             {{~ for setting in provider.settings ~}}
             {{~ if setting.default_value && setting.type == 'String' ~}} 

@@ -160,7 +160,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
 
             // Resolve the access token from the standard Authorization header.
             // See https://tools.ietf.org/html/rfc6750#section-2.1 for more information.
-            string header = request.Headers[HeaderNames.Authorization];
+            string? header = request.Headers[HeaderNames.Authorization];
             if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
                 context.AccessToken = header.Substring("Bearer ".Length);
