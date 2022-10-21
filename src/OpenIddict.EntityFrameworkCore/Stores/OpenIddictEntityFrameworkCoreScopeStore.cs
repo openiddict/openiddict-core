@@ -283,7 +283,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(descriptions);
     }
@@ -335,7 +335,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(names);
     }
@@ -392,7 +392,7 @@ public class OpenIddictEntityFrameworkCoreScopeStore<TScope, TContext, TKey> : I
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(properties);
     }
