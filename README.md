@@ -43,15 +43,22 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 |                       |                      |                                         |                                         |
 | ASP.NET Core 5.0      | .NET 5.0             | :heavy_check_mark:                      | :exclamation:                           |
 | ASP.NET Core 6.0      | .NET 6.0             | :heavy_check_mark:                      | :heavy_check_mark:                      |
+| ASP.NET Core 7.0      | .NET 7.0             | :warning: :information_source:          | :warning: :information_source:          |
 |                       |                      |                                         |                                         |
 | Microsoft.Owin 4.2    | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
 | Microsoft.Owin 4.2    | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
 | Microsoft.Owin 4.2    | .NET Framework 4.8   | :heavy_check_mark:                      | :heavy_check_mark:                      |
 
 > **Warning**
-> **ASP.NET Core 2.1 on .NET Core 2.1 and ASP.NET Core 5.0 on .NET 5.0 are no longer supported. While OpenIddict 4.x can still be
+> **ASP.NET Core 2.1 on .NET Core 2.1 and ASP.NET Core 5.0 on .NET 5.0 are no longer supported by Microsoft. While OpenIddict 4.x can still be
 > used on .NET Core 2.1 thanks to its .NET Standard 2.0 compatibility, users are strongly encouraged to migrate to ASP.NET Core/.NET 6.0**.
 > ASP.NET Core 2.1 on .NET Framework 4.6.1 (and higher) is still fully supported.
+
+> **Warning**
+> OpenIddict is impacted by a breaking change introduced in ASP.NET Core 7.0 and may require using an `AppContext` compatibility
+> switch if the application only uses the OpenIddict server feature alone without any other authentication handler registered.
+>
+> For more information, read [ASP.NET Core 7.0's default authentication handler fallback breaks OpenIddict](https://github.com/dotnet/aspnetcore/issues/44661).
 
 > **Note**
 > **The following features are not available when targeting .NET Framework 4.6.1**:
