@@ -467,8 +467,8 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(1L);
-        entry.SetValue(authorization);
+        entry.Size = 1L;
+        entry.Value = authorization;
     }
 
     /// <summary>
@@ -494,8 +494,8 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(authorizations.Length);
-        entry.SetValue(authorizations);
+        entry.Size = authorizations.Length;
+        entry.Value = authorizations;
     }
 
     /// <summary>

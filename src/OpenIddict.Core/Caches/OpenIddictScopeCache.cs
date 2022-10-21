@@ -264,8 +264,8 @@ public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisp
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(1L);
-        entry.SetValue(scope);
+        entry.Size = 1L;
+        entry.Value = scope;
     }
 
     /// <summary>
@@ -291,8 +291,8 @@ public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisp
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(scopes.Length);
-        entry.SetValue(scopes);
+        entry.Size = scopes.Length;
+        entry.Value = scopes;
     }
 
     /// <summary>

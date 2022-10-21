@@ -291,8 +291,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(1L);
-        entry.SetValue(application);
+        entry.Size = 1L;
+        entry.Value = application;
     }
 
     /// <summary>
@@ -318,8 +318,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(applications.Length);
-        entry.SetValue(applications);
+        entry.Size = applications.Length;
+        entry.Value = applications;
     }
 
     /// <summary>

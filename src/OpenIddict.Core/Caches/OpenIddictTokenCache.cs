@@ -519,8 +519,8 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(1L);
-        entry.SetValue(token);
+        entry.Size = 1L;
+        entry.Value = token;
     }
 
     /// <summary>
@@ -546,8 +546,8 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(tokens.Length);
-        entry.SetValue(tokens);
+        entry.Size = tokens.Length;
+        entry.Value = tokens;
     }
 
     /// <summary>

@@ -526,7 +526,7 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(properties);
     }

@@ -406,7 +406,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(names);
     }
@@ -534,7 +534,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(properties);
     }
