@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 
@@ -72,6 +73,103 @@ internal static class OpenIddictHelpers
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Adds a query string parameter to the specified <see cref="Uri"/>.
+    /// </summary>
+    /// <param name="address">The address, to which the query string parameter will be appended.</param>
+    /// <param name="name">The name of the query string parameter to append.</param>
+    /// <param name="value">The value of the query string parameter to append.</param>
+    /// <returns>The final <see cref="Uri"/> instance, with the specified parameter appended.</returns>
+    public static Uri AddQueryStringParameter(Uri address, string name, string? value)
+    {
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
+        var builder = new StringBuilder(address.Query);
+        if (builder.Length > 0)
+        {
+            builder.Append('&');
+        }
+
+        builder.Append(Uri.EscapeDataString(name));
+
+        if (!string.IsNullOrEmpty(value))
+        {
+            builder.Append('=');
+            builder.Append(Uri.EscapeDataString(value));
+        }
+
+        return new UriBuilder(address) { Query = builder.ToString() }.Uri;
+    }
+
+    /// <summary>
+    /// Adds query string parameters to the specified <see cref="Uri"/>.
+    /// </summary>
+    /// <param name="address">The address, to which the query string parameters will be appended.</param>
+    /// <param name="parameters">The query string parameters to append.</param>
+    /// <returns>The final <see cref="Uri"/> instance, with the specified parameters appended.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="address"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="parameters"/> is <see langword="null"/>.</exception>
+    public static Uri AddQueryStringParameters(Uri address, IReadOnlyDictionary<string, StringValues> parameters)
+    {
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
+        if (parameters is null)
+        {
+            throw new ArgumentNullException(nameof(parameters));
+        }
+
+        if (parameters.Count is 0)
+        {
+            return address;
+        }
+
+        var builder = new StringBuilder(address.Query);
+
+        foreach (var parameter in parameters)
+        {
+            // If the parameter doesn't include any string value,
+            // only append the parameter key to the query string.
+            if (parameter.Value.Count is 0)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append('&');
+                }
+
+                builder.Append(Uri.EscapeDataString(parameter.Key));
+            }
+
+            // Otherwise, iterate the string values and create
+            // a new "name=value" pair for each iterated value.
+            else
+            {
+                foreach (var value in parameter.Value)
+                {
+                    if (builder.Length > 0)
+                    {
+                        builder.Append('&');
+                    }
+
+                    builder.Append(Uri.EscapeDataString(parameter.Key));
+
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        builder.Append('=');
+                        builder.Append(Uri.EscapeDataString(value));
+                    }
+                }
+            }
+        }
+
+        return new UriBuilder(address) { Query = builder.ToString() }.Uri;
     }
 
     /// <summary>

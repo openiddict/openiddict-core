@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using static OpenIddict.Client.OpenIddictClientHandlers.Userinfo;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.Userinfo;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
@@ -39,6 +40,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                    .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<AttachAccessTokenParameter>()
                     .SetOrder(AttachBearerAccessToken.Descriptor.Order + 250)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
@@ -82,6 +84,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
+                    .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<UnwrapUserinfoResponse>()
                     .SetOrder(PopulateClaims.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
