@@ -10,10 +10,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Net.Http.Headers;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
 namespace OpenIddict.Client.SystemNetHttp;
@@ -226,28 +226,10 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 return default;
             }
 
-            var builder = new StringBuilder();
-
-            foreach (var (key, value) in
-                from parameter in context.Transaction.Request.GetParameters()
-                let values = (string?[]?) parameter.Value
-                where values is not null
-                from value in values
-                where !string.IsNullOrEmpty(value)
-                select (parameter.Key, Value: value))
-            {
-                if (builder.Length > 0)
-                {
-                    builder.Append('&');
-                }
-
-                builder.Append(Uri.EscapeDataString(key));
-                builder.Append('=');
-                builder.Append(Uri.EscapeDataString(value));
-            }
-
-            // Compute the final request URI using the base address and the query string.
-            request.RequestUri = new UriBuilder(request.RequestUri) { Query = builder.ToString() }.Uri;
+            request.RequestUri = OpenIddictHelpers.AddQueryStringParameters(request.RequestUri,
+                context.Transaction.Request.GetParameters().ToDictionary(
+                    parameter => parameter.Key,
+                    parameter => new StringValues((string?[]?) parameter.Value)));
 
             return default;
         }
@@ -286,11 +268,10 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
             request.Content = new FormUrlEncodedContent(
                 from parameter in context.Transaction.Request.GetParameters()
-                let values = (string[]?) parameter.Value
+                let values = (string?[]?) parameter.Value
                 where values is not null
                 from value in values
-                where !string.IsNullOrEmpty(value)
-                select new KeyValuePair<string, string>(parameter.Key, value));
+                select new KeyValuePair<string?, string?>(parameter.Key, value));
 
             return default;
         }
