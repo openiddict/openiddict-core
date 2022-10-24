@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
-using static OpenIddict.Client.OpenIddictClientHandlers.Userinfo;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.Userinfo;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
@@ -63,7 +62,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // using the Bearer authentication scheme. Some providers don't support this method
                 // and require sending the access token as part of the userinfo request payload.
 
-                if (context.Registration.ProviderName is Providers.StackExchange)
+                if (context.Registration.ProviderName is Providers.Deezer or Providers.StackExchange)
                 {
                     context.Request.AccessToken = request.Headers.Authorization?.Parameter;
                     request.Headers.Authorization = null;
@@ -77,21 +76,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for extracting the userinfo response
         /// from nested JSON nodes (e.g "data") for the providers that require it.
         /// </summary>
-        public class UnwrapUserinfoResponse : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public class UnwrapUserinfoResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleUserinfoResponseContext>()
-                    .AddFilter<RequireHttpMetadataAddress>()
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
                     .UseSingletonHandler<UnwrapUserinfoResponse>()
-                    .SetOrder(PopulateClaims.Descriptor.Order - 500)
+                    .SetOrder(int.MaxValue - 50_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleUserinfoResponseContext context)
+            public ValueTask HandleAsync(ExtractUserinfoResponseContext context)
             {
                 if (context is null)
                 {
