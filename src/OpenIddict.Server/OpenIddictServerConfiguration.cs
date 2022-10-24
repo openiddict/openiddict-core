@@ -318,7 +318,7 @@ public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictSer
 
                 // Only use the 40 first chars of the base64url-encoded modulus.
                 var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
 #if SUPPORTS_ECDSA
@@ -331,7 +331,7 @@ public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictSer
 
                 // Only use the 40 first chars of the base64url-encoded X coordinate.
                 var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 #endif
 

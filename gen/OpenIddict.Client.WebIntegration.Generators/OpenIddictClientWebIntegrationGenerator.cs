@@ -346,7 +346,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
                                 Description = (string) setting.Attribute("Description") is string description ?
-                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description.Substring(1) : null,
+                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                                 ClrType = (string) setting.Attribute("Type") switch
                                 {
                                     "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
@@ -875,7 +875,7 @@ public partial class OpenIddictClientWebIntegrationOptions
 
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
                                 Description = (string) setting.Attribute("Description") is string description ?
-                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description.Substring(1) : null,
+                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                                 ClrType = (string) setting.Attribute("Type") switch
                                 {
                                     "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")

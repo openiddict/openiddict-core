@@ -73,7 +73,7 @@ public static partial class OpenIddictValidationHandlers
                     { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } issuer => new[]
                     {
                         issuer.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
-                        issuer.AbsoluteUri.Substring(0, issuer.AbsoluteUri.Length - 1)
+                        issuer.AbsoluteUri[..^1]
                     },
 
                     Uri issuer => new[] { issuer.AbsoluteUri }

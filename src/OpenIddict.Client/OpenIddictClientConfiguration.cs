@@ -82,8 +82,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
 
                         if (registration.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
                         {
-                            registration.MetadataAddress = new Uri(registration.MetadataAddress.OriginalString.Substring(
-                                1, registration.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
+                            registration.MetadataAddress = new Uri(registration.MetadataAddress.OriginalString[1..], UriKind.Relative);
                         }
 
                         registration.MetadataAddress = new Uri(issuer, registration.MetadataAddress);
@@ -196,7 +195,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
 
                 // Only use the 40 first chars of the base64url-encoded modulus.
                 var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
 #if SUPPORTS_ECDSA
@@ -209,7 +208,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
 
                 // Only use the 40 first chars of the base64url-encoded X coordinate.
                 var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 #endif
 

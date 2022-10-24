@@ -318,22 +318,22 @@ public static partial class OpenIddictServerOwinHandlers
                 {
                     // If the property ends with #string, represent it as a string parameter.
                     string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
+                        Name: key[..^PropertyTypes.String.Length],
                         Value: new OpenIddictParameter(property.Value)),
 
                     // If the property ends with #boolean, return it as a boolean parameter.
                     string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
+                        Name: key[..^PropertyTypes.Boolean.Length],
                         Value: new OpenIddictParameter(bool.Parse(property.Value))),
 
                     // If the property ends with #integer, return it as an integer parameter.
                     string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
+                        Name: key[..^PropertyTypes.Integer.Length],
                         Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
 
                     // If the property ends with #json, return it as a JSON parameter.
                     string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
+                        Name: key[..^PropertyTypes.Json.Length],
                         Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
 
                     _ => default
@@ -438,22 +438,22 @@ public static partial class OpenIddictServerOwinHandlers
                 {
                     // If the property ends with #string, represent it as a string parameter.
                     string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
+                        Name: key[..^PropertyTypes.String.Length],
                         Value: new OpenIddictParameter(property.Value)),
 
                     // If the property ends with #boolean, return it as a boolean parameter.
                     string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
+                        Name: key[..^PropertyTypes.Boolean.Length],
                         Value: new OpenIddictParameter(bool.Parse(property.Value))),
 
                     // If the property ends with #integer, return it as an integer parameter.
                     string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
+                        Name: key[..^PropertyTypes.Integer.Length],
                         Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
 
                     // If the property ends with #json, return it as a JSON parameter.
                     string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
+                        Name: key[..^PropertyTypes.Json.Length],
                         Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
 
                     _ => default
@@ -517,22 +517,22 @@ public static partial class OpenIddictServerOwinHandlers
                 {
                     // If the property ends with #string, represent it as a string parameter.
                     string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
+                        Name: key[..^PropertyTypes.String.Length],
                         Value: new OpenIddictParameter(property.Value)),
 
                     // If the property ends with #boolean, return it as a boolean parameter.
                     string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
+                        Name: key[..^PropertyTypes.Boolean.Length],
                         Value: new OpenIddictParameter(bool.Parse(property.Value))),
 
                     // If the property ends with #integer, return it as an integer parameter.
                     string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
+                        Name: key[..^PropertyTypes.Integer.Length],
                         Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
 
                     // If the property ends with #json, return it as a JSON parameter.
                     string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
+                        Name: key[..^PropertyTypes.Json.Length],
                         Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
 
                     _ => default
@@ -815,7 +815,7 @@ public static partial class OpenIddictServerOwinHandlers
 
             try
             {
-                var value = header.Substring("Basic ".Length).Trim();
+                var value = header["Basic ".Length..].Trim();
                 var data = Encoding.ASCII.GetString(Convert.FromBase64String(value));
 
                 var index = data.IndexOf(':');
@@ -830,8 +830,8 @@ public static partial class OpenIddictServerOwinHandlers
                 }
 
                 // Attach the basic authentication credentials to the request message.
-                context.Transaction.Request.ClientId = UnescapeDataString(data.Substring(0, index));
-                context.Transaction.Request.ClientSecret = UnescapeDataString(data.Substring(index + 1));
+                context.Transaction.Request.ClientId = UnescapeDataString(data[..index]);
+                context.Transaction.Request.ClientSecret = UnescapeDataString(data[(index + 1)..]);
 
                 return default;
             }
@@ -898,7 +898,7 @@ public static partial class OpenIddictServerOwinHandlers
             }
 
             // Attach the access token to the request message.
-            context.Transaction.Request.AccessToken = header.Substring("Bearer ".Length);
+            context.Transaction.Request.AccessToken = header["Bearer ".Length..];
 
             return default;
         }

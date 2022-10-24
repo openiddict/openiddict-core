@@ -1487,9 +1487,7 @@ public static partial class OpenIddictServerHandlers
 
                         // Note: response types can be specified in any order. To ensure permissions are correctly
                         // checked even if the order differs from the one specified in the request, a HashSet is used.
-                        var values = permission.Substring(prefix.Length, permission.Length - prefix.Length)
-                                               .Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries);
-
+                        var values = permission[prefix.Length..].Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries);
                         if (values.Length is not 0 && new HashSet<string>(values, StringComparer.Ordinal).SetEquals(types))
                         {
                             return true;

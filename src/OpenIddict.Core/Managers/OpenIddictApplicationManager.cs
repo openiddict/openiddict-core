@@ -1433,10 +1433,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(9, 12), (uint) salt.Length);
 
             // Write the salt.
-            salt.CopyTo(payload.Slice(13));
+            salt.CopyTo(payload[13..]);
 
             // Write the subkey.
-            key.CopyTo(payload.Slice(13 + salt.Length));
+            key.CopyTo(payload[(13 + salt.Length)..]);
 
             return payload;
         }
