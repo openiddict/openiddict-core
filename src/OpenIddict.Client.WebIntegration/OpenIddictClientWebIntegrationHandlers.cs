@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -22,15 +23,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         HandleNonStandardFrontchannelErrorResponse.Descriptor,
         AttachNonStandardClientAssertionTokenClaims.Descriptor,
         AttachTokenRequestNonStandardClientCredentials.Descriptor,
+        AdjustRedirectUriInTokenRequest.Descriptor,
         OverrideValidatedBackchannelTokens.Descriptor,
         AttachAdditionalUserinfoRequestParameters.Descriptor,
 
         /*
          * Challenge processing:
          */
-        AttachNonDefaultResponseMode.Descriptor,
-        FormatNonStandardScopeParameter.Descriptor)
+        OverrideResponseMode.Descriptor,
+        FormatNonStandardScopeParameter.Descriptor,
+        IncludeStateParameterInRedirectUri.Descriptor)
         .AddRange(Discovery.DefaultHandlers)
+        .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
 
@@ -65,14 +69,27 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Errors that are not handled here will be automatically handled
             // by the standard handler present in the core OpenIddict client.
 
-            if (context.Registration.ProviderName is Providers.LinkedIn)
+            if (context.Registration.ProviderName is Providers.Deezer)
             {
-                var error = (string?) context.Request[Parameters.Error];
-                if (string.IsNullOrEmpty(error))
+                // Note: Deezer uses a custom "error_reason" parameter instead of the
+                // standard "error" parameter defined by the OAuth 2.0 specification.
+                //
+                // See https://developers.deezer.com/api/oauth for more information.
+                var error = (string?) context.Request["error_reason"];
+                if (string.Equals(error, "user_denied", StringComparison.Ordinal))
                 {
+                    context.Reject(
+                        error: Errors.AccessDenied,
+                        description: SR.GetResourceString(SR.ID2149),
+                        uri: SR.FormatID8000(SR.ID2149));
+
                     return default;
                 }
+            }
 
+            else if (context.Registration.ProviderName is Providers.LinkedIn)
+            {
+                var error = (string?) context.Request[Parameters.Error];
                 if (string.Equals(error, "user_cancelled_authorize", StringComparison.Ordinal) ||
                     string.Equals(error, "user_cancelled_login", StringComparison.Ordinal))
                 {
@@ -172,6 +189,61 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.TokenRequest.ClientSecret = context.TokenRequest.ClientAssertion;
                 context.TokenRequest.ClientAssertion = null;
                 context.TokenRequest.ClientAssertionType = null;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching custom client credentials
+    /// parameters to the token request for the providers that require it.
+    /// </summary>
+    public class AdjustRedirectUriInTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireTokenRequest>()
+                .UseSingletonHandler<AdjustRedirectUriInTokenRequest>()
+                .SetOrder(AttachTokenRequestClientCredentials.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            if (context.TokenRequest.RedirectUri is null)
+            {
+                return default;
+            }
+
+            // Note: some providers don't support the "state" parameter, don't flow
+            // it correctly or don't include it in errored authorization responses.
+            //
+            // Since OpenIddict requires flowing the state token in every circumstance
+            // (for security reasons), the state token is appended to the "redirect_uri"
+            // instead of being sent as a standard OAuth 2.0 authorization request parameter.
+            //
+            // Note: for token requests to use the actual redirect_uri that was sent as part
+            // of the authorization requests, the value persisted in the state token principal
+            // MUST be replaced to include the state token received by the redirection endpoint.
+
+            if (context.Registration.ProviderName is Providers.Deezer)
+            {
+                context.TokenRequest.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
+                    address: new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
+                    name: Parameters.State,
+                    value: context.StateToken).AbsoluteUri;
             }
 
             return default;
@@ -283,9 +355,9 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching a specific response mode for providers that require it.
+    /// Contains the logic responsible for overriding response mode for providers that require it.
     /// </summary>
-    public class AttachNonDefaultResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
+    public class OverrideResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -293,7 +365,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveGrantType>()
-                .UseSingletonHandler<AttachNonDefaultResponseMode>()
+                .UseSingletonHandler<OverrideResponseMode>()
                 // Note: this handler MUST be invoked after the scopes have been attached to the
                 // context to support overriding the response mode based on the requested scopes.
                 .SetOrder(AttachScopes.Descriptor.Order + 500)
@@ -350,10 +422,64 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                Providers.Reddit => string.Join(",", context.Scopes),
+                Providers.Deezer or Providers.Reddit => string.Join(",", context.Scopes),
 
                 _ => context.Request.Scope
             };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for persisting the state parameter in the redirect URI for
+    /// providers that don't support it but allow arbitrary dynamic parameters in redirect_uri.
+    /// </summary>
+    public class IncludeStateParameterInRedirectUri : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveGrantType>()
+                .UseSingletonHandler<IncludeStateParameterInRedirectUri>()
+                .SetOrder(FormatNonStandardScopeParameter.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.RedirectUri is null)
+            {
+                return default;
+            }
+
+            // Note: some providers don't support the "state" parameter, don't flow
+            // it correctly or don't include it in errored authorization responses.
+            //
+            // Since OpenIddict requires flowing the state token in every circumstance
+            // (for security reasons), the state token is appended to the "redirect_uri"
+            // instead of being sent as a standard OAuth 2.0 authorization request parameter.
+            //
+            // Note: this workaround only works for providers that allow dynamic
+            // redirection URIs and implement a relaxed validation policy logic.
+
+            if (context.Registration.ProviderName is Providers.Deezer)
+            {
+                context.Request.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
+                    address: new Uri(context.RedirectUri, UriKind.Absolute),
+                    name: Parameters.State,
+                    value: context.Request.State).AbsoluteUri;
+
+                context.Request.State = null;
+            }
 
             return default;
         }

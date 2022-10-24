@@ -13,6 +13,22 @@
              Description="The team ID associated with the developer account" />
   </Provider>
 
+  <Provider Name="Deezer" Documentation="https://developers.deezer.com/api/oauth">
+    <!--
+      Note: the Deezer documentation describes an implementation with important deviations from the OAuth 2.0 standard,
+      including the use of many non-standard and custom parameters. Luckily, while the documentation hasn't been fixed
+      to reflect it, the Deezer implementation has been updated at some point to also support the standard parameters.
+      As such, the Deezer integration tries to use the standard parameters and only use the non-standard equivalents
+      when no other option exists (e.g an "output" query string parameter must be sent to get JSON token responses).
+    -->
+    
+    <Environment Issuer="https://deezer.com/">
+      <Configuration AuthorizationEndpoint="https://connect.deezer.com/oauth/auth.php"
+                     TokenEndpoint="https://connect.deezer.com/oauth/access_token.php"
+                     UserinfoEndpoint="https://api.deezer.com/user/me" />
+    </Environment>
+  </Provider>
+
   <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
