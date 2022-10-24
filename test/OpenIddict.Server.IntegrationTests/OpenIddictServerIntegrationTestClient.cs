@@ -435,13 +435,13 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
                     continue;
                 }
 
-                var name = line.Substring(0, index);
+                var name = line[..index];
                 if (string.IsNullOrEmpty(name))
                 {
                     continue;
                 }
 
-                var value = line.Substring(index + 1);
+                var value = line[(index + 1)..];
 
                 parameters.Add(new KeyValuePair<string, string>(name, value));
             }

@@ -760,7 +760,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             try
             {
-                var value = header.Substring("Basic ".Length).Trim();
+                var value = header["Basic ".Length..].Trim();
                 var data = Encoding.ASCII.GetString(Convert.FromBase64String(value));
 
                 var index = data.IndexOf(':');
@@ -775,8 +775,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 }
 
                 // Attach the basic authentication credentials to the request message.
-                context.Transaction.Request.ClientId = UnescapeDataString(data.Substring(0, index));
-                context.Transaction.Request.ClientSecret = UnescapeDataString(data.Substring(index + 1));
+                context.Transaction.Request.ClientId = UnescapeDataString(data[..index]);
+                context.Transaction.Request.ClientSecret = UnescapeDataString(data[(index + 1)..]);
 
                 return default;
             }
@@ -843,7 +843,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             }
 
             // Attach the access token to the request message.
-            context.Transaction.Request.AccessToken = header.Substring("Bearer ".Length);
+            context.Transaction.Request.AccessToken = header["Bearer ".Length..];
 
             return default;
         }

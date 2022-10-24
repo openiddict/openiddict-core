@@ -8,6 +8,7 @@
     <MvcBuildViews>false</MvcBuildViews>
     <ImplicitUsings>disable</ImplicitUsings>
     <NoWarn>CA3147</NoWarn>
+    <DisablePolySharp>true</DisablePolySharp>
   </PropertyGroup>
 
   <ItemGroup>

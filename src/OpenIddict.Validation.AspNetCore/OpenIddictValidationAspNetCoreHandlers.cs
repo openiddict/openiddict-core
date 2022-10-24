@@ -163,7 +163,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             string? header = request.Headers[HeaderNames.Authorization];
             if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                context.AccessToken = header.Substring("Bearer ".Length);
+                context.AccessToken = header["Bearer ".Length..];
 
                 return default;
             }

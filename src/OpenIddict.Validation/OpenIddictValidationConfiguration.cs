@@ -126,8 +126,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
 
                     if (options.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
                     {
-                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
-                            1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
+                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString[1..], UriKind.Relative);
                     }
 
                     options.MetadataAddress = new Uri(issuer, options.MetadataAddress);

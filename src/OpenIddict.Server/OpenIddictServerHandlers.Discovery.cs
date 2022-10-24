@@ -393,7 +393,7 @@ public static partial class OpenIddictServerHandlers
                     // for Uri's constructor to correctly compute correct absolute URLs.
                     if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
                     {
-                        endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
+                        endpoint = new Uri(endpoint.OriginalString[1..], UriKind.Relative);
                     }
 
                     return new Uri(issuer, endpoint);
