@@ -422,7 +422,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 // The following providers are known to use comma-separated scopes instead of
                 // the standard format (that requires using a space as the scope separator):
-                Providers.Deezer or Providers.Reddit => string.Join(",", context.Scopes),
+                Providers.Deezer => string.Join(",", context.Scopes),
 
                 _ => context.Request.Scope
             };
