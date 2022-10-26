@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.IdentityModel.Protocols;
 
 namespace OpenIddict.Client;
@@ -32,7 +33,8 @@ public class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddictConfi
     /// <param name="retriever">The retriever used by IdentityModel.</param>
     /// <param name="cancel">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    async Task<OpenIddictConfiguration> IConfigurationRetriever<OpenIddictConfiguration>.GetConfigurationAsync(string address, IDocumentRetriever retriever, CancellationToken cancel)
+    async Task<OpenIddictConfiguration> IConfigurationRetriever<OpenIddictConfiguration>.GetConfigurationAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, IDocumentRetriever retriever, CancellationToken cancel)
     {
         if (string.IsNullOrEmpty(address))
         {

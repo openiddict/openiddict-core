@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace OpenIddict.Server;
@@ -65,6 +66,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets the post_logout_redirect_uri specified by the client application.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? PostLogoutRedirectUri { get; private set; }
 
         /// <summary>
@@ -77,7 +79,7 @@ public static partial class OpenIddictServerEvents
         /// Populates the <see cref="PostLogoutRedirectUri"/> property with the specified redirect_uri.
         /// </summary>
         /// <param name="address">The post_logout_redirect_uri to use when redirecting the user agent.</param>
-        public void SetPostLogoutRedirectUri(string address)
+        public void SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
         {
             if (string.IsNullOrEmpty(address))
             {

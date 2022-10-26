@@ -1094,7 +1094,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetAuthorizationEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetAuthorizationEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1142,7 +1143,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetConfigurationEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetConfigurationEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1190,7 +1192,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetCryptographyEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetCryptographyEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1238,7 +1241,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetDeviceEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetDeviceEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1286,7 +1290,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetIntrospectionEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetIntrospectionEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1334,7 +1339,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetLogoutEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetLogoutEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1382,7 +1388,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetRevocationEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetRevocationEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1430,7 +1437,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetTokenEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetTokenEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1478,7 +1486,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetUserinfoEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetUserinfoEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1526,7 +1535,8 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetVerificationEndpointUris(params string[] addresses)
+    public OpenIddictServerBuilder SetVerificationEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {

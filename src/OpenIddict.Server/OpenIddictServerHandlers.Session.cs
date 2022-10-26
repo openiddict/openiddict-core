@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -513,7 +514,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                async ValueTask<bool> ValidatePostLogoutRedirectUriAsync(string address)
+                async ValueTask<bool> ValidatePostLogoutRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string address)
                 {
                     // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
                     // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
@@ -753,7 +754,8 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                async ValueTask<bool> ValidateAuthorizedParty(ClaimsPrincipal principal, string address)
+                async ValueTask<bool> ValidateAuthorizedParty(ClaimsPrincipal principal,
+                    [StringSyntax(StringSyntaxAttribute.Uri)] string address)
                 {
                     // To be considered valid, one of the clients matching the specified post_logout_redirect_uri
                     // must be listed either as an audience or as a presenter in the identity token hint.

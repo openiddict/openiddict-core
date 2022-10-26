@@ -6,6 +6,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -167,7 +168,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+    public IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -208,7 +210,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TApplication> FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
+    public IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {

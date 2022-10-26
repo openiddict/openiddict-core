@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -278,7 +279,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -312,7 +313,7 @@ public class OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthor
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {

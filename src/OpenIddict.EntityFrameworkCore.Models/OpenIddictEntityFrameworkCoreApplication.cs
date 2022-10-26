@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenIddict.EntityFrameworkCore.Models;
 
@@ -74,6 +75,7 @@ public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TTok
     /// associated with the current application,
     /// serialized as a JSON object.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? DisplayNames { get; set; }
 
     /// <summary>
@@ -85,30 +87,35 @@ public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TTok
     /// Gets or sets the permissions associated with the
     /// current application, serialized as a JSON array.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Permissions { get; set; }
 
     /// <summary>
     /// Gets or sets the logout callback URLs associated with
     /// the current application, serialized as a JSON array.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? PostLogoutRedirectUris { get; set; }
 
     /// <summary>
     /// Gets or sets the additional properties serialized as a JSON object,
     /// or <see langword="null"/> if no bag was associated with the current application.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Properties { get; set; }
 
     /// <summary>
     /// Gets or sets the callback URLs associated with the
     /// current application, serialized as a JSON array.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? RedirectUris { get; set; }
 
     /// <summary>
     /// Gets or sets the requirements associated with the
     /// current application, serialized as a JSON array.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Requirements { get; set; }
 
     /// <summary>

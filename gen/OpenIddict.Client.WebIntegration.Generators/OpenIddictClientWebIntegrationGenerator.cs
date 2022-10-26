@@ -48,6 +48,7 @@ namespace OpenIddict.Client.WebIntegration.Generators
                 var template = Template.Parse(@"#nullable enable
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -196,7 +197,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""address"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        public {{ provider.name }} SetRedirectUri(string address)
+        public {{ provider.name }} SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
         {
             if (string.IsNullOrEmpty(address))
             {

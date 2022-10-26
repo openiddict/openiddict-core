@@ -69,7 +69,7 @@
       Note: OpenIddict uses PolySharp to dynamically generate polyfills for types that are not available on
       some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
     -->
-    <PackageReference Include="PolySharp" Version="1.3.0" IsImplicitlyDefined="true"
+    <PackageReference Include="PolySharp" Version="1.6.0" IsImplicitlyDefined="true"
                       PrivateAssets="all" Condition=" '$(DisablePolySharp)' != 'true' " />
   </ItemGroup>
 

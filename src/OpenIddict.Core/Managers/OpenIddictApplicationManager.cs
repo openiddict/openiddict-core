@@ -334,7 +334,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
     public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        string address, CancellationToken cancellationToken = default)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -376,7 +376,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
     public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        string address, CancellationToken cancellationToken = default)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -1300,8 +1300,8 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the post_logout_redirect_uri was valid.
     /// </returns>
-    public virtual async ValueTask<bool> ValidatePostLogoutRedirectUriAsync(
-        TApplication application, string address, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> ValidatePostLogoutRedirectUriAsync(TApplication application,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
     {
         if (application is null)
         {
@@ -1337,8 +1337,8 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the redirect_uri was valid.
     /// </returns>
-    public virtual async ValueTask<bool> ValidateRedirectUriAsync(
-        TApplication application, string address, CancellationToken cancellationToken = default)
+    public virtual async ValueTask<bool> ValidateRedirectUriAsync(TApplication application,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
     {
         if (application is null)
         {
@@ -1596,11 +1596,11 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => await FindByIdAsync(identifier, cancellationToken);
 
     /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByPostLogoutRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
         => FindByPostLogoutRedirectUriAsync(address, cancellationToken);
 
     /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
+    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
         => FindByRedirectUriAsync(address, cancellationToken);
 
     /// <inheritdoc/>
@@ -1720,10 +1720,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => ValidateClientSecretAsync((TApplication) application, secret, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<bool> IOpenIddictApplicationManager.ValidatePostLogoutRedirectUriAsync(object application, string address, CancellationToken cancellationToken)
+    ValueTask<bool> IOpenIddictApplicationManager.ValidatePostLogoutRedirectUriAsync(object application, [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
         => ValidatePostLogoutRedirectUriAsync((TApplication) application, address, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, string address, CancellationToken cancellationToken)
+    ValueTask<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
         => ValidateRedirectUriAsync((TApplication) application, address, cancellationToken);
 }

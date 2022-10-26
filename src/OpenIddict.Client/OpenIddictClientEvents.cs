@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 
@@ -735,6 +736,7 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the redirection endpoint that will
         /// be used for the challenge demand, if applicable.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? RedirectUri { get; set; }
 
         /// <summary>
@@ -769,6 +771,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the optional return URL that will be stored in the state token, if applicable.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? TargetLinkUri { get; set; }
 
         /// <summary>
@@ -868,6 +871,7 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the post-logout redirection endpoint that
         /// will be used for the sign-out demand, if applicable.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? PostLogoutRedirectUri { get; set; }
 
         /// <summary>

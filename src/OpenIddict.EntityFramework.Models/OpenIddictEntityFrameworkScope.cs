@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenIddict.EntityFramework.Models;
 
@@ -40,6 +41,7 @@ public class OpenIddictEntityFrameworkScope<TKey> where TKey : notnull, IEquatab
     /// Gets or sets the localized public descriptions associated
     /// with the current scope, serialized as a JSON object.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Descriptions { get; set; }
 
     /// <summary>
@@ -52,6 +54,7 @@ public class OpenIddictEntityFrameworkScope<TKey> where TKey : notnull, IEquatab
     /// associated with the current application,
     /// serialized as a JSON object.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? DisplayNames { get; set; }
 
     /// <summary>
@@ -68,11 +71,13 @@ public class OpenIddictEntityFrameworkScope<TKey> where TKey : notnull, IEquatab
     /// Gets or sets the additional properties serialized as a JSON object,
     /// or <see langword="null"/> if no bag was associated with the current scope.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Properties { get; set; }
 
     /// <summary>
     /// Gets or sets the resources associated with the
     /// current scope, serialized as a JSON array.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Resources { get; set; }
 }

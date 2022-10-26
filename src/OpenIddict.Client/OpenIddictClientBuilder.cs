@@ -982,7 +982,8 @@ public class OpenIddictClientBuilder
     /// </remarks>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder SetRedirectionEndpointUris(params string[] addresses)
+    public OpenIddictClientBuilder SetRedirectionEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {
@@ -1034,7 +1035,8 @@ public class OpenIddictClientBuilder
     /// </summary>
     /// <param name="addresses">The addresses associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(params string[] addresses)
+    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
     {
         if (addresses is null)
         {

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace OpenIddict.Server;
@@ -67,6 +68,7 @@ public static partial class OpenIddictServerEvents
         /// If it's not provided by the client, it must be set by
         /// the user code by calling <see cref="SetRedirectUri(string)"/>.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? RedirectUri { get; private set; }
 
         /// <summary>
@@ -79,7 +81,7 @@ public static partial class OpenIddictServerEvents
         /// Populates the <see cref="RedirectUri"/> property with the specified redirect_uri.
         /// </summary>
         /// <param name="address">The redirect_uri to use when redirecting the user agent.</param>
-        public void SetRedirectUri(string address)
+        public void SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
         {
             if (string.IsNullOrEmpty(address))
             {
