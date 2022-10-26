@@ -3016,7 +3016,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.SetClaims("type", default(JsonElement));
+        identity.SetClaim("type", default(JsonElement));
 
         // Assert
         Assert.Null(identity.GetClaim("type"));
@@ -3043,7 +3043,7 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.SetClaims("type", JsonSerializer.Deserialize<JsonElement>("null"));
+        identity.SetClaim("type", JsonSerializer.Deserialize<JsonElement>("null"));
 
         // Assert
         Assert.Null(identity.GetClaim("type"));
