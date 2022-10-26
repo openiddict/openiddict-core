@@ -3385,6 +3385,60 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonElement_Undefined()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaims("type", default(JsonElement));
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonElement_Undefined()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaims("type", default(JsonElement));
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonElement_Null()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaims("type", JsonSerializer.Deserialize<JsonElement>("null"));
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonElement_Null()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaims("type", JsonSerializer.Deserialize<JsonElement>("null"));
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
     public void ClaimsIdentity_GetCreationDate_ThrowsAnExceptionForNullIdentity()
     {
         // Arrange
