@@ -3627,7 +3627,7 @@ public static partial class OpenIddictClientHandlers
                 context.Configuration.ResponseTypesSupported.Select(types =>
                     types.Split(Separators.Space).ToImmutableHashSet(StringComparer.Ordinal)).ToList()) switch
             {
-                // Note: the OAuth 2.0 provider metadata and OpenID Connect discovery specification define
+                // Note: the OAuth 2.0 provider metadata and OpenID Connect discovery specifications define
                 // the supported response types as a required property. Nevertheless, to ensure OpenIddict
                 // is compatible with most identity providers, a missing or empty list is not treated as an
                 // error. In this case, response_type=code (for the code grant) and response_type=id_token

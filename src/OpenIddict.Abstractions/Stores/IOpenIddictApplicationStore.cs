@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 
@@ -82,7 +83,8 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
-    IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken);
+    IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves all the applications associated with the specified redirect_uri.
@@ -90,7 +92,8 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <param name="address">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
-    IAsyncEnumerable<TApplication> FindByRedirectUriAsync(string address, CancellationToken cancellationToken);
+    IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns the first element.

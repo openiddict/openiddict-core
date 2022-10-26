@@ -4,6 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace OpenIddict.Abstractions;
 
 /// <summary>
@@ -48,7 +50,8 @@ public interface IOpenIddictApplicationCache<TApplication> where TApplication : 
     /// <param name="address">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
-    IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken);
+    IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves all the applications associated with the specified redirect_uri.
@@ -56,7 +59,8 @@ public interface IOpenIddictApplicationCache<TApplication> where TApplication : 
     /// <param name="address">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
-    IAsyncEnumerable<TApplication> FindByRedirectUriAsync(string address, CancellationToken cancellationToken);
+    IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
 
     /// <summary>
     /// Removes the specified application from the cache.

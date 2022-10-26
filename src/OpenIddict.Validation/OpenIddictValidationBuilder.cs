@@ -456,7 +456,7 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="address">The issuer address.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
-    public OpenIddictValidationBuilder SetIssuer(string address)
+    public OpenIddictValidationBuilder SetIssuer([StringSyntax(StringSyntaxAttribute.Uri)] string address)
     {
         if (string.IsNullOrEmpty(address))
         {

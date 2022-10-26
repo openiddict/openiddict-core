@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Primitives;
@@ -316,6 +317,7 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "post_logout_redirect_uri" parameter.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Uri)]
     public string? PostLogoutRedirectUri
     {
         get => (string?) GetParameter(OpenIddictConstants.Parameters.PostLogoutRedirectUri);
@@ -334,6 +336,7 @@ public class OpenIddictRequest : OpenIddictMessage
     /// <summary>
     /// Gets or sets the "redirect_uri" parameter.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Uri)]
     public string? RedirectUri
     {
         get => (string?) GetParameter(OpenIddictConstants.Parameters.RedirectUri);

@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -137,7 +138,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -161,7 +162,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {
