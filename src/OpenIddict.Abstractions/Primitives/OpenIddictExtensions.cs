@@ -3097,6 +3097,9 @@ public static class OpenIddictExtensions
     {
         switch (element.ValueKind)
         {
+            case JsonValueKind.Undefined or JsonValueKind.Null:
+                return true;
+
             case JsonValueKind.String:
                 return string.IsNullOrEmpty(element.GetString());
 

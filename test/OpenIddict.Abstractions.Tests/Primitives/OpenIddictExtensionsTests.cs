@@ -5,7 +5,6 @@
  */
 
 using System.Collections.Immutable;
-using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Xunit;
@@ -3011,6 +3010,60 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonElement_Undefined()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaim("type", default(JsonElement));
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonElement_Undefined()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaim("type", default(JsonElement));
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithJsonElement_Null()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaim("type", JsonSerializer.Deserialize<JsonElement>("null"));
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithJsonElement_Null()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaim("type", JsonSerializer.Deserialize<JsonElement>("null"));
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
     public void ClaimsIdentity_SetClaimsWithArray_ThrowsAnExceptionForNullIdentity()
     {
         // Arrange
@@ -3329,6 +3382,60 @@ public class OpenIddictExtensionsTests
 
         // Assert
         Assert.Empty(principal.GetClaims("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonElement_Undefined()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaims("type", default(JsonElement));
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonElement_Undefined()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaims("type", default(JsonElement));
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimsWithJsonElement_Null()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaims("type", JsonSerializer.Deserialize<JsonElement>("null"));
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimsWithJsonElement_Null()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", "value");
+
+        // Act
+        principal.SetClaims("type", JsonSerializer.Deserialize<JsonElement>("null"));
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
     }
 
     [Fact]
