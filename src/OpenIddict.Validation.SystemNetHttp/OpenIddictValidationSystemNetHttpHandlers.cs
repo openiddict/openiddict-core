@@ -43,8 +43,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "The HTTP request message is disposed later by a dedicated handler.")]
         public ValueTask HandleAsync(TContext context)
         {
             if (context is null)
@@ -77,8 +75,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 .Build();
 
         /// <inheritdoc/>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "The HTTP request message is disposed later by a dedicated handler.")]
         public ValueTask HandleAsync(TContext context)
         {
             if (context is null)

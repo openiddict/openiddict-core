@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 #if !SUPPORTS_TIME_CONSTANT_COMPARISONS
@@ -1394,16 +1395,11 @@ public static partial class OpenIddictClientHandlers
             // claim cannot be found, it means the "alg" header of the identity token was
             // malformed but the token was still considered valid. While highly unlikly,
             // an exception is thrown in this case to abort the authentication demand.
-            var name = context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Private.SigningAlgorithm);
-            if (string.IsNullOrEmpty(name))
+            var algorithm = context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Private.SigningAlgorithm);
+            if (string.IsNullOrEmpty(algorithm))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0293));
             }
-
-            // Resolve the hash algorithm corresponding to the signing algorithm. If an
-            // instance of the BCL hash algorithm cannot be resolved, throw an exception.
-            using var algorithm = GetHashAlgorithm(name) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0293));
 
             // If a frontchannel access token was returned in the authorization response,
             // ensure the at_hash claim matches the hash of the actual access token.
@@ -1459,44 +1455,43 @@ public static partial class OpenIddictClientHandlers
                 }
             }
 
-            static byte[] ComputeTokenHash(HashAlgorithm algorithm, string token)
+            static byte[] ComputeTokenHash(string algorithm, byte[] data)
             {
-                // Note: only the left-most half of the access token and authorization code digest is used.
-                // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
-                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(token));
+                // Resolve the hash algorithm associated with the signing algorithm and compute the token
+                // hash. If an instance of the BCL hash algorithm cannot be resolved, throw an exception.
+                var hash = algorithm switch
+                {
+                    SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
+                    SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
+                        => OpenIddictHelpers.ComputeSha256Hash(data),
 
-                return Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(digest, 0, digest.Length / 2));
+                    SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
+                    SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
+                        => OpenIddictHelpers.ComputeSha384Hash(data),
+
+                    SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
+                    SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
+                        => OpenIddictHelpers.ComputeSha512Hash(data),
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0293))
+                };
+
+                // Warning: only the left-most half of the access token and authorization code digest is used.
+                // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
+                return Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(hash, 0, hash.Length / 2));
             }
 
-            static bool ValidateTokenHash(HashAlgorithm algorithm, string token, string hash) => 
+            static bool ValidateTokenHash(string algorithm, string token, string hash) =>
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
                 CryptographicOperations.FixedTimeEquals(
                     left: Encoding.ASCII.GetBytes(hash),
-                    right: ComputeTokenHash(algorithm, token));
+                    right: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
 #else
                 Arrays.ConstantTimeAreEqual(
                     a: Encoding.ASCII.GetBytes(hash),
-                    b: ComputeTokenHash(algorithm, token));
+                    b: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
 #endif
-
             return default;
-
-            static HashAlgorithm? GetHashAlgorithm(string algorithm) => algorithm switch
-            {
-                SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
-                SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
-                    => CryptoConfig.CreateFromName(SecurityAlgorithms.Sha256) as HashAlgorithm,
-
-                SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
-                SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
-                    => CryptoConfig.CreateFromName(SecurityAlgorithms.Sha384) as HashAlgorithm,
-
-                SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
-                SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
-                    => CryptoConfig.CreateFromName(SecurityAlgorithms.Sha512) as HashAlgorithm,
-
-                _ => null
-            };
         }
     }
 
@@ -2659,16 +2654,11 @@ public static partial class OpenIddictClientHandlers
             // claim cannot be found, it means the "alg" header of the identity token was
             // malformed but the token was still considered valid. While highly unlikly,
             // an exception is thrown in this case to abort the authentication demand.
-            var name = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Private.SigningAlgorithm);
-            if (string.IsNullOrEmpty(name))
+            var algorithm = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Private.SigningAlgorithm);
+            if (string.IsNullOrEmpty(algorithm))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
             }
-
-            // Resolve the hash algorithm corresponding to the signing algorithm. If an
-            // instance of the BCL hash algorithm cannot be resolved, throw an exception.
-            using var algorithm = GetHashAlgorithm(name) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
 
             // Note: the at_hash is optional for backchannel identity tokens returned from the token endpoint.
             // As such, the validation routine is only enforced if the at_hash claim is present in the token.
@@ -2687,44 +2677,43 @@ public static partial class OpenIddictClientHandlers
             // Note: unlike frontchannel identity tokens, backchannel identity tokens are not expected to include
             // an authorization code hash as no authorization code is normally returned from the token endpoint.
 
-            static byte[] ComputeTokenHash(HashAlgorithm algorithm, string token)
+            static byte[] ComputeTokenHash(string algorithm, byte[] data)
             {
-                // Note: only the left-most half of the access token and authorization code digest is used.
-                // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
-                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(token));
+                // Resolve the hash algorithm associated with the signing algorithm and compute the token
+                // hash. If an instance of the BCL hash algorithm cannot be resolved, throw an exception.
+                var hash = algorithm switch
+                {
+                    SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
+                    SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
+                        => OpenIddictHelpers.ComputeSha256Hash(data),
 
-                return Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(digest, 0, digest.Length / 2));
+                    SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
+                    SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
+                        => OpenIddictHelpers.ComputeSha384Hash(data),
+
+                    SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
+                    SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
+                        => OpenIddictHelpers.ComputeSha512Hash(data),
+
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0293))
+                };
+
+                // Warning: only the left-most half of the access token and authorization code digest is used.
+                // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
+                return Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(hash, 0, hash.Length / 2));
             }
 
-            static bool ValidateTokenHash(HashAlgorithm algorithm, string token, string hash) =>
+            static bool ValidateTokenHash(string algorithm, string token, string hash) =>
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
                 CryptographicOperations.FixedTimeEquals(
                     left: Encoding.ASCII.GetBytes(hash),
-                    right: ComputeTokenHash(algorithm, token));
+                    right: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
 #else
                 Arrays.ConstantTimeAreEqual(
                     a: Encoding.ASCII.GetBytes(hash),
-                    b: ComputeTokenHash(algorithm, token));
+                    b: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
 #endif
-
             return default;
-
-            static HashAlgorithm? GetHashAlgorithm(string algorithm) => algorithm switch
-            {
-                SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
-                SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
-                    => CryptoConfig.CreateFromName(SecurityAlgorithms.Sha256) as HashAlgorithm,
-
-                SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
-                SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
-                    => CryptoConfig.CreateFromName(SecurityAlgorithms.Sha384) as HashAlgorithm,
-
-                SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
-                SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
-                    => CryptoConfig.CreateFromName(SecurityAlgorithms.Sha512) as HashAlgorithm,
-
-                _ => null
-            };
         }
     }
 
@@ -4019,14 +4008,8 @@ public static partial class OpenIddictClientHandlers
 
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
-            var data = new byte[256 / 8];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-            RandomNumberGenerator.Fill(data);
-#else
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(data);
-#endif
-            context.RequestForgeryProtection = Base64UrlEncoder.Encode(data);
+            context.RequestForgeryProtection = Base64UrlEncoder.Encode(
+                OpenIddictHelpers.CreateRandomArray(size: 256));
 
             return default;
         }
@@ -4062,14 +4045,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Generate a new crypto-secure random identifier that will be used as the nonce.
-            var data = new byte[256 / 8];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-            RandomNumberGenerator.Fill(data);
-#else
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(data);
-#endif
-            context.Nonce = Base64UrlEncoder.Encode(data);
+            context.Nonce = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
             return default;
         }
@@ -4146,14 +4122,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Generate a new crypto-secure random identifier that will be used as the code challenge.
-            var data = new byte[256 / 8];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-            RandomNumberGenerator.Fill(data);
-#else
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(data);
-#endif
-            context.CodeVerifier = Base64UrlEncoder.Encode(data);
+            context.CodeVerifier = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
             if (context.CodeChallengeMethod is CodeChallengeMethods.Plain)
             {
@@ -4163,9 +4132,8 @@ public static partial class OpenIddictClientHandlers
 
             else if (context.CodeChallengeMethod is CodeChallengeMethods.Sha256)
             {
-                // Compute of the SHA-256 hash of the code verifier and use it as the code challenge.
-                using var algorithm = SHA256.Create();
-                context.CodeChallenge = Base64UrlEncoder.Encode(algorithm.ComputeHash(
+                // Compute the SHA-256 hash of the code verifier and use it as the code challenge.
+                context.CodeChallenge = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(
                     Encoding.ASCII.GetBytes(context.CodeVerifier)));
             }
 
@@ -4725,14 +4693,8 @@ public static partial class OpenIddictClientHandlers
 
             // Generate a new crypto-secure random identifier that will
             // be used as the non-guessable part of the state token.
-            var data = new byte[256 / 8];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-            RandomNumberGenerator.Fill(data);
-#else
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(data);
-#endif
-            context.RequestForgeryProtection = Base64UrlEncoder.Encode(data);
+            context.RequestForgeryProtection = Base64UrlEncoder.Encode(
+                OpenIddictHelpers.CreateRandomArray(size: 256));
 
             return default;
         }

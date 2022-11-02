@@ -28,6 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Microsoft.AspNetCore.Authentication" />
     <Using Include="Microsoft.AspNetCore.Http" />
     <Using Include="OpenIddict.Abstractions" />

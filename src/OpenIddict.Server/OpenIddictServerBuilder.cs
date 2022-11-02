@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using OpenIddict.Server;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -200,8 +201,6 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate(X500DistinguishedName subject)
     {
         if (subject is null)
@@ -221,7 +220,7 @@ public class OpenIddictServerBuilder
         if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
-            using var algorithm = RSA.Create(keySizeInBits: 2048);
+            using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
 
             var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
@@ -300,62 +299,18 @@ public class OpenIddictServerBuilder
         return algorithm switch
         {
             SecurityAlgorithms.Aes256KW
-                => AddEncryptionCredentials(new EncryptingCredentials(CreateSymmetricSecurityKey(256),
+                => AddEncryptionCredentials(new EncryptingCredentials(
+                    new SymmetricSecurityKey(OpenIddictHelpers.CreateRandomArray(size: 256)),
                     algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
             SecurityAlgorithms.RsaOAEP or
             SecurityAlgorithms.RsaOaepKeyWrap
-                => AddEncryptionCredentials(new EncryptingCredentials(CreateRsaSecurityKey(2048),
+                => AddEncryptionCredentials(new EncryptingCredentials(
+                    new RsaSecurityKey(OpenIddictHelpers.CreateRsaKey(size: 2048)),
                     algorithm, SecurityAlgorithms.Aes256CbcHmacSha512)),
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
         };
-
-        static SymmetricSecurityKey CreateSymmetricSecurityKey(int size)
-        {
-            var data = new byte[size / 8];
-
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-            RandomNumberGenerator.Fill(data);
-#else
-            using var generator = RandomNumberGenerator.Create();
-            generator.GetBytes(data);
-#endif
-
-            return new SymmetricSecurityKey(data);
-        }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "The generated RSA key is attached to the server options.")]
-        static RsaSecurityKey CreateRsaSecurityKey(int size)
-        {
-#if SUPPORTS_DIRECT_KEY_CREATION_WITH_SPECIFIED_SIZE
-            return new RsaSecurityKey(RSA.Create(size));
-#else
-            // Note: a 1024-bit key might be returned by RSA.Create() on .NET Desktop/Mono,
-            // where RSACryptoServiceProvider is still the default implementation and
-            // where custom implementations can be registered via CryptoConfig.
-            // To ensure the key size is always acceptable, replace it if necessary.
-            var algorithm = RSA.Create();
-            if (algorithm.KeySize < size)
-            {
-                algorithm.KeySize = size;
-            }
-
-            if (algorithm.KeySize < size && algorithm is RSACryptoServiceProvider)
-            {
-                algorithm.Dispose();
-                algorithm = new RSACryptoServiceProvider(size);
-            }
-
-            if (algorithm.KeySize < size)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0059));
-            }
-
-            return new RsaSecurityKey(algorithm);
-#endif
-        }
     }
 
     /// <summary>
@@ -460,8 +415,6 @@ public class OpenIddictServerBuilder
     /// to store the private key of the certificate.
     /// </param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictServerBuilder AddEncryptionCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
     {
         if (stream is null)
@@ -610,8 +563,6 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="subject">The subject name associated with the certificate.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictServerBuilder AddDevelopmentSigningCertificate(X500DistinguishedName subject)
     {
         if (subject is null)
@@ -631,7 +582,7 @@ public class OpenIddictServerBuilder
         if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
-            using var algorithm = RSA.Create(keySizeInBits: 2048);
+            using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
 
             var request = new CertificateRequest(subject, algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
@@ -700,8 +651,6 @@ public class OpenIddictServerBuilder
     /// </summary>
     /// <param name="algorithm">The algorithm associated with the signing key.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictServerBuilder AddEphemeralSigningKey(string algorithm)
     {
         if (string.IsNullOrEmpty(algorithm))
@@ -723,23 +672,24 @@ public class OpenIddictServerBuilder
             SecurityAlgorithms.RsaSsaPssSha256Signature or
             SecurityAlgorithms.RsaSsaPssSha384Signature or
             SecurityAlgorithms.RsaSsaPssSha512Signature
-                => AddSigningCredentials(new SigningCredentials(CreateRsaSecurityKey(2048), algorithm)),
+                => AddSigningCredentials(new SigningCredentials(new RsaSecurityKey(
+                    OpenIddictHelpers.CreateRsaKey(size: 2048)), algorithm)),
 
 #if SUPPORTS_ECDSA
             SecurityAlgorithms.EcdsaSha256 or
             SecurityAlgorithms.EcdsaSha256Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                    ECDsa.Create(ECCurve.NamedCurves.nistP256)), algorithm)),
+                    OpenIddictHelpers.CreateEcdsaKey(ECCurve.NamedCurves.nistP256)), algorithm)),
 
             SecurityAlgorithms.EcdsaSha384 or
             SecurityAlgorithms.EcdsaSha384Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                    ECDsa.Create(ECCurve.NamedCurves.nistP384)), algorithm)),
+                    OpenIddictHelpers.CreateEcdsaKey(ECCurve.NamedCurves.nistP384)), algorithm)),
 
             SecurityAlgorithms.EcdsaSha512 or
             SecurityAlgorithms.EcdsaSha512Signature
                 => AddSigningCredentials(new SigningCredentials(new ECDsaSecurityKey(
-                    ECDsa.Create(ECCurve.NamedCurves.nistP521)), algorithm)),
+                    OpenIddictHelpers.CreateEcdsaKey(ECCurve.NamedCurves.nistP521)), algorithm)),
 #else
             SecurityAlgorithms.EcdsaSha256 or
             SecurityAlgorithms.EcdsaSha384 or
@@ -752,38 +702,6 @@ public class OpenIddictServerBuilder
 
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0058))
         };
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "The generated RSA key is attached to the server options.")]
-        static RsaSecurityKey CreateRsaSecurityKey(int size)
-        {
-#if SUPPORTS_DIRECT_KEY_CREATION_WITH_SPECIFIED_SIZE
-            return new RsaSecurityKey(RSA.Create(size));
-#else
-            // Note: a 1024-bit key might be returned by RSA.Create() on .NET Desktop/Mono,
-            // where RSACryptoServiceProvider is still the default implementation and
-            // where custom implementations can be registered via CryptoConfig.
-            // To ensure the key size is always acceptable, replace it if necessary.
-            var algorithm = RSA.Create();
-            if (algorithm.KeySize < size)
-            {
-                algorithm.KeySize = size;
-            }
-
-            if (algorithm.KeySize < size && algorithm is RSACryptoServiceProvider)
-            {
-                algorithm.Dispose();
-                algorithm = new RSACryptoServiceProvider(size);
-            }
-
-            if (algorithm.KeySize < size)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0059));
-            }
-
-            return new RsaSecurityKey(algorithm);
-#endif
-        }
     }
 
     /// <summary>
@@ -888,8 +806,6 @@ public class OpenIddictServerBuilder
     /// to store the private key of the certificate.
     /// </param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictServerBuilder AddSigningCertificate(Stream stream, string? password, X509KeyStorageFlags flags)
     {
         if (stream is null)

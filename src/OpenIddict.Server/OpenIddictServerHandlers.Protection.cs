@@ -8,11 +8,11 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -1327,18 +1327,12 @@ public static partial class OpenIddictServerHandlers
                 {
                     do
                     {
-                        var data = new byte[12];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                        RandomNumberGenerator.Fill(data);
-#else
-                        using var generator = RandomNumberGenerator.Create();
-                        generator.GetBytes(data);
-#endif
-                        var builder = new StringBuilder(data.Length);
+                        var array = OpenIddictHelpers.CreateRandomArray(size: 12);
+                        var builder = new StringBuilder(array.Length);
 
-                        for (var index = 0; index < data.Length; index += 4)
+                        for (var index = 0; index < array.Length; index += 4)
                         {
-                            builder.AppendFormat(CultureInfo.InvariantCulture, "{0:D4}", BitConverter.ToUInt32(data, index) % 10000);
+                            builder.AppendFormat(CultureInfo.InvariantCulture, "{0:D4}", BitConverter.ToUInt32(array, index) % 10000);
                         }
 
                         descriptor.ReferenceId = builder.ToString();
@@ -1352,15 +1346,7 @@ public static partial class OpenIddictServerHandlers
                 // For other tokens, generate a base64url-encoded 256-bit random identifier.
                 else
                 {
-                    var data = new byte[256 / 8];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                    RandomNumberGenerator.Fill(data);
-#else
-                    using var generator = RandomNumberGenerator.Create();
-                    generator.GetBytes(data);
-#endif
-
-                    descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
+                    descriptor.ReferenceId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
                 }
 
                 await _tokenManager.UpdateAsync(token, descriptor);

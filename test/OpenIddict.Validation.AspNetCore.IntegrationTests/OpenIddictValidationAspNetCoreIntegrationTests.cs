@@ -113,8 +113,6 @@ public partial class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddict
         Assert.Equal(new DateTimeOffset(2120, 01, 01, 00, 00, 00, TimeSpan.Zero), properties.ExpiresUtc);
     }
 
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The caller is responsible for disposing the test server.")]
     protected override
 #if SUPPORTS_GENERIC_HOST
         async

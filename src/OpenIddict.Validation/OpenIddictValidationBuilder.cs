@@ -276,8 +276,6 @@ public class OpenIddictValidationBuilder
     /// to store the private key of the certificate.
     /// </param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         Stream stream, string? password, X509KeyStorageFlags flags)
     {

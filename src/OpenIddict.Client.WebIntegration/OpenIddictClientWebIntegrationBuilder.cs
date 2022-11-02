@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using OpenIddict.Client.WebIntegration;
+using OpenIddict.Extensions;
 
 #if SUPPORTS_PEM_ENCODED_KEY_IMPORT
 using System.Security.Cryptography;
@@ -96,7 +97,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0346), nameof(key));
             }
 
-            var algorithm = ECDsa.Create();
+            var algorithm = OpenIddictHelpers.CreateEcdsaKey();
 
             try
             {

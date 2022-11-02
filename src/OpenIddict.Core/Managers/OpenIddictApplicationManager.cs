@@ -1384,40 +1384,25 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         // Note: the PRF, iteration count, salt length and key length currently all match the default values
         // used by CryptoHelper and ASP.NET Core Identity but this may change in the future, if necessary.
 
-        var salt = new byte[128 / 8];
-
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-        RandomNumberGenerator.Fill(salt);
-#else
-        using var generator = RandomNumberGenerator.Create();
-        generator.GetBytes(salt);
-#endif
-
+        var salt = OpenIddictHelpers.CreateRandomArray(size: 128);
         var hash = HashSecret(secret, salt, HashAlgorithmName.SHA256, iterations: 10_000, length: 256 / 8);
 
-        return new(
-#if SUPPORTS_BASE64_SPAN_CONVERSION
-            Convert.ToBase64String(hash)
-#else
-            Convert.ToBase64String(hash.ToArray())
-#endif
-        );
+        return new(Convert.ToBase64String(hash));
 
         // Note: the following logic deliberately uses the same format as CryptoHelper (used in OpenIddict 1.x/2.x),
         // which was itself based on ASP.NET Core Identity's latest hashed password format. This guarantees that
         // secrets hashed using a recent OpenIddict version can still be read by older packages (and vice versa).
 
-        static ReadOnlySpan<byte> HashSecret(string secret, ReadOnlySpan<byte> salt,
-            HashAlgorithmName algorithm, int iterations, int length)
+        static byte[] HashSecret(string secret, byte[] salt, HashAlgorithmName algorithm, int iterations, int length)
         {
             var key = DeriveKey(secret, salt, algorithm, iterations, length);
-            var payload = new Span<byte>(new byte[13 + salt.Length + key.Length]);
+            var payload = new byte[13 + salt.Length + key.Length];
 
             // Write the format marker.
             payload[0] = 0x01;
 
             // Write the hashing algorithm version.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(1, 4), algorithm switch
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(1, 4), algorithm switch
             {
                 var name when name == HashAlgorithmName.SHA1   => 0,
                 var name when name == HashAlgorithmName.SHA256 => 1,
@@ -1427,16 +1412,16 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             });
 
             // Write the iteration count of the algorithm.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(5, 8), (uint) iterations);
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(5, 8), (uint) iterations);
 
             // Write the size of the salt.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(9, 12), (uint) salt.Length);
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(9, 12), (uint) salt.Length);
 
             // Write the salt.
-            salt.CopyTo(payload[13..]);
+            salt.CopyTo(payload.AsSpan(13));
 
             // Write the subkey.
-            key.CopyTo(payload[(13 + salt.Length)..]);
+            key.CopyTo(payload.AsSpan(13 + salt.Length));
 
             return payload;
         }
@@ -1529,23 +1514,19 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
             return CryptographicOperations.FixedTimeEquals(
                 left: payload.Slice(13 + salt.Length, keyLength),
-                right: DeriveKey(secret, salt, algorithm, iterations, keyLength));
+                right: DeriveKey(secret, salt.ToArray(), algorithm, iterations, keyLength));
 #else
             return Arrays.ConstantTimeAreEqual(
                 a: payload.Slice(13 + salt.Length, keyLength).ToArray(),
-                b: DeriveKey(secret, salt, algorithm, iterations, keyLength));
+                b: DeriveKey(secret, salt.ToArray(), algorithm, iterations, keyLength));
 #endif
         }
     }
 
-    [SuppressMessage("Security", "CA5379:Do not use weak key derivation function algorithm",
-        Justification = "The SHA-1 digest algorithm is still supported for backward compatibility.")]
-    private static byte[] DeriveKey(string secret, ReadOnlySpan<byte> salt,
-        HashAlgorithmName algorithm, int iterations, int length)
+    private static byte[] DeriveKey(string secret, byte[] salt, HashAlgorithmName algorithm, int iterations, int length)
     {
 #if SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
-        using var generator = new Rfc2898DeriveBytes(secret, salt.ToArray(), iterations, algorithm);
-        return generator.GetBytes(length);
+        return OpenIddictHelpers.DeriveKey(secret, salt, algorithm, iterations, length);
 #else
         var generator = new Pkcs5S2ParametersGenerator(algorithm switch
         {
@@ -1556,7 +1537,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0217))
         });
 
-        generator.Init(PbeParametersGenerator.Pkcs5PasswordToBytes(secret.ToCharArray()), salt.ToArray(), iterations);
+        generator.Init(PbeParametersGenerator.Pkcs5PasswordToBytes(secret.ToCharArray()), salt, iterations);
 
         var key = (KeyParameter) generator.GenerateDerivedMacParameters(length * 8);
         return key.GetKey();

@@ -40,8 +40,6 @@ public class OpenIddictServerAspNetCoreIntegrationTestServer : OpenIddictServerI
     /// </summary>
     public TestServer Server { get; }
 
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The caller is responsible for disposing the test client.")]
     public override ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync()
         => new(new OpenIddictServerIntegrationTestClient(Server.CreateClient()));
 
