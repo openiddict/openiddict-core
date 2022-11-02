@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -2707,15 +2708,9 @@ public static partial class OpenIddictServerHandlers
                 credentials => credentials.Key is AsymmetricSecurityKey) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
 
-            using var algorithm = GetHashAlgorithm(credentials);
-            if (algorithm is null or KeyedHashAlgorithm)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0267));
-            }
-
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.AccessToken));
+                var digest = ComputeHash(credentials, Encoding.ASCII.GetBytes(context.AccessToken));
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
@@ -2724,7 +2719,7 @@ public static partial class OpenIddictServerHandlers
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.AuthorizationCode));
+                var digest = ComputeHash(credentials, Encoding.ASCII.GetBytes(context.AuthorizationCode));
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
@@ -2733,63 +2728,31 @@ public static partial class OpenIddictServerHandlers
 
             return default;
 
-            static HashAlgorithm? GetHashAlgorithm(SigningCredentials credentials)
+            static byte[] ComputeHash(SigningCredentials credentials, byte[] data) => credentials switch
             {
-                HashAlgorithm? hash = null;
+                { Digest:    SecurityAlgorithms.Sha256          or SecurityAlgorithms.Sha256Digest             } or
+                { Algorithm: SecurityAlgorithms.EcdsaSha256     or SecurityAlgorithms.EcdsaSha256Signature     } or
+                { Algorithm: SecurityAlgorithms.HmacSha256      or SecurityAlgorithms.HmacSha256Signature      } or
+                { Algorithm: SecurityAlgorithms.RsaSha256       or SecurityAlgorithms.RsaSha256Signature       } or
+                { Algorithm: SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature }
+                    => OpenIddictHelpers.ComputeSha256Hash(data),
 
-                if (!string.IsNullOrEmpty(credentials.Digest))
-                {
-                    hash = CryptoConfig.CreateFromName(credentials.Digest) as HashAlgorithm;
-                }
+                { Digest:    SecurityAlgorithms.Sha384          or SecurityAlgorithms.Sha384Digest             } or
+                { Algorithm: SecurityAlgorithms.EcdsaSha384     or SecurityAlgorithms.EcdsaSha384Signature     } or
+                { Algorithm: SecurityAlgorithms.HmacSha384      or SecurityAlgorithms.HmacSha384Signature      } or
+                { Algorithm: SecurityAlgorithms.RsaSha384       or SecurityAlgorithms.RsaSha384Signature       } or
+                { Algorithm: SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature }
+                    => OpenIddictHelpers.ComputeSha384Hash(data),
 
-                if (hash is null)
-                {
-                    var algorithm = credentials.Digest switch
-                    {
-                        SecurityAlgorithms.Sha256 or SecurityAlgorithms.Sha256Digest => HashAlgorithmName.SHA256,
-                        SecurityAlgorithms.Sha384 or SecurityAlgorithms.Sha384Digest => HashAlgorithmName.SHA384,
-                        SecurityAlgorithms.Sha512 or SecurityAlgorithms.Sha512Digest => HashAlgorithmName.SHA512,
+                { Digest:    SecurityAlgorithms.Sha512          or SecurityAlgorithms.Sha512Digest             } or
+                { Algorithm: SecurityAlgorithms.EcdsaSha512     or SecurityAlgorithms.EcdsaSha512Signature     } or
+                { Algorithm: SecurityAlgorithms.HmacSha512      or SecurityAlgorithms.HmacSha512Signature      } or
+                { Algorithm: SecurityAlgorithms.RsaSha512       or SecurityAlgorithms.RsaSha512Signature       } or
+                { Algorithm: SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature }
+                    => OpenIddictHelpers.ComputeSha512Hash(data),
 
-                        _ => credentials.Algorithm switch
-                        {
-#if SUPPORTS_ECDSA
-                            SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
-                                => HashAlgorithmName.SHA512,
-#endif
-                            SecurityAlgorithms.HmacSha256 or SecurityAlgorithms.HmacSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.HmacSha384 or SecurityAlgorithms.HmacSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.HmacSha512 or SecurityAlgorithms.HmacSha512Signature
-                                => HashAlgorithmName.SHA512,
-
-                            SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature
-                                => HashAlgorithmName.SHA512,
-
-                            SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
-                                => HashAlgorithmName.SHA512,
-
-                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
-                        }
-                    };
-
-                    hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
-                }
-
-                return hash;
-            }
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
+            };
         }
     }
 

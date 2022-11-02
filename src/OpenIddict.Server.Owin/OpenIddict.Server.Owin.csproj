@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Microsoft.Owin" />
     <Using Include="Microsoft.Owin.Infrastructure" />
     <Using Include="Microsoft.Owin.Security" />

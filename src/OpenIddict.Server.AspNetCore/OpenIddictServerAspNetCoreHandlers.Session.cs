@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.WebUtilities;
@@ -16,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
 using JsonWebTokenTypes = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.JsonWebTokenTypes;
 
@@ -203,16 +203,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 }
 
                 // Generate a 256-bit request identifier using a crypto-secure random number generator.
-                var data = new byte[256 / 8];
-
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                RandomNumberGenerator.Fill(data);
-#else
-                using var generator = RandomNumberGenerator.Create();
-                generator.GetBytes(data);
-#endif
-
-                context.Request.RequestId = Base64UrlEncoder.Encode(data);
+                context.Request.RequestId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
                 // Build a list of claims matching the parameters extracted from the request.
                 //

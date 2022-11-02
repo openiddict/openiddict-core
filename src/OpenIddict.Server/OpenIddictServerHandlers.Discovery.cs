@@ -7,10 +7,10 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -1163,7 +1163,7 @@ public static partial class OpenIddictServerHandlers
                         key.Kty = JsonWebAlgorithmsKeyTypes.RSA;
 
                         // Note: both E and N must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7518#section-6.3.1.1
+                        // See https://tools.ietf.org/html/rfc7518#section-6.3.1.1.
                         key.E = Base64UrlEncoder.Encode(parameters.Value.Exponent);
                         key.N = Base64UrlEncoder.Encode(parameters.Value.Modulus);
                     }
@@ -1189,9 +1189,10 @@ public static partial class OpenIddictServerHandlers
                             continue;
                         }
 
-                        var curve = IsCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
-                                    IsCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
-                                    IsCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
+                        var curve =
+                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
+                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
+                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
 
                         if (string.IsNullOrEmpty(curve))
                         {
@@ -1210,7 +1211,7 @@ public static partial class OpenIddictServerHandlers
                         key.Crv = curve;
 
                         // Note: both X and Y must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2
+                        // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2.
                         key.X = Base64UrlEncoder.Encode(parameters.Value.Q.X);
                         key.Y = Base64UrlEncoder.Encode(parameters.Value.Q.Y);
                     }
@@ -1222,16 +1223,16 @@ public static partial class OpenIddictServerHandlers
                     if (certificate is not null)
                     {
                         // x5t must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7517#section-4.8
+                        // See https://tools.ietf.org/html/rfc7517#section-4.8.
                         key.X5t = Base64UrlEncoder.Encode(certificate.GetCertHash());
 
                         // x5t#S256 must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7517#section-4.9
-                        key.X5tS256 = Base64UrlEncoder.Encode(GetCertificateHash(certificate, HashAlgorithmName.SHA256));
+                        // See https://tools.ietf.org/html/rfc7517#section-4.9.
+                        key.X5tS256 = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(certificate.RawData));
 
                         // Unlike E or N, the certificates contained in x5c
                         // must be base64-encoded and not base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7517#section-4.7
+                        // See https://tools.ietf.org/html/rfc7517#section-4.7.
                         key.X5c.Add(Convert.ToBase64String(certificate.RawData));
                     }
 
@@ -1239,45 +1240,6 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 return default;
-
-#if SUPPORTS_ECDSA
-                static bool IsCurve(ECParameters parameters, ECCurve curve)
-                {
-                    Debug.Assert(parameters.Curve.Oid is not null, SR.GetResourceString(SR.ID4011));
-                    Debug.Assert(curve.Oid is not null, SR.GetResourceString(SR.ID4011));
-
-                    // Warning: on .NET Framework 4.x and .NET Core 2.1, exported ECParameters generally have
-                    // a null OID value attached. To work around this limitation, both the raw OID values and
-                    // the friendly names are compared to determine whether the curve is of the specified type.
-                    if (!string.IsNullOrEmpty(parameters.Curve.Oid.Value) && !string.IsNullOrEmpty(curve.Oid.Value))
-                    {
-                        return string.Equals(parameters.Curve.Oid.Value, curve.Oid.Value, StringComparison.Ordinal);
-                    }
-
-                    if (!string.IsNullOrEmpty(parameters.Curve.Oid.FriendlyName) && !string.IsNullOrEmpty(curve.Oid.FriendlyName))
-                    {
-                        return string.Equals(parameters.Curve.Oid.FriendlyName, curve.Oid.FriendlyName, StringComparison.Ordinal);
-                    }
-
-                    Debug.Fail(SR.GetResourceString(SR.ID4012));
-                    return false;
-                }
-#endif
-
-                static byte[] GetCertificateHash(X509Certificate2 certificate, HashAlgorithmName algorithm)
-                {
-#if SUPPORTS_CERTIFICATE_HASHING_WITH_SPECIFIED_ALGORITHM
-                    return certificate.GetCertHash(algorithm);
-#else
-                    using var hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
-                    if (hash is null or KeyedHashAlgorithm)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0217));
-                    }
-
-                    return hash.ComputeHash(certificate.RawData);
-#endif
-                }
             }
         }
     }

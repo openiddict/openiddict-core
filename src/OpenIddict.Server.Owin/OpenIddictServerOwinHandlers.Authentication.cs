@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -16,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
 using JsonWebTokenTypes = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.JsonWebTokenTypes;
@@ -202,11 +202,7 @@ public static partial class OpenIddictServerOwinHandlers
                 }
 
                 // Generate a 256-bit request identifier using a crypto-secure random number generator.
-                var data = new byte[256 / 8];
-                using var generator = RandomNumberGenerator.Create();
-                generator.GetBytes(data);
-
-                context.Request.RequestId = Base64UrlEncoder.Encode(data);
+                context.Request.RequestId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
                 // Build a list of claims matching the parameters extracted from the request.
                 //

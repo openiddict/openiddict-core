@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -883,16 +884,7 @@ public static partial class OpenIddictClientHandlers
                 // Attach the generated token to the token entry.
                 descriptor.Payload = context.Token;
                 descriptor.Principal = context.Principal;
-
-                var data = new byte[256 / 8];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                RandomNumberGenerator.Fill(data);
-#else
-                using var generator = RandomNumberGenerator.Create();
-                generator.GetBytes(data);
-#endif
-
-                descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
+                descriptor.ReferenceId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
                 await _tokenManager.UpdateAsync(token, descriptor);
 

@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 #if !SUPPORTS_TIME_CONSTANT_COMPARISONS
 using Org.BouncyCastle.Utilities;
@@ -1544,39 +1545,26 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                // If no code challenge method was specified, default to S256.
-                var method = context.Principal.GetClaim(Claims.Private.CodeChallengeMethod);
-                if (string.IsNullOrEmpty(method))
+                var comparand = context.Principal.GetClaim(Claims.Private.CodeChallengeMethod) switch
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0268));
-                }
+                    // Note: when using the "plain" code challenge method, no hashing is actually performed.
+                    // In this case, the raw ASCII bytes of the verifier are directly compared to the challenge.
+                    CodeChallengeMethods.Plain  => Encoding.ASCII.GetBytes(context.Request.CodeVerifier),
 
-                // Note: when using the "plain" code challenge method, no hashing is actually performed.
-                // In this case, the raw ASCII bytes of the verifier are directly compared to the challenge.
-                byte[] data;
-                if (string.Equals(method, CodeChallengeMethods.Plain, StringComparison.Ordinal))
-                {
-                    data = Encoding.ASCII.GetBytes(context.Request.CodeVerifier);
-                }
+                    CodeChallengeMethods.Sha256 => Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(
+                        OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier)))),
 
-                else if (string.Equals(method, CodeChallengeMethods.Sha256, StringComparison.Ordinal))
-                {
-                    using var algorithm = SHA256.Create();
-                    data = Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(
-                        algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier))));
-                }
+                    null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0268)),
 
-                else
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0045));
-                }
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0045))
+                };
 
                 // Compare the verifier and the code challenge: if the two don't match, return an error.
                 // Note: to prevent timing attacks, a time-constant comparer is always used.
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                if (!CryptographicOperations.FixedTimeEquals(data, Encoding.ASCII.GetBytes(challenge)))
+                if (!CryptographicOperations.FixedTimeEquals(comparand, Encoding.ASCII.GetBytes(challenge)))
 #else
-                if (!Arrays.ConstantTimeAreEqual(data, Encoding.ASCII.GetBytes(challenge)))
+                if (!Arrays.ConstantTimeAreEqual(comparand, Encoding.ASCII.GetBytes(challenge)))
 #endif
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6092), Parameters.CodeVerifier);
