@@ -88,6 +88,11 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_ZLIB_COMPRESSION</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '7.0'))) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK</DefineConstants>
+  </PropertyGroup>
+
   <!--
     Note: Entity Framework Core 2.x references System.Interactive.Async 3.x, that includes
     its own IAsyncEnumerable. To work around collisions between this type and the new type
