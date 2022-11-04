@@ -3484,7 +3484,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     protected abstract ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(
         Action<OpenIddictServerBuilder>? configuration = null);
 
-    protected OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(
+    protected IOpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(
         Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>>? configuration = null)
     {
         var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(

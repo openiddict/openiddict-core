@@ -55,10 +55,10 @@ public class OpenIddictCoreBuilderTests
             service.ServiceType == typeof(OpenGenericApplicationManager<>) &&
             service.ImplementationType == typeof(OpenGenericApplicationManager<>));
         Assert.Contains(services, service =>
-            service.ServiceType == typeof(OpenIddictApplicationManager<>) &&
+            service.ServiceType == typeof(IOpenIddictApplicationManager<>) &&
             service.ImplementationType == typeof(OpenGenericApplicationManager<>));
         Assert.DoesNotContain(services, service =>
-            service.ServiceType == typeof(OpenIddictApplicationManager<>) &&
+            service.ServiceType == typeof(IOpenIddictApplicationManager<>) &&
             service.ImplementationType == typeof(OpenIddictApplicationManager<>));
     }
 
@@ -77,10 +77,10 @@ public class OpenIddictCoreBuilderTests
             service.ServiceType == typeof(ClosedGenericApplicationManager) &&
             service.ImplementationFactory is not null);
         Assert.Contains(services, service =>
-            service.ServiceType == typeof(OpenIddictApplicationManager<CustomApplication>) &&
+            service.ServiceType == typeof(IOpenIddictApplicationManager<CustomApplication>) &&
             service.ImplementationType == typeof(ClosedGenericApplicationManager));
         Assert.Contains(services, service =>
-            service.ServiceType == typeof(OpenIddictApplicationManager<>) &&
+            service.ServiceType == typeof(IOpenIddictApplicationManager<>) &&
             service.ImplementationType == typeof(OpenIddictApplicationManager<>));
     }
 
@@ -677,7 +677,7 @@ public class OpenIddictCoreBuilderTests
     {
         public ClosedGenericApplicationManager(
             IOpenIddictApplicationCache<CustomApplication> cache,
-            ILogger<OpenIddictApplicationManager<CustomApplication>> logger,
+            ILogger<ClosedGenericApplicationManager> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictApplicationStoreResolver resolver)
             : base(cache, logger, options, resolver)
@@ -690,7 +690,7 @@ public class OpenIddictCoreBuilderTests
     {
         public OpenGenericApplicationManager(
             IOpenIddictApplicationCache<TApplication> cache,
-            ILogger<OpenIddictApplicationManager<TApplication>> logger,
+            ILogger<OpenGenericApplicationManager<TApplication>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictApplicationStoreResolver resolver)
             : base(cache, logger, options, resolver)
@@ -702,7 +702,7 @@ public class OpenIddictCoreBuilderTests
     {
         public ClosedGenericAuthorizationManager(
             IOpenIddictAuthorizationCache<CustomAuthorization> cache,
-            ILogger<OpenIddictAuthorizationManager<CustomAuthorization>> logger,
+            ILogger<ClosedGenericAuthorizationManager> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictAuthorizationStoreResolver resolver)
             : base(cache, logger, options, resolver)
@@ -715,7 +715,7 @@ public class OpenIddictCoreBuilderTests
     {
         public OpenGenericAuthorizationManager(
             IOpenIddictAuthorizationCache<TAuthorization> cache,
-            ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
+            ILogger<OpenGenericAuthorizationManager<TAuthorization>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictAuthorizationStoreResolver resolver)
             : base(cache, logger, options, resolver)
@@ -727,7 +727,7 @@ public class OpenIddictCoreBuilderTests
     {
         public ClosedGenericScopeManager(
             IOpenIddictScopeCache<CustomScope> cache,
-            ILogger<OpenIddictScopeManager<CustomScope>> logger,
+            ILogger<ClosedGenericScopeManager> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictScopeStoreResolver resolver)
             : base(cache, logger, options, resolver)
@@ -740,7 +740,7 @@ public class OpenIddictCoreBuilderTests
     {
         public OpenGenericScopeManager(
             IOpenIddictScopeCache<TScope> cache,
-            ILogger<OpenIddictScopeManager<TScope>> logger,
+            ILogger<OpenGenericScopeManager<TScope>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictScopeStoreResolver resolver)
             : base(cache, logger, options, resolver)
@@ -752,7 +752,7 @@ public class OpenIddictCoreBuilderTests
     {
         public ClosedGenericTokenManager(
             IOpenIddictTokenCache<CustomToken> cache,
-            ILogger<OpenIddictTokenManager<CustomToken>> logger,
+            ILogger<ClosedGenericTokenManager> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictTokenStoreResolver resolver)
             : base(cache, logger, options, resolver)
@@ -765,7 +765,7 @@ public class OpenIddictCoreBuilderTests
     {
         public OpenGenericTokenManager(
             IOpenIddictTokenCache<TToken> cache,
-            ILogger<OpenIddictTokenManager<TToken>> logger,
+            ILogger<OpenGenericTokenManager<TToken>> logger,
             IOptionsMonitor<OpenIddictCoreOptions> options,
             IOpenIddictTokenStoreResolver resolver)
             : base(cache, logger, options, resolver)

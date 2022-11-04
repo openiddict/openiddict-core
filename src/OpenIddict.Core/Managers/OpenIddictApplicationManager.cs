@@ -40,7 +40,7 @@ namespace OpenIddict.Core;
 /// is resolved at runtime based on the default entity type registered in the core options.
 /// </remarks>
 /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplicationManager where TApplication : class
+public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplicationManager, IOpenIddictApplicationManager<TApplication> where TApplication : class
 {
     public OpenIddictApplicationManager(
         IOpenIddictApplicationCache<TApplication> cache,

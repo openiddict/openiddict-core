@@ -33,7 +33,7 @@ public static class OpenIddictCoreExtensions
         builder.Services.AddMemoryCache();
         builder.Services.AddOptions();
 
-        builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));
+        builder.Services.TryAddScoped(typeof(IOpenIddictApplicationManager<>), typeof(OpenIddictApplicationManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictScopeManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictTokenManager<>));
@@ -55,7 +55,7 @@ public static class OpenIddictCoreExtensions
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0273));
 
             return (IOpenIddictApplicationManager) provider.GetRequiredService(
-                typeof(OpenIddictApplicationManager<>).MakeGenericType(type));
+                typeof(IOpenIddictApplicationManager<>).MakeGenericType(type));
         });
 
         builder.Services.TryAddScoped(static provider =>

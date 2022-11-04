@@ -299,17 +299,17 @@ public class OpenIddictCoreBuilder
             }
 
             Services.Replace(ServiceDescriptor.Scoped(type, type));
-            Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictApplicationManager<>), type));
+            Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictApplicationManager<>), type));
         }
 
         else
         {
             object ResolveManager(IServiceProvider provider)
-                => provider.GetRequiredService(typeof(OpenIddictApplicationManager<>)
+                => provider.GetRequiredService(typeof(IOpenIddictApplicationManager<>)
                     .MakeGenericType(root.GenericTypeArguments[0]));
 
             Services.Replace(ServiceDescriptor.Scoped(type, ResolveManager));
-            Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictApplicationManager<>)
+            Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictApplicationManager<>)
                 .MakeGenericType(root.GenericTypeArguments[0]), type));
         }
 

@@ -68,11 +68,11 @@ public class OpenIddictCoreExtensionsTests
     }
 
     [Theory]
-    [InlineData(typeof(OpenIddictApplicationManager<>))]
-    [InlineData(typeof(OpenIddictAuthorizationManager<>))]
-    [InlineData(typeof(OpenIddictScopeManager<>))]
-    [InlineData(typeof(OpenIddictTokenManager<>))]
-    public void AddCore_RegistersDefaultManagers(Type type)
+    [InlineData(typeof(IOpenIddictApplicationManager<>), typeof(OpenIddictApplicationManager<>))]
+    [InlineData(typeof(OpenIddictAuthorizationManager<>), typeof(OpenIddictAuthorizationManager<>))]
+    [InlineData(typeof(OpenIddictScopeManager<>), typeof(OpenIddictScopeManager<>))]
+    [InlineData(typeof(OpenIddictTokenManager<>), typeof(OpenIddictTokenManager<>))]
+    public void AddCore_RegistersDefaultManagers(Type serviceType, Type implementationType)
     {
         // Arrange
         var services = new ServiceCollection();
@@ -82,7 +82,7 @@ public class OpenIddictCoreExtensionsTests
         builder.AddCore();
 
         // Assert
-        Assert.Contains(services, service => service.ServiceType == type && service.ImplementationType == type);
+        Assert.Contains(services, service => service.ServiceType == serviceType && service.ImplementationType == implementationType);
     }
 
     [Theory]
