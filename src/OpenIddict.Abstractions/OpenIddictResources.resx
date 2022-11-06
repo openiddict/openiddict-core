@@ -1346,6 +1346,15 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0351" xml:space="preserve">
     <value>The '{0}' instance returned by CryptoConfig.CreateFromName() is not suitable for the requested operation. When registering a custom implementation of a cryptographic algorithm, make sure it inherits from the correct base type and uses the correct name (e.g "OpenIddict RSA Cryptographic Provider" implementations must derive from System.Security.Cryptography.RSA).</value>
   </data>
+  <data name="ID0352" xml:space="preserve">
+    <value>The nonce cannot be resolved from the challenge context.</value>
+  </data>
+  <data name="ID0353" xml:space="preserve">
+    <value>The nonce cannot be resolved from the sign-out context.</value>
+  </data>
+  <data name="ID0354" xml:space="preserve">
+    <value>The nonce cannot be resolved from the state token.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1832,6 +1841,12 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID2162" xml:space="preserve">
     <value>An unsupported response was returned by the remote authorization server.</value>
   </data>
+  <data name="ID2163" xml:space="preserve">
+    <value>The correlation cookie is invalid or malformed.</value>
+  </data>
+  <data name="ID2164" xml:space="preserve">
+    <value>The request forgery protection is missing or doesn't contain the expected value.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -1879,6 +1894,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID4015" xml:space="preserve">
     <value>The password shouldn't be null or empty at this point.</value>
+  </data>
+  <data name="ID4016" xml:space="preserve">
+    <value>The number of written bytes ({0}) doesn't match the expected value ({1}).</value>
   </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
@@ -2466,6 +2484,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6208" xml:space="preserve">
     <value>The authorization request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6209" xml:space="preserve">
+    <value>The request forgery protection is missing or doesn't contain the expected value, which may indicate a session fixation attack.</value>
+  </data>
+  <data name="ID6210" xml:space="preserve">
+    <value>The nonce claim present in the frontchannel identity token doesn't contain the expected value, which may indicate a replay or token injection attack.</value>
+  </data>
+  <data name="ID6211" xml:space="preserve">
+    <value>The nonce claim present in the backchannel identity doesn't contain the expected value, which may indicate a replay or token injection attack.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

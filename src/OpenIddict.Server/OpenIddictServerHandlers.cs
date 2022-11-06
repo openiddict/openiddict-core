@@ -2710,7 +2710,7 @@ public static partial class OpenIddictServerHandlers
 
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                var digest = ComputeHash(credentials, Encoding.ASCII.GetBytes(context.AccessToken));
+                var digest = ComputeTokenHash(credentials, context.AccessToken);
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
@@ -2719,7 +2719,7 @@ public static partial class OpenIddictServerHandlers
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                var digest = ComputeHash(credentials, Encoding.ASCII.GetBytes(context.AuthorizationCode));
+                var digest = ComputeTokenHash(credentials, context.AuthorizationCode);
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
@@ -2728,28 +2728,31 @@ public static partial class OpenIddictServerHandlers
 
             return default;
 
-            static byte[] ComputeHash(SigningCredentials credentials, byte[] data) => credentials switch
+            static byte[] ComputeTokenHash(SigningCredentials credentials, string token) => credentials switch
             {
+                // Note: ASCII is deliberately used here, as it's the encoding required by the specification.
+                // For more information, see https://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken.
+
                 { Digest:    SecurityAlgorithms.Sha256          or SecurityAlgorithms.Sha256Digest             } or
                 { Algorithm: SecurityAlgorithms.EcdsaSha256     or SecurityAlgorithms.EcdsaSha256Signature     } or
                 { Algorithm: SecurityAlgorithms.HmacSha256      or SecurityAlgorithms.HmacSha256Signature      } or
                 { Algorithm: SecurityAlgorithms.RsaSha256       or SecurityAlgorithms.RsaSha256Signature       } or
                 { Algorithm: SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature }
-                    => OpenIddictHelpers.ComputeSha256Hash(data),
+                    => OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(token)),
 
                 { Digest:    SecurityAlgorithms.Sha384          or SecurityAlgorithms.Sha384Digest             } or
                 { Algorithm: SecurityAlgorithms.EcdsaSha384     or SecurityAlgorithms.EcdsaSha384Signature     } or
                 { Algorithm: SecurityAlgorithms.HmacSha384      or SecurityAlgorithms.HmacSha384Signature      } or
                 { Algorithm: SecurityAlgorithms.RsaSha384       or SecurityAlgorithms.RsaSha384Signature       } or
                 { Algorithm: SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature }
-                    => OpenIddictHelpers.ComputeSha384Hash(data),
+                    => OpenIddictHelpers.ComputeSha384Hash(Encoding.ASCII.GetBytes(token)),
 
                 { Digest:    SecurityAlgorithms.Sha512          or SecurityAlgorithms.Sha512Digest             } or
                 { Algorithm: SecurityAlgorithms.EcdsaSha512     or SecurityAlgorithms.EcdsaSha512Signature     } or
                 { Algorithm: SecurityAlgorithms.HmacSha512      or SecurityAlgorithms.HmacSha512Signature      } or
                 { Algorithm: SecurityAlgorithms.RsaSha512       or SecurityAlgorithms.RsaSha512Signature       } or
                 { Algorithm: SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature }
-                    => OpenIddictHelpers.ComputeSha512Hash(data),
+                    => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
             };

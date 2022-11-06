@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,6 +36,7 @@ public static partial class OpenIddictClientHandlers
         ValidateStateToken.Descriptor,
         RedeemStateTokenEntry.Descriptor,
         ValidateStateTokenEndpointType.Descriptor,
+        ValidateRequestForgeryProtection.Descriptor,
         ResolveClientRegistrationFromStateToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
         HandleFrontchannelErrorResponse.Descriptor,
@@ -119,6 +121,7 @@ public static partial class OpenIddictClientHandlers
         AttachPostLogoutRedirectUri.Descriptor,
         EvaluateGeneratedLogoutTokens.Descriptor,
         AttachSignOutHostProperties.Descriptor,
+        AttachLogoutNonce.Descriptor,
         AttachLogoutRequestForgeryProtection.Descriptor,
         PrepareLogoutStateTokenPrincipal.Descriptor,
         GenerateLogoutStateToken.Descriptor,
@@ -512,6 +515,76 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for validating the request forgery protection claim that serves as a
+    /// protection against state token injection, forged requests, denial of service and session fixation attacks.
+    /// </summary>
+    public class ValidateRequestForgeryProtection : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenValidated>()
+                .UseSingletonHandler<ValidateRequestForgeryProtection>()
+                .SetOrder(ValidateStateTokenEndpointType.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Resolve the request forgery protection from the state token principal.
+            var comparand = context.StateTokenPrincipal.GetClaim(Claims.RequestForgeryProtection);
+            if (string.IsNullOrEmpty(comparand))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0339));
+            }
+
+            // The request forgery protection serves as a binding mechanism ensuring that a
+            // state token stolen from an authorization response with the other parameters
+            // cannot be validly used without also sending the matching correlation identifier.
+            //
+            // If the request forgery protection couldn't be resolved at this point or doesn't
+            // match the expected value, this may indicate that the authentication demand is
+            // unsolicited and potentially malicious (or caused by an invalid or unadequate
+            // same-site configuration, if the authentication demand was handled by a web server).
+            //
+            // In any case, the authentication demand MUST be rejected as it's impossible to ensure
+            // it's not an injection or session fixation attack without the correct "rfp" value.
+            if (string.IsNullOrEmpty(context.RequestForgeryProtection) ||
+#if SUPPORTS_TIME_CONSTANT_COMPARISONS
+                !CryptographicOperations.FixedTimeEquals(
+                    left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
+                    right: MemoryMarshal.AsBytes(context.RequestForgeryProtection.AsSpan())))
+#else
+                !Arrays.ConstantTimeAreEqual(
+                    a: MemoryMarshal.AsBytes(comparand.AsSpan()).ToArray(),
+                    b: MemoryMarshal.AsBytes(context.RequestForgeryProtection.AsSpan()).ToArray()))
+#endif
+            {
+                context.Logger.LogWarning(SR.GetResourceString(SR.ID6209));
+
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2164),
+                    uri: SR.FormatID8000(SR.ID2164));
+
+                return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the client registration
     /// based on the authorization server identity stored in the state token.
     /// </summary>
@@ -524,7 +597,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveClientRegistrationFromStateToken>()
-                .SetOrder(ValidateStateTokenEndpointType.Descriptor.Order + 1_000)
+                .SetOrder(ValidateRequestForgeryProtection.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -1326,6 +1399,38 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Note: the OpenID Connect specification relies on nonces as a way to detect and
+            // prevent replay attacks by binding the returned identity token(s) to a specific
+            // random value sent by the client application as part of the authorization request.
+            //
+            // When Proof Key for Code Exchange is not supported or not available, nonces can
+            // also be used to detect authorization code or identity token injection attacks.
+            //
+            // For more information, see https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes
+            // and https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.5.3.2.
+            //
+            // While OpenIddict fully implements nonce support, its implementation slightly
+            // differs from the implementation suggested by the OpenID Connect specification:
+            //
+            //   - Nonces are used internally as unique, per-authorization flow identifiers and
+            //     are always considered required when using an interactive flow, independently
+            //     of whether the authorization flow is an OAuth 2.0-only or OpenID Connect flow.
+            //
+            //   - Instead of being stored as separate cookies as suggested by the specification,
+            //     nonces are used by the ASP.NET Core and OWIN hosts to build a unique value
+            //     for the name of the correlation cookie used with state tokens to prevent CSRF,
+            //     which reduces the number of cookies used by the OpenIddict client web hosts.
+            //
+            //   - Nonces are attached to the authorization requests AND stored in the state
+            //     tokens so that the nonces and the state tokens form a 1 <-> 1 relationship,
+            //     which forces sending the matching state to be able to validate identity tokens.
+            //
+            //   - Replay detection is implemented by invalidating state tokens the very first time
+            //     they are presented at the redirection endpoint, even if the response indicates
+            //     an errored authorization response (e.g if the authorization demand was denied).
+            //     Since nonce validation depends on the value stored in the state token, marking
+            //     state tokens as already redeemed is enough to prevent nonces from being replayed.
+
             Debug.Assert(context.FrontchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -1333,12 +1438,17 @@ public static partial class OpenIddictClientHandlers
                 FrontchannelIdentityTokenNonce: context.FrontchannelIdentityTokenPrincipal.GetClaim(Claims.Nonce),
                 StateTokenNonce: context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
             {
-                // If no nonce if no present in the state token (e.g because the authorization server doesn't
-                // support OpenID Connect and response_type=code was negotiated), bypass the validation logic.
+                // If no nonce is present in the state token, bypass the validation logic.
                 case { StateTokenNonce: null or { Length: not > 0 } }:
                     return default;
 
-                // If a nonce was found in the state token but is not present in the identity token, return an error.
+                // If the request was not an OpenID Connect request but an identity token
+                // was returned nethertheless, don't require a nonce to be present.
+                case { FrontchannelIdentityTokenNonce: null or { Length: not > 0 } }
+                    when !context.StateTokenPrincipal.HasScope(Scopes.OpenId):
+                    return default;
+
+                // If the nonce is not present in the identity token, return an error.
                 case { FrontchannelIdentityTokenNonce: null or { Length: not > 0 } }:
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -1350,10 +1460,18 @@ public static partial class OpenIddictClientHandlers
                 // If the two nonces don't match, return an error.
                 case { FrontchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                    !CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(left), Encoding.ASCII.GetBytes(right)):
+                    !CryptographicOperations.FixedTimeEquals(
+                        left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
+                        right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
+                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
 #else
-                    !Arrays.ConstantTimeAreEqual(Encoding.ASCII.GetBytes(left), Encoding.ASCII.GetBytes(right)):
+                    !Arrays.ConstantTimeAreEqual(
+                        a: MemoryMarshal.AsBytes(left.AsSpan()).ToArray(), // The nonce in the identity token is already hashed.
+                        b: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
+                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan()).ToArray()):
 #endif
+                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6210));
+
                     context.Reject(
                         error: Errors.InvalidRequest,
                         description: SR.FormatID2124(Claims.Nonce),
@@ -1455,7 +1573,7 @@ public static partial class OpenIddictClientHandlers
                 }
             }
 
-            static byte[] ComputeTokenHash(string algorithm, byte[] data)
+            static ReadOnlySpan<char> ComputeTokenHash(string algorithm, string token)
             {
                 // Resolve the hash algorithm associated with the signing algorithm and compute the token
                 // hash. If an instance of the BCL hash algorithm cannot be resolved, throw an exception.
@@ -1463,33 +1581,33 @@ public static partial class OpenIddictClientHandlers
                 {
                     SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
                     SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
-                        => OpenIddictHelpers.ComputeSha256Hash(data),
+                        => OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
-                        => OpenIddictHelpers.ComputeSha384Hash(data),
+                        => OpenIddictHelpers.ComputeSha384Hash(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
-                        => OpenIddictHelpers.ComputeSha512Hash(data),
+                        => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0293))
                 };
 
                 // Warning: only the left-most half of the access token and authorization code digest is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
-                return Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(hash, 0, hash.Length / 2));
+                return Base64UrlEncoder.Encode(hash, 0, hash.Length / 2).AsSpan();
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
                 CryptographicOperations.FixedTimeEquals(
-                    left: Encoding.ASCII.GetBytes(hash),
-                    right: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
+                    left:  MemoryMarshal.AsBytes(hash.AsSpan()),
+                    right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
 #else
                 Arrays.ConstantTimeAreEqual(
-                    a: Encoding.ASCII.GetBytes(hash),
-                    b: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
+                    a: MemoryMarshal.AsBytes(hash.AsSpan()).ToArray(),
+                    b: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)).ToArray());
 #endif
             return default;
         }
@@ -2584,6 +2702,38 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Note: the OpenID Connect specification relies on nonces as a way to detect and
+            // prevent replay attacks by binding the returned identity token(s) to a specific
+            // random value sent by the client application as part of the authorization request.
+            //
+            // When Proof Key for Code Exchange is not supported or not available, nonces can
+            // also be used to detect authorization code or identity token injection attacks.
+            //
+            // For more information, see https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes
+            // and https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.5.3.2.
+            //
+            // While OpenIddict fully implements nonce support, its implementation slightly
+            // differs from the implementation suggested by the OpenID Connect specification:
+            //
+            //   - Nonces are used internally as unique, per-authorization flow identifiers and
+            //     are always considered required when using an interactive flow, independently
+            //     of whether the authorization flow is an OAuth 2.0-only or OpenID Connect flow.
+            //
+            //   - Instead of being stored as separate cookies as suggested by the specification,
+            //     nonces are used by the ASP.NET Core and OWIN hosts to build a unique value
+            //     for the name of the correlation cookie used with state tokens to prevent CSRF,
+            //     which reduces the number of cookies used by the OpenIddict client web hosts.
+            //
+            //   - Nonces are attached to the authorization requests AND stored in the state
+            //     tokens so that the nonces and the state tokens form a 1 <-> 1 relationship,
+            //     which forces sending the matching state to be able to validate identity tokens.
+            //
+            //   - Replay detection is implemented by invalidating state tokens the very first time
+            //     they are presented at the redirection endpoint, even if the response indicates
+            //     an errored authorization response (e.g if the authorization demand was denied).
+            //     Since nonce validation depends on the value stored in the state token, marking
+            //     state tokens as already redeemed is enough to prevent nonces from being replayed.
+
             Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
@@ -2591,12 +2741,17 @@ public static partial class OpenIddictClientHandlers
                 BackchannelIdentityTokenNonce: context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Nonce),
                 StateTokenNonce: context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce)))
             {
-                // If no nonce if no present in the state token (e.g because the authorization server doesn't
-                // support OpenID Connect and response_type=code was negotiated), bypass the validation logic.
+                // If no nonce is present in the state token, bypass the validation logic.
                 case { StateTokenNonce: null or { Length: not > 0 } }:
                     return default;
 
-                // If a nonce was found in the state token but is not present in the identity token, return an error.
+                // If the request was not an OpenID Connect request but an identity token
+                // was returned nethertheless, don't require a nonce to be present.
+                case { BackchannelIdentityTokenNonce: null or { Length: not > 0 } }
+                    when !context.StateTokenPrincipal.HasScope(Scopes.OpenId):
+                    return default;
+
+                // If the nonce is not present in the identity token, return an error.
                 case { BackchannelIdentityTokenNonce: null or { Length: not > 0 } }:
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -2608,10 +2763,18 @@ public static partial class OpenIddictClientHandlers
                 // If the two nonces don't match, return an error.
                 case { BackchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                    !CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(left), Encoding.ASCII.GetBytes(right)):
+                    !CryptographicOperations.FixedTimeEquals(
+                        left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
+                        right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
+                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
 #else
-                    !Arrays.ConstantTimeAreEqual(Encoding.ASCII.GetBytes(left), Encoding.ASCII.GetBytes(right)):
+                    !Arrays.ConstantTimeAreEqual(
+                        a: MemoryMarshal.AsBytes(left.AsSpan()).ToArray(), // The nonce in the identity token is already hashed.
+                        b: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
+                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan()).ToArray()):
 #endif
+                    context.Logger.LogWarning(SR.GetResourceString(SR.ID6211));
+
                     context.Reject(
                         error: Errors.InvalidRequest,
                         description: SR.FormatID2128(Claims.Nonce),
@@ -2677,7 +2840,7 @@ public static partial class OpenIddictClientHandlers
             // Note: unlike frontchannel identity tokens, backchannel identity tokens are not expected to include
             // an authorization code hash as no authorization code is normally returned from the token endpoint.
 
-            static byte[] ComputeTokenHash(string algorithm, byte[] data)
+            static ReadOnlySpan<char> ComputeTokenHash(string algorithm, string token)
             {
                 // Resolve the hash algorithm associated with the signing algorithm and compute the token
                 // hash. If an instance of the BCL hash algorithm cannot be resolved, throw an exception.
@@ -2685,33 +2848,33 @@ public static partial class OpenIddictClientHandlers
                 {
                     SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
                     SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
-                        => OpenIddictHelpers.ComputeSha256Hash(data),
+                        => OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
-                        => OpenIddictHelpers.ComputeSha384Hash(data),
+                        => OpenIddictHelpers.ComputeSha384Hash(Encoding.ASCII.GetBytes(token)),
 
                     SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
                     SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
-                        => OpenIddictHelpers.ComputeSha512Hash(data),
+                        => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
 
                     _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0293))
                 };
 
                 // Warning: only the left-most half of the access token and authorization code digest is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
-                return Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(hash, 0, hash.Length / 2));
+                return Base64UrlEncoder.Encode(hash, 0, hash.Length / 2).AsSpan();
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
                 CryptographicOperations.FixedTimeEquals(
-                    left: Encoding.ASCII.GetBytes(hash),
-                    right: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
+                    left:  MemoryMarshal.AsBytes(hash.AsSpan()),
+                    right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
 #else
                 Arrays.ConstantTimeAreEqual(
-                    a: Encoding.ASCII.GetBytes(hash),
-                    b: ComputeTokenHash(algorithm, Encoding.ASCII.GetBytes(token)));
+                    a: MemoryMarshal.AsBytes(hash.AsSpan()).ToArray(),
+                    b: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)).ToArray());
 #endif
             return default;
         }
@@ -4038,13 +4201,17 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If the identity provider doesn't support OpenID Connect, don't attach a nonce.
-            if (!context.Configuration.ScopesSupported.Contains(Scopes.OpenId))
-            {
-                return default;
-            }
-
             // Generate a new crypto-secure random identifier that will be used as the nonce.
+            //
+            // Note: a nonce is always generated for interactive grants, independently of whether
+            // the request is an OpenID Connect request or not, as it's used to identify each
+            // authorization demand and is needed by the web hosts like ASP.NET Core and OWIN
+            // to resolve the name of the correlation cookie used to prevent forged requests.
+            //
+            // If the request is an OpenID Connect request, the nonce will also be hashed and
+            // attached to the authorization request so that the identity provider can bind
+            // the issued identity tokens to the generated value, which helps detect token
+            // replay (and authorization code injection attacks when PKCE is not available).
             context.Nonce = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
             return default;
@@ -4133,6 +4300,9 @@ public static partial class OpenIddictClientHandlers
             else if (context.CodeChallengeMethod is CodeChallengeMethods.Sha256)
             {
                 // Compute the SHA-256 hash of the code verifier and use it as the code challenge.
+                //
+                // Note: ASCII is deliberately used here, as it's the encoding required by the specification.
+                // For more information, see https://datatracker.ietf.org/doc/html/rfc7636#section-4.2.
                 context.CodeChallenge = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(
                     Encoding.ASCII.GetBytes(context.CodeVerifier)));
             }
@@ -4243,6 +4413,9 @@ public static partial class OpenIddictClientHandlers
 
             // Store the nonce in the state token so it can be later used to check whether
             // the nonce extracted from the identity token matches the generated value.
+            //
+            // Note: the nonce is also used by the ASP.NET Core and OWIN hosts as a way
+            // to uniquely identify the name of the correlation cookie used for antiforgery.
             principal.SetClaim(Claims.Private.Nonce, context.Nonce);
 
             // Store the requested scopes in the state token.
@@ -4395,7 +4568,16 @@ public static partial class OpenIddictClientHandlers
                 context.Request.Scope = string.Join(" ", context.Scopes);
             }
 
-            context.Request.Nonce = context.Nonce;
+            // If the request is an OpenID Connect request, attach the nonce as a parameter.
+            //
+            // Note: the nonce is always hashed before being sent, as recommended the specification.
+            // See https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes for more information.
+            if (context.Scopes.Contains(Scopes.OpenId) && !string.IsNullOrEmpty(context.Nonce))
+            {
+                context.Request.Nonce = Base64UrlEncoder.Encode(
+                    OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(context.Nonce)));
+            }
+
             context.Request.CodeChallenge = context.CodeChallenge;
             context.Request.CodeChallengeMethod = context.CodeChallengeMethod;
 
@@ -4670,7 +4852,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching a request forgery protection to the authorization request.
+    /// Contains the logic responsible for attaching a request forgery protection to the logout request.
     /// </summary>
     public class AttachLogoutRequestForgeryProtection : IOpenIddictClientHandler<ProcessSignOutContext>
     {
@@ -4701,6 +4883,35 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching a nonce to the logout request.
+    /// </summary>
+    public class AttachLogoutNonce : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .UseSingletonHandler<AttachLogoutNonce>()
+                .SetOrder(AttachLogoutRequestForgeryProtection.Descriptor.Order + 1_000)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Generate a new crypto-secure random identifier that will be used as the nonce.
+            context.Nonce = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the logout state token, if one is going to be returned.
     /// </summary>
@@ -4713,7 +4924,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireLogoutStateTokenGenerated>()
                 .UseSingletonHandler<PrepareLogoutStateTokenPrincipal>()
-                .SetOrder(AttachLogoutRequestForgeryProtection.Descriptor.Order + 1_000)
+                .SetOrder(AttachLogoutNonce.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -4769,7 +4980,7 @@ public static partial class OpenIddictClientHandlers
             principal.SetClaim(Claims.AuthorizationServer, context.Issuer.AbsoluteUri);
 
             // Store the request forgery protection in the state token so it can be later used to
-            // ensure the authorization response sent to the redirection endpoint is not forged.
+            // ensure the logout response sent to the post-logout redirection endpoint is not forged.
             principal.SetClaim(Claims.RequestForgeryProtection, context.RequestForgeryProtection);
 
             // Store the optional return URL in the state token.
@@ -4782,6 +4993,12 @@ public static partial class OpenIddictClientHandlers
 
             // Store the post_logout_redirect_uri to allow comparing to the actual redirection URL.
             principal.SetClaim(Claims.Private.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
+
+            // Store the nonce in the state token.
+            //
+            // Note: the nonce is also used by the ASP.NET Core and OWIN hosts as a way
+            // to uniquely identify the name of the correlation cookie used for antiforgery.
+            principal.SetClaim(Claims.Private.Nonce, context.Nonce);
 
             context.StateTokenPrincipal = principal;
 

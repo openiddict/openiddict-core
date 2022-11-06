@@ -305,6 +305,11 @@ public static partial class OpenIddictClientEvents
         public string? ResponseType { get; set; }
 
         /// <summary>
+        /// Gets or sets the request forgery protection resolved from the user session, if applicable.
+        /// </summary>
+        public string? RequestForgeryProtection { get; set; }
+
+        /// <summary>
         /// Gets or sets the address of the token endpoint, if applicable.
         /// </summary>
         public Uri? TokenEndpoint { get; set; }
@@ -889,6 +894,11 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the optional return URL that will be stored in the state token, if applicable.
         /// </summary>
         public string? TargetLinkUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nonce that will be used for the sign-out demand, if applicable.
+        /// </summary>
+        public string? Nonce { get; set; }
 
         /// <summary>
         /// Gets or sets the request forgery protection that will be stored in the state token, if applicable.
