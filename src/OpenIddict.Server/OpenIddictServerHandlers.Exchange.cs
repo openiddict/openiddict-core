@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -1548,11 +1549,11 @@ public static partial class OpenIddictServerHandlers
                 var comparand = context.Principal.GetClaim(Claims.Private.CodeChallengeMethod) switch
                 {
                     // Note: when using the "plain" code challenge method, no hashing is actually performed.
-                    // In this case, the raw ASCII bytes of the verifier are directly compared to the challenge.
-                    CodeChallengeMethods.Plain  => Encoding.ASCII.GetBytes(context.Request.CodeVerifier),
+                    // In this case, the raw bytes of the verifier are directly compared to the challenge.
+                    CodeChallengeMethods.Plain => context.Request.CodeVerifier,
 
-                    CodeChallengeMethods.Sha256 => Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(
-                        OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier)))),
+                    CodeChallengeMethods.Sha256 => Base64UrlEncoder.Encode(
+                        OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier))),
 
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0268)),
 
@@ -1562,9 +1563,13 @@ public static partial class OpenIddictServerHandlers
                 // Compare the verifier and the code challenge: if the two don't match, return an error.
                 // Note: to prevent timing attacks, a time-constant comparer is always used.
 #if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                if (!CryptographicOperations.FixedTimeEquals(comparand, Encoding.ASCII.GetBytes(challenge)))
+                if (!CryptographicOperations.FixedTimeEquals(
+                    left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
+                    right: MemoryMarshal.AsBytes(challenge.AsSpan())))
 #else
-                if (!Arrays.ConstantTimeAreEqual(comparand, Encoding.ASCII.GetBytes(challenge)))
+                if (!Arrays.ConstantTimeAreEqual(
+                    a: MemoryMarshal.AsBytes(comparand.AsSpan()).ToArray(),
+                    b: MemoryMarshal.AsBytes(challenge.AsSpan()).ToArray()))
 #endif
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6092), Parameters.CodeVerifier);

@@ -1402,7 +1402,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             payload[0] = 0x01;
 
             // Write the hashing algorithm version.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(1, 4), algorithm switch
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(1, sizeof(uint)), algorithm switch
             {
                 var name when name == HashAlgorithmName.SHA1   => 0,
                 var name when name == HashAlgorithmName.SHA256 => 1,
@@ -1412,10 +1412,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             });
 
             // Write the iteration count of the algorithm.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(5, 8), (uint) iterations);
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(5, sizeof(uint)), (uint) iterations);
 
             // Write the size of the salt.
-            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(9, 12), (uint) salt.Length);
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(9, sizeof(uint)), (uint) salt.Length);
 
             // Write the salt.
             salt.CopyTo(payload.AsSpan(13));
@@ -1482,7 +1482,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
 
             // Read the hashing algorithm version.
-            var algorithm = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(1, 4)) switch
+            var algorithm = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(1, sizeof(uint))) switch
             {
                 0 => HashAlgorithmName.SHA1,
                 1 => HashAlgorithmName.SHA256,
@@ -1492,10 +1492,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             };
 
             // Read the iteration count of the algorithm.
-            var iterations = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(5, 8));
+            var iterations = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(5, sizeof(uint)));
 
             // Read the size of the salt and ensure it's more than 128 bits.
-            var saltLength = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(9, 12));
+            var saltLength = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(9, sizeof(uint)));
             if (saltLength < 128 / 8)
             {
                 return false;
