@@ -1148,8 +1148,12 @@ public class OpenIddictParameterTests
         // Arrange
         var parameter = new OpenIddictParameter();
 
-        // Act and assert
-        Assert.Empty(parameter.ToString());
+        // Act
+        var result = parameter.ToString();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -1212,8 +1216,12 @@ public class OpenIddictParameterTests
         var parameter = new OpenIddictParameter(
             JsonSerializer.Deserialize<JsonElement>(@"{""field"":null}").GetProperty("field"));
 
-        // Act and assert
-        Assert.Empty(parameter.ToString());
+        // Act
+        var result = parameter.ToString();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -1222,8 +1230,12 @@ public class OpenIddictParameterTests
         // Arrange
         var parameter = new OpenIddictParameter(default(JsonElement));
 
-        // Act and assert
-        Assert.Empty(parameter.ToString());
+        // Act
+        var result = parameter.ToString();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
     }
 
 #if SUPPORTS_JSON_NODES
@@ -1233,8 +1245,12 @@ public class OpenIddictParameterTests
         // Arrange
         var parameter = new OpenIddictParameter((JsonNode?) null);
 
-        // Act and assert
-        Assert.Empty(parameter.ToString());
+        // Act
+        var result = parameter.ToString();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
     }
 #endif
 
@@ -1699,7 +1715,7 @@ public class OpenIddictParameterTests
         Assert.Equal(42L, ((JsonElement) new OpenIddictParameter(42)).GetInt64());
 
         Assert.Equal(JsonValueKind.String, ((JsonElement) new OpenIddictParameter(string.Empty)).ValueKind);
-        Assert.Empty(((JsonElement) new OpenIddictParameter(string.Empty)).GetString());
+        Assert.Empty(((JsonElement) new OpenIddictParameter(string.Empty)).GetString()!);
 
         Assert.Equal(JsonValueKind.String, ((JsonElement) new OpenIddictParameter("value")).ValueKind);
         Assert.Equal("value", ((JsonElement) new OpenIddictParameter("value")).GetString());
