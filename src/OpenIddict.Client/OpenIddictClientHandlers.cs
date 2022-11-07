@@ -4291,21 +4291,20 @@ public static partial class OpenIddictClientHandlers
             // Generate a new crypto-secure random identifier that will be used as the code challenge.
             context.CodeVerifier = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
-            if (context.CodeChallengeMethod is CodeChallengeMethods.Plain)
+            context.CodeChallenge = context.CodeChallengeMethod switch
             {
-                // Use the code verifier as the code challenge.
-                context.CodeChallenge = context.CodeVerifier;
-            }
+                // For "plain", use the code verifier as the code challenge.
+                CodeChallengeMethods.Plain => context.CodeVerifier,
 
-            else if (context.CodeChallengeMethod is CodeChallengeMethods.Sha256)
-            {
-                // Compute the SHA-256 hash of the code verifier and use it as the code challenge.
+                // For S256, compute the SHA-256 hash of the code verifier and use it as the code challenge.
                 //
                 // Note: ASCII is deliberately used here, as it's the encoding required by the specification.
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc7636#section-4.2.
-                context.CodeChallenge = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(
-                    Encoding.ASCII.GetBytes(context.CodeVerifier)));
-            }
+                CodeChallengeMethods.Sha256 => Base64UrlEncoder.Encode(
+                    OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(context.CodeVerifier))),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0045))
+            };
 
             return default;
         }
