@@ -173,9 +173,9 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         });
 
         // Assert
-        Assert.NotEmpty(response.Error);
-        Assert.NotEmpty(response.ErrorDescription);
-        Assert.NotEmpty(response.ErrorUri);
+        Assert.NotNull(response.Error);
+        Assert.NotNull(response.ErrorDescription);
+        Assert.NotNull(response.ErrorUri);
     }
 
     [Fact]
@@ -813,7 +813,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         });
 
         // Assert
-        Assert.NotEmpty(response.AccessToken);
+        Assert.NotNull(response.AccessToken);
     }
 
     [Fact]
@@ -900,7 +900,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         });
 
         // Assert
-        Assert.NotEmpty(response.State);
+        Assert.NotNull(response.State);
     }
 
     [Fact]

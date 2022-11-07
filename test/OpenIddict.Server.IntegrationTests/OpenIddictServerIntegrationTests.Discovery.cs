@@ -432,6 +432,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var methods = (string[]?) response[Metadata.TokenEndpointAuthMethodsSupported];
 
         // Assert
+        Assert.NotNull(methods);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
     }
@@ -466,6 +467,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var methods = (string[]?) response[Metadata.IntrospectionEndpointAuthMethodsSupported];
 
         // Assert
+        Assert.NotNull(methods);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
     }
@@ -500,6 +502,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var methods = (string[]?) response[Metadata.RevocationEndpointAuthMethodsSupported];
 
         // Assert
+        Assert.NotNull(methods);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretBasic, methods);
         Assert.Contains(ClientAuthenticationMethods.ClientSecretPost, methods);
     }
@@ -522,7 +525,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         var types = (string[]?) response[Metadata.GrantTypesSupported];
 
         // Assert
-        Assert.Equal(2, types?.Length);
+        Assert.NotNull(types);
+        Assert.Equal(2, types.Length);
         Assert.Contains(GrantTypes.AuthorizationCode, types);
         Assert.Contains(GrantTypes.Password, types);
     }
@@ -563,7 +567,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         var methods = (string[]?) response[Metadata.CodeChallengeMethodsSupported];
 
         // Assert
-        Assert.Equal(2, methods?.Length);
+        Assert.NotNull(methods);
+        Assert.Equal(2, methods.Length);
         Assert.Contains(CodeChallengeMethods.Sha256, methods);
         Assert.Contains(CodeChallengeMethods.Plain, methods);
     }
@@ -604,7 +609,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         var modes = (string[]?) response[Metadata.ResponseModesSupported];
 
         // Assert
-        Assert.Equal(2, modes?.Length);
+        Assert.NotNull(modes);
+        Assert.Equal(2, modes.Length);
         Assert.Contains(ResponseModes.FormPost, modes);
         Assert.Contains(ResponseModes.Fragment, modes);
     }
@@ -645,7 +651,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         var types = (string[]?) response[Metadata.ResponseTypesSupported];
 
         // Assert
-        Assert.Equal(2, types?.Length);
+        Assert.NotNull(types);
+        Assert.Equal(2, types.Length);
         Assert.Contains(ResponseTypes.Code, types);
         Assert.Contains(ResponseTypes.Code + ' ' + ResponseTypes.IdToken, types);
     }
@@ -686,7 +693,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         var scopes = (string[]?) response[Metadata.ScopesSupported];
 
         // Assert
-        Assert.Equal(2, scopes?.Length);
+        Assert.NotNull(scopes);
+        Assert.Equal(2, scopes.Length);
         Assert.Contains(Scopes.OpenId, scopes);
         Assert.Contains("custom_scope", scopes);
     }
@@ -727,7 +735,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         var claims = (string[]?) response[Metadata.ClaimsSupported];
 
         // Assert
-        Assert.Equal(2, claims?.Length);
+        Assert.NotNull(claims);
+        Assert.Equal(2, claims.Length);
         Assert.Contains(Claims.Profile, claims);
         Assert.Contains("custom_claim", claims);
     }
@@ -744,6 +753,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var types = (string[]?) response[Metadata.SubjectTypesSupported];
 
         // Assert
+        Assert.NotNull(types);
         Assert.Contains(SubjectTypes.Public, types);
     }
 
@@ -774,6 +784,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
+        Assert.NotNull(algorithms);
         Assert.Contains(algorithm, algorithms);
     }
 
@@ -795,6 +806,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
+        Assert.NotNull(algorithms);
         Assert.Single(algorithms);
         Assert.Contains(Algorithms.RsaSha256, algorithms);
     }
@@ -820,6 +832,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var algorithms = (string[]?) response[Metadata.IdTokenSigningAlgValuesSupported];
 
         // Assert
+        Assert.NotNull(algorithms);
         Assert.Single(algorithms);
     }
 
