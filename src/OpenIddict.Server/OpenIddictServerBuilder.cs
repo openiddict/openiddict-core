@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict server services.
 /// </summary>
-public class OpenIddictServerBuilder
+public sealed class OpenIddictServerBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictServerBuilder"/>.
@@ -863,7 +863,6 @@ public class OpenIddictServerBuilder
 
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
-
 
         return AddSigningCertificate(
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)

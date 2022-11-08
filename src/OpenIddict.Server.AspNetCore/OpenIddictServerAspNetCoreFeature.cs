@@ -9,7 +9,7 @@ namespace OpenIddict.Server.AspNetCore;
 /// <summary>
 /// Exposes the current server transaction to the ASP.NET Core host.
 /// </summary>
-public class OpenIddictServerAspNetCoreFeature
+public sealed class OpenIddictServerAspNetCoreFeature
 {
     /// <summary>
     /// Gets or sets the server transaction that encapsulates all specific

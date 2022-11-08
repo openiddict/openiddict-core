@@ -23,7 +23,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <summary>
         /// Contains the logic responsible for amending the token validation parameters for the providers that require it.
         /// </summary>
-        public class AmendTokenValidationParameters : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class AmendTokenValidationParameters : IOpenIddictClientHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

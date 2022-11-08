@@ -11,9 +11,9 @@ namespace OpenIddict.Validation.AspNetCore;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
 /// </summary>
-public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
-                                                           IConfigureOptions<OpenIddictValidationOptions>,
-                                                           IPostConfigureOptions<AuthenticationOptions>
+public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
+                                                                  IConfigureOptions<OpenIddictValidationOptions>,
+                                                                  IPostConfigureOptions<AuthenticationOptions>
 {
     /// <summary>
     /// Registers the OpenIddict validation handler in the global authentication options.

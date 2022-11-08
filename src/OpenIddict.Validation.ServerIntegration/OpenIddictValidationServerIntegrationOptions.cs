@@ -9,6 +9,6 @@ namespace OpenIddict.Validation.ServerIntegration;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict validation/server integration.
 /// </summary>
-public class OpenIddictValidationServerIntegrationOptions
+public sealed class OpenIddictValidationServerIntegrationOptions
 {
 }

@@ -45,7 +45,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the configuration response.
         /// </summary>
-        public class ValidateWellKnownConfigurationParameters : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ValidateWellKnownConfigurationParameters : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -138,7 +138,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the configuration response.
         /// </summary>
-        public class HandleConfigurationErrorResponse : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class HandleConfigurationErrorResponse : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -181,7 +181,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the issuer from the discovery document.
         /// </summary>
-        public class ValidateIssuer : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ValidateIssuer : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -244,7 +244,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the authorization endpoint address from the discovery document.
         /// </summary>
-        public class ExtractAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -296,7 +296,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the JWKS endpoint address from the discovery document.
         /// </summary>
-        public class ExtractCryptographyEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractCryptographyEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -348,7 +348,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the logout endpoint address from the discovery document.
         /// </summary>
-        public class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -391,7 +391,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the token endpoint address from the discovery document.
         /// </summary>
-        public class ExtractTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -434,7 +434,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the userinfo endpoint address from the discovery document.
         /// </summary>
-        public class ExtractUserinfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractUserinfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -477,7 +477,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the supported grant types from the discovery document.
         /// </summary>
-        public class ExtractGrantTypes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractGrantTypes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -519,7 +519,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the supported response types from the discovery document.
         /// </summary>
-        public class ExtractResponseModes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractResponseModes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -561,7 +561,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the supported response types from the discovery document.
         /// </summary>
-        public class ExtractResponseTypes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractResponseTypes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -603,7 +603,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the supported code challenge methods from the discovery document.
         /// </summary>
-        public class ExtractCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -645,7 +645,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the supported scopes from the discovery document.
         /// </summary>
-        public class ExtractScopes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractScopes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -688,7 +688,7 @@ public static partial class OpenIddictClientHandlers
         /// Contains the logic responsible for extracting the flag indicating
         /// whether the "iss" parameter is supported from the discovery document.
         /// </summary>
-        public class ExtractIssuerParameterRequirement : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractIssuerParameterRequirement : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -719,7 +719,7 @@ public static partial class OpenIddictClientHandlers
         /// Contains the logic responsible for extracting the authentication methods
         /// supported by the token endpoint from the discovery document.
         /// </summary>
-        public class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -761,7 +761,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the JWKS response.
         /// </summary>
-        public class ValidateWellKnownCryptographyParameters : IOpenIddictClientHandler<HandleCryptographyResponseContext>
+        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictClientHandler<HandleCryptographyResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -835,7 +835,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the cryptography response.
         /// </summary>
-        public class HandleCryptographyErrorResponse : IOpenIddictClientHandler<HandleCryptographyResponseContext>
+        public sealed class HandleCryptographyErrorResponse : IOpenIddictClientHandler<HandleCryptographyResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -878,7 +878,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the signing keys from the JWKS document.
         /// </summary>
-        public class ExtractSigningKeys : IOpenIddictClientHandler<HandleCryptographyResponseContext>
+        public sealed class ExtractSigningKeys : IOpenIddictClientHandler<HandleCryptographyResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

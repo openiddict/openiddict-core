@@ -9,7 +9,7 @@ namespace OpenIddict.MongoDb;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict MongoDB integration.
 /// </summary>
-public class OpenIddictMongoDbOptions
+public sealed class OpenIddictMongoDbOptions
 {
     /// <summary>
     /// Gets or sets the name of the applications collection (by default, openiddict.applications).

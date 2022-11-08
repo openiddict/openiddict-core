@@ -20,7 +20,7 @@ public static class OpenIddictClientOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the post-logout redirection endpoint.
     /// </summary>
-    public class RequirePostLogoutRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequirePostLogoutRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
@@ -42,7 +42,7 @@ public static class OpenIddictClientOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the redirection endpoint.
     /// </summary>
-    public class RequireRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequireRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
@@ -63,7 +63,7 @@ public static class OpenIddictClientOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if error pass-through was not enabled.
     /// </summary>
-    public class RequireErrorPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequireErrorPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
@@ -84,7 +84,7 @@ public static class OpenIddictClientOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no OWIN request can be found.
     /// </summary>
-    public class RequireOwinRequest : IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequireOwinRequest : IOpenIddictClientHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {

@@ -12,7 +12,7 @@ namespace OpenIddict.EntityFrameworkCore;
 /// Represents a model customizer able to register the entity sets
 /// required by the OpenIddict stack in an Entity Framework Core context.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : RelationalModelCustomizer
+public sealed class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : RelationalModelCustomizer
     where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
     where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>

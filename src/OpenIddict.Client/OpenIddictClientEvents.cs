@@ -209,7 +209,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing an incoming request.
     /// </summary>
-    public class ProcessRequestContext : BaseValidatingContext
+    public sealed class ProcessRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessRequestContext"/> class.
@@ -223,7 +223,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing an errored response.
     /// </summary>
-    public class ProcessErrorContext : BaseRequestContext
+    public sealed class ProcessErrorContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessErrorContext"/> class.
@@ -275,7 +275,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing an authentication operation.
     /// </summary>
-    public class ProcessAuthenticationContext : BaseValidatingContext
+    public sealed class ProcessAuthenticationContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessAuthenticationContext"/> class.
@@ -671,7 +671,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing a challenge response.
     /// </summary>
-    public class ProcessChallengeContext : BaseValidatingTicketContext
+    public sealed class ProcessChallengeContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessChallengeContext"/> class.
@@ -828,7 +828,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing a sign-out response.
     /// </summary>
-    public class ProcessSignOutContext : BaseValidatingTicketContext
+    public sealed class ProcessSignOutContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessSignOutContext"/> class.

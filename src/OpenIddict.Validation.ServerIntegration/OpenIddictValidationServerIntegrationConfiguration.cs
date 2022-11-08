@@ -12,8 +12,8 @@ namespace OpenIddict.Validation.ServerIntegration;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation/server integration configuration is valid.
 /// </summary>
-public class OpenIddictValidationServerIntegrationConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
-                                                                  IPostConfigureOptions<OpenIddictValidationOptions>
+public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
+                                                                         IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly IOptionsMonitor<OpenIddictServerOptions> _options;
 

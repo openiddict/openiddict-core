@@ -14,7 +14,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the logout endpoint to give the user code
     /// a chance to manually update the logout request before it is sent to the identity provider.
     /// </summary>
-    public class PrepareLogoutRequestContext : BaseValidatingContext
+    public sealed class PrepareLogoutRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareLogoutRequestContext"/> class.
@@ -43,7 +43,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the logout endpoint
     /// to give the user code a chance to manually send the logout request.
     /// </summary>
-    public class ApplyLogoutRequestContext : BaseValidatingContext
+    public sealed class ApplyLogoutRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareLogoutRequestContext"/> class.
@@ -69,7 +69,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the post-logout redirection endpoint to give the user code
     /// a chance to manually extract the redirection request from the ambient HTTP context.
     /// </summary>
-    public class ExtractPostLogoutRedirectionRequestContext : BaseValidatingContext
+    public sealed class ExtractPostLogoutRedirectionRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractPostLogoutRedirectionRequestContext"/> class.
@@ -93,7 +93,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the post-logout redirection endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidatePostLogoutRedirectionRequestContext : BaseValidatingContext
+    public sealed class ValidatePostLogoutRedirectionRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidatePostLogoutRedirectionRequestContext"/> class.
@@ -130,7 +130,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each validated redirection request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandlePostLogoutRedirectionRequestContext : BaseValidatingTicketContext
+    public sealed class HandlePostLogoutRedirectionRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandlePostLogoutRedirectionRequestContext"/> class.
@@ -159,7 +159,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called before the redirection response is returned to the caller.
     /// </summary>
-    public class ApplyPostLogoutRedirectionResponseContext : BaseRequestContext
+    public sealed class ApplyPostLogoutRedirectionResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyPostLogoutRedirectionResponseContext"/> class.

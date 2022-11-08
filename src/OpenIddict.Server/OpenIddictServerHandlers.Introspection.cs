@@ -59,7 +59,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting introspection requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -121,7 +121,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating introspection requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -182,7 +182,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling introspection requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -285,7 +285,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing sign-in responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyIntrospectionResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyIntrospectionResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -333,7 +333,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting introspection requests that don't specify a token.
         /// </summary>
-        public class ValidateTokenParameter : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateTokenParameter : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -373,7 +373,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting introspection requests that don't specify a client identifier.
         /// </summary>
-        public class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -414,7 +414,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting introspection requests that use an invalid client_id.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientId : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -467,7 +467,7 @@ public static partial class OpenIddictServerHandlers
         /// whose client type is not compatible with the presence or absence of a client secret.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateClientType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -538,7 +538,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting introspection requests specifying an invalid client secret.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientSecret : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateClientSecret : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -599,7 +599,7 @@ public static partial class OpenIddictServerHandlers
         /// applications that haven't been granted the introspection endpoint permission.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -652,7 +652,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting introspection requests that don't specify a valid token.
         /// </summary>
-        public class ValidateToken : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -713,7 +713,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting introspection requests that specify an unsupported token.
         /// </summary>
-        public class ValidateTokenType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateTokenType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -756,7 +756,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting introspection requests that specify a token
         /// that cannot be introspected by the client application sending the introspection requests.
         /// </summary>
-        public class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+        public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -826,7 +826,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the principal
         /// extracted from the introspected token to the event context.
         /// </summary>
-        public class AttachPrincipal : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
+        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -861,7 +861,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the metadata claims extracted from the token the event context.
         /// </summary>
-        public class AttachMetadataClaims : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
+        public sealed class AttachMetadataClaims : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -911,7 +911,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the application-specific claims extracted from the token the event context.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class AttachApplicationClaims : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
+        public sealed class AttachApplicationClaims : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1078,7 +1078,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for converting introspection errors to standard active: false responses.
         /// </summary>
-        public class NormalizeErrorResponse : IOpenIddictServerHandler<ApplyIntrospectionResponseContext>
+        public sealed class NormalizeErrorResponse : IOpenIddictServerHandler<ApplyIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

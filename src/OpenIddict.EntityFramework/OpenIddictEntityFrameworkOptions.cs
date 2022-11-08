@@ -10,7 +10,7 @@ namespace OpenIddict.EntityFramework;
 /// Provides various settings needed to configure
 /// the OpenIddict Entity Framework 6.x integration.
 /// </summary>
-public class OpenIddictEntityFrameworkOptions
+public sealed class OpenIddictEntityFrameworkOptions
 {
     /// <summary>
     /// Gets or sets the concrete type of the <see cref="DbContext"/> used by the

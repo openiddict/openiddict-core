@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict validation/System.Net.Http integration.
 /// </summary>
-public class OpenIddictValidationSystemNetHttpBuilder
+public sealed class OpenIddictValidationSystemNetHttpBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.

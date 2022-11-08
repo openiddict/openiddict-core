@@ -13,7 +13,7 @@ using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Validation;
 
-public class OpenIddictValidationService
+public sealed class OpenIddictValidationService
 {
     private readonly IServiceProvider _provider;
 

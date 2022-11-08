@@ -55,7 +55,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
+        public sealed class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -149,7 +149,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for caching logout requests, if applicable.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class CacheRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
+        public sealed class CacheRequestParameters : IOpenIddictServerHandler<ExtractLogoutRequestContext>
         {
             private readonly IDistributedCache _cache;
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
@@ -258,7 +258,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for removing cached logout requests from the distributed cache.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class RemoveCachedRequest : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class RemoveCachedRequest : IOpenIddictServerHandler<ApplyLogoutResponseContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -306,7 +306,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for processing logout responses.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -376,7 +376,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for processing logout responses that should trigger a host redirection.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

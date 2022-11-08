@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server;
 
-public class OpenIddictServerDispatcher : IOpenIddictServerDispatcher
+public sealed class OpenIddictServerDispatcher : IOpenIddictServerDispatcher
 {
     private readonly ILogger<OpenIddictServerDispatcher> _logger;
     private readonly IOptionsMonitor<OpenIddictServerOptions> _options;

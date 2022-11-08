@@ -9,7 +9,7 @@ namespace OpenIddict.Validation.AspNetCore;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict ASP.NET Core validation integration.
 /// </summary>
-public class OpenIddictValidationAspNetCoreOptions : AuthenticationSchemeOptions
+public sealed class OpenIddictValidationAspNetCoreOptions : AuthenticationSchemeOptions
 {
     /// <summary>
     /// Gets or sets the optional "realm" value returned to the caller as part of the WWW-Authenticate header.

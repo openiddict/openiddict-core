@@ -17,7 +17,7 @@ namespace OpenIddict.Core;
 /// Provides methods allowing to cache tokens after retrieving them from the store.
 /// </summary>
 /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisposable where TToken : class
+public sealed class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisposable where TToken : class
 {
     private readonly MemoryCache _cache;
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
@@ -504,7 +504,7 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     /// <param name="token">The token to store in the cache entry, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(object key, TToken? token, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, TToken? token, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -530,8 +530,7 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     /// <param name="tokens">The tokens to store in the cache entry.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(
-        object key, ImmutableArray<TToken> tokens, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, ImmutableArray<TToken> tokens, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -560,7 +559,7 @@ public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisp
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified token.
     /// </returns>
-    protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TToken token, CancellationToken cancellationToken)
+    private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TToken token, CancellationToken cancellationToken)
     {
         if (token is null)
         {

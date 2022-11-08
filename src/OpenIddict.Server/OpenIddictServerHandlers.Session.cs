@@ -53,7 +53,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting logout requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -115,7 +115,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating logout requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -176,7 +176,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling logout requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -272,7 +272,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing sign-in responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyLogoutResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyLogoutResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -320,7 +320,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting logout requests that specify an invalid post_logout_redirect_uri parameter.
         /// </summary>
-        public class ValidatePostLogoutRedirectUriParameter : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidatePostLogoutRedirectUriParameter : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -379,7 +379,7 @@ public static partial class OpenIddictServerHandlers
         /// that use an invalid client_id, if one was explicitly specified.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientId : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -435,7 +435,7 @@ public static partial class OpenIddictServerHandlers
         /// requests that use an invalid post_logout_redirect_uri.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientPostLogoutRedirectUri : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateClientPostLogoutRedirectUri : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -537,7 +537,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting logout requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when endpoint permissions are disabled.
         /// </summary>
-        public class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -597,7 +597,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting logout requests that don't specify a valid id_token_hint.
         /// </summary>
-        public class ValidateToken : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -659,7 +659,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting logout requests that specify an identity
         /// token hint that cannot be used by the client application sending the logout request.
         /// </summary>
-        public class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+        public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateLogoutRequestContext>
         {
             private readonly IOpenIddictApplicationManager? _applicationManager;
 
@@ -779,7 +779,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the principal
         /// extracted from the identity token hint to the event context.
         /// </summary>
-        public class AttachPrincipal : IOpenIddictServerHandler<HandleLogoutRequestContext>
+        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleLogoutRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -813,7 +813,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for inferring the redirect URL
         /// used to send the response back to the client application.
         /// </summary>
-        public class AttachPostLogoutRedirectUri : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class AttachPostLogoutRedirectUri : IOpenIddictServerHandler<ApplyLogoutResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -855,7 +855,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the state to the response.
         /// </summary>
-        public class AttachResponseState : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+        public sealed class AttachResponseState : IOpenIddictServerHandler<ApplyLogoutResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

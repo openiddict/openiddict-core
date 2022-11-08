@@ -58,7 +58,7 @@ public static partial class OpenIddictServerOwinHandlers
     /// Contains the logic responsible for processing verification responses that should trigger a host redirection.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyVerificationResponseContext>
+    public sealed class ProcessHostRedirectionResponse : IOpenIddictServerHandler<ApplyVerificationResponseContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.

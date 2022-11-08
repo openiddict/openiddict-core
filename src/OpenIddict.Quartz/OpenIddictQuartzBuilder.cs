@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict Quartz.NET integration.
 /// </summary>
-public class OpenIddictQuartzBuilder
+public sealed class OpenIddictQuartzBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictQuartzBuilder"/>.

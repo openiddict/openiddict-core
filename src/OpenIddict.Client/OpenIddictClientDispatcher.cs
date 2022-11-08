@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Client;
 
-public class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
+public sealed class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
 {
     private readonly ILogger<OpenIddictClientDispatcher> _logger;
     private readonly IOptionsMonitor<OpenIddictClientOptions> _options;

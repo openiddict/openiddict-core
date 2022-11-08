@@ -13,8 +13,8 @@ namespace OpenIddict.Validation.SystemNetHttp;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation/System.Net.Http integration configuration is valid.
 /// </summary>
-public class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
-                                                              IConfigureNamedOptions<HttpClientFactoryOptions>
+public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
+                                                                     IConfigureNamedOptions<HttpClientFactoryOptions>
 {
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
     private readonly IServiceProvider _provider;

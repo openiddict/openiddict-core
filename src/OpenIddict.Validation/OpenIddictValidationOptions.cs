@@ -13,7 +13,7 @@ namespace OpenIddict.Validation;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict validation handler.
 /// </summary>
-public class OpenIddictValidationOptions
+public sealed class OpenIddictValidationOptions
 {
     /// <summary>
     /// Gets the list of encryption credentials used by the OpenIddict validation services.

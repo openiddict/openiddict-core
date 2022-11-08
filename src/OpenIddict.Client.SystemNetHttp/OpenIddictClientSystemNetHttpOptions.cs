@@ -14,7 +14,7 @@ namespace OpenIddict.Client.SystemNetHttp;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict client/System.Net.Http integration.
 /// </summary>
-public class OpenIddictClientSystemNetHttpOptions
+public sealed class OpenIddictClientSystemNetHttpOptions
 {
     /// <summary>
     /// Gets or sets the HTTP Polly error policy used by the internal OpenIddict HTTP clients.

@@ -13,7 +13,7 @@ namespace OpenIddict.Validation;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
 /// </summary>
-public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
+public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly OpenIddictValidationService _service;
 

@@ -14,7 +14,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the introspection endpoint to give the user code
     /// a chance to manually extract the introspection request from the ambient HTTP context.
     /// </summary>
-    public class ExtractIntrospectionRequestContext : BaseValidatingContext
+    public sealed class ExtractIntrospectionRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractIntrospectionRequestContext"/> class.
@@ -38,7 +38,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the introspection endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateIntrospectionRequestContext : BaseValidatingClientContext
+    public sealed class ValidateIntrospectionRequestContext : BaseValidatingClientContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateIntrospectionRequestContext"/> class.
@@ -73,7 +73,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated introspection request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleIntrospectionRequestContext : BaseValidatingContext
+    public sealed class HandleIntrospectionRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleIntrospectionRequestContext"/> class.
@@ -171,7 +171,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the introspection response is returned to the caller.
     /// </summary>
-    public class ApplyIntrospectionResponseContext : BaseRequestContext
+    public sealed class ApplyIntrospectionResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyIntrospectionResponseContext"/> class.

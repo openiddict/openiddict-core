@@ -14,7 +14,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the userinfo endpoint
     /// to give the user code a chance to add parameters to the userinfo request.
     /// </summary>
-    public class PrepareUserinfoRequestContext : BaseExternalContext
+    public sealed class PrepareUserinfoRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareUserinfoRequestContext"/> class.
@@ -38,7 +38,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the userinfo endpoint
     /// to send the userinfo request to the remote authorization server.
     /// </summary>
-    public class ApplyUserinfoRequestContext : BaseExternalContext
+    public sealed class ApplyUserinfoRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyUserinfoRequestContext"/> class.
@@ -62,7 +62,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each userinfo response
     /// to extract the response parameters from the server response.
     /// </summary>
-    public class ExtractUserinfoResponseContext : BaseExternalContext
+    public sealed class ExtractUserinfoResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractUserinfoResponseContext"/> class.
@@ -99,7 +99,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called for each userinfo response.
     /// </summary>
-    public class HandleUserinfoResponseContext : BaseExternalContext
+    public sealed class HandleUserinfoResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleUserinfoResponseContext"/> class.

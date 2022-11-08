@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation;
 
-public class OpenIddictValidationFactory : IOpenIddictValidationFactory
+public sealed class OpenIddictValidationFactory : IOpenIddictValidationFactory
 {
     private readonly ILogger<OpenIddictValidationDispatcher> _logger;
     private readonly IOptionsMonitor<OpenIddictValidationOptions> _options;

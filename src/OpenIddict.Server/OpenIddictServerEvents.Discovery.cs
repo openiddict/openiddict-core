@@ -14,7 +14,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the configuration endpoint to give the user code
     /// a chance to manually extract the configuration request from the ambient HTTP context.
     /// </summary>
-    public class ExtractConfigurationRequestContext : BaseValidatingContext
+    public sealed class ExtractConfigurationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractConfigurationRequestContext"/> class.
@@ -38,7 +38,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the configuration endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateConfigurationRequestContext : BaseValidatingContext
+    public sealed class ValidateConfigurationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateConfigurationRequestContext"/> class.
@@ -62,7 +62,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated configuration request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleConfigurationRequestContext : BaseValidatingContext
+    public sealed class HandleConfigurationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleConfigurationRequestContext"/> class.
@@ -195,7 +195,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the configuration response is returned to the caller.
     /// </summary>
-    public class ApplyConfigurationResponseContext : BaseRequestContext
+    public sealed class ApplyConfigurationResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyConfigurationResponseContext"/> class.
@@ -235,7 +235,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the cryptography endpoint to give the user code
     /// a chance to manually extract the cryptography request from the ambient HTTP context.
     /// </summary>
-    public class ExtractCryptographyRequestContext : BaseValidatingContext
+    public sealed class ExtractCryptographyRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractCryptographyRequestContext"/> class.
@@ -268,7 +268,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the cryptography endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateCryptographyRequestContext : BaseValidatingContext
+    public sealed class ValidateCryptographyRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateCryptographyRequestContext"/> class.
@@ -292,7 +292,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated cryptography request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleCryptographyRequestContext : BaseValidatingContext
+    public sealed class HandleCryptographyRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleCryptographyRequestContext"/> class.
@@ -320,7 +320,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the cryptography response is returned to the caller.
     /// </summary>
-    public class ApplyCryptographyResponseContext : BaseRequestContext
+    public sealed class ApplyCryptographyResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyCryptographyResponseContext"/> class.

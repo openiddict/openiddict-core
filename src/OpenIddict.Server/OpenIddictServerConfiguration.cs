@@ -13,7 +13,7 @@ namespace OpenIddict.Server;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
 /// </summary>
-public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
+public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
 {
     /// <summary>
     /// Populates the default OpenIddict server options and ensures

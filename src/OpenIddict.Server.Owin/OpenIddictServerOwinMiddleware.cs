@@ -15,7 +15,7 @@ namespace OpenIddict.Server.Owin;
 /// that support middleware resolution, like Autofac. Since it depends on scoped services,
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
 /// </summary>
-public class OpenIddictServerOwinMiddleware : AuthenticationMiddleware<OpenIddictServerOwinOptions>
+public sealed class OpenIddictServerOwinMiddleware : AuthenticationMiddleware<OpenIddictServerOwinOptions>
 {
     private readonly IOpenIddictServerDispatcher _dispatcher;
     private readonly IOpenIddictServerFactory _factory;

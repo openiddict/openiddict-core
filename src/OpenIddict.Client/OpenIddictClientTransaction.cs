@@ -11,7 +11,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Represents the context associated with an OpenID Connect client request.
 /// </summary>
-public class OpenIddictClientTransaction
+public sealed class OpenIddictClientTransaction
 {
     /// <summary>
     /// Gets or sets the type of the endpoint processing the current request.

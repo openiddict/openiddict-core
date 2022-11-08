@@ -11,7 +11,7 @@ public static class OpenIddictExceptions
     /// <summary>
     /// Represents an OpenIddict concurrency exception.
     /// </summary>
-    public class ConcurrencyException : Exception
+    public sealed class ConcurrencyException : Exception
     {
         /// <summary>
         /// Creates a new <see cref="ConcurrencyException"/>.
@@ -36,7 +36,7 @@ public static class OpenIddictExceptions
     /// <summary>
     /// Represents an OpenIddict protocol exception.
     /// </summary>
-    public class ProtocolException : Exception
+    public sealed class ProtocolException : Exception
     {
         /// <summary>
         /// Creates a new <see cref="ProtocolException"/>.
@@ -102,7 +102,7 @@ public static class OpenIddictExceptions
     /// <summary>
     /// Represents an OpenIddict validation exception.
     /// </summary>
-    public class ValidationException : Exception
+    public sealed class ValidationException : Exception
     {
         /// <summary>
         /// Creates a new <see cref="ValidationException"/>.

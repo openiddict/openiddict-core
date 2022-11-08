@@ -9,7 +9,7 @@ namespace OpenIddict.Core;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict core services.
 /// </summary>
-public class OpenIddictCoreOptions
+public sealed class OpenIddictCoreOptions
 {
     /// <summary>
     /// Gets or sets the type corresponding to the default Application entity,

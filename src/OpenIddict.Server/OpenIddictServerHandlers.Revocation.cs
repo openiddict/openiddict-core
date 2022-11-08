@@ -52,7 +52,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting revocation requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -114,7 +114,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating revocation requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -175,7 +175,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling revocation requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleRevocationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -232,7 +232,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing sign-in responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyRevocationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyRevocationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -280,7 +280,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting revocation requests that don't specify a token.
         /// </summary>
-        public class ValidateTokenParameter : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateTokenParameter : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -320,7 +320,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting revocation requests that don't specify a client identifier.
         /// </summary>
-        public class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -361,7 +361,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting revocation requests that use an invalid client_id.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientId : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -414,7 +414,7 @@ public static partial class OpenIddictServerHandlers
         /// whose client type is not compatible with the presence or absence of a client secret.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientType : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateClientType : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -485,7 +485,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting revocation requests specifying an invalid client secret.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientSecret : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateClientSecret : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -546,7 +546,7 @@ public static partial class OpenIddictServerHandlers
         /// applications that haven't been granted the revocation endpoint permission.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -599,7 +599,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting revocation requests that don't specify a valid token.
         /// </summary>
-        public class ValidateToken : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -660,7 +660,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting revocation requests that specify an unsupported token.
         /// </summary>
-        public class ValidateTokenType : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateTokenType : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -703,7 +703,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting revocation requests that specify a token
         /// that cannot be revoked by the client application sending the revocation requests.
         /// </summary>
-        public class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+        public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -773,7 +773,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the principal
         /// extracted from the revoked token to the event context.
         /// </summary>
-        public class AttachPrincipal : IOpenIddictServerHandler<HandleRevocationRequestContext>
+        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleRevocationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -809,7 +809,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for revoking the token sent by the client application.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class RevokeToken : IOpenIddictServerHandler<HandleRevocationRequestContext>
+        public sealed class RevokeToken : IOpenIddictServerHandler<HandleRevocationRequestContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -882,7 +882,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for converting revocation errors to standard empty responses.
         /// </summary>
-        public class NormalizeErrorResponse : IOpenIddictServerHandler<ApplyRevocationResponseContext>
+        public sealed class NormalizeErrorResponse : IOpenIddictServerHandler<ApplyRevocationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

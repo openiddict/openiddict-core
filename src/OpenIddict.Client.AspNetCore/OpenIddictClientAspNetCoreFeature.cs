@@ -9,7 +9,7 @@ namespace OpenIddict.Client.AspNetCore;
 /// <summary>
 /// Exposes the current client transaction to the ASP.NET Core host.
 /// </summary>
-public class OpenIddictClientAspNetCoreFeature
+public sealed class OpenIddictClientAspNetCoreFeature
 {
     /// <summary>
     /// Gets or sets the client transaction that encapsulates all specific

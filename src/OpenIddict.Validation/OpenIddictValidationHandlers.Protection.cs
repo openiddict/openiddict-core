@@ -38,7 +38,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
         /// </summary>
-        public class ResolveTokenValidationParameters : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ResolveTokenValidationParameters : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -117,7 +117,7 @@ public static partial class OpenIddictValidationHandlers
         /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateReferenceTokenIdentifier : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ValidateReferenceTokenIdentifier : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -193,7 +193,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using IdentityModel.
         /// </summary>
-        public class ValidateIdentityModelToken : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ValidateIdentityModelToken : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -282,7 +282,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for validating the tokens using OAuth 2.0 introspection.
         /// </summary>
-        public class IntrospectToken : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class IntrospectToken : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             private readonly OpenIddictValidationService _service;
 
@@ -383,7 +383,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for normalizing the scope claims stored in the tokens.
         /// </summary>
-        public class NormalizeScopeClaims : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class NormalizeScopeClaims : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -428,7 +428,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for mapping internal claims used by OpenIddict.
         /// </summary>
-        public class MapInternalClaims : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class MapInternalClaims : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -532,7 +532,7 @@ public static partial class OpenIddictValidationHandlers
         /// Contains the logic responsible for restoring the properties associated with a reference token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class RestoreReferenceTokenProperties : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class RestoreReferenceTokenProperties : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -581,7 +581,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
         /// </summary>
-        public class ValidatePrincipal : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ValidatePrincipal : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -633,7 +633,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands containing expired access tokens.
         /// </summary>
-        public class ValidateExpirationDate : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ValidateExpirationDate : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -676,7 +676,7 @@ public static partial class OpenIddictValidationHandlers
         /// Contains the logic responsible for rejecting authentication demands containing
         /// access tokens that were issued to be used by another audience/resource server.
         /// </summary>
-        public class ValidateAudience : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ValidateAudience : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -741,7 +741,7 @@ public static partial class OpenIddictValidationHandlers
         /// associated token entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateTokenEntry : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ValidateTokenEntry : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -805,7 +805,7 @@ public static partial class OpenIddictValidationHandlers
         /// associated authorization entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateAuthorizationEntry : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class ValidateAuthorizationEntry : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 

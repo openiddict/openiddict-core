@@ -9,7 +9,7 @@ namespace OpenIddict.Quartz;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict Quartz.NET integration.
 /// </summary>
-public class OpenIddictQuartzOptions
+public sealed class OpenIddictQuartzOptions
 {
     /// <summary>
     /// Gets or sets a boolean indicating whether authorizations pruning should be disabled.

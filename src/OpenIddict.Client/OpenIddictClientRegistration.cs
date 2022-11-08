@@ -14,7 +14,7 @@ namespace OpenIddict.Client;
 /// Contains the properties used to configure a client/server link.
 /// </summary>
 [DebuggerDisplay("{Issuer,nq}")]
-public class OpenIddictClientRegistration
+public sealed class OpenIddictClientRegistration
 {
     /// <summary>
     /// Gets or sets the client identifier assigned by the authorization server.

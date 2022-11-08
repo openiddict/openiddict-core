@@ -8,7 +8,7 @@ using Scriban;
 namespace OpenIddict.Client.WebIntegration.Generators
 {
     [Generator]
-    public class OpenIddictClientWebIntegrationGenerator : ISourceGenerator
+    public sealed class OpenIddictClientWebIntegrationGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
@@ -58,7 +58,7 @@ using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationCons
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public partial class OpenIddictClientWebIntegrationBuilder
+public sealed partial class OpenIddictClientWebIntegrationBuilder
 {
     {{~ for provider in providers ~}}
     /// <summary>
@@ -109,7 +109,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// <summary>
     /// Exposes the necessary methods required to configure the {{ provider.name }} integration.
     /// </summary>
-    public partial class {{ provider.name }}
+    public sealed partial class {{ provider.name }}
     {
         /// <summary>
         /// Initializes a new instance of <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.
@@ -433,14 +433,14 @@ using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationCons
 
 namespace OpenIddict.Client.WebIntegration;
 
-public partial class OpenIddictClientWebIntegrationConfiguration
+public sealed partial class OpenIddictClientWebIntegrationConfiguration
 {
     {{~ for provider in providers ~}}
     /// <summary>
     /// Contains the methods required to register the {{ provider.name }} integration in the OpenIddict client options.
     /// </summary>
-    public class {{ provider.name }} : IConfigureOptions<OpenIddictClientOptions>,
-                                       IPostConfigureOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>
+    public sealed class {{ provider.name }} : IConfigureOptions<OpenIddictClientOptions>,
+                                              IPostConfigureOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>
     {
         private readonly IServiceProvider _provider;
 
@@ -783,7 +783,7 @@ using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationCons
 
 namespace OpenIddict.Client.WebIntegration;
 
-public partial class OpenIddictClientWebIntegrationHelpers
+public static partial class OpenIddictClientWebIntegrationHelpers
 {
     {{~ for provider in providers ~}}
     /// <summary>
@@ -815,13 +815,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client.WebIntegration;
 
-public partial class OpenIddictClientWebIntegrationOptions
+public sealed partial class OpenIddictClientWebIntegrationOptions
 {
     {{~ for provider in providers ~}}
     /// <summary>
     /// Provides various options needed to configure the {{ provider.name }} integration.
     /// </summary>
-    public class {{ provider.name }}
+    public sealed class {{ provider.name }}
     {
         /// <summary>
         /// Gets or sets the client identifier.

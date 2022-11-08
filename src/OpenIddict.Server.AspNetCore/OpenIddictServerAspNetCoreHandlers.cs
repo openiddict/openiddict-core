@@ -62,7 +62,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for inferring the endpoint type from the request address.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class InferEndpointType : IOpenIddictServerHandler<ProcessRequestContext>
+    public sealed class InferEndpointType : IOpenIddictServerHandler<ProcessRequestContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -165,7 +165,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for infering the issuer URL from the HTTP request host and validating it.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class InferIssuerFromHost : IOpenIddictServerHandler<ProcessRequestContext>
+    public sealed class InferIssuerFromHost : IOpenIddictServerHandler<ProcessRequestContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -229,7 +229,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for rejecting OpenID Connect requests that don't use transport security.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ValidateTransportSecurityRequirement : IOpenIddictServerHandler<ProcessRequestContext>
+    public sealed class ValidateTransportSecurityRequirement : IOpenIddictServerHandler<ProcessRequestContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -282,7 +282,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// ASP.NET Core authentication properties specified by the application that triggered the challenge operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ResolveHostChallengeProperties : IOpenIddictServerHandler<ProcessChallengeContext>
+    public sealed class ResolveHostChallengeProperties : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -342,7 +342,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for attaching the error details using the ASP.NET Core authentication properties.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class AttachHostChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
+    public sealed class AttachHostChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -381,7 +381,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// ASP.NET Core authentication properties specified by the application that triggered the sign-in operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ResolveHostSignInProperties : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class ResolveHostSignInProperties : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -442,7 +442,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// ASP.NET Core authentication properties specified by the application that triggered the sign-out operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ResolveHostSignOutProperties : IOpenIddictServerHandler<ProcessSignOutContext>
+    public sealed class ResolveHostSignOutProperties : IOpenIddictServerHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -502,7 +502,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for extracting OpenID Connect requests from GET HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ExtractGetRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
+    public sealed class ExtractGetRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -553,7 +553,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for extracting OpenID Connect requests from GET or POST HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ExtractGetOrPostRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
+    public sealed class ExtractGetOrPostRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -633,7 +633,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for extracting OpenID Connect requests from POST HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ExtractPostRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
+    public sealed class ExtractPostRequest<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseValidatingContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -708,7 +708,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for extracting client credentials from the standard HTTP Authorization header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ExtractBasicAuthenticationCredentials<TContext> : IOpenIddictServerHandler<TContext>
+    public sealed class ExtractBasicAuthenticationCredentials<TContext> : IOpenIddictServerHandler<TContext>
         where TContext : BaseValidatingContext
     {
         /// <summary>
@@ -807,7 +807,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for extracting an access token from the standard HTTP Authorization header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ExtractAccessToken<TContext> : IOpenIddictServerHandler<TContext>
+    public sealed class ExtractAccessToken<TContext> : IOpenIddictServerHandler<TContext>
         where TContext : BaseValidatingContext
     {
         /// <summary>
@@ -853,7 +853,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for enabling the pass-through mode for the received request.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class EnablePassthroughMode<TContext, TFilter> : IOpenIddictServerHandler<TContext>
+    public sealed class EnablePassthroughMode<TContext, TFilter> : IOpenIddictServerHandler<TContext>
         where TContext : BaseRequestContext
         where TFilter : IOpenIddictServerHandlerFilter<TContext>
     {
@@ -887,7 +887,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for attaching an appropriate HTTP status code.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class AttachHttpResponseCode<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+    public sealed class AttachHttpResponseCode<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -949,7 +949,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for attaching the appropriate HTTP response cache headers.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class AttachCacheControlHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+    public sealed class AttachCacheControlHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -988,7 +988,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for attaching errors details to the WWW-Authenticate header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+    public sealed class AttachWwwAuthenticateHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
     {
         private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
 
@@ -1110,7 +1110,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for processing challenge responses that contain a WWW-Authenticate header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ProcessChallengeErrorResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+    public sealed class ProcessChallengeErrorResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1153,7 +1153,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for processing OpenID Connect responses that must be returned as JSON.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ProcessJsonResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+    public sealed class ProcessJsonResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1208,7 +1208,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// middleware in the pipeline at a later stage (e.g an ASP.NET Core MVC action or a NancyFX module).
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ProcessPassthroughErrorResponse<TContext, TFilter> : IOpenIddictServerHandler<TContext>
+    public sealed class ProcessPassthroughErrorResponse<TContext, TFilter> : IOpenIddictServerHandler<TContext>
         where TContext : BaseRequestContext
         where TFilter : IOpenIddictServerHandlerFilter<TContext>
     {
@@ -1250,7 +1250,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for processing OpenID Connect responses handled by the status code pages middleware.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ProcessStatusCodePagesErrorResponse<TContext> : IOpenIddictServerHandler<TContext>
+    public sealed class ProcessStatusCodePagesErrorResponse<TContext> : IOpenIddictServerHandler<TContext>
         where TContext : BaseRequestContext
     {
         /// <summary>
@@ -1307,7 +1307,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for processing context responses that must be returned as plain-text.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ProcessLocalErrorResponse<TContext> : IOpenIddictServerHandler<TContext>
+    public sealed class ProcessLocalErrorResponse<TContext> : IOpenIddictServerHandler<TContext>
         where TContext : BaseRequestContext
     {
         /// <summary>
@@ -1381,7 +1381,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     /// Contains the logic responsible for processing OpenID Connect responses that don't specify any parameter.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public class ProcessEmptyResponse<TContext> : IOpenIddictServerHandler<TContext>
+    public sealed class ProcessEmptyResponse<TContext> : IOpenIddictServerHandler<TContext>
         where TContext : BaseRequestContext
     {
         /// <summary>

@@ -30,7 +30,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for preparing an HTTP GET request message.
     /// </summary>
-    public class PrepareGetHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class PrepareGetHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -62,7 +62,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for preparing an HTTP POST request message.
     /// </summary>
-    public class PreparePostHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class PreparePostHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -95,7 +95,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// Contains the logic responsible for attaching the appropriate HTTP
     /// Accept-* headers to the HTTP request message to receive JSON responses.
     /// </summary>
-    public class AttachJsonAcceptHeaders<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class AttachJsonAcceptHeaders<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -135,7 +135,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the user agent to the HTTP request.
     /// </summary>
-    public class AttachUserAgentHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class AttachUserAgentHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
 
@@ -189,7 +189,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the query string parameters to the HTTP request.
     /// </summary>
-    public class AttachQueryStringParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class AttachQueryStringParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -234,7 +234,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the form parameters to the HTTP request.
     /// </summary>
-    public class AttachFormParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class AttachFormParameters<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -276,7 +276,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for sending the HTTP request to the remote server.
     /// </summary>
-    public class SendHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class SendHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         private readonly IHttpClientFactory _factory;
 
@@ -354,7 +354,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for disposing of the HTTP request message.
     /// </summary>
-    public class DisposeHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class DisposeHttpRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -392,7 +392,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for decompressing the returned HTTP content.
     /// </summary>
-    public class DecompressResponseContent<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class DecompressResponseContent<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -531,7 +531,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for extracting the response from the JSON-encoded HTTP body.
     /// </summary>
-    public class ExtractJsonHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class ExtractJsonHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -599,7 +599,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for extracting errors from WWW-Authenticate headers.
     /// </summary>
-    public class ExtractWwwAuthenticateHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class ExtractWwwAuthenticateHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -682,7 +682,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for extracting errors from WWW-Authenticate headers.
     /// </summary>
-    public class ValidateHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class ValidateHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -752,7 +752,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// <summary>
     /// Contains the logic responsible for disposing of the HTTP response message.
     /// </summary>
-    public class DisposeHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    public sealed class DisposeHttpResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.

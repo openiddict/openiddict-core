@@ -12,7 +12,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict client handler.
 /// </summary>
-public class OpenIddictClientOptions
+public sealed class OpenIddictClientOptions
 {
     /// <summary>
     /// Gets the list of the handlers responsible for processing the OpenIddict client operations.

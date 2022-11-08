@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// Exposes the necessary methods required to configure
 /// the OpenIddict validation ASP.NET Core integration.
 /// </summary>
-public class OpenIddictValidationAspNetCoreBuilder
+public sealed class OpenIddictValidationAspNetCoreBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictValidationAspNetCoreBuilder"/>.

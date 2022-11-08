@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict validation services.
 /// </summary>
-public class OpenIddictValidationBuilder
+public sealed class OpenIddictValidationBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
@@ -335,7 +335,6 @@ public class OpenIddictValidationBuilder
 
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
-
 
         return AddEncryptionCertificate(
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)

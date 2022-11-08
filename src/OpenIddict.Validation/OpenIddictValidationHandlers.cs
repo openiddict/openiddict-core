@@ -40,7 +40,7 @@ public static partial class OpenIddictValidationHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the server configuration.
     /// </summary>
-    public class ResolveServerConfiguration : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    public sealed class ResolveServerConfiguration : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -76,7 +76,7 @@ public static partial class OpenIddictValidationHandlers
     /// <summary>
     /// Contains the logic responsible for selecting the token types that should be validated.
     /// </summary>
-    public class EvaluateValidatedTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateValidatedTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -119,7 +119,7 @@ public static partial class OpenIddictValidationHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
-    public class ValidateRequiredTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRequiredTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -158,7 +158,7 @@ public static partial class OpenIddictValidationHandlers
     /// <summary>
     /// Contains the logic responsible for ensuring a token was correctly resolved from the context.
     /// </summary>
-    public class ValidateAccessToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    public sealed class ValidateAccessToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictValidationDispatcher _dispatcher;
 
@@ -225,7 +225,7 @@ public static partial class OpenIddictValidationHandlers
     /// <summary>
     /// Contains the logic responsible for ensuring that the challenge response contains an appropriate error.
     /// </summary>
-    public class AttachDefaultChallengeError : IOpenIddictValidationHandler<ProcessChallengeContext>
+    public sealed class AttachDefaultChallengeError : IOpenIddictValidationHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -267,7 +267,7 @@ public static partial class OpenIddictValidationHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the sign-out response.
     /// </summary>
-    public class AttachCustomChallengeParameters : IOpenIddictValidationHandler<ProcessChallengeContext>
+    public sealed class AttachCustomChallengeParameters : IOpenIddictValidationHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -302,7 +302,7 @@ public static partial class OpenIddictValidationHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the error response.
     /// </summary>
-    public class AttachErrorParameters : IOpenIddictValidationHandler<ProcessErrorContext>
+    public sealed class AttachErrorParameters : IOpenIddictValidationHandler<ProcessErrorContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -334,7 +334,7 @@ public static partial class OpenIddictValidationHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the error response.
     /// </summary>
-    public class AttachCustomErrorParameters : IOpenIddictValidationHandler<ProcessErrorContext>
+    public sealed class AttachCustomErrorParameters : IOpenIddictValidationHandler<ProcessErrorContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.

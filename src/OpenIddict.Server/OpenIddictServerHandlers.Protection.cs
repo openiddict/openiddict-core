@@ -47,7 +47,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
         /// </summary>
-        public class ResolveTokenValidationParameters : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ResolveTokenValidationParameters : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -121,7 +121,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateReferenceTokenIdentifier : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateReferenceTokenIdentifier : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -242,7 +242,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using IdentityModel.
         /// </summary>
-        public class ValidateIdentityModelToken : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateIdentityModelToken : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -393,7 +393,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for normalizing the scope claims stored in the tokens.
         /// </summary>
-        public class NormalizeScopeClaims : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class NormalizeScopeClaims : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -438,7 +438,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for mapping internal claims used by OpenIddict.
         /// </summary>
-        public class MapInternalClaims : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class MapInternalClaims : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -542,7 +542,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for restoring the properties associated with a reference token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class RestoreReferenceTokenProperties : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class RestoreReferenceTokenProperties : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -590,7 +590,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
         /// </summary>
-        public class ValidatePrincipal : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidatePrincipal : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -667,7 +667,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands that use an expired token.
         /// </summary>
-        public class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -728,7 +728,7 @@ public static partial class OpenIddictServerHandlers
         /// use a token whose entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateTokenEntry : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateTokenEntry : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -931,7 +931,7 @@ public static partial class OpenIddictServerHandlers
         /// associated authorization entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateAuthorizationEntry : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateAuthorizationEntry : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 
@@ -999,7 +999,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for resolving the signing and encryption credentials used to protect tokens.
         /// </summary>
-        public class AttachSecurityCredentials : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class AttachSecurityCredentials : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1048,7 +1048,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for creating a token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class CreateTokenEntry : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class CreateTokenEntry : IOpenIddictServerHandler<GenerateTokenContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
@@ -1138,7 +1138,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for generating a token using IdentityModel.
         /// </summary>
-        public class GenerateIdentityModelToken : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class GenerateIdentityModelToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1272,7 +1272,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for converting the token to a reference token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ConvertReferenceToken : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class ConvertReferenceToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -1362,7 +1362,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for beautifying user-typed tokens.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

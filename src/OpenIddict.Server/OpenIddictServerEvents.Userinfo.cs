@@ -15,7 +15,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the userinfo endpoint to give the user code
     /// a chance to manually extract the userinfo request from the ambient HTTP context.
     /// </summary>
-    public class ExtractUserinfoRequestContext : BaseValidatingContext
+    public sealed class ExtractUserinfoRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractUserinfoRequestContext"/> class.
@@ -39,7 +39,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the userinfo endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateUserinfoRequestContext : BaseValidatingContext
+    public sealed class ValidateUserinfoRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateUserinfoRequestContext"/> class.
@@ -68,7 +68,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated userinfo request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleUserinfoRequestContext : BaseValidatingContext
+    public sealed class HandleUserinfoRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleUserinfoRequestContext"/> class.
@@ -189,7 +189,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the userinfo response is returned to the caller.
     /// </summary>
-    public class ApplyUserinfoResponseContext : BaseRequestContext
+    public sealed class ApplyUserinfoResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyUserinfoResponseContext"/> class.

@@ -41,7 +41,7 @@ public static partial class OpenIddictClientOwinHandlers
         /// Contains the logic responsible for processing authorization requests using 302 redirects.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class ProcessQueryRequest : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public sealed class ProcessQueryRequest : IOpenIddictClientHandler<ApplyLogoutRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

@@ -13,7 +13,7 @@ using Properties = OpenIddict.Client.DataProtection.OpenIddictClientDataProtecti
 
 namespace OpenIddict.Client.DataProtection;
 
-public class OpenIddictClientDataProtectionFormatter : IOpenIddictClientDataProtectionFormatter
+public sealed class OpenIddictClientDataProtectionFormatter : IOpenIddictClientDataProtectionFormatter
 {
     public ClaimsPrincipal ReadToken(BinaryReader reader)
     {

@@ -11,7 +11,7 @@ namespace OpenIddict.Validation.Owin;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
 /// </summary>
-public class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
+public sealed class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
 {
     public void Configure(OpenIddictValidationOptions options)
     {

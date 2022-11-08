@@ -14,7 +14,7 @@ namespace OpenIddict.Abstractions;
 /// <remarks>
 /// Note: depending on the stack used to produce this instance, only a few select properties may be available.
 /// </remarks>
-public class OpenIddictConfiguration
+public sealed class OpenIddictConfiguration
 {
     /// <summary>
     /// Gets or sets the address of the authorization endpoint.
@@ -65,6 +65,11 @@ public class OpenIddictConfiguration
     /// Gets or sets the address of the JWKS endpoint.
     /// </summary>
     public Uri? JwksUri { get; set; }
+
+    /// <summary>
+    /// Gets the additional properties.
+    /// </summary>
+    public Dictionary<string, object?> Properties { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets the response mode supported by the server.

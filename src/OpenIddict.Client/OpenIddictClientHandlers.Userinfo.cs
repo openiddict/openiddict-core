@@ -26,7 +26,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the userinfo response.
         /// </summary>
-        public class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public sealed class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -92,7 +92,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the userinfo response.
         /// </summary>
-        public class HandleErrorResponse : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public sealed class HandleErrorResponse : IOpenIddictClientHandler<HandleUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -138,7 +138,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the claims from the introspection response.
         /// </summary>
-        public class PopulateClaims : IOpenIddictClientHandler<HandleUserinfoResponseContext>
+        public sealed class PopulateClaims : IOpenIddictClientHandler<HandleUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

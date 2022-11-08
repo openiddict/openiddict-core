@@ -15,7 +15,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the logout endpoint to give the user code
     /// a chance to manually extract the logout request from the ambient HTTP context.
     /// </summary>
-    public class ExtractLogoutRequestContext : BaseValidatingContext
+    public sealed class ExtractLogoutRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractLogoutRequestContext"/> class.
@@ -39,7 +39,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the logout endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateLogoutRequestContext : BaseValidatingContext
+    public sealed class ValidateLogoutRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateLogoutRequestContext"/> class.
@@ -102,7 +102,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated logout request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleLogoutRequestContext : BaseValidatingContext
+    public sealed class HandleLogoutRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleLogoutRequestContext"/> class.
@@ -157,7 +157,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the logout response is returned to the caller.
     /// </summary>
-    public class ApplyLogoutResponseContext : BaseRequestContext
+    public sealed class ApplyLogoutResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyLogoutResponseContext"/> class.

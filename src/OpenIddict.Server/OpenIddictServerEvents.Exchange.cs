@@ -14,7 +14,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the token endpoint to give the user code
     /// a chance to manually extract the token request from the ambient HTTP context.
     /// </summary>
-    public class ExtractTokenRequestContext : BaseValidatingContext
+    public sealed class ExtractTokenRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractTokenRequestContext"/> class.
@@ -38,7 +38,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the token endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateTokenRequestContext : BaseValidatingClientContext
+    public sealed class ValidateTokenRequestContext : BaseValidatingClientContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateTokenRequestContext"/> class.
@@ -68,7 +68,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated token request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleTokenRequestContext : BaseValidatingTicketContext
+    public sealed class HandleTokenRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleTokenRequestContext"/> class.
@@ -114,7 +114,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the token response is returned to the caller.
     /// </summary>
-    public class ApplyTokenResponseContext : BaseRequestContext
+    public sealed class ApplyTokenResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyTokenResponseContext"/> class.

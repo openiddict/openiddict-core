@@ -15,7 +15,7 @@ namespace OpenIddict.Server;
 /// Represents an immutable descriptor of an OpenIddict server event handler.
 /// </summary>
 [DebuggerDisplay("{ServiceDescriptor?.ServiceType}")]
-public class OpenIddictServerHandlerDescriptor
+public sealed class OpenIddictServerHandlerDescriptor
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictServerHandlerDescriptor"/> class.
@@ -60,7 +60,7 @@ public class OpenIddictServerHandlerDescriptor
     /// Contains methods allowing to build a descriptor instance.
     /// </summary>
     /// <typeparam name="TContext">The event context type.</typeparam>
-    public class Builder<TContext> where TContext : BaseContext
+    public sealed class Builder<TContext> where TContext : BaseContext
     {
         private ServiceDescriptor? _descriptor;
         private readonly List<Type> _filters = new();

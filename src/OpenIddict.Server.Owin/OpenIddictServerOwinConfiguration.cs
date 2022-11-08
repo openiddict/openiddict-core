@@ -11,8 +11,8 @@ namespace OpenIddict.Server.Owin;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
 /// </summary>
-public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
-                                                 IPostConfigureOptions<OpenIddictServerOwinOptions>
+public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
+                                                        IPostConfigureOptions<OpenIddictServerOwinOptions>
 {
     public void Configure(OpenIddictServerOptions options)
     {

@@ -10,7 +10,7 @@ namespace OpenIddict.EntityFrameworkCore;
 /// Provides various settings needed to configure
 /// the OpenIddict Entity Framework Core integration.
 /// </summary>
-public class OpenIddictEntityFrameworkCoreOptions
+public sealed class OpenIddictEntityFrameworkCoreOptions
 {
     /// <summary>
     /// Gets or sets the concrete type of the <see cref="DbContext"/> used by the

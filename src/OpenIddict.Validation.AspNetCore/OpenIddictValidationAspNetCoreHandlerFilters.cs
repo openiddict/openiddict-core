@@ -18,7 +18,7 @@ public static class OpenIddictValidationAspNetCoreHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no ASP.NET Core request can be found.
     /// </summary>
-    public class RequireHttpRequest : IOpenIddictValidationHandlerFilter<BaseContext>
+    public sealed class RequireHttpRequest : IOpenIddictValidationHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {

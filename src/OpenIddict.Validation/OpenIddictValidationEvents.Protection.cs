@@ -15,7 +15,7 @@ public static partial class OpenIddictValidationEvents
     /// <summary>
     /// Represents an event called when validating a token.
     /// </summary>
-    public class ValidateTokenContext : BaseValidatingContext
+    public sealed class ValidateTokenContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateTokenContext"/> class.

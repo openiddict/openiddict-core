@@ -11,7 +11,7 @@ namespace OpenIddict.Client.AspNetCore;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict ASP.NET Core client integration.
 /// </summary>
-public class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOptions
+public sealed class OpenIddictClientAspNetCoreOptions : AuthenticationSchemeOptions
 {
     /// <summary>
     /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the post-logout redirection endpoint.

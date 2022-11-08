@@ -11,9 +11,9 @@ namespace OpenIddict.Client.AspNetCore;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client configuration is valid.
 /// </summary>
-public class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
-                                                       IConfigureOptions<OpenIddictClientOptions>,
-                                                       IPostConfigureOptions<AuthenticationOptions>
+public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
+                                                              IConfigureOptions<OpenIddictClientOptions>,
+                                                              IPostConfigureOptions<AuthenticationOptions>
 {
     /// <summary>
     /// Registers the OpenIddict client handler in the global authentication options.

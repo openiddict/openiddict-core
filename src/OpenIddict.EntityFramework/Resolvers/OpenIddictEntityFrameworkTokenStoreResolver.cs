@@ -15,7 +15,7 @@ namespace OpenIddict.EntityFramework;
 /// <summary>
 /// Exposes a method allowing to resolve a token store.
 /// </summary>
-public class OpenIddictEntityFrameworkTokenStoreResolver : IOpenIddictTokenStoreResolver
+public sealed class OpenIddictEntityFrameworkTokenStoreResolver : IOpenIddictTokenStoreResolver
 {
     private readonly TypeResolutionCache _cache;
     private readonly IOptionsMonitor<OpenIddictEntityFrameworkOptions> _options;
@@ -68,5 +68,5 @@ public class OpenIddictEntityFrameworkTokenStoreResolver : IOpenIddictTokenStore
     // service provider must be able to resolve scoped services (typically, the store they return).
     // To avoid having to declare a static type resolution cache, a special cache service is used
     // here and registered as a singleton dependency so that its content persists beyond the scope.
-    public class TypeResolutionCache : ConcurrentDictionary<Type, Type> { }
+    public sealed class TypeResolutionCache : ConcurrentDictionary<Type, Type> { }
 }
