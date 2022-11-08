@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// Exposes the necessary methods required to configure the
 /// OpenIddict ASP.NET Core Data Protection integration.
 /// </summary>
-public class OpenIddictValidationDataProtectionBuilder
+public sealed class OpenIddictValidationDataProtectionBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictValidationDataProtectionBuilder"/>.

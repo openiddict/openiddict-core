@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace OpenIddict.MongoDb;
 
 /// <inheritdoc/>
-public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
+public sealed class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
 {
     private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
     private readonly IServiceProvider _provider;

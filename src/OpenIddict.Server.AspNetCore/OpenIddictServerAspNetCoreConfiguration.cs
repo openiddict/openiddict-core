@@ -11,10 +11,10 @@ namespace OpenIddict.Server.AspNetCore;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
 /// </summary>
-public class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
-                                                       IConfigureOptions<OpenIddictServerOptions>,
-                                                       IPostConfigureOptions<AuthenticationOptions>,
-                                                       IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>
+public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
+                                                              IConfigureOptions<OpenIddictServerOptions>,
+                                                              IPostConfigureOptions<AuthenticationOptions>,
+                                                              IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>
 {
     /// <summary>
     /// Registers the OpenIddict server handler in the global authentication options.

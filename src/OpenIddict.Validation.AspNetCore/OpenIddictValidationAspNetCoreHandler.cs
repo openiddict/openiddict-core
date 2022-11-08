@@ -15,7 +15,7 @@ namespace OpenIddict.Validation.AspNetCore;
 /// <summary>
 /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
 /// </summary>
-public class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenIddictValidationAspNetCoreOptions>,
+public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenIddictValidationAspNetCoreOptions>,
     IAuthenticationRequestHandler
 {
     private readonly IOpenIddictValidationDispatcher _dispatcher;

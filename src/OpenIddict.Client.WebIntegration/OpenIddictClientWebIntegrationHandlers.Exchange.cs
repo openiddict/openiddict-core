@@ -31,7 +31,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for attaching non-standard query string
         /// parameters to the token request for the providers that require it.
         /// </summary>
-        public class AttachNonStandardQueryStringParameters : IOpenIddictClientHandler<PrepareTokenRequestContext>
+        public sealed class AttachNonStandardQueryStringParameters : IOpenIddictClientHandler<PrepareTokenRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -79,7 +79,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for attaching non-standard query string
         /// parameters to the token request for the providers that require it.
         /// </summary>
-        public class MapNonStandardResponseParameters : IOpenIddictClientHandler<ExtractTokenResponseContext>
+        public sealed class MapNonStandardResponseParameters : IOpenIddictClientHandler<ExtractTokenResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

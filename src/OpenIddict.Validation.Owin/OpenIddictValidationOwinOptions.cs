@@ -9,7 +9,7 @@ namespace OpenIddict.Validation.Owin;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict OWIN validation integration.
 /// </summary>
-public class OpenIddictValidationOwinOptions : AuthenticationOptions
+public sealed class OpenIddictValidationOwinOptions : AuthenticationOptions
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationOwinOptions"/> class.

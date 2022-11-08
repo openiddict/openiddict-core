@@ -70,7 +70,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting authorization requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -132,7 +132,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating authorization requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -198,7 +198,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling authorization requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -295,7 +295,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing sign-in responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyAuthorizationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyAuthorizationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -343,7 +343,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that specify the unsupported request parameter.
         /// </summary>
-        public class ValidateRequestParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateRequestParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -383,7 +383,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that specify the unsupported request_uri parameter.
         /// </summary>
-        public class ValidateRequestUriParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateRequestUriParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -423,7 +423,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that lack the mandatory client_id parameter.
         /// </summary>
-        public class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -464,7 +464,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that lack the mandatory redirect_uri parameter.
         /// </summary>
-        public class ValidateRedirectUriParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateRedirectUriParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -569,7 +569,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that specify an invalid response_type parameter.
         /// </summary>
-        public class ValidateResponseTypeParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateResponseTypeParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -664,7 +664,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that specify an invalid response_mode parameter.
         /// </summary>
-        public class ValidateResponseModeParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateResponseModeParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -746,7 +746,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that don't specify a valid scope parameter.
         /// </summary>
-        public class ValidateScopeParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateScopeParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -797,7 +797,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that don't specify a nonce.
         /// </summary>
-        public class ValidateNonceParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateNonceParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -846,7 +846,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that don't specify a valid prompt parameter.
         /// </summary>
-        public class ValidatePromptParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidatePromptParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -888,7 +888,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that don't specify valid PKCE parameters.
         /// </summary>
-        public class ValidateProofKeyForCodeExchangeParameters : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateProofKeyForCodeExchangeParameters : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1008,7 +1008,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests that use an invalid client_id.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientId : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateClientId : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1059,7 +1059,7 @@ public static partial class OpenIddictServerHandlers
         /// Note: this handler is not used when the degraded mode is enabled
         /// or when response type permissions enforcement is not disabled.
         /// </summary>
-        public class ValidateClientType : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateClientType : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1121,7 +1121,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests that use an invalid redirect_uri.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateClientRedirectUri : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateClientRedirectUri : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1195,7 +1195,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests that use unregistered scopes.
         /// Note: this handler partially works with the degraded mode but is not used when scope validation is disabled.
         /// </summary>
-        public class ValidateScopes : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateScopes : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictScopeManager? _scopeManager;
 
@@ -1274,7 +1274,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when endpoint permissions are disabled.
         /// </summary>
-        public class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1327,7 +1327,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when grant type permissions are disabled.
         /// </summary>
-        public class ValidateGrantTypePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateGrantTypePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1425,7 +1425,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when grant type permissions are disabled.
         /// </summary>
-        public class ValidateResponseTypePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateResponseTypePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1503,7 +1503,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests made by unauthorized applications.
         /// Note: this handler is not used when the degraded mode is enabled or when scope permissions are disabled.
         /// </summary>
-        public class ValidateScopePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateScopePermissions : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1567,7 +1567,7 @@ public static partial class OpenIddictServerHandlers
         /// applications for which proof key for code exchange (PKCE) was enforced.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateProofKeyForCodeExchangeRequirement : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateProofKeyForCodeExchangeRequirement : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
 
@@ -1625,7 +1625,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization
         /// requests that don't specify a valid id_token_hint.
         /// </summary>
-        public class ValidateToken : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -1687,7 +1687,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for rejecting authorization requests that specify an identity
         /// token hint that cannot be used by the client application sending the authorization request.
         /// </summary>
-        public class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1737,7 +1737,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the principal
         /// extracted from the identity token hint to the event context.
         /// </summary>
-        public class AttachPrincipal : IOpenIddictServerHandler<HandleAuthorizationRequestContext>
+        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1771,7 +1771,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for inferring the redirect URL
         /// used to send the response back to the client application.
         /// </summary>
-        public class AttachRedirectUri : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class AttachRedirectUri : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1814,7 +1814,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for inferring the response mode
         /// used to send the response back to the client application.
         /// </summary>
-        public class InferResponseMode : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class InferResponseMode : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1856,7 +1856,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the state to the response.
         /// </summary>
-        public class AttachResponseState : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class AttachResponseState : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1893,7 +1893,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching an "iss" parameter
         /// containing the address of the authorization server to the response.
         /// </summary>
-        public class AttachIssuer : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class AttachIssuer : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

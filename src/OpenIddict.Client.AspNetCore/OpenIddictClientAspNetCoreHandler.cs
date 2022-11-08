@@ -18,7 +18,7 @@ namespace OpenIddict.Client.AspNetCore;
 /// <summary>
 /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
 /// </summary>
-public class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddictClientAspNetCoreOptions>,
+public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<OpenIddictClientAspNetCoreOptions>,
     IAuthenticationRequestHandler,
     IAuthenticationSignOutHandler
 {

@@ -12,7 +12,7 @@ namespace OpenIddict.Client.DataProtection;
 /// Provides various settings needed to configure the OpenIddict
 /// ASP.NET Core Data Protection server integration.
 /// </summary>
-public class OpenIddictClientDataProtectionOptions
+public sealed class OpenIddictClientDataProtectionOptions
 {
     /// <summary>
     /// Gets or sets the data protection provider used to create the default

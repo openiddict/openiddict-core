@@ -13,7 +13,7 @@ namespace OpenIddict.Quartz;
 /// Represents a Quartz.NET job performing scheduled tasks for OpenIddict.
 /// </summary>
 [DisallowConcurrentExecution]
-public class OpenIddictQuartzJob : IJob
+public sealed class OpenIddictQuartzJob : IJob
 {
     private readonly IOptionsMonitor<OpenIddictQuartzOptions> _options;
     private readonly IServiceProvider _provider;

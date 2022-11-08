@@ -11,7 +11,7 @@ namespace OpenIddict.Validation;
 /// <summary>
 /// Represents the context associated with an OpenID Connect validation request.
 /// </summary>
-public class OpenIddictValidationTransaction
+public sealed class OpenIddictValidationTransaction
 {
     /// <summary>
     /// Gets or sets the type of the endpoint processing the current request.

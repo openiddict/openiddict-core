@@ -14,7 +14,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no authorization code is validated.
     /// </summary>
-    public class RequireAuthorizationCodeValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireAuthorizationCodeValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -30,7 +30,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no backchannel access token is validated.
     /// </summary>
-    public class RequireBackchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireBackchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -46,7 +46,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no backchannel identity token principal is available.
     /// </summary>
-    public class RequireBackchannelIdentityTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireBackchannelIdentityTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -62,7 +62,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no backchannel identity token is validated.
     /// </summary>
-    public class RequireBackchannelIdentityTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireBackchannelIdentityTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -78,7 +78,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no client assertion token is generated.
     /// </summary>
-    public class RequireClientAssertionTokenGenerated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireClientAssertionTokenGenerated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -94,7 +94,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no frontchannel access token is validated.
     /// </summary>
-    public class RequireFrontchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireFrontchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -110,7 +110,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no frontchannel identity token principal is available.
     /// </summary>
-    public class RequireFrontchannelIdentityTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireFrontchannelIdentityTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -126,7 +126,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no frontchannel identity token is validated.
     /// </summary>
-    public class RequireFrontchannelIdentityTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireFrontchannelIdentityTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -143,7 +143,7 @@ public static class OpenIddictClientHandlerFilters
     /// Represents a filter that excludes the associated handlers if the challenge
     /// doesn't correspond to an authorization code or implicit grant operation.
     /// </summary>
-    public class RequireInteractiveGrantType : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    public sealed class RequireInteractiveGrantType : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
         {
@@ -159,7 +159,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
     /// </summary>
-    public class RequireJsonWebTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>
+    public sealed class RequireJsonWebTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
@@ -175,7 +175,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no login state token is generated.
     /// </summary>
-    public class RequireLoginStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    public sealed class RequireLoginStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
         {
@@ -191,7 +191,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no logout state token is generated.
     /// </summary>
-    public class RequireLogoutStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessSignOutContext>
+    public sealed class RequireLogoutStateTokenGenerated : IOpenIddictClientHandlerFilter<ProcessSignOutContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessSignOutContext context)
         {
@@ -207,7 +207,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a post-logout redirection request.
     /// </summary>
-    public class RequirePostLogoutRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequirePostLogoutRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -223,7 +223,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a redirection request.
     /// </summary>
-    public class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -239,7 +239,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no refresh token is validated.
     /// </summary>
-    public class RequireRefreshTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireRefreshTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -255,7 +255,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no state token principal is available.
     /// </summary>
-    public class RequireStateTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireStateTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -271,7 +271,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no state token is validated.
     /// </summary>
-    public class RequireStateTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireStateTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -287,7 +287,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no token entry is created in the database.
     /// </summary>
-    public class RequireTokenEntryCreated : IOpenIddictClientHandlerFilter<GenerateTokenContext>
+    public sealed class RequireTokenEntryCreated : IOpenIddictClientHandlerFilter<GenerateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
@@ -303,7 +303,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the token payload is not persisted in the database.
     /// </summary>
-    public class RequireTokenPayloadPersisted : IOpenIddictClientHandlerFilter<GenerateTokenContext>
+    public sealed class RequireTokenPayloadPersisted : IOpenIddictClientHandlerFilter<GenerateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
@@ -319,7 +319,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no token request is expected to be sent.
     /// </summary>
-    public class RequireTokenRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireTokenRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -335,7 +335,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if token storage was not enabled.
     /// </summary>
-    public class RequireTokenStorageEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    public sealed class RequireTokenStorageEnabled : IOpenIddictClientHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -351,7 +351,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no userinfo request is expected to be sent.
     /// </summary>
-    public class RequireUserinfoRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserinfoRequest : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -367,7 +367,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no userinfo token is extracted.
     /// </summary>
-    public class RequireUserinfoTokenExtracted : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserinfoTokenExtracted : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -383,7 +383,7 @@ public static class OpenIddictClientHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no userinfo token principal is available.
     /// </summary>
-    public class RequireUserinfoTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserinfoTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {

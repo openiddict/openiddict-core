@@ -11,7 +11,7 @@ namespace OpenIddict.Client.WebIntegration;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client Web integration configuration is valid.
 /// </summary>
-public partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>
+public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>
 {
     /// <summary>
     /// Populates the default OpenIddict client Web integration options

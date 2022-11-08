@@ -14,7 +14,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the revocation endpoint to give the user code
     /// a chance to manually extract the revocation request from the ambient HTTP context.
     /// </summary>
-    public class ExtractRevocationRequestContext : BaseValidatingContext
+    public sealed class ExtractRevocationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractRevocationRequestContext"/> class.
@@ -38,7 +38,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the revocation endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateRevocationRequestContext : BaseValidatingClientContext
+    public sealed class ValidateRevocationRequestContext : BaseValidatingClientContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateRevocationRequestContext"/> class.
@@ -73,7 +73,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated revocation request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleRevocationRequestContext : BaseValidatingContext
+    public sealed class HandleRevocationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleRevocationRequestContext"/> class.
@@ -101,7 +101,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the revocation response is returned to the caller.
     /// </summary>
-    public class ApplyRevocationResponseContext : BaseRequestContext
+    public sealed class ApplyRevocationResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyRevocationResponseContext"/> class.

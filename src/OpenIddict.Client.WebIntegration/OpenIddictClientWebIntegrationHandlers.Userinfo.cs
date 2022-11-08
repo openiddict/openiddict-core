@@ -32,7 +32,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for attaching the access token
         /// parameter to the request for the providers that require it.
         /// </summary>
-        public class AttachAccessTokenParameter : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        public sealed class AttachAccessTokenParameter : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -76,7 +76,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for extracting the userinfo response
         /// from nested JSON nodes (e.g "data") for the providers that require it.
         /// </summary>
-        public class UnwrapUserinfoResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        public sealed class UnwrapUserinfoResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

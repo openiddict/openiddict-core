@@ -11,8 +11,8 @@ namespace OpenIddict.Client.Owin;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client configuration is valid.
 /// </summary>
-public class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                 IPostConfigureOptions<OpenIddictClientOwinOptions>
+public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenIddictClientOptions>,
+                                                        IPostConfigureOptions<OpenIddictClientOwinOptions>
 {
     public void Configure(OpenIddictClientOptions options)
     {

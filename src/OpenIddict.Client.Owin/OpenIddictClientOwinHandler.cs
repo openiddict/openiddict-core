@@ -16,7 +16,7 @@ namespace OpenIddict.Client.Owin;
 /// <summary>
 /// Provides the entry point necessary to register the OpenIddict client in an OWIN pipeline.
 /// </summary>
-public class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClientOwinOptions>
+public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddictClientOwinOptions>
 {
     private readonly IOpenIddictClientDispatcher _dispatcher;
     private readonly IOpenIddictClientFactory _factory;

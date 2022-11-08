@@ -35,7 +35,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the introspection request.
         /// </summary>
-        public class AttachCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
+        public sealed class AttachCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -65,7 +65,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the token to the introspection request.
         /// </summary>
-        public class AttachToken : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
+        public sealed class AttachToken : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -95,7 +95,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the introspection response.
         /// </summary>
-        public class ValidateWellKnownParameters : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class ValidateWellKnownParameters : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -183,7 +183,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the introspection response.
         /// </summary>
-        public class HandleErrorResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class HandleErrorResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -229,7 +229,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the active: false marker from the response.
         /// </summary>
-        public class HandleInactiveResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class HandleInactiveResponse : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -282,7 +282,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the issuer from the introspection response.
         /// </summary>
-        public class ValidateIssuer : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class ValidateIssuer : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -335,7 +335,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting and validating the token usage from the introspection response.
         /// </summary>
-        public class ValidateTokenUsage : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class ValidateTokenUsage : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -394,7 +394,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the claims from the introspection response.
         /// </summary>
-        public class PopulateClaims : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        public sealed class PopulateClaims : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

@@ -17,7 +17,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if authorization request caching was not enabled.
     /// </summary>
-    public class RequireAuthorizationRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireAuthorizationRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -39,7 +39,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the authorization endpoint.
     /// </summary>
-    public class RequireAuthorizationEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireAuthorizationEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -60,7 +60,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if error pass-through was not enabled.
     /// </summary>
-    public class RequireErrorPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireErrorPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -81,7 +81,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if logout request caching was not enabled.
     /// </summary>
-    public class RequireLogoutRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireLogoutRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -103,7 +103,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the logout endpoint.
     /// </summary>
-    public class RequireLogoutEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireLogoutEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -124,7 +124,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no OWIN request can be found.
     /// </summary>
-    public class RequireOwinRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireOwinRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -140,7 +140,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the HTTPS requirement was disabled.
     /// </summary>
-    public class RequireTransportSecurityRequirementEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireTransportSecurityRequirementEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -162,7 +162,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the authorization endpoint.
     /// </summary>
-    public class RequireTokenEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireTokenEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -184,7 +184,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the userinfo endpoint.
     /// </summary>
-    public class RequireUserinfoEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireUserinfoEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
@@ -206,7 +206,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the verification endpoint.
     /// </summary>
-    public class RequireVerificationEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireVerificationEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 

@@ -15,7 +15,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called when generating a token.
     /// </summary>
-    public class GenerateTokenContext : BaseValidatingContext
+    public sealed class GenerateTokenContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="GenerateTokenContext"/> class.
@@ -91,7 +91,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called when validating a token.
     /// </summary>
-    public class ValidateTokenContext : BaseValidatingContext
+    public sealed class ValidateTokenContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateTokenContext"/> class.

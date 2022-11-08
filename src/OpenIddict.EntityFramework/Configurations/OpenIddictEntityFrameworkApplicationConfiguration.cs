@@ -20,7 +20,7 @@ namespace OpenIddict.EntityFramework;
 /// <typeparam name="TToken">The type of the Token entity.</typeparam>
 /// <typeparam name="TKey">The type of the Key entity.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public class OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey> : EntityTypeConfiguration<TApplication>
+public sealed class OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey> : EntityTypeConfiguration<TApplication>
     where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
     where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
     where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>

@@ -13,7 +13,7 @@ namespace OpenIddict.MongoDb;
 /// <summary>
 /// Exposes a method allowing to resolve an authorization store.
 /// </summary>
-public class OpenIddictMongoDbAuthorizationStoreResolver : IOpenIddictAuthorizationStoreResolver
+public sealed class OpenIddictMongoDbAuthorizationStoreResolver : IOpenIddictAuthorizationStoreResolver
 {
     private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
     private readonly IServiceProvider _provider;

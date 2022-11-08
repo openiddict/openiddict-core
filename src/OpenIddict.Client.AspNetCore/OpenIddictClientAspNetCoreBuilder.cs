@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// Exposes the necessary methods required to configure
 /// the OpenIddict client ASP.NET Core integration.
 /// </summary>
-public class OpenIddictClientAspNetCoreBuilder
+public sealed class OpenIddictClientAspNetCoreBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictClientAspNetCoreBuilder"/>.

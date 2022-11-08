@@ -14,7 +14,7 @@ using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Client;
 
-public class OpenIddictClientService
+public sealed class OpenIddictClientService
 {
     private readonly IServiceProvider _provider;
 

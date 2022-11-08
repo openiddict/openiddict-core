@@ -17,7 +17,7 @@ namespace OpenIddict.Core;
 /// Provides methods allowing to cache scopes after retrieving them from the store.
 /// </summary>
 /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisposable where TScope : class
+public sealed class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisposable where TScope : class
 {
     private readonly MemoryCache _cache;
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
@@ -249,7 +249,7 @@ public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisp
     /// <param name="scope">The scope to store in the cache entry, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(object key, TScope? scope, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, TScope? scope, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -275,8 +275,7 @@ public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisp
     /// <param name="scopes">The scopes to store in the cache entry.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(
-        object key, ImmutableArray<TScope> scopes, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, ImmutableArray<TScope> scopes, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -305,7 +304,7 @@ public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisp
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified scope.
     /// </returns>
-    protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(TScope scope, CancellationToken cancellationToken)
+    private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TScope scope, CancellationToken cancellationToken)
     {
         if (scope is null)
         {

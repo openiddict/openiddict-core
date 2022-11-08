@@ -14,7 +14,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the token endpoint
     /// to give the user code a chance to add parameters to the token request.
     /// </summary>
-    public class PrepareTokenRequestContext : BaseExternalContext
+    public sealed class PrepareTokenRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareTokenRequestContext"/> class.
@@ -48,7 +48,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the token endpoint
     /// to send the token request to the remote authorization server.
     /// </summary>
-    public class ApplyTokenRequestContext : BaseExternalContext
+    public sealed class ApplyTokenRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyTokenRequestContext"/> class.
@@ -72,7 +72,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each token response
     /// to extract the response parameters from the server response.
     /// </summary>
-    public class ExtractTokenResponseContext : BaseExternalContext
+    public sealed class ExtractTokenResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractTokenResponseContext"/> class.
@@ -104,7 +104,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called for each token response.
     /// </summary>
-    public class HandleTokenResponseContext : BaseExternalContext
+    public sealed class HandleTokenResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleTokenResponseContext"/> class.

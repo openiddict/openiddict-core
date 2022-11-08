@@ -12,8 +12,8 @@ namespace OpenIddict.Client.DataProtection;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict ASP.NET Core Data Protection configuration is valid.
 /// </summary>
-public class OpenIddictClientDataProtectionConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                           IPostConfigureOptions<OpenIddictClientDataProtectionOptions>
+public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOptions<OpenIddictClientOptions>,
+                                                                  IPostConfigureOptions<OpenIddictClientDataProtectionOptions>
 {
     private readonly IDataProtectionProvider _dataProtectionProvider;
 

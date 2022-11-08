@@ -13,7 +13,7 @@ namespace OpenIddict.Client.Owin;
 /// Provides the entry point necessary to instantiate and register the scoped
 /// <see cref="OpenIddictClientOwinMiddleware"/> in an OWIN/Katana pipeline.
 /// </summary>
-public class OpenIddictClientOwinMiddlewareFactory : OwinMiddleware
+public sealed class OpenIddictClientOwinMiddlewareFactory : OwinMiddleware
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientOwinMiddlewareFactory"/> class.

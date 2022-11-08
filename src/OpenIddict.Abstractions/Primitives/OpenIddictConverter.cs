@@ -12,7 +12,7 @@ namespace OpenIddict.Abstractions;
 /// <summary>
 /// Represents a JSON converter able to convert OpenIddict primitives.
 /// </summary>
-public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
+public sealed class OpenIddictConverter : JsonConverter<OpenIddictMessage>
 {
     /// <summary>
     /// Determines whether the specified type is supported by this converter.

@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// Exposes the necessary methods required to configure
 /// the OpenIddict server OWIN/Katana integration.
 /// </summary>
-public class OpenIddictServerOwinBuilder
+public sealed class OpenIddictServerOwinBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictServerOwinBuilder"/>.

@@ -10,7 +10,7 @@ using Properties = OpenIddict.Validation.DataProtection.OpenIddictValidationData
 
 namespace OpenIddict.Validation.DataProtection;
 
-public class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
+public sealed class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
 {
     public ClaimsPrincipal ReadToken(BinaryReader reader)
     {

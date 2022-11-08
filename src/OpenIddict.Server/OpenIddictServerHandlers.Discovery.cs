@@ -60,7 +60,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting configuration requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -122,7 +122,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating configuration requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -179,7 +179,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling configuration requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -265,7 +265,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing configuration responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyConfigurationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyConfigurationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -313,7 +313,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the endpoint URLs to the provider discovery document.
         /// </summary>
-        public class AttachEndpoints : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachEndpoints : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -404,7 +404,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported grant types to the provider discovery document.
         /// </summary>
-        public class AttachGrantTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachGrantTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -433,7 +433,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported response modes to the provider discovery document.
         /// </summary>
-        public class AttachResponseModes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachResponseModes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -462,7 +462,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported response types to the provider discovery document.
         /// </summary>
-        public class AttachResponseTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachResponseTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -492,7 +492,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the supported client
         /// authentication methods to the provider discovery document.
         /// </summary>
-        public class AttachClientAuthenticationMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachClientAuthenticationMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -538,7 +538,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the supported
         /// code challenge methods to the provider discovery document.
         /// </summary>
-        public class AttachCodeChallengeMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachCodeChallengeMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -567,7 +567,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported response types to the provider discovery document.
         /// </summary>
-        public class AttachScopes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachScopes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -596,7 +596,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported claims to the provider discovery document.
         /// </summary>
-        public class AttachClaims : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachClaims : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -625,7 +625,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported subject types to the provider discovery document.
         /// </summary>
-        public class AttachSubjectTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachSubjectTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -654,7 +654,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported signing algorithms to the provider discovery document.
         /// </summary>
-        public class AttachSigningAlgorithms : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachSigningAlgorithms : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -720,7 +720,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching additional metadata to the provider discovery document.
         /// </summary>
-        public class AttachAdditionalMetadata : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachAdditionalMetadata : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -758,7 +758,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting cryptography requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -820,7 +820,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating cryptography requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -877,7 +877,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling cryptography requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -1005,7 +1005,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing cryptography responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyCryptographyResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyCryptographyResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -1053,7 +1053,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the signing keys to the JWKS document.
         /// </summary>
-        public class AttachSigningKeys : IOpenIddictServerHandler<HandleCryptographyRequestContext>
+        public sealed class AttachSigningKeys : IOpenIddictServerHandler<HandleCryptographyRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

@@ -11,7 +11,7 @@ namespace OpenIddict.Quartz;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict Quartz.NET configuration is valid.
 /// </summary>
-public class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
+public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
 {
     /// <inheritdoc/>
     public void Configure(QuartzOptions options)

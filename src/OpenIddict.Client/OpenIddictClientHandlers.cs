@@ -143,7 +143,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting invalid authentication demands.
     /// </summary>
-    public class ValidateAuthenticationDemand : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateAuthenticationDemand : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -217,7 +217,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for determining the types of tokens to validate upfront.
     /// </summary>
-    public class EvaluateValidatedUpfrontTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateValidatedUpfrontTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -265,7 +265,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the state token to validate upfront from the incoming request.
     /// </summary>
-    public class ResolveValidatedStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveValidatedStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -300,7 +300,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that lack the required state token.
     /// </summary>
-    public class ValidateRequiredStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRequiredStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -339,7 +339,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the state token resolved from the context.
     /// </summary>
-    public class ValidateStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -408,7 +408,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for redeeming the token entry corresponding to the received state token.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
-    public class RedeemStateTokenEntry : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class RedeemStateTokenEntry : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -468,7 +468,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for ensuring the resolved state
     /// token is suitable for the requested authentication demand.
     /// </summary>
-    public class ValidateStateTokenEndpointType : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateStateTokenEndpointType : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -518,7 +518,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for validating the request forgery protection claim that serves as a
     /// protection against state token injection, forged requests, denial of service and session fixation attacks.
     /// </summary>
-    public class ValidateRequestForgeryProtection : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRequestForgeryProtection : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -588,7 +588,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for resolving the client registration
     /// based on the authorization server identity stored in the state token.
     /// </summary>
-    public class ResolveClientRegistrationFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveClientRegistrationFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -653,7 +653,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for ensuring the issuer parameter, if available, matches the expected issuer.
     /// </summary>
-    public class ValidateIssuerParameter : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateIssuerParameter : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -737,7 +737,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting errored authorization responses.
     /// </summary>
-    public class HandleFrontchannelErrorResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class HandleFrontchannelErrorResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -823,7 +823,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for resolving the grant type
     /// initially negotiated and stored in the state token, if applicable.
     /// </summary>
-    public class ResolveGrantTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveGrantTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -877,7 +877,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for resolving the response type
     /// initially negotiated and stored in the state token, if applicable.
     /// </summary>
-    public class ResolveResponseTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveResponseTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -911,7 +911,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for determining the set of frontchannel tokens to validate.
     /// </summary>
-    public class EvaluateValidatedFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateValidatedFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -993,7 +993,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the token from the incoming request.
     /// </summary>
-    public class ResolveValidatedFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveValidatedFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1044,7 +1044,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
-    public class ValidateRequiredFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRequiredFrontchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1085,7 +1085,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the frontchannel identity token resolved from the context.
     /// </summary>
-    public class ValidateFrontchannelIdentityToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateFrontchannelIdentityToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -1153,7 +1153,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the well-known claims contained in the frontchannel identity token.
     /// </summary>
-    public class ValidateFrontchannelIdentityTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateFrontchannelIdentityTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1290,7 +1290,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the audience returned in the frontchannel identity token, if applicable.
     /// </summary>
-    public class ValidateFrontchannelIdentityTokenAudience : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateFrontchannelIdentityTokenAudience : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1335,7 +1335,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the presenter returned in the frontchannel identity token, if applicable.
     /// </summary>
-    public class ValidateFrontchannelIdentityTokenPresenter : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateFrontchannelIdentityTokenPresenter : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1378,7 +1378,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the nonce returned in the frontchannel identity token, if applicable.
     /// </summary>
-    public class ValidateFrontchannelIdentityTokenNonce : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateFrontchannelIdentityTokenNonce : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1487,7 +1487,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the digests of the frontchannel tokens, if applicable.
     /// </summary>
-    public class ValidateFrontchannelTokenDigests : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateFrontchannelTokenDigests : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1618,7 +1618,7 @@ public static partial class OpenIddictClientHandlers
     /// Note: this handler is typically not used for standard-compliant implementations as access tokens
     /// are supposed to be opaque to clients.
     /// </summary>
-    public class ValidateFrontchannelAccessToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateFrontchannelAccessToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -1688,7 +1688,7 @@ public static partial class OpenIddictClientHandlers
     /// Note: this handler is typically not used for standard-compliant implementations as authorization codes
     /// are supposed to be opaque to clients.
     /// </summary>
-    public class ValidateAuthorizationCode : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateAuthorizationCode : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -1756,7 +1756,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the address of the token endpoint.
     /// </summary>
-    public class ResolveTokenEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveTokenEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1789,7 +1789,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for determining whether a token request should be sent.
     /// </summary>
-    public class EvaluateTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1832,7 +1832,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the parameters to the token request, if applicable.
     /// </summary>
-    public class AttachTokenRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AttachTokenRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1909,7 +1909,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for selecting the token types that should
     /// be generated and optionally sent as part of the authentication demand.
     /// </summary>
-    public class EvaluateGeneratedClientAssertionToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateGeneratedClientAssertionToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1950,7 +1950,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the client assertion token, if one is going to be sent.
     /// </summary>
-    public class PrepareClientAssertionTokenPrincipal : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class PrepareClientAssertionTokenPrincipal : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2019,7 +2019,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for generating a client
     /// assertion token for the current authentication operation.
     /// </summary>
-    public class GenerateClientAssertionToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class GenerateClientAssertionToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -2091,7 +2091,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the client credentials to the token request, if applicable.
     /// </summary>
-    public class AttachTokenRequestClientCredentials : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AttachTokenRequestClientCredentials : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2139,7 +2139,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for sending the token request, if applicable.
     /// </summary>
-    public class SendTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class SendTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly OpenIddictClientService _service;
 
@@ -2194,7 +2194,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for determining the set of backchannel tokens to validate.
     /// </summary>
-    public class EvaluateValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2299,7 +2299,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the backchannel tokens by sending a token request, if applicable.
     /// </summary>
-    public class ResolveValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2346,7 +2346,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
-    public class ValidateRequiredBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRequiredBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2388,7 +2388,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the backchannel identity token resolved from the context.
     /// </summary>
-    public class ValidateBackchannelIdentityToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateBackchannelIdentityToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -2456,7 +2456,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the well-known claims contained in the backchannel identity token.
     /// </summary>
-    public class ValidateBackchannelIdentityTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateBackchannelIdentityTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2593,7 +2593,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the audience returned in the backchannel identity token, if applicable.
     /// </summary>
-    public class ValidateBackchannelIdentityTokenAudience : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateBackchannelIdentityTokenAudience : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2638,7 +2638,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the presenter returned in the backchannel identity token, if applicable.
     /// </summary>
-    public class ValidateBackchannelIdentityTokenPresenter : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateBackchannelIdentityTokenPresenter : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2681,7 +2681,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the nonce returned in the backchannel identity token, if applicable.
     /// </summary>
-    public class ValidateBackchannelIdentityTokenNonce : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateBackchannelIdentityTokenNonce : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2790,7 +2790,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the digests of the backchannel access token.
     /// </summary>
-    public class ValidateBackchannelTokenDigests : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateBackchannelTokenDigests : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2885,7 +2885,7 @@ public static partial class OpenIddictClientHandlers
     /// Note: this handler is typically not used for standard-compliant implementations as access tokens
     /// are supposed to be opaque to clients.
     /// </summary>
-    public class ValidateBackchannelAccessToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateBackchannelAccessToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -2955,7 +2955,7 @@ public static partial class OpenIddictClientHandlers
     /// Note: this handler is typically not used for standard-compliant implementations as refresh tokens
     /// are supposed to be opaque to clients.
     /// </summary>
-    public class ValidateRefreshToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRefreshToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -3023,7 +3023,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the address of the userinfo endpoint.
     /// </summary>
-    public class ResolveUserinfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveUserinfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3056,7 +3056,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for determining whether a userinfo request should be sent.
     /// </summary>
-    public class EvaluateUserinfoRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateUserinfoRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3098,7 +3098,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the parameters to the userinfo request, if applicable.
     /// </summary>
-    public class AttachUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AttachUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3133,7 +3133,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for sending the userinfo request, if applicable.
     /// </summary>
-    public class SendUserinfoRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class SendUserinfoRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly OpenIddictClientService _service;
 
@@ -3192,7 +3192,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for determining whether a userinfo token should be validated.
     /// </summary>
-    public class EvaluateValidatedUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateValidatedUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3226,7 +3226,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that lack the required userinfo token.
     /// </summary>
-    public class ValidateRequiredUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRequiredUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3265,7 +3265,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the userinfo token resolved from the context.
     /// </summary>
-    public class ValidateUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateUserinfoToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -3333,7 +3333,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the well-known claims contained in the userinfo token.
     /// </summary>
-    public class ValidateUserinfoTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateUserinfoTokenWellknownClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3399,7 +3399,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for validating the subject claim contained in the userinfo token.
     /// </summary>
-    public class ValidateUserinfoTokenSubject : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateUserinfoTokenSubject : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3478,7 +3478,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting invalid challenge demands.
     /// </summary>
-    public class ValidateChallengeDemand : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class ValidateChallengeDemand : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3543,7 +3543,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the client registration applicable to the challenge demand.
     /// </summary>
-    public class ResolveClientRegistrationFromChallengeContext : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class ResolveClientRegistrationFromChallengeContext : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3588,7 +3588,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for resolving the best grant type
     /// supported by both the client and the authorization server.
     /// </summary>
-    public class AttachGrantType : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachGrantType : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3671,7 +3671,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for selecting the token types that
     /// should be generated and optionally returned in the response.
     /// </summary>
-    public class EvaluateGeneratedChallengeTokens : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class EvaluateGeneratedChallengeTokens : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3715,7 +3715,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the user-defined properties to the authentication principal.
     /// </summary>
-    public class AttachChallengeHostProperties : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachChallengeHostProperties : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3746,7 +3746,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the response type to the challenge request.
     /// </summary>
-    public class AttachResponseType : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachResponseType : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3937,7 +3937,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the response mode to the challenge request.
     /// </summary>
-    public class AttachResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4042,7 +4042,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the client identifier to the challenge request.
     /// </summary>
-    public class AttachClientId : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachClientId : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4071,7 +4071,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the redirect_uri to the challenge request.
     /// </summary>
-    public class AttachRedirectUri : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachRedirectUri : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4104,7 +4104,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the scopes to the challenge request.
     /// </summary>
-    public class AttachScopes : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachScopes : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4149,7 +4149,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching a request forgery protection to the authorization request.
     /// </summary>
-    public class AttachRequestForgeryProtection : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachRequestForgeryProtection : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4181,7 +4181,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching a nonce to the authorization request.
     /// </summary>
-    public class AttachNonce : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachNonce : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4221,7 +4221,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the code challenge parameters to the authorization request.
     /// </summary>
-    public class AttachCodeChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachCodeChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4314,7 +4314,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the state token, if one is going to be returned.
     /// </summary>
-    public class PrepareStateTokenPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class PrepareStateTokenPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4429,7 +4429,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for generating a state token for the current challenge operation.
     /// </summary>
-    public class GenerateStateToken : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class GenerateStateToken : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -4495,7 +4495,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for ensuring the redirect_uri parameter is present
     /// if the "openid" scope is requested (indicating the request is an OpenID Connect request).
     /// </summary>
-    public class ValidateRedirectUriParameter : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class ValidateRedirectUriParameter : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4530,7 +4530,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the challenge response.
     /// </summary>
-    public class AttachChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4596,7 +4596,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the challenge response.
     /// </summary>
-    public class AttachCustomChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachCustomChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4632,7 +4632,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for ensuring that the sign-out demand
     /// is compatible with the type of the endpoint that handled the request.
     /// </summary>
-    public class ValidateSignOutDemand : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class ValidateSignOutDemand : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4690,7 +4690,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the client registration applicable to the sign-out demand.
     /// </summary>
-    public class ResolveClientRegistrationFromSignOutContext : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class ResolveClientRegistrationFromSignOutContext : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4734,7 +4734,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the client identifier to the sign-out request.
     /// </summary>
-    public class AttachOptionalClientId : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class AttachOptionalClientId : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4763,7 +4763,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the post_logout_redirect_uri to the sign-out request.
     /// </summary>
-    public class AttachPostLogoutRedirectUri : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class AttachPostLogoutRedirectUri : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4793,7 +4793,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for selecting the token types that
     /// should be generated and optionally returned in the response.
     /// </summary>
-    public class EvaluateGeneratedLogoutTokens : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class EvaluateGeneratedLogoutTokens : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4822,7 +4822,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the user-defined properties to the authentication principal.
     /// </summary>
-    public class AttachSignOutHostProperties : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class AttachSignOutHostProperties : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4853,7 +4853,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching a request forgery protection to the logout request.
     /// </summary>
-    public class AttachLogoutRequestForgeryProtection : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class AttachLogoutRequestForgeryProtection : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4884,7 +4884,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching a nonce to the logout request.
     /// </summary>
-    public class AttachLogoutNonce : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class AttachLogoutNonce : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4914,7 +4914,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the logout state token, if one is going to be returned.
     /// </summary>
-    public class PrepareLogoutStateTokenPrincipal : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class PrepareLogoutStateTokenPrincipal : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -5008,7 +5008,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for generating a logout state token for the current sign-out operation.
     /// </summary>
-    public class GenerateLogoutStateToken : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class GenerateLogoutStateToken : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -5073,7 +5073,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the sign-out response.
     /// </summary>
-    public class AttachSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class AttachSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -5116,7 +5116,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the sign-out response.
     /// </summary>
-    public class AttachCustomSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class AttachCustomSignOutParameters : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -5151,7 +5151,7 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the error response.
     /// </summary>
-    public class AttachErrorParameters : IOpenIddictClientHandler<ProcessErrorContext>
+    public sealed class AttachErrorParameters : IOpenIddictClientHandler<ProcessErrorContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.

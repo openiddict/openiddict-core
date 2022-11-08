@@ -42,7 +42,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for handling non-standard
     /// authorization errors for the providers that require it.
     /// </summary>
-    public class HandleNonStandardFrontchannelErrorResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class HandleNonStandardFrontchannelErrorResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -110,7 +110,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for amending the client
     /// assertion methods for the providers that require it.
     /// </summary>
-    public class AttachNonStandardClientAssertionTokenClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AttachNonStandardClientAssertionTokenClaims : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -154,7 +154,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for attaching custom client credentials
     /// parameters to the token request for the providers that require it.
     /// </summary>
-    public class AttachTokenRequestNonStandardClientCredentials : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AttachTokenRequestNonStandardClientCredentials : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -199,7 +199,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for attaching custom client credentials
     /// parameters to the token request for the providers that require it.
     /// </summary>
-    public class AdjustRedirectUriInTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AdjustRedirectUriInTokenRequest : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -254,7 +254,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for overriding the set
     /// of required tokens for the providers that require it.
     /// </summary>
-    public class OverrideValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class OverrideValidatedBackchannelTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -295,7 +295,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for attaching additional parameters
     /// to the userinfo request for the providers that require it.
     /// </summary>
-    public class AttachAdditionalUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class AttachAdditionalUserinfoRequestParameters : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -357,7 +357,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// <summary>
     /// Contains the logic responsible for overriding response mode for providers that require it.
     /// </summary>
-    public class OverrideResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class OverrideResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -397,7 +397,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for overriding the standard "scope"
     /// parameter for providers that are known to use a non-standard format.
     /// </summary>
-    public class FormatNonStandardScopeParameter : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class FormatNonStandardScopeParameter : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -435,7 +435,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
     /// Contains the logic responsible for persisting the state parameter in the redirect URI for
     /// providers that don't support it but allow arbitrary dynamic parameters in redirect_uri.
     /// </summary>
-    public class IncludeStateParameterInRedirectUri : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class IncludeStateParameterInRedirectUri : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.

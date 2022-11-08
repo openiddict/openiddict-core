@@ -13,7 +13,7 @@ namespace OpenIddict.Server.Owin;
 /// Provides the entry point necessary to instantiate and register the scoped
 /// <see cref="OpenIddictServerOwinMiddleware"/> in an OWIN/Katana pipeline.
 /// </summary>
-public class OpenIddictServerOwinMiddlewareFactory : OwinMiddleware
+public sealed class OpenIddictServerOwinMiddlewareFactory : OwinMiddleware
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictServerOwinMiddlewareFactory"/> class.

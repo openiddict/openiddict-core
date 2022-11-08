@@ -17,7 +17,7 @@ namespace OpenIddict.Server.AspNetCore;
 /// <summary>
 /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
 /// </summary>
-public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddictServerAspNetCoreOptions>,
+public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddictServerAspNetCoreOptions>,
     IAuthenticationRequestHandler,
     IAuthenticationSignInHandler,
     IAuthenticationSignOutHandler

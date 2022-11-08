@@ -14,7 +14,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client configuration is valid.
 /// </summary>
-public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
+public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
 {
     private readonly OpenIddictClientService _service;
 

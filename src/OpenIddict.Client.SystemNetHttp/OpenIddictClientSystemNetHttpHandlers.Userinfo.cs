@@ -40,7 +40,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the access token to the HTTP Authorization header.
         /// </summary>
-        public class AttachBearerAccessToken : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        public sealed class AttachBearerAccessToken : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -81,7 +81,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the response from the userinfo response.
         /// </summary>
-        public class ExtractUserinfoTokenHttpResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        public sealed class ExtractUserinfoTokenHttpResponse : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

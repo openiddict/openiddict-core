@@ -13,7 +13,7 @@ namespace OpenIddict.Validation.Owin;
 /// Provides the entry point necessary to instantiate and register the scoped
 /// <see cref="OpenIddictValidationOwinMiddleware"/> in an OWIN/Katana pipeline.
 /// </summary>
-public class OpenIddictValidationOwinMiddlewareFactory : OwinMiddleware
+public sealed class OpenIddictValidationOwinMiddlewareFactory : OwinMiddleware
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationOwinMiddlewareFactory"/> class.

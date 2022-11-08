@@ -14,7 +14,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the authorization endpoint to give the user code
     /// a chance to manually update the authorization request before it is sent to the identity provider.
     /// </summary>
-    public class PrepareAuthorizationRequestContext : BaseValidatingContext
+    public sealed class PrepareAuthorizationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareAuthorizationRequestContext"/> class.
@@ -43,7 +43,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the authorization endpoint
     /// to give the user code a chance to manually send the authorization request.
     /// </summary>
-    public class ApplyAuthorizationRequestContext : BaseValidatingContext
+    public sealed class ApplyAuthorizationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareAuthorizationRequestContext"/> class.
@@ -69,7 +69,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the redirection endpoint to give the user code
     /// a chance to manually extract the redirection request from the ambient HTTP context.
     /// </summary>
-    public class ExtractRedirectionRequestContext : BaseValidatingContext
+    public sealed class ExtractRedirectionRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractRedirectionRequestContext"/> class.
@@ -93,7 +93,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the redirection endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateRedirectionRequestContext : BaseValidatingContext
+    public sealed class ValidateRedirectionRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateRedirectionRequestContext"/> class.
@@ -130,7 +130,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each validated redirection request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleRedirectionRequestContext : BaseValidatingTicketContext
+    public sealed class HandleRedirectionRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleRedirectionRequestContext"/> class.
@@ -159,7 +159,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called before the redirection response is returned to the caller.
     /// </summary>
-    public class ApplyRedirectionResponseContext : BaseRequestContext
+    public sealed class ApplyRedirectionResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyRedirectionResponseContext"/> class.

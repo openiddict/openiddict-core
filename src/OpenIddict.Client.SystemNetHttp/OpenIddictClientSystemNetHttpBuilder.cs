@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict client/System.Net.Http integration.
 /// </summary>
-public class OpenIddictClientSystemNetHttpBuilder
+public sealed class OpenIddictClientSystemNetHttpBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictClientBuilder"/>.

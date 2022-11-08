@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Protocols;
 
 namespace OpenIddict.Client;
 
-public class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddictConfiguration>
+public sealed class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddictConfiguration>
 {
     private readonly OpenIddictClientService _service;
     private readonly OpenIddictClientRegistration _registration;

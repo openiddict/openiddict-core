@@ -44,7 +44,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
         /// </summary>
-        public class ResolveTokenValidationParameters : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class ResolveTokenValidationParameters : IOpenIddictClientHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -150,7 +150,7 @@ public static partial class OpenIddictClientHandlers
         /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when token storage is disabled.
         /// </summary>
-        public class ValidateReferenceTokenIdentifier : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class ValidateReferenceTokenIdentifier : IOpenIddictClientHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -217,7 +217,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using IdentityModel.
         /// </summary>
-        public class ValidateIdentityModelToken : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class ValidateIdentityModelToken : IOpenIddictClientHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -341,7 +341,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for mapping internal claims used by OpenIddict.
         /// </summary>
-        public class MapInternalClaims : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class MapInternalClaims : IOpenIddictClientHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -399,7 +399,7 @@ public static partial class OpenIddictClientHandlers
         /// Contains the logic responsible for restoring the properties associated with a reference token entry.
         /// Note: this handler is not used when token storage is disabled.
         /// </summary>
-        public class RestoreReferenceTokenProperties : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class RestoreReferenceTokenProperties : IOpenIddictClientHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -446,7 +446,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
         /// </summary>
-        public class ValidatePrincipal : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class ValidatePrincipal : IOpenIddictClientHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -498,7 +498,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands that use an expired token.
         /// </summary>
-        public class ValidateExpirationDate : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class ValidateExpirationDate : IOpenIddictClientHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -540,7 +540,7 @@ public static partial class OpenIddictClientHandlers
         /// associated token entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when token storage is disabled.
         /// </summary>
-        public class ValidateTokenEntry : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class ValidateTokenEntry : IOpenIddictClientHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -634,7 +634,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for resolving the signing and encryption credentials used to protect tokens.
         /// </summary>
-        public class AttachSecurityCredentials : IOpenIddictClientHandler<GenerateTokenContext>
+        public sealed class AttachSecurityCredentials : IOpenIddictClientHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -685,7 +685,7 @@ public static partial class OpenIddictClientHandlers
         /// Contains the logic responsible for creating a token entry.
         /// Note: this handler is not used when token storage is disabled.
         /// </summary>
-        public class CreateTokenEntry : IOpenIddictClientHandler<GenerateTokenContext>
+        public sealed class CreateTokenEntry : IOpenIddictClientHandler<GenerateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -742,7 +742,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for generating a token using IdentityModel.
         /// </summary>
-        public class GenerateIdentityModelToken : IOpenIddictClientHandler<GenerateTokenContext>
+        public sealed class GenerateIdentityModelToken : IOpenIddictClientHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -840,7 +840,7 @@ public static partial class OpenIddictClientHandlers
         /// Contains the logic responsible for converting the token to a reference token.
         /// Note: this handler is not used when token storage is disabled.
         /// </summary>
-        public class ConvertReferenceToken : IOpenIddictClientHandler<GenerateTokenContext>
+        public sealed class ConvertReferenceToken : IOpenIddictClientHandler<GenerateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 

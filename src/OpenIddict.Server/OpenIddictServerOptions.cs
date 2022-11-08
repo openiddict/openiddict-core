@@ -13,7 +13,7 @@ namespace OpenIddict.Server;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict server handler.
 /// </summary>
-public class OpenIddictServerOptions
+public sealed class OpenIddictServerOptions
 {
     /// <summary>
     /// Gets or sets the optional base address used to uniquely identify the authorization server.
