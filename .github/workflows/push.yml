@@ -10,16 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Generate sponsors section
-      uses: JamesIves/github-sponsors-readme-action@v1.0.8
+      uses: JamesIves/github-sponsors-readme-action@v1.2.2
       with:
         token: ${{ secrets.SPONSORS_TOKEN }}
         file: 'README.md'
 
     - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4
+      uses: JamesIves/github-pages-deploy-action@v4.4.1
       with:
         branch: dev
         folder: '.'
