@@ -16,6 +16,8 @@
     <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)eng\CodeAnalysis.ruleset</CodeAnalysisRuleset>
     <EnableXlfLocalization>false</EnableXlfLocalization>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -63,15 +65,6 @@
     <IsShipping>true</IsShipping>
     <Serviceable>false</Serviceable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!--
-      Note: OpenIddict uses PolySharp to dynamically generate polyfills for types that are not available on
-      some of the targeted TFMs (e.g Index, Range or nullable attributes on .NET Framework/.NET Standard).
-    -->
-    <PackageReference Include="PolySharp" Version="1.7.1" IsImplicitlyDefined="true"
-                      PrivateAssets="all" Condition=" '$(DisablePolySharp)' != 'true' " />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectCapability Include="DynamicDependentFile" />

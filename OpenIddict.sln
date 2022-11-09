@@ -75,11 +75,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{F6F3C8E0-B
 		build.sh = build.sh
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
 		LICENSE.md = LICENSE.md
 		NuGet.config = NuGet.config
 		package-icon.png = package-icon.png
-		Packages.props = Packages.props
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -132,19 +132,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gen", "gen", "{4CF2AFFA-A31
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.WebIntegration.Generators", "gen\OpenIddict.Client.WebIntegration.Generators\OpenIddict.Client.WebIntegration.Generators.csproj", "{24DEAE71-7BED-4A2A-B10D-085A1EF5B4B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Validation.IntegrationTests", "test\OpenIddict.Validation.IntegrationTests\OpenIddict.Validation.IntegrationTests.csproj", "{704CAA3A-B58B-4FAC-B623-A796321AF601}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Validation.IntegrationTests", "test\OpenIddict.Validation.IntegrationTests\OpenIddict.Validation.IntegrationTests.csproj", "{704CAA3A-B58B-4FAC-B623-A796321AF601}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Validation.AspNetCore.IntegrationTests", "test\OpenIddict.Validation.AspNetCore.IntegrationTests\OpenIddict.Validation.AspNetCore.IntegrationTests.csproj", "{6A72F5DA-F792-41CC-BBDB-1A65AAC5E39A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Validation.AspNetCore.IntegrationTests", "test\OpenIddict.Validation.AspNetCore.IntegrationTests\OpenIddict.Validation.AspNetCore.IntegrationTests.csproj", "{6A72F5DA-F792-41CC-BBDB-1A65AAC5E39A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Validation.Owin.IntegrationTests", "test\OpenIddict.Validation.Owin.IntegrationTests\OpenIddict.Validation.Owin.IntegrationTests.csproj", "{4A71A841-60F5-4E2A-A212-FA3450F7AEA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Validation.Owin.IntegrationTests", "test\OpenIddict.Validation.Owin.IntegrationTests\OpenIddict.Validation.Owin.IntegrationTests.csproj", "{4A71A841-60F5-4E2A-A212-FA3450F7AEA5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Client.IntegrationTests", "test\OpenIddict.Client.IntegrationTests\OpenIddict.Client.IntegrationTests.csproj", "{16BDABB5-387F-421E-95C6-0E3A2311B7E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.IntegrationTests", "test\OpenIddict.Client.IntegrationTests\OpenIddict.Client.IntegrationTests.csproj", "{16BDABB5-387F-421E-95C6-0E3A2311B7E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Client.AspNetCore.IntegrationTests", "test\OpenIddict.Client.AspNetCore.IntegrationTests\OpenIddict.Client.AspNetCore.IntegrationTests.csproj", "{CC731B63-4D5C-4587-8F28-B40F4EEAC735}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.AspNetCore.IntegrationTests", "test\OpenIddict.Client.AspNetCore.IntegrationTests\OpenIddict.Client.AspNetCore.IntegrationTests.csproj", "{CC731B63-4D5C-4587-8F28-B40F4EEAC735}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Client.Owin.IntegrationTests", "test\OpenIddict.Client.Owin.IntegrationTests\OpenIddict.Client.Owin.IntegrationTests.csproj", "{2F3E9EED-446B-46C3-BC52-ED66C280E0A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Client.Owin.IntegrationTests", "test\OpenIddict.Client.Owin.IntegrationTests\OpenIddict.Client.Owin.IntegrationTests.csproj", "{2F3E9EED-446B-46C3-BC52-ED66C280E0A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Server.DataProtection.Tests", "test\OpenIddict.Server.DataProtection.Tests\OpenIddict.Server.DataProtection.Tests.csproj", "{C92838AB-3923-49A1-B23E-FA01306CAC9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.DataProtection.Tests", "test\OpenIddict.Server.DataProtection.Tests\OpenIddict.Server.DataProtection.Tests.csproj", "{C92838AB-3923-49A1-B23E-FA01306CAC9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
