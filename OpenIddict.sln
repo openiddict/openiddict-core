@@ -106,6 +106,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C5E38924-35AF-48E3-B629-A56BCBC02F04}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\push.yml = .github\workflows\push.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Quartz", "src\OpenIddict.Quartz\OpenIddict.Quartz.csproj", "{FD150A90-1997-45C7-9EBE-7C6E62E464E8}"
