@@ -173,10 +173,10 @@ public class AuthorizationController : Controller
                     roleType: Claims.Role);
 
                 // Add the claims that will be persisted in the tokens.
-                identity.AddClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
-                        .AddClaim(Claims.Email, await _userManager.GetEmailAsync(user))
-                        .AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
-                        .AddClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+                identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
+                        .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
+                        .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
+                        .SetClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
 
                 // Note: in this sample, the granted scopes match the requested scope
                 // but you may want to allow the user to uncheck specific scopes.
@@ -187,15 +187,12 @@ public class AuthorizationController : Controller
                 // Automatically create a permanent authorization to avoid requiring explicit consent
                 // for future authorization or token requests containing the same scopes.
                 var authorization = authorizations.LastOrDefault();
-                if (authorization is null)
-                {
-                    authorization = await _authorizationManager.CreateAsync(
-                        principal: new ClaimsPrincipal(identity),
-                        subject  : await _userManager.GetUserIdAsync(user),
-                        client   : await _applicationManager.GetIdAsync(application),
-                        type     : AuthorizationTypes.Permanent,
-                        scopes   : identity.GetScopes());
-                }
+                authorization ??= await _authorizationManager.CreateAsync(
+                    identity: identity,
+                    subject : await _userManager.GetUserIdAsync(user),
+                    client  : await _applicationManager.GetIdAsync(application),
+                    type    : AuthorizationTypes.Permanent,
+                    scopes  : identity.GetScopes());
 
                 identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
                 identity.SetDestinations(GetDestinations);
@@ -269,10 +266,10 @@ public class AuthorizationController : Controller
             roleType: Claims.Role);
 
         // Add the claims that will be persisted in the tokens.
-        identity.AddClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
-                .AddClaim(Claims.Email, await _userManager.GetEmailAsync(user))
-                .AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
-                .AddClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+        identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
+                .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
+                .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
+                .SetClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
 
         // Note: in this sample, the granted scopes match the requested scope
         // but you may want to allow the user to uncheck specific scopes.
@@ -283,15 +280,12 @@ public class AuthorizationController : Controller
         // Automatically create a permanent authorization to avoid requiring explicit consent
         // for future authorization or token requests containing the same scopes.
         var authorization = authorizations.LastOrDefault();
-        if (authorization is null)
-        {
-            authorization = await _authorizationManager.CreateAsync(
-                principal: new ClaimsPrincipal(identity),
-                subject  : await _userManager.GetUserIdAsync(user),
-                client   : await _applicationManager.GetIdAsync(application),
-                type     : AuthorizationTypes.Permanent,
-                scopes   : identity.GetScopes());
-        }
+        authorization ??= await _authorizationManager.CreateAsync(
+            identity: identity,
+            subject : await _userManager.GetUserIdAsync(user),
+            client  : await _applicationManager.GetIdAsync(application),
+            type    : AuthorizationTypes.Permanent,
+            scopes  : identity.GetScopes());
 
         identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
         identity.SetDestinations(GetDestinations);
@@ -366,10 +360,10 @@ public class AuthorizationController : Controller
                 roleType: Claims.Role);
 
             // Add the claims that will be persisted in the tokens.
-            identity.AddClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
-                    .AddClaim(Claims.Email, await _userManager.GetEmailAsync(user))
-                    .AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
-                    .AddClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+            identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
+                    .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
+                    .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
+                    .SetClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
 
             // Note: in this sample, the granted scopes match the requested scope
             // but you may want to allow the user to uncheck specific scopes.
@@ -480,10 +474,10 @@ public class AuthorizationController : Controller
                 roleType: Claims.Role);
 
             // Add the claims that will be persisted in the tokens.
-            identity.AddClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
-                    .AddClaim(Claims.Email, await _userManager.GetEmailAsync(user))
-                    .AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
-                    .AddClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+            identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
+                    .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
+                    .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
+                    .SetClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
 
             // Note: in this sample, the granted scopes match the requested scope
             // but you may want to allow the user to uncheck specific scopes.
