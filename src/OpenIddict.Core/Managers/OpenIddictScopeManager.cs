@@ -744,12 +744,13 @@ public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TSco
 
         await foreach (var scope in FindByNamesAsync(scopes, cancellationToken))
         {
-            resources.UnionWith(await GetResourcesAsync(scope, cancellationToken));
-        }
-
-        foreach (var resource in resources)
-        {
-            yield return resource;
+            foreach (var resource in await GetResourcesAsync(scope, cancellationToken))
+            {
+                if (resources.Add(resource))
+                {
+                    yield return resource;
+                }
+            }
         }
     }
 

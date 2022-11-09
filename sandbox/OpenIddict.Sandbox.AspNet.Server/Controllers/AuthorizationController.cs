@@ -142,10 +142,10 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                         roleType: Claims.Role);
 
                     // Add the claims that will be persisted in the tokens.
-                    identity.AddClaim(Claims.Subject, user.Id)
-                            .AddClaim(Claims.Email, user.Email)
-                            .AddClaim(Claims.Name, user.UserName)
-                            .AddClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
+                    identity.SetClaim(Claims.Subject, user.Id)
+                            .SetClaim(Claims.Email, user.Email)
+                            .SetClaim(Claims.Name, user.UserName)
+                            .SetClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
 
                     // Note: in this sample, the granted scopes match the requested scope
                     // but you may want to allow the user to uncheck specific scopes.
@@ -156,15 +156,12 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                     // Automatically create a permanent authorization to avoid requiring explicit consent
                     // for future authorization or token requests containing the same scopes.
                     var authorization = authorizations.LastOrDefault();
-                    if (authorization == null)
-                    {
-                        authorization = await _authorizationManager.CreateAsync(
-                            principal: new ClaimsPrincipal(identity),
-                            subject  : user.Id,
-                            client   : await _applicationManager.GetIdAsync(application),
-                            type     : AuthorizationTypes.Permanent,
-                            scopes   : identity.GetScopes());
-                    }
+                    authorization ??= await _authorizationManager.CreateAsync(
+                        identity: identity,
+                        subject : user.Id,
+                        client  : await _applicationManager.GetIdAsync(application),
+                        type    : AuthorizationTypes.Permanent,
+                        scopes  : identity.GetScopes());
 
                     identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
                     identity.SetDestinations(GetDestinations);
@@ -263,10 +260,10 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                 roleType: Claims.Role);
 
             // Add the claims that will be persisted in the tokens.
-            identity.AddClaim(Claims.Subject, user.Id)
-                    .AddClaim(Claims.Email, user.Email)
-                    .AddClaim(Claims.Name, user.UserName)
-                    .AddClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
+            identity.SetClaim(Claims.Subject, user.Id)
+                    .SetClaim(Claims.Email, user.Email)
+                    .SetClaim(Claims.Name, user.UserName)
+                    .SetClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
 
             // Note: in this sample, the granted scopes match the requested scope
             // but you may want to allow the user to uncheck specific scopes.
@@ -277,15 +274,12 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
             // Automatically create a permanent authorization to avoid requiring explicit consent
             // for future authorization or token requests containing the same scopes.
             var authorization = authorizations.LastOrDefault();
-            if (authorization == null)
-            {
-                authorization = await _authorizationManager.CreateAsync(
-                    principal: new ClaimsPrincipal(identity),
-                    subject  : user.Id,
-                    client   : await _applicationManager.GetIdAsync(application),
-                    type     : AuthorizationTypes.Permanent,
-                    scopes   : identity.GetScopes());
-            }
+            authorization ??= await _authorizationManager.CreateAsync(
+                identity: identity,
+                subject : user.Id,
+                client  : await _applicationManager.GetIdAsync(application),
+                type    : AuthorizationTypes.Permanent,
+                scopes  : identity.GetScopes());
 
             identity.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
             identity.SetDestinations(GetDestinations);
