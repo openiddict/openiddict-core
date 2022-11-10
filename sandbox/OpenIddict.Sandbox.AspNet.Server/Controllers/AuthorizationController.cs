@@ -377,6 +377,13 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
                     nameType: Claims.Name,
                     roleType: Claims.Role);
 
+                // Override the user claims present in the principal in case they
+                // changed since the authorization code/refresh token was issued.
+                identity.SetClaim(Claims.Subject, user.Id)
+                        .SetClaim(Claims.Email, user.Email)
+                        .SetClaim(Claims.Name, user.UserName)
+                        .SetClaims(Claims.Role, (await context.Get<ApplicationUserManager>().GetRolesAsync(user.Id)).ToImmutableArray());
+
                 identity.SetDestinations(GetDestinations);
 
                 // Ask OpenIddict to issue the appropriate access/identity tokens.
