@@ -1672,6 +1672,192 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void ClaimsIdentity_AddClaimWithBoolean_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaim(Claims.Name, true));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithBoolean_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaim(Claims.Name, true));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithBoolean_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, true));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_AddClaimWithBoolean_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type, true));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_AddClaimWithBoolean_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type, true));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimWithBoolean_AddsExpectedClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.AddClaim(Claims.Name, true);
+
+        // Assert
+        Assert.Equal(bool.TrueString, identity.FindFirst(Claims.Name)!.Value);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithBoolean_AddsExpectedClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.AddClaim(Claims.Name, true);
+
+        // Assert
+        Assert.Equal(bool.TrueString, principal.FindFirst(Claims.Name)!.Value);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimWithInteger_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.AddClaim(Claims.Name, 42L));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithInteger_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.AddClaim(Claims.Name, 42L));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithInteger_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(Claims.Name, 42L));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_AddClaimWithInteger_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type, 42L));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_AddClaimWithInteger_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.AddClaim(type, 42L));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_AddClaimWithInteger_AddsExpectedClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.AddClaim(Claims.Name, 42L);
+
+        // Assert
+        Assert.Equal("42", identity.FindFirst(Claims.Name)!.Value);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_AddClaimWithInteger_AddsExpectedClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.AddClaim(Claims.Name, 42L);
+
+        // Assert
+        Assert.Equal("42", principal.FindFirst(Claims.Name)!.Value);
+    }
+
+    [Fact]
     public void ClaimsIdentity_AddClaimWithDictionary_ThrowsAnExceptionForNullIdentity()
     {
         // Arrange
@@ -2678,6 +2864,316 @@ public class OpenIddictExtensionsTests
 
         // Act
         principal.SetClaim("type", string.Empty);
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithBoolean_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaim("type", true));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithBoolean_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", true));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithBoolean_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", true));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_SetClaimWithBoolean_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type, true));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_SetClaimWithBoolean_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithBoolean_AddsExpectedClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim("type", false);
+
+        // Act
+        identity.SetClaim("type", true, "issuer");
+
+        // Assert
+        var claim = Assert.Single(identity.FindAll("type"));
+        Assert.Equal(bool.TrueString, claim.Value);
+        Assert.Equal(ClaimValueTypes.Boolean, claim.ValueType);
+        Assert.Equal("issuer", claim.Issuer);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithBoolean_AddsExpectedClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", false);
+
+        // Act
+        principal.SetClaim("type", true, "issuer");
+
+        // Assert
+        var claim = Assert.Single(principal.FindAll("type"));
+        Assert.Equal(bool.TrueString, claim.Value);
+        Assert.Equal(ClaimValueTypes.Boolean, claim.ValueType);
+        Assert.Equal("issuer", claim.Issuer);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithBoolean_IsCaseInsensitive()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaim("TYPE", true);
+
+        // Assert
+        Assert.Equal(bool.TrueString, identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithBoolean_IsCaseInsensitive()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.SetClaim("TYPE", true);
+
+        // Assert
+        Assert.Equal(bool.TrueString, principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithBoolean_RemovesEmptyClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim("type", false);
+
+        // Act
+        identity.SetClaim("type", (bool?) null);
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithBoolean_RemovesEmptyClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", false);
+
+        // Act
+        principal.SetClaim("type", (bool?) null);
+
+        // Assert
+        Assert.Null(principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithInteger_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var identity = (ClaimsIdentity) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => identity.SetClaim("type", 42L));
+
+        Assert.Equal("identity", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithInteger_ThrowsAnExceptionForNullPrincipal()
+    {
+        // Arrange
+        var principal = (ClaimsPrincipal) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", 42L));
+
+        Assert.Equal("principal", exception.ParamName);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithInteger_ThrowsAnExceptionForNullIdentity()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim("type", 42L));
+
+        Assert.Equal("principal", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0286), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsIdentity_SetClaimWithInteger_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => identity.SetClaim(type, 42L));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void ClaimsPrincipal_SetClaimWithInteger_ThrowsAnExceptionForNullOrEmptyType(string type)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, 42L));
+
+        Assert.Equal("type", exception.ParamName);
+        Assert.StartsWith(SR.GetResourceString(SR.ID0184), exception.Message);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithInteger_AddsExpectedClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim("type", 1L);
+
+        // Act
+        identity.SetClaim("type", 42L, "issuer");
+
+        // Assert
+        var claim = Assert.Single(identity.FindAll("type"));
+        Assert.Equal("42", claim.Value);
+        Assert.Equal(ClaimValueTypes.Integer64, claim.ValueType);
+        Assert.Equal("issuer", claim.Issuer);
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithInteger_AddsExpectedClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", 1L);
+
+        // Act
+        principal.SetClaim("type", 42L, "issuer");
+
+        // Assert
+        var claim = Assert.Single(principal.FindAll("type"));
+        Assert.Equal("42", claim.Value);
+        Assert.Equal(ClaimValueTypes.Integer64, claim.ValueType);
+        Assert.Equal("issuer", claim.Issuer);
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithInteger_IsCaseInsensitive()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+
+        // Act
+        identity.SetClaim("TYPE", 42L);
+
+        // Assert
+        Assert.Equal("42", identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithInteger_IsCaseInsensitive()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Act
+        principal.SetClaim("TYPE", 42L);
+
+        // Assert
+        Assert.Equal("42", principal.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsIdentity_SetClaimWithInteger_RemovesEmptyClaim()
+    {
+        // Arrange
+        var identity = new ClaimsIdentity();
+        identity.AddClaim("type", 42L);
+
+        // Act
+        identity.SetClaim("type", (long?) null);
+
+        // Assert
+        Assert.Null(identity.GetClaim("type"));
+    }
+
+    [Fact]
+    public void ClaimsPrincipal_SetClaimWithInteger_RemovesEmptyClaim()
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal(new ClaimsIdentity());
+        principal.AddClaim("type", 42L);
+
+        // Act
+        principal.SetClaim("type", (long?) null);
 
         // Assert
         Assert.Null(principal.GetClaim("type"));
@@ -3855,7 +4351,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetClaim(Claims.Private.AccessTokenLifetime, "2520");
+        identity.SetClaim(Claims.Private.AccessTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), identity.GetAccessTokenLifetime());
@@ -3866,7 +4362,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetClaim(Claims.Private.AccessTokenLifetime, "2520");
+        principal.SetClaim(Claims.Private.AccessTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetAccessTokenLifetime());
@@ -3921,7 +4417,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetClaim(Claims.Private.AuthorizationCodeLifetime, "2520");
+        identity.SetClaim(Claims.Private.AuthorizationCodeLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), identity.GetAuthorizationCodeLifetime());
@@ -3932,7 +4428,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, "2520");
+        principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetAuthorizationCodeLifetime());
@@ -3987,7 +4483,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetClaim(Claims.Private.DeviceCodeLifetime, "2520");
+        identity.SetClaim(Claims.Private.DeviceCodeLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), identity.GetDeviceCodeLifetime());
@@ -3998,7 +4494,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetClaim(Claims.Private.DeviceCodeLifetime, "2520");
+        principal.SetClaim(Claims.Private.DeviceCodeLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetDeviceCodeLifetime());
@@ -4053,7 +4549,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetClaim(Claims.Private.IdentityTokenLifetime, "2520");
+        identity.SetClaim(Claims.Private.IdentityTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), identity.GetIdentityTokenLifetime());
@@ -4064,7 +4560,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetClaim(Claims.Private.IdentityTokenLifetime, "2520");
+        principal.SetClaim(Claims.Private.IdentityTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetIdentityTokenLifetime());
@@ -4119,7 +4615,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetClaim(Claims.Private.RefreshTokenLifetime, "2520");
+        identity.SetClaim(Claims.Private.RefreshTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), identity.GetRefreshTokenLifetime());
@@ -4130,7 +4626,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetClaim(Claims.Private.RefreshTokenLifetime, "2520");
+        principal.SetClaim(Claims.Private.RefreshTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetRefreshTokenLifetime());
@@ -4185,7 +4681,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetClaim(Claims.Private.StateTokenLifetime, "2520");
+        identity.SetClaim(Claims.Private.StateTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), identity.GetStateTokenLifetime());
@@ -4196,7 +4692,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetClaim(Claims.Private.StateTokenLifetime, "2520");
+        principal.SetClaim(Claims.Private.StateTokenLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetStateTokenLifetime());
@@ -4251,7 +4747,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.SetClaim(Claims.Private.UserCodeLifetime, "2520");
+        identity.SetClaim(Claims.Private.UserCodeLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), identity.GetUserCodeLifetime());
@@ -4262,7 +4758,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.SetClaim(Claims.Private.UserCodeLifetime, "2520");
+        principal.SetClaim(Claims.Private.UserCodeLifetime, 2520);
 
         // Act and assert
         Assert.Equal(TimeSpan.FromMinutes(42), principal.GetUserCodeLifetime());
@@ -5165,7 +5661,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.AccessTokenLifetime, "2520");
+        identity.AddClaim(Claims.Private.AccessTokenLifetime, 2520);
 
         // Act
         identity.SetAccessTokenLifetime(null);
@@ -5179,7 +5675,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.AccessTokenLifetime, "2520");
+        principal.AddClaim(Claims.Private.AccessTokenLifetime, 2520);
 
         // Act
         principal.SetAccessTokenLifetime(null);
@@ -5243,7 +5739,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.AuthorizationCodeLifetime, "2520");
+        identity.AddClaim(Claims.Private.AuthorizationCodeLifetime, 2520);
 
         // Act
         identity.SetAuthorizationCodeLifetime(null);
@@ -5257,7 +5753,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.AuthorizationCodeLifetime, "2520");
+        principal.AddClaim(Claims.Private.AuthorizationCodeLifetime, 2520);
 
         // Act
         principal.SetAuthorizationCodeLifetime(null);
@@ -5321,7 +5817,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.DeviceCodeLifetime, "2520");
+        identity.AddClaim(Claims.Private.DeviceCodeLifetime, 2520);
 
         // Act
         identity.SetDeviceCodeLifetime(null);
@@ -5335,7 +5831,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.DeviceCodeLifetime, "2520");
+        principal.AddClaim(Claims.Private.DeviceCodeLifetime, 2520);
 
         // Act
         principal.SetDeviceCodeLifetime(null);
@@ -5399,7 +5895,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.IdentityTokenLifetime, "2520");
+        identity.AddClaim(Claims.Private.IdentityTokenLifetime, 2520);
 
         // Act
         identity.SetIdentityTokenLifetime(null);
@@ -5413,7 +5909,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.IdentityTokenLifetime, "2520");
+        principal.AddClaim(Claims.Private.IdentityTokenLifetime, 2520);
 
         // Act
         principal.SetIdentityTokenLifetime(null);
@@ -5477,7 +5973,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.RefreshTokenLifetime, "2520");
+        identity.AddClaim(Claims.Private.RefreshTokenLifetime, 2520);
 
         // Act
         identity.SetRefreshTokenLifetime(null);
@@ -5491,7 +5987,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.RefreshTokenLifetime, "2520");
+        principal.AddClaim(Claims.Private.RefreshTokenLifetime, 2520);
 
         // Act
         principal.SetRefreshTokenLifetime(null);
@@ -5555,7 +6051,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.StateTokenLifetime, "2520");
+        identity.AddClaim(Claims.Private.StateTokenLifetime, 2520);
 
         // Act
         identity.SetStateTokenLifetime(null);
@@ -5569,7 +6065,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.StateTokenLifetime, "2520");
+        principal.AddClaim(Claims.Private.StateTokenLifetime, 2520);
 
         // Act
         principal.SetStateTokenLifetime(null);
@@ -5633,7 +6129,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.UserCodeLifetime, "2520");
+        identity.AddClaim(Claims.Private.UserCodeLifetime, 2520);
 
         // Act
         identity.SetUserCodeLifetime(null);
@@ -5647,7 +6143,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.UserCodeLifetime, "2520");
+        principal.AddClaim(Claims.Private.UserCodeLifetime, 2520);
 
         // Act
         principal.SetUserCodeLifetime(null);
@@ -5713,7 +6209,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.AuthorizationId, "2520");
+        identity.AddClaim(Claims.Private.AuthorizationId, 2520);
 
         // Act
         identity.SetAuthorizationId(value);
@@ -5729,7 +6225,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.AuthorizationId, "2520");
+        principal.AddClaim(Claims.Private.AuthorizationId, 2520);
 
         // Act
         principal.SetAuthorizationId(value);
@@ -5795,7 +6291,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.TokenId, "2520");
+        identity.AddClaim(Claims.Private.TokenId, 2520);
 
         // Act
         identity.SetTokenId(value);
@@ -5811,7 +6307,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.TokenId, "2520");
+        principal.AddClaim(Claims.Private.TokenId, 2520);
 
         // Act
         principal.SetTokenId(value);
@@ -5877,7 +6373,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var identity = new ClaimsIdentity();
-        identity.AddClaim(Claims.Private.TokenType, "2520");
+        identity.AddClaim(Claims.Private.TokenType, 2520);
 
         // Act
         identity.SetTokenType(value);
@@ -5893,7 +6389,7 @@ public class OpenIddictExtensionsTests
     {
         // Arrange
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        principal.AddClaim(Claims.Private.TokenType, "2520");
+        principal.AddClaim(Claims.Private.TokenType, 2520);
 
         // Act
         principal.SetTokenType(value);
