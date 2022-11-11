@@ -428,7 +428,6 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
 using SmartFormat;
 using SmartFormat.Core.Settings;
-using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -548,6 +547,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             var registration = new OpenIddictClientRegistration
             {
                 ProviderName = Providers.{{ provider.name }},
+                ProviderOptions = settings,
 
                 Issuer = settings.Environment switch
                 {
@@ -647,11 +647,6 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     new SigningCredentials(settings.{{ setting.property_name }}, ""{{ setting.signing_algorithm }}""),
                     {{~ end ~}}
                     {{~ end ~}}
-                },
-
-                Properties =
-                {
-                    [Properties.ProviderOptions] = settings
                 }
             };
 
@@ -778,7 +773,6 @@ using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
 using SmartFormat;
 using SmartFormat.Core.Settings;
-using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -793,7 +787,7 @@ public static partial class OpenIddictClientWebIntegrationHelpers
     /// <returns>The {{ provider.name }} provider options.</returns>
     /// <exception cref=""InvalidOperationException"">The provider options cannot be resolved.</exception>
     public static OpenIddictClientWebIntegrationOptions.{{ provider.name }} Get{{ provider.name }}Options(this OpenIddictClientRegistration registration)
-        => registration.GetProviderOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>() ??
+        => registration.ProviderOptions is OpenIddictClientWebIntegrationOptions.{{ provider.name }} options ? options :
             throw new InvalidOperationException(SR.FormatID0333(Providers.{{ provider.name }}));
 
     {{~ end ~}}

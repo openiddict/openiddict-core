@@ -105,6 +105,11 @@ public sealed class OpenIddictClientRegistration
     public string? ProviderName { get; set; }
 
     /// <summary>
+    /// Gets or sets the provider options, if applicable.
+    /// </summary>
+    public dynamic? ProviderOptions { get; set; }
+
+    /// <summary>
     /// Gets or sets the static server configuration, if applicable.
     /// </summary>
     public OpenIddictConfiguration? Configuration { get; set; }
