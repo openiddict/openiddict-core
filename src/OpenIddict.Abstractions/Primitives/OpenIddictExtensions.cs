@@ -964,6 +964,140 @@ public static class OpenIddictExtensions
     /// <param name="identity">The identity.</param>
     /// <param name="type">The type associated with the claim.</param>
     /// <param name="value">The value associated with the claim.</param>
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, bool value)
+        => identity.AddClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds a claim to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    public static ClaimsPrincipal AddClaim(this ClaimsPrincipal principal, string type, bool value)
+        => principal.AddClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds a claim to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, bool value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        identity.AddClaim(new Claim(type, value.ToString(), ClaimValueTypes.Boolean, issuer, issuer, identity));
+        return identity;
+    }
+
+    /// <summary>
+    /// Adds a claim to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    public static ClaimsPrincipal AddClaim(this ClaimsPrincipal principal, string type, bool value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (principal.Identity is not ClaimsIdentity identity)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
+        }
+
+        identity.AddClaim(type, value, issuer);
+        return principal;
+    }
+
+    /// <summary>
+    /// Adds a claim to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, long value)
+        => identity.AddClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds a claim to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    public static ClaimsPrincipal AddClaim(this ClaimsPrincipal principal, string type, long value)
+        => principal.AddClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Adds a claim to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, long value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        identity.AddClaim(new Claim(type, value.ToString(CultureInfo.InvariantCulture),
+            ClaimValueTypes.Integer64, issuer, issuer, identity));
+        return identity;
+    }
+
+    /// <summary>
+    /// Adds a claim to a given principal.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    public static ClaimsPrincipal AddClaim(this ClaimsPrincipal principal, string type, long value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (principal.Identity is not ClaimsIdentity identity)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0286), nameof(principal));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        identity.AddClaim(type, value, issuer);
+        return principal;
+    }
+
+    /// <summary>
+    /// Adds a claim to a given identity.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
     public static ClaimsIdentity AddClaim(this ClaimsIdentity identity, string type, JsonElement value)
         => identity.AddClaim(type, value, ClaimsIdentity.DefaultIssuer);
 
@@ -1583,6 +1717,166 @@ public static class OpenIddictExtensions
         if (!string.IsNullOrEmpty(value))
         {
             principal.AddClaim(type, value, issuer);
+        }
+
+        return principal;
+    }
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetClaim(this ClaimsIdentity identity, string type, bool? value)
+        => identity.SetClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, bool? value)
+        => principal.SetClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetClaim(this ClaimsIdentity identity, string type, bool? value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        identity.RemoveClaims(type);
+
+        if (value is not null)
+        {
+            identity.AddClaim(type, value.GetValueOrDefault(), issuer);
+        }
+
+        return identity;
+    }
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, bool? value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        principal.RemoveClaims(type);
+
+        if (value is not null)
+        {
+            principal.AddClaim(type, value.GetValueOrDefault(), issuer);
+        }
+
+        return principal;
+    }
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetClaim(this ClaimsIdentity identity, string type, long? value)
+        => identity.SetClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, long? value)
+        => principal.SetClaim(type, value, ClaimsIdentity.DefaultIssuer);
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="identity">The identity.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetClaim(this ClaimsIdentity identity, string type, long? value, string issuer)
+    {
+        if (identity is null)
+        {
+            throw new ArgumentNullException(nameof(identity));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        identity.RemoveClaims(type);
+
+        if (value is not null)
+        {
+            identity.AddClaim(type, value.GetValueOrDefault(), issuer);
+        }
+
+        return identity;
+    }
+
+    /// <summary>
+    /// Sets the claim value corresponding to the given type.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <param name="type">The type associated with the claim.</param>
+    /// <param name="value">The value associated with the claim.</param>
+    /// <param name="issuer">The issuer associated with the claim.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsPrincipal SetClaim(this ClaimsPrincipal principal, string type, long? value, string issuer)
+    {
+        if (principal is null)
+        {
+            throw new ArgumentNullException(nameof(principal));
+        }
+
+        if (string.IsNullOrEmpty(type))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0184), nameof(type));
+        }
+
+        principal.RemoveClaims(type);
+
+        if (value is not null)
+        {
+            principal.AddClaim(type, value.GetValueOrDefault(), issuer);
         }
 
         return principal;
@@ -2735,7 +3029,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The access token lifetime to store.</param>
     /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetAccessTokenLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
-        => identity.SetClaim(Claims.Private.AccessTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => identity.SetClaim(Claims.Private.AccessTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the access token lifetime associated with the claims principal.
@@ -2744,7 +3038,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The access token lifetime to store.</param>
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetAccessTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
-        => principal.SetClaim(Claims.Private.AccessTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => principal.SetClaim(Claims.Private.AccessTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the authorization code lifetime associated with the claims identity.
@@ -2753,7 +3047,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The authorization code lifetime to store.</param>
     /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetAuthorizationCodeLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
-        => identity.SetClaim(Claims.Private.AuthorizationCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => identity.SetClaim(Claims.Private.AuthorizationCodeLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the authorization code lifetime associated with the claims principal.
@@ -2762,7 +3056,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The authorization code lifetime to store.</param>
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetAuthorizationCodeLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
-        => principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the device code lifetime associated with the claims identity.
@@ -2771,7 +3065,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The device code lifetime to store.</param>
     /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetDeviceCodeLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
-        => identity.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => identity.SetClaim(Claims.Private.DeviceCodeLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the device code lifetime associated with the claims principal.
@@ -2780,7 +3074,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The device code lifetime to store.</param>
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetDeviceCodeLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
-        => principal.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => principal.SetClaim(Claims.Private.DeviceCodeLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the identity token lifetime associated with the claims identity.
@@ -2789,7 +3083,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The identity token lifetime to store.</param>
     /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetIdentityTokenLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
-        => identity.SetClaim(Claims.Private.IdentityTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => identity.SetClaim(Claims.Private.IdentityTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the identity token lifetime associated with the claims principal.
@@ -2798,7 +3092,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The identity token lifetime to store.</param>
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetIdentityTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
-        => principal.SetClaim(Claims.Private.IdentityTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => principal.SetClaim(Claims.Private.IdentityTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the refresh token lifetime associated with the claims identity.
@@ -2807,7 +3101,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The refresh token lifetime to store.</param>
     /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetRefreshTokenLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
-        => identity.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => identity.SetClaim(Claims.Private.RefreshTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the refresh token lifetime associated with the claims principal.
@@ -2816,7 +3110,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The refresh token lifetime to store.</param>
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetRefreshTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
-        => principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => principal.SetClaim(Claims.Private.RefreshTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the state token lifetime associated with the claims identity.
@@ -2825,7 +3119,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The state token lifetime to store.</param>
     /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetStateTokenLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
-        => identity.SetClaim(Claims.Private.StateTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => identity.SetClaim(Claims.Private.StateTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the state token lifetime associated with the claims principal.
@@ -2834,7 +3128,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The state token lifetime to store.</param>
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetStateTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
-        => principal.SetClaim(Claims.Private.StateTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => principal.SetClaim(Claims.Private.StateTokenLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the user code lifetime associated with the claims identity.
@@ -2843,7 +3137,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The user code lifetime to store.</param>
     /// <returns>The claims identity.</returns>
     public static ClaimsIdentity SetUserCodeLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
-        => identity.SetClaim(Claims.Private.UserCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => identity.SetClaim(Claims.Private.UserCodeLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the user code lifetime associated with the claims principal.
@@ -2852,7 +3146,7 @@ public static class OpenIddictExtensions
     /// <param name="lifetime">The user code lifetime to store.</param>
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetUserCodeLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
-        => principal.SetClaim(Claims.Private.UserCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        => principal.SetClaim(Claims.Private.UserCodeLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the internal authorization identifier associated with the claims identity.
