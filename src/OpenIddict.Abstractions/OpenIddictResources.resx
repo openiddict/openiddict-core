@@ -2506,4 +2506,13 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID8002" xml:space="preserve">
     <value>Starts the scheduled task at regular intervals.</value>
   </data>
+  <data name="ID8003" xml:space="preserve">
+    <value>OpenIddict job</value>
+  </data>
+  <data name="ID8004" xml:space="preserve">
+    <value>Built-in automatic trigger</value>
+  </data>
+  <data name="ID8005" xml:space="preserve">
+    <value>OpenIddict/Quartz.NET integration</value>
+  </data>
 </root>
