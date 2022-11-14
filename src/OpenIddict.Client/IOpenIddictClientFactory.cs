@@ -4,8 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
+
 namespace OpenIddict.Client;
 
+[EditorBrowsable(EditorBrowsableState.Never)]
 public interface IOpenIddictClientFactory
 {
     ValueTask<OpenIddictClientTransaction> CreateTransactionAsync();

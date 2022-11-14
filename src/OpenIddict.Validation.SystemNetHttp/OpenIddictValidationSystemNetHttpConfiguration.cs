@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ namespace OpenIddict.Validation.SystemNetHttp;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation/System.Net.Http integration configuration is valid.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
                                                                      IConfigureNamedOptions<HttpClientFactoryOptions>
 {

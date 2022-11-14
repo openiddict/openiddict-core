@@ -4,11 +4,14 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
+
 namespace OpenIddict.MongoDb;
 
 /// <summary>
 /// Exposes the MongoDB database used by the OpenIddict stores.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public interface IOpenIddictMongoDbContext
 {
     /// <summary>

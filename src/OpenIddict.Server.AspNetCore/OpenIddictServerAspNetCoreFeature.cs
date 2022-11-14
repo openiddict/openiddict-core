@@ -4,11 +4,14 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
+
 namespace OpenIddict.Server.AspNetCore;
 
 /// <summary>
 /// Exposes the current server transaction to the ASP.NET Core host.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerAspNetCoreFeature
 {
     /// <summary>

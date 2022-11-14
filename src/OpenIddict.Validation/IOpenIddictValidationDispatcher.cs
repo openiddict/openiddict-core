@@ -4,8 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
+
 namespace OpenIddict.Validation;
 
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public interface IOpenIddictValidationDispatcher
 {
     ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext;

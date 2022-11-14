@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -13,6 +14,7 @@ using Properties = OpenIddict.Client.DataProtection.OpenIddictClientDataProtecti
 
 namespace OpenIddict.Client.DataProtection;
 
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientDataProtectionFormatter : IOpenIddictClientDataProtectionFormatter
 {
     public ClaimsPrincipal ReadToken(BinaryReader reader)

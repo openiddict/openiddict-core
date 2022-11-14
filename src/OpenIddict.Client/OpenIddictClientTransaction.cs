@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Client;
@@ -11,6 +12,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Represents the context associated with an OpenID Connect client request.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientTransaction
 {
     /// <summary>

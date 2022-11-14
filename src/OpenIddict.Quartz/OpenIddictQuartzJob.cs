@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -12,7 +13,7 @@ namespace OpenIddict.Quartz;
 /// <summary>
 /// Represents a Quartz.NET job performing scheduled tasks for OpenIddict.
 /// </summary>
-[DisallowConcurrentExecution]
+[DisallowConcurrentExecution, EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictQuartzJob : IJob
 {
     private readonly IOptionsMonitor<OpenIddictQuartzOptions> _options;

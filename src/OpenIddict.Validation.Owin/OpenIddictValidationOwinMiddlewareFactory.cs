@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -13,6 +14,7 @@ namespace OpenIddict.Validation.Owin;
 /// Provides the entry point necessary to instantiate and register the scoped
 /// <see cref="OpenIddictValidationOwinMiddleware"/> in an OWIN/Katana pipeline.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationOwinMiddlewareFactory : OwinMiddleware
 {
     /// <summary>

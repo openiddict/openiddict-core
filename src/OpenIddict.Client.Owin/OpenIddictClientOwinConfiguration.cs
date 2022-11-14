@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Client.Owin;
@@ -11,6 +12,7 @@ namespace OpenIddict.Client.Owin;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client configuration is valid.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenIddictClientOptions>,
                                                         IPostConfigureOptions<OpenIddictClientOwinOptions>
 {

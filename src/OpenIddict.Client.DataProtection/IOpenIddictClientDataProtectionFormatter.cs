@@ -4,10 +4,12 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Security.Claims;
 
 namespace OpenIddict.Client.DataProtection;
 
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public interface IOpenIddictClientDataProtectionFormatter
 {
     ClaimsPrincipal ReadToken(BinaryReader reader);

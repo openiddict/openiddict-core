@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
@@ -12,6 +13,7 @@ namespace OpenIddict.Server.DataProtection;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict ASP.NET Core Data Protection configuration is valid.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerDataProtectionConfiguration : IConfigureOptions<OpenIddictServerOptions>,
                                                                   IPostConfigureOptions<OpenIddictServerDataProtectionOptions>
 {

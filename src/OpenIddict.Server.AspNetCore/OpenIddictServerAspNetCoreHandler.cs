@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -17,6 +18,7 @@ namespace OpenIddict.Server.AspNetCore;
 /// <summary>
 /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddictServerAspNetCoreOptions>,
     IAuthenticationRequestHandler,
     IAuthenticationSignInHandler,
