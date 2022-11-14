@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -26,13 +27,352 @@ public sealed class OpenIddictClientService
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
+    /// Authenticates using the client credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithClientCredentialsAsync(
+        Uri issuer, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (issuer is null)
+        {
+            throw new ArgumentNullException(nameof(issuer));
+        }
+
+        if (scopes is not null && scopes.Any(string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } address || !address.IsWellFormedOriginalString())
+        {
+            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessAuthenticationContext(transaction)
+            {
+                Configuration = configuration,
+                GrantType = GrantTypes.ClientCredentials,
+                Issuer = registration.Issuer,
+                Registration = registration,
+                TokenEndpoint = address,
+                TokenRequest = parameters is not null ? new(parameters) : null,
+            };
+
+            if (scopes is { Length: > 0 })
+            {
+                context.Scopes.UnionWith(scopes);
+            }
+
+            if (properties is { Count: > 0 })
+            {
+                foreach (var property in properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            // Create a composite principal containing claims resolved from the
+            // backchannel identity token and the userinfo token, if available.
+            return (context.TokenResponse, OpenIddictHelpers.CreateMergedPrincipal(
+                context.BackchannelIdentityTokenPrincipal,
+                context.UserinfoTokenPrincipal));
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="username">The username to use.</param>
+    /// <param name="password">The password to use.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithPasswordAsync(
+        Uri issuer, string username, string password, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (issuer is null)
+        {
+            throw new ArgumentNullException(nameof(issuer));
+        }
+
+        if (string.IsNullOrEmpty(username))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0335), nameof(username));
+        }
+
+        if (string.IsNullOrEmpty(password))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0336), nameof(password));
+        }
+
+        if (scopes is not null && scopes.Any(string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } address || !address.IsWellFormedOriginalString())
+        {
+            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessAuthenticationContext(transaction)
+            {
+                Configuration = configuration,
+                GrantType = GrantTypes.Password,
+                Issuer = registration.Issuer,
+                Password = password,
+                Registration = registration,
+                TokenEndpoint = address,
+                TokenRequest = parameters is not null ? new(parameters) : null,
+                Username = username
+            };
+
+            if (scopes is { Length: > 0 })
+            {
+                context.Scopes.UnionWith(scopes);
+            }
+
+            if (properties is { Count: > 0 })
+            {
+                foreach (var property in properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            // Create a composite principal containing claims resolved from the
+            // backchannel identity token and the userinfo token, if available.
+            return (context.TokenResponse, OpenIddictHelpers.CreateMergedPrincipal(
+                context.BackchannelIdentityTokenPrincipal,
+                context.UserinfoTokenPrincipal));
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="issuer">The issuer.</param>
+    /// <param name="token">The refresh token to use.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithRefreshTokenAsync(
+        Uri issuer, string token, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (issuer is null)
+        {
+            throw new ArgumentNullException(nameof(issuer));
+        }
+
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0156), nameof(token));
+        }
+
+        if (scopes is not null && scopes.Any(string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } address || !address.IsWellFormedOriginalString())
+        {
+            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ProcessAuthenticationContext(transaction)
+            {
+                Configuration = configuration,
+                GrantType = GrantTypes.RefreshToken,
+                Issuer = registration.Issuer,
+                RefreshToken = token,
+                Registration = registration,
+                TokenEndpoint = address,
+                TokenRequest = parameters is not null ? new(parameters) : null,
+            };
+
+            if (scopes is { Length: > 0 })
+            {
+                context.Scopes.UnionWith(scopes);
+            }
+
+            if (properties is { Count: > 0 })
+            {
+                foreach (var property in properties)
+                {
+                    context.Properties[property.Key] = property.Value;
+                }
+            }
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
+
+            // Create a composite principal containing claims resolved from the
+            // backchannel identity token and the userinfo token, if available.
+            return (context.TokenResponse, OpenIddictHelpers.CreateMergedPrincipal(
+                context.BackchannelIdentityTokenPrincipal,
+                context.UserinfoTokenPrincipal));
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified address.
     /// </summary>
     /// <param name="registration">The client registration.</param>
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    public async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(
+    internal async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(
         OpenIddictClientRegistration registration, Uri address, CancellationToken cancellationToken = default)
     {
         if (registration is null)
@@ -190,7 +530,7 @@ public sealed class OpenIddictClientService
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The security keys retrieved from the remote server.</returns>
-    public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(
+    internal async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(
         OpenIddictClientRegistration registration, Uri address, CancellationToken cancellationToken = default)
     {
         if (registration is null)
@@ -343,274 +683,25 @@ public sealed class OpenIddictClientService
     }
 
     /// <summary>
-    /// Authenticates using the client credentials grant and resolves the corresponding tokens.
-    /// </summary>
-    /// <param name="registration">The client registration.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithClientCredentialsAsync(
-        OpenIddictClientRegistration registration, CancellationToken cancellationToken = default)
-    {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
-           !configuration.TokenEndpoint.IsWellFormedOriginalString())
-        {
-            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
-        // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
-
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
-        {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                Configuration = configuration,
-                GrantType = GrantTypes.ClientCredentials,
-                Issuer = registration.Issuer,
-                Registration = registration
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            // Create a composite principal containing claims resolved from the
-            // backchannel identity token and the userinfo token, if available.
-            return (context.TokenResponse, OpenIddictHelpers.CreateMergedPrincipal(
-                context.BackchannelIdentityTokenPrincipal,
-                context.UserinfoTokenPrincipal));
-        }
-
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
-    /// </summary>
-    /// <param name="registration">The client registration.</param>
-    /// <param name="username">The username to use.</param>
-    /// <param name="password">The password to use.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithPasswordAsync(
-        OpenIddictClientRegistration registration, string username, string password, CancellationToken cancellationToken = default)
-    {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        if (string.IsNullOrEmpty(username))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0335), nameof(username));
-        }
-
-        if (string.IsNullOrEmpty(password))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0336), nameof(password));
-        }
-
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
-           !configuration.TokenEndpoint.IsWellFormedOriginalString())
-        {
-            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
-        // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
-
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
-        {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                Configuration = configuration,
-                GrantType = GrantTypes.Password,
-                Issuer = registration.Issuer,
-                Password = password,
-                Registration = registration,
-                Username = username
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            // Create a composite principal containing claims resolved from the
-            // backchannel identity token and the userinfo token, if available.
-            return (context.TokenResponse, OpenIddictHelpers.CreateMergedPrincipal(
-                context.BackchannelIdentityTokenPrincipal,
-                context.UserinfoTokenPrincipal));
-        }
-
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Authenticates using the refresh token grant and resolves the corresponding tokens.
-    /// </summary>
-    /// <param name="registration">The client registration.</param>
-    /// <param name="token">The refresh token to use.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithRefreshTokenAsync(
-        OpenIddictClientRegistration registration, string token, CancellationToken cancellationToken = default)
-    {
-        if (registration is null)
-        {
-            throw new ArgumentNullException(nameof(registration));
-        }
-
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0156), nameof(token));
-        }
-
-        var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
-           !configuration.TokenEndpoint.IsWellFormedOriginalString())
-        {
-            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
-        // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
-
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
-        {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictClientFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ProcessAuthenticationContext(transaction)
-            {
-                Configuration = configuration,
-                GrantType = GrantTypes.RefreshToken,
-                Issuer = registration.Issuer,
-                RefreshToken = token,
-                Registration = registration
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0319(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.TokenResponse is not null, SR.GetResourceString(SR.ID4007));
-
-            // Create a composite principal containing claims resolved from the
-            // backchannel identity token and the userinfo token, if available.
-            return (context.TokenResponse, OpenIddictHelpers.CreateMergedPrincipal(
-                context.BackchannelIdentityTokenPrincipal,
-                context.UserinfoTokenPrincipal));
-        }
-
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
-            }
-        }
-    }
-
-    /// <summary>
     /// Sends the token request and retrieves the corresponding response.
     /// </summary>
     /// <param name="registration">The client registration.</param>
-    /// <param name="address">The address of the token endpoint.</param>
     /// <param name="request">The token request.</param>
+    /// <param name="address">The address of the remote token endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
-    public async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
-        OpenIddictClientRegistration registration, Uri address, OpenIddictRequest request, CancellationToken cancellationToken = default)
+    internal async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictRequest request,
+        Uri? address = null, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
             throw new ArgumentNullException(nameof(registration));
+        }
+
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
         }
 
         if (address is null)
@@ -625,12 +716,6 @@ public sealed class OpenIddictClientService
 
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
-           !configuration.TokenEndpoint.IsWellFormedOriginalString())
-        {
-            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
-        }
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -772,12 +857,12 @@ public sealed class OpenIddictClientService
     /// Sends the userinfo request and retrieves the corresponding response.
     /// </summary>
     /// <param name="registration">The client registration.</param>
-    /// <param name="address">The address of the userinfo endpoint.</param>
     /// <param name="request">The userinfo request.</param>
+    /// <param name="address">The address of the remote userinfo endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
-    public async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserinfoRequestAsync(
-        OpenIddictClientRegistration registration, Uri address, OpenIddictRequest request, CancellationToken cancellationToken = default)
+    internal async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserinfoRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictRequest request, Uri address, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
@@ -796,12 +881,6 @@ public sealed class OpenIddictClientService
 
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } ||
-           !configuration.TokenEndpoint.IsWellFormedOriginalString())
-        {
-            throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
-        }
 
         cancellationToken.ThrowIfCancellationRequested();
 

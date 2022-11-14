@@ -295,6 +295,11 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets the grant type used for the authentication demand, if applicable.
         /// </summary>
         public string? GrantType { get; set; }
@@ -308,6 +313,11 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the request forgery protection resolved from the user session, if applicable.
         /// </summary>
         public string? RequestForgeryProtection { get; set; }
+
+        /// <summary>
+        /// Gets the scopes that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the address of the token endpoint, if applicable.
