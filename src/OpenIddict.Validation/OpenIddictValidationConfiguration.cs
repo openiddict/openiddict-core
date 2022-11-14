@@ -101,10 +101,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
                 }
 
-                if (options.MetadataAddress is null)
-                {
-                    options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
-                }
+                options.MetadataAddress ??= new Uri(".well-known/openid-configuration", UriKind.Relative);
 
                 if (!options.MetadataAddress.IsAbsoluteUri)
                 {

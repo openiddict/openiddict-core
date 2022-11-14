@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
@@ -14,6 +15,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client configuration is valid.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
 {
     private readonly OpenIddictClientService _service;
@@ -67,10 +69,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0313));
                     }
 
-                    if (registration.MetadataAddress is null)
-                    {
-                        registration.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
-                    }
+                    registration.MetadataAddress ??= new Uri(".well-known/openid-configuration", UriKind.Relative);
 
                     if (!registration.MetadataAddress.IsAbsoluteUri)
                     {

@@ -4,11 +4,13 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.IdentityModel.Protocols;
 
 namespace OpenIddict.Validation;
 
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictValidationRetriever : IConfigurationRetriever<OpenIddictConfiguration>
 {
     private readonly OpenIddictValidationService _service;

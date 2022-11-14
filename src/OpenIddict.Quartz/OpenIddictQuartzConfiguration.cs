@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Quartz;
@@ -11,6 +12,7 @@ namespace OpenIddict.Quartz;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict Quartz.NET configuration is valid.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
 {
     /// <inheritdoc/>

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Owin.Security.Infrastructure;
@@ -15,6 +16,7 @@ namespace OpenIddict.Server.Owin;
 /// <summary>
 /// Provides the entry point necessary to register the OpenIddict server in an OWIN pipeline.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddictServerOwinOptions>
 {
     private readonly IOpenIddictServerDispatcher _dispatcher;

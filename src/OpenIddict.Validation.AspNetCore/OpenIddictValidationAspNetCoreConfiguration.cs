@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation.AspNetCore;
@@ -11,6 +12,7 @@ namespace OpenIddict.Validation.AspNetCore;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
                                                                   IConfigureOptions<OpenIddictValidationOptions>,
                                                                   IPostConfigureOptions<AuthenticationOptions>

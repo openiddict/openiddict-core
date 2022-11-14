@@ -4,12 +4,14 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Security.Claims;
 using System.Text.Json;
 using Properties = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Properties;
 
 namespace OpenIddict.Validation.DataProtection;
 
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationDataProtectionFormatter : IOpenIddictValidationDataProtectionFormatter
 {
     public ClaimsPrincipal ReadToken(BinaryReader reader)

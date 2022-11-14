@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server;
 
@@ -12,6 +13,7 @@ namespace OpenIddict.Validation.ServerIntegration;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation/server integration configuration is valid.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
                                                                          IPostConfigureOptions<OpenIddictValidationOptions>
 {

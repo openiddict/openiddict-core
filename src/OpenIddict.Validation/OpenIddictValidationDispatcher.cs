@@ -4,11 +4,13 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation;
 
+[EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationDispatcher : IOpenIddictValidationDispatcher
 {
     private readonly ILogger<OpenIddictValidationDispatcher> _logger;
