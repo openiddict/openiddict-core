@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation;
 
-[EditorBrowsable(EditorBrowsableState.Advanced)]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictValidationFactory : IOpenIddictValidationFactory
 {
     private readonly ILogger<OpenIddictValidationDispatcher> _logger;
