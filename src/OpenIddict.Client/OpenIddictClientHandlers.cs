@@ -30,6 +30,7 @@ public static partial class OpenIddictClientHandlers
          * Authentication processing:
          */
         ValidateAuthenticationDemand.Descriptor,
+        ResolveClientRegistrationFromAuthenticationContext.Descriptor,
         EvaluateValidatedUpfrontTokens.Descriptor,
         ResolveValidatedStateToken.Descriptor,
         ValidateRequiredStateToken.Descriptor,
@@ -205,12 +206,73 @@ public static partial class OpenIddictClientHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0311));
                     }
 
+                    // If no issuer was explicitly attached and a single client is registered, use it.
+                    // Otherwise, throw an exception to indicate that setting an explicit issuer
+                    // is required when multiple clients are registered.
+                    context.Issuer ??= context.Options.Registrations.Count switch
+                    {
+                        0 => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                        1 => context.Options.Registrations[0].Issuer,
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0355))
+                    };
+
                     break;
 
                 default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0290));
             }
 
             return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the client registration applicable to the authentication demand.
+    /// </summary>
+    public sealed class ResolveClientRegistrationFromAuthenticationContext : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ResolveClientRegistrationFromAuthenticationContext>()
+                .SetOrder(ValidateAuthenticationDemand.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Note: this handler only applies to authentication demands triggered from unknown endpoints.
+            //
+            // Client registrations/configurations that need to be resolved as part of authentication demands
+            // triggered from the redirection or post-logout redirection requests are handled elsewhere.
+            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
+            {
+                return;
+            }
+
+            // Note: if the static registration cannot be found in the options, this may indicate
+            // the client was removed after the authorization dance started and thus, can no longer
+            // be used to authenticate users. In this case, throw an exception to abort the flow.
+            context.Registration ??= context.Options.Registrations.Find(
+                registration => registration.Issuer == context.Issuer) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+            // Resolve and attach the server configuration to the context if none has been set already.
+            context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+            // Ensure the issuer resolved from the configuration matches the expected value.
+            if (context.Configuration.Issuer != context.Issuer)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+            }
         }
     }
 
@@ -225,7 +287,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateValidatedUpfrontTokens>()
-                .SetOrder(ValidateAuthenticationDemand.Descriptor.Order + 1_000)
+                .SetOrder(ResolveClientRegistrationFromAuthenticationContext.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -630,23 +692,19 @@ public static partial class OpenIddictClientHandlers
             // Note: if the static registration cannot be found in the options, this may indicate
             // the client was removed after the authorization dance started and thus, can no longer
             // be used to authenticate users. In this case, throw an exception to abort the flow.
-            var registration = context.Options.Registrations.Find(registration => registration.Issuer == issuer) ??
+            context.Issuer = issuer;
+            context.Registration = context.Options.Registrations.Find(registration => registration.Issuer == issuer) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
-            context.Issuer = issuer;
-            context.Registration = registration;
-
             // Resolve and attach the server configuration to the context.
-            var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            context.Configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
             // Ensure the issuer resolved from the configuration matches the expected value.
-            if (configuration.Issuer != context.Issuer)
+            if (context.Configuration.Issuer != context.Issuer)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
             }
-
-            context.Configuration = configuration;
         }
     }
 
@@ -1776,11 +1834,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Try to extract the address of the token endpoint from the server configuration.
-            if (context.Configuration.TokenEndpoint is { IsAbsoluteUri: true })
+            // If the address of the token endpoint wasn't explicitly set
+            // at this stage, try to extract it from the server configuration.
+            context.TokenEndpoint ??= context.Configuration.TokenEndpoint switch
             {
-                context.TokenEndpoint = context.Configuration.TokenEndpoint;
-            }
+                { IsAbsoluteUri: true } address when address.IsWellFormedOriginalString() => address,
+
+                _ => null
+            };
 
             return default;
         }
@@ -1870,6 +1931,14 @@ public static partial class OpenIddictClientHandlers
                 // For other values, don't do any mapping.
                 string type => type
             };
+
+            if (context.Scopes.Count > 0)
+            {
+                // Note: the final OAuth 2.0 specification requires using a space as the scope separator.
+                // Clients that need to deal with older or non-compliant implementations can register
+                // a custom handler to use a different separator (typically, a comma).
+                context.TokenRequest.Scope = string.Join(" ", context.Scopes);
+            }
 
             // If the token request uses an authorization code grant, retrieve the code_verifier and
             // the redirect_uri from the state token principal and attach them to the request, if available.
@@ -2176,7 +2245,7 @@ public static partial class OpenIddictClientHandlers
             try
             {
                 context.TokenResponse = await _service.SendTokenRequestAsync(
-                    context.Registration, context.TokenEndpoint, context.TokenRequest);
+                    context.Registration, context.TokenRequest, context.TokenEndpoint);
             }
 
             catch (ProtocolException exception)
@@ -2858,7 +2927,7 @@ public static partial class OpenIddictClientHandlers
                     SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
                         => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0293))
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0295))
                 };
 
                 // Warning: only the left-most half of the access token and authorization code digest is used.
@@ -3043,11 +3112,14 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Try to extract the address of the userinfo endpoint from the server configuration.
-            if (context.Configuration.UserinfoEndpoint is { IsAbsoluteUri: true })
+            // If the address of the userinfo endpoint wasn't explicitly set
+            // at this stage, try to extract it from the server configuration.
+            context.UserinfoEndpoint ??= context.Configuration.UserinfoEndpoint switch
             {
-                context.UserinfoEndpoint = context.Configuration.UserinfoEndpoint;
-            }
+                { IsAbsoluteUri: true } address when address.IsWellFormedOriginalString() => address,
+
+                _ => null
+            };
 
             return default;
         }
@@ -3174,7 +3246,7 @@ public static partial class OpenIddictClientHandlers
             try
             {
                 (context.UserinfoResponse, (context.UserinfoTokenPrincipal, context.UserinfoToken)) =
-                    await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoEndpoint, context.UserinfoRequest);
+                    await _service.SendUserinfoRequestAsync(context.Registration, context.UserinfoRequest, context.UserinfoEndpoint);
             }
 
             catch (ProtocolException exception)
@@ -3566,21 +3638,19 @@ public static partial class OpenIddictClientHandlers
             // Note: if the static registration cannot be found in the options, this may indicate
             // the client was removed after the authorization dance started and thus, can no longer
             // be used to authenticate users. In this case, throw an exception to abort the flow.
-            context.Registration = context.Options.Registrations.Find(
+            context.Registration ??= context.Options.Registrations.Find(
                 registration => registration.Issuer == context.Issuer) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
-            // Resolve and attach the server configuration to the context.
-            var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            // Resolve and attach the server configuration to the context if none has been set already.
+            context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
             // Ensure the issuer resolved from the configuration matches the expected value.
-            if (configuration.Issuer != context.Issuer)
+            if (context.Configuration.Issuer != context.Issuer)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
             }
-
-            context.Configuration = configuration;
         }
     }
 
@@ -4713,21 +4783,19 @@ public static partial class OpenIddictClientHandlers
             // Note: if the static registration cannot be found in the options, this may indicate
             // the client was removed after the authorization dance started and thus, can no longer
             // be used to authenticate users. In this case, throw an exception to abort the flow.
-            context.Registration = context.Options.Registrations.Find(
+            context.Registration ??= context.Options.Registrations.Find(
                 registration => registration.Issuer == context.Issuer) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
-            // Resolve and attach the server configuration to the context.
-            var configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
+            // Resolve and attach the server configuration to the context if none has been set already.
+            context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
             // Ensure the issuer resolved from the configuration matches the expected value.
-            if (configuration.Issuer != context.Issuer)
+            if (context.Configuration.Issuer != context.Issuer)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
             }
-
-            context.Configuration = configuration;
         }
     }
 

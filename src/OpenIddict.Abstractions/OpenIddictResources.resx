@@ -1355,6 +1355,9 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   <data name="ID0354" xml:space="preserve">
     <value>The nonce cannot be resolved from the state token.</value>
   </data>
+  <data name="ID0355" xml:space="preserve">
+    <value>No issuer was specified in the authentication context.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

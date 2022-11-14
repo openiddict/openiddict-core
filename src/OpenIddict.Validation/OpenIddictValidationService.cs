@@ -25,12 +25,74 @@ public sealed class OpenIddictValidationService
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
+    /// Validates the specified access token and returns the principal extracted from the token.
+    /// </summary>
+    /// <param name="token">The access token to validate.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The principal containing the claims extracted from the token.</returns>
+    public async ValueTask<ClaimsPrincipal> ValidateAccessTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0162), nameof(token));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Note: this service is registered as a singleton service. As such, it cannot
+        // directly depend on scoped services like the validation provider. To work around
+        // this limitation, a scope is manually created for each method to this service.
+        var scope = _provider.CreateScope();
+
+        // Note: a try/finally block is deliberately used here to ensure the service scope
+        // can be disposed of asynchronously if it implements IAsyncDisposable.
+        try
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+            var transaction = await factory.CreateTransactionAsync();
+
+            var context = new ValidateTokenContext(transaction)
+            {
+                Token = token,
+                ValidTokenTypes = { TokenTypeHints.AccessToken }
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0163(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            return context.Principal;
+        }
+
+        finally
+        {
+            if (scope is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            else
+            {
+                scope.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified address.
     /// </summary>
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    public async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
+    internal async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
     {
         if (address is null)
         {
@@ -173,7 +235,7 @@ public sealed class OpenIddictValidationService
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The security keys retrieved from the remote server.</returns>
-    public async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri address, CancellationToken cancellationToken = default)
+    internal async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(Uri address, CancellationToken cancellationToken = default)
     {
         if (address is null)
         {
@@ -315,20 +377,10 @@ public sealed class OpenIddictValidationService
     /// </summary>
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="token">The token to introspect.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The claims principal created from the claim retrieved from the remote server.</returns>
-    public ValueTask<ClaimsPrincipal> IntrospectTokenAsync(Uri address, string token, CancellationToken cancellationToken = default)
-        => IntrospectTokenAsync(address, token, hint: null, cancellationToken);
-
-    /// <summary>
-    /// Sends an introspection request to the specified address and returns the corresponding principal.
-    /// </summary>
-    /// <param name="address">The address of the remote metadata endpoint.</param>
-    /// <param name="token">The token to introspect.</param>
     /// <param name="hint">The token type to introspect, used as a hint by the authorization server.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The claims principal created from the claim retrieved from the remote server.</returns>
-    public async ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
+    internal async ValueTask<ClaimsPrincipal> IntrospectTokenAsync(
         Uri address, string token, string? hint, CancellationToken cancellationToken = default)
     {
         if (address is null)
@@ -460,68 +512,6 @@ public sealed class OpenIddictValidationService
 
                 return context.Principal;
             }
-        }
-
-        finally
-        {
-            if (scope is IAsyncDisposable disposable)
-            {
-                await disposable.DisposeAsync();
-            }
-
-            else
-            {
-                scope.Dispose();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Validates the specified access token and returns the principal extracted from the token.
-    /// </summary>
-    /// <param name="token">The access token to validate.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The principal containing the claims extracted from the token.</returns>
-    public async ValueTask<ClaimsPrincipal> ValidateAccessTokenAsync(string token, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0162), nameof(token));
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        // Note: this service is registered as a singleton service. As such, it cannot
-        // directly depend on scoped services like the validation provider. To work around
-        // this limitation, a scope is manually created for each method to this service.
-        var scope = _provider.CreateScope();
-
-        // Note: a try/finally block is deliberately used here to ensure the service scope
-        // can be disposed of asynchronously if it implements IAsyncDisposable.
-        try
-        {
-            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
-            var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
-            var transaction = await factory.CreateTransactionAsync();
-
-            var context = new ValidateTokenContext(transaction)
-            {
-                Token = token,
-                ValidTokenTypes = { TokenTypeHints.AccessToken }
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0163(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-            return context.Principal;
         }
 
         finally
