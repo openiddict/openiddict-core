@@ -44,6 +44,7 @@ public static partial class OpenIddictServerHandlers
             ValidateRefreshTokenParameter.Descriptor,
             ValidateResourceOwnerCredentialsParameters.Descriptor,
             ValidateProofKeyForCodeExchangeParameters.Descriptor,
+            ValidateScopeParameter.Descriptor,
             ValidateScopes.Descriptor,
             ValidateClientId.Descriptor,
             ValidateClientType.Descriptor,
@@ -707,6 +708,53 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting token requests that specify an invalid scope parameter.
+        /// </summary>
+        public sealed class ValidateScopeParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                    .UseSingletonHandler<ValidateScopeParameter>()
+                    .SetOrder(ValidateResourceOwnerCredentialsParameters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Reject authorization code and device authorization code requests that contain a "scope" parameter.
+                //
+                // Note: using the "scope" parameter with grant_type=refresh_token is deliberately allowed
+                // by the specification and is typically used to retrieve an access token granting a more
+                // limited access than the scopes initially specified in the authorization request.
+                //
+                // For more information, see https://tools.ietf.org/html/rfc6749#section-6.
+                if (!string.IsNullOrEmpty(context.Request.Scope) && (context.Request.IsAuthorizationCodeGrantType() ||
+                                                                     context.Request.IsDeviceCodeGrantType()))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6094), Parameters.Scope);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2074(Parameters.Scope),
+                        uri: SR.FormatID8000(SR.ID2074));
+
+                    return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting authorization requests that use unregistered scopes.
         /// Note: this handler partially works with the degraded mode but is not used when scope validation is disabled.
         /// </summary>
@@ -734,7 +782,7 @@ public static partial class OpenIddictServerHandlers
                             new ValidateScopes(provider.GetService<IOpenIddictScopeManager>() ??
                                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                     })
-                    .SetOrder(ValidateProofKeyForCodeExchangeParameters.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateScopeParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -1576,8 +1624,8 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting token requests that specify scopes that
-        /// were not initially granted by the resource owner during the authorization request.
+        /// Contains the logic responsible for rejecting refresh token requests that specify scopes
+        /// that were not initially granted by the resource owner during the authorization request.
         /// </summary>
         public sealed class ValidateGrantedScopes : IOpenIddictServerHandler<ValidateTokenRequestContext>
         {
@@ -1599,12 +1647,7 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
-                {
-                    return default;
-                }
-
-                if (string.IsNullOrEmpty(context.Request.Scope))
+                if (string.IsNullOrEmpty(context.Request.Scope) || !context.Request.IsRefreshTokenGrantType())
                 {
                     return default;
                 }
