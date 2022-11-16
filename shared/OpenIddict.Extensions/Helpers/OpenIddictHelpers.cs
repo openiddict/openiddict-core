@@ -1,5 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -618,6 +618,51 @@ internal static class OpenIddictHelpers
 
             return (int) value + range.Start.Value;
         }
+    }
+
+    /// <summary>
+    /// Determines the equality of two byte sequences in an amount of time
+    /// which depends on the length of the sequences, but not the values.
+    /// </summary>
+    /// <param name="left">The first buffer to compare.</param>
+    /// <param name="right">The second buffer to compare.</param>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> have the same values
+    /// for <see cref="ReadOnlySpan{T}.Length"/> and the same contents, <see langword="false"/> otherwise.
+    /// </returns>
+#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+#endif
+    public static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+    {
+#if SUPPORTS_TIME_CONSTANT_COMPARISONS
+        return CryptographicOperations.FixedTimeEquals(left, right);
+#else
+        // Note: the logic used here is directly taken from the official implementation of
+        // the CryptographicOperations.FixedTimeEquals() method introduced in .NET Core 2.1.
+        //
+        // See https://github.com/dotnet/corefx/pull/27103 for more information.
+
+        // Note: these null checks can be theoretically considered as early checks
+        // (which would defeat the purpose of a time-constant comparison method),
+        // but the expected string length is the only information an attacker
+        // could get at this stage, which is not critical where this method is used.
+
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        var length = left.Length;
+        var accumulator = 0;
+
+        for (var index = 0; index < length; index++)
+        {
+            accumulator |= left[index] - right[index];
+        }
+
+        return accumulator is 0;
+#endif
     }
 
 #if SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM

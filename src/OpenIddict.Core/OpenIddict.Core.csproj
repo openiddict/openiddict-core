@@ -24,9 +24,9 @@
   </ItemGroup>
 
   <ItemGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
-    <PackageReference Include="Portable.BouncyCastle" />
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '4.7.2'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard'  And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
+    <PackageReference Include="BouncyCastle.Cryptography" />
   </ItemGroup>
 
   <ItemGroup>

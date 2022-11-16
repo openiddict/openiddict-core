@@ -8,17 +8,12 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
-
-#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
-using Org.BouncyCastle.Utilities;
-#endif
 
 namespace OpenIddict.Server;
 
@@ -1562,15 +1557,9 @@ public static partial class OpenIddictServerHandlers
 
                 // Compare the verifier and the code challenge: if the two don't match, return an error.
                 // Note: to prevent timing attacks, a time-constant comparer is always used.
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                if (!CryptographicOperations.FixedTimeEquals(
+                if (!OpenIddictHelpers.FixedTimeEquals(
                     left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
                     right: MemoryMarshal.AsBytes(challenge.AsSpan())))
-#else
-                if (!Arrays.ConstantTimeAreEqual(
-                    a: MemoryMarshal.AsBytes(comparand.AsSpan()).ToArray(),
-                    b: MemoryMarshal.AsBytes(challenge.AsSpan()).ToArray()))
-#endif
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6092), Parameters.CodeVerifier);
 

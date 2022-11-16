@@ -23,12 +23,6 @@ To use the client feature on ASP.NET Core or OWIN/Katana, reference the OpenIddi
     <PackageReference Include="Microsoft.IdentityModel.Protocols" />
   </ItemGroup>
 
-  <ItemGroup
-    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
-                ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.1'))) ">
-    <PackageReference Include="Portable.BouncyCastle" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
   </ItemGroup>

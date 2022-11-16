@@ -41,7 +41,7 @@
     <PackageVersion Include="MongoDB.Bson"                                                    Version="2.11.6"  />
     <PackageVersion Include="MongoDB.Driver"                                                  Version="2.11.6"  />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"   />
-    <PackageVersion Include="Portable.BouncyCastle"                                           Version="1.9.0"   />
+    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.0.0"   />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"   />
     <PackageVersion Include="SmartFormat"                                                     Version="3.2.0"   />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"   />
@@ -117,7 +117,6 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="6.25.0"  />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="6.25.0"  />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"   />
-    <PackageVersion Include="Portable.BouncyCastle"                                           Version="1.9.0"   />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"   />
     <PackageVersion Include="SmartFormat"                                                     Version="3.2.0"   />
     <PackageVersion Include="System.Net.Http.Json"                                            Version="3.2.1"   />
@@ -326,7 +325,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols"                               Version="6.25.0"  />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens"                                  Version="6.25.0"  />
     <PackageVersion Include="Polly.Extensions.Http"                                           Version="3.0.0"   />
-    <PackageVersion Include="Portable.BouncyCastle"                                           Version="1.9.0"   />
+    <PackageVersion Include="BouncyCastle.Cryptography"                                       Version="2.0.0"   />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                           Version="3.5.0"   />
     <PackageVersion Include="SmartFormat"                                                     Version="3.2.0"   />
     <PackageVersion Include="System.Collections.Immutable"                                    Version="1.7.1"   />
