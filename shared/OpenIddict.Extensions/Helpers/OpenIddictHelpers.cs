@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -536,6 +535,89 @@ internal static class OpenIddictHelpers
         }
 
         return array;
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="string"/> containing characters
+    /// randomly selected in the specified <paramref name="charset"/>.
+    /// </summary>
+    /// <param name="charset">The characters allowed to be included in the <see cref="string"/>.</param>
+    /// <param name="length">The desired length of the <see cref="string"/>.</param>
+    /// <returns>A new <see cref="string"/> containing random data.</returns>
+    /// <exception cref="CryptographicException">
+    /// The implementation resolved from <see cref="CryptoConfig.CreateFromName(string)"/> is not valid.
+    /// </exception>
+    public static string CreateRandomString(ReadOnlySpan<char> charset, int length)
+    {
+        var algorithm = CryptoConfig.CreateFromName("OpenIddict RNG Cryptographic Provider") switch
+        {
+            RandomNumberGenerator result => result,
+            null => null,
+            var result => throw new CryptographicException(SR.FormatID0351(result.GetType().FullName))
+        };
+
+        try
+        {
+            var buffer = new char[length];
+
+            for (var index = 0; index < buffer.Length; index++)
+            {
+                // Pick a character in the specified charset by generating a random index.
+                buffer[index] = charset[index: algorithm switch
+                {
+#if SUPPORTS_INTEGER32_RANDOM_NUMBER_GENERATOR_METHODS
+                    // If no custom random number generator was registered, use
+                    // the static GetInt32() API on platforms that support it.
+                    null => RandomNumberGenerator.GetInt32(0, charset.Length),
+#endif
+                    // Otherwise, create a default implementation if necessary
+                    // and use the local function that achieves the same result.
+                    _ => GetInt32(algorithm ??= RandomNumberGenerator.Create(), 0..charset.Length)
+                }];
+            }
+
+            return new string(buffer);
+        }
+
+        finally
+        {
+            algorithm?.Dispose();
+        }
+
+        static int GetInt32(RandomNumberGenerator algorithm, Range range)
+        {
+            // Note: the logic used here is directly taken from the official implementation
+            // of the RandomNumberGenerator.GetInt32() method introduced in .NET Core 3.0.
+            //
+            // See https://github.com/dotnet/corefx/pull/31243 for more information.
+
+            var count = (uint) range.End.Value - (uint) range.Start.Value - 1;
+            if (count is 0)
+            {
+                return range.Start.Value;
+            }
+
+            var mask = count;
+            mask |= mask >> 1;
+            mask |= mask >> 2;
+            mask |= mask >> 4;
+            mask |= mask >> 8;
+            mask |= mask >> 16;
+
+            var buffer = new byte[sizeof(uint)];
+            uint value;
+
+            do
+            {
+                algorithm.GetBytes(buffer);
+
+                value = mask & BitConverter.ToUInt32(buffer, 0);
+            }
+
+            while (value > count);
+
+            return (int) value + range.Start.Value;
+        }
     }
 
 #if SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
