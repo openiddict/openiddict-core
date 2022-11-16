@@ -9,16 +9,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
-
-#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
-using Org.BouncyCastle.Utilities;
-#endif
 
 namespace OpenIddict.Client;
 
@@ -621,16 +616,9 @@ public static partial class OpenIddictClientHandlers
             //
             // In any case, the authentication demand MUST be rejected as it's impossible to ensure
             // it's not an injection or session fixation attack without the correct "rfp" value.
-            if (string.IsNullOrEmpty(context.RequestForgeryProtection) ||
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                !CryptographicOperations.FixedTimeEquals(
-                    left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
-                    right: MemoryMarshal.AsBytes(context.RequestForgeryProtection.AsSpan())))
-#else
-                !Arrays.ConstantTimeAreEqual(
-                    a: MemoryMarshal.AsBytes(comparand.AsSpan()).ToArray(),
-                    b: MemoryMarshal.AsBytes(context.RequestForgeryProtection.AsSpan()).ToArray()))
-#endif
+            if (string.IsNullOrEmpty(context.RequestForgeryProtection) || !OpenIddictHelpers.FixedTimeEquals(
+                left:  MemoryMarshal.AsBytes(comparand.AsSpan()),
+                right: MemoryMarshal.AsBytes(context.RequestForgeryProtection.AsSpan())))
             {
                 context.Logger.LogWarning(SR.GetResourceString(SR.ID6209));
 
@@ -1517,17 +1505,10 @@ public static partial class OpenIddictClientHandlers
 
                 // If the two nonces don't match, return an error.
                 case { FrontchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                    !CryptographicOperations.FixedTimeEquals(
+                    !OpenIddictHelpers.FixedTimeEquals(
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
                         right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
                             OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
-#else
-                    !Arrays.ConstantTimeAreEqual(
-                        a: MemoryMarshal.AsBytes(left.AsSpan()).ToArray(), // The nonce in the identity token is already hashed.
-                        b: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
-                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan()).ToArray()):
-#endif
                     context.Logger.LogWarning(SR.GetResourceString(SR.ID6210));
 
                     context.Reject(
@@ -1658,15 +1639,10 @@ public static partial class OpenIddictClientHandlers
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                CryptographicOperations.FixedTimeEquals(
+                OpenIddictHelpers.FixedTimeEquals(
                     left:  MemoryMarshal.AsBytes(hash.AsSpan()),
                     right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
-#else
-                Arrays.ConstantTimeAreEqual(
-                    a: MemoryMarshal.AsBytes(hash.AsSpan()).ToArray(),
-                    b: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)).ToArray());
-#endif
+
             return default;
         }
     }
@@ -2831,17 +2807,10 @@ public static partial class OpenIddictClientHandlers
 
                 // If the two nonces don't match, return an error.
                 case { BackchannelIdentityTokenNonce: string left, StateTokenNonce: string right } when
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                    !CryptographicOperations.FixedTimeEquals(
+                    !OpenIddictHelpers.FixedTimeEquals(
                         left:  MemoryMarshal.AsBytes(left.AsSpan()), // The nonce in the identity token is already hashed.
                         right: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
                             OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan())):
-#else
-                    !Arrays.ConstantTimeAreEqual(
-                        a: MemoryMarshal.AsBytes(left.AsSpan()).ToArray(), // The nonce in the identity token is already hashed.
-                        b: MemoryMarshal.AsBytes(Base64UrlEncoder.Encode(
-                            OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(right))).AsSpan()).ToArray()):
-#endif
                     context.Logger.LogWarning(SR.GetResourceString(SR.ID6211));
 
                     context.Reject(
@@ -2936,15 +2905,10 @@ public static partial class OpenIddictClientHandlers
             }
 
             static bool ValidateTokenHash(string algorithm, string token, string hash) =>
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                CryptographicOperations.FixedTimeEquals(
+                OpenIddictHelpers.FixedTimeEquals(
                     left:  MemoryMarshal.AsBytes(hash.AsSpan()),
                     right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
-#else
-                Arrays.ConstantTimeAreEqual(
-                    a: MemoryMarshal.AsBytes(hash.AsSpan()).ToArray(),
-                    b: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)).ToArray());
-#endif
+
             return default;
         }
     }

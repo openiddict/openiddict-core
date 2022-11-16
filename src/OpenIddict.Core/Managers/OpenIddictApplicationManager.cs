@@ -25,10 +25,6 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 #endif
 
-#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
-using Org.BouncyCastle.Utilities;
-#endif
-
 namespace OpenIddict.Core;
 
 /// <summary>
@@ -1511,15 +1507,9 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 return false;
             }
 
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-            return CryptographicOperations.FixedTimeEquals(
-                left: payload.Slice(13 + salt.Length, keyLength),
+            return OpenIddictHelpers.FixedTimeEquals(
+                left:  payload.Slice(13 + salt.Length, keyLength),
                 right: DeriveKey(secret, salt.ToArray(), algorithm, iterations, keyLength));
-#else
-            return Arrays.ConstantTimeAreEqual(
-                a: payload.Slice(13 + salt.Length, keyLength).ToArray(),
-                b: DeriveKey(secret, salt.ToArray(), algorithm, iterations, keyLength));
-#endif
         }
     }
 
