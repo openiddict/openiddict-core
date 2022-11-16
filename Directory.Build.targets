@@ -63,6 +63,7 @@
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp'  And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.0'))) ">
     <DefineConstants>$(DefineConstants);SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_INTEGER32_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup
