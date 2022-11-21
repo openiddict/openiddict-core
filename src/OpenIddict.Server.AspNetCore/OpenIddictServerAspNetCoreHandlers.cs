@@ -1095,7 +1095,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             }
 
             // If the WWW-Authenticate header ends with a comma, remove it.
-            if (builder[builder.Length - 1] == ',')
+            if (builder[^1] == ',')
             {
                 builder.Remove(builder.Length - 1, 1);
             }
