@@ -5,7 +5,7 @@ namespace OpenIddict.Core;
 /// <summary>
 /// Exposes a method allowing to resolve a scope store.
 /// </summary>
-public class OpenIddictScopeStoreResolver : IOpenIddictScopeStoreResolver
+public sealed class OpenIddictScopeStoreResolver : IOpenIddictScopeStoreResolver
 {
     private readonly IServiceProvider _provider;
 

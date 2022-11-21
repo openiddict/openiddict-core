@@ -1758,7 +1758,7 @@ public abstract partial class OpenIddictServerIntegrationTests
             {
                 builder.UseInlineHandler(context =>
                 {
-                    Assert.Equal(new[] { Scopes.Profile }, context.AccessTokenPrincipal?.GetScopes());
+                    Assert.Equal(new[] { Scopes.Profile }, context.AccessTokenPrincipal!.GetScopes());
 
                     return default;
                 });

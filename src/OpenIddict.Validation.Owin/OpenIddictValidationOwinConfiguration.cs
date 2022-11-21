@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation.Owin;
@@ -11,7 +12,8 @@ namespace OpenIddict.Validation.Owin;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
 /// </summary>
-public class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
 {
     public void Configure(OpenIddictValidationOptions options)
     {

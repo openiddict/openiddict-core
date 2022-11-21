@@ -26,7 +26,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <summary>
         /// Contains the logic responsible for amending the issuer for the providers that require it.
         /// </summary>
-        public class AmendIssuer : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class AmendIssuer : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -67,7 +67,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for amending the supported
         /// client authentication methods for the providers that require it.
         /// </summary>
-        public class AmendClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class AmendClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -108,7 +108,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// Contains the logic responsible for amending the supported
         /// code challenge methods for the providers that require it.
         /// </summary>
-        public class AmendCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class AmendCodeChallengeMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -145,7 +145,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         /// <summary>
         /// Contains the logic responsible for amending the endpoint URIs for the providers that require it.
         /// </summary>
-        public class AmendEndpoints : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class AmendEndpoints : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

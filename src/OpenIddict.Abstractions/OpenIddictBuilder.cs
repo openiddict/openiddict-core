@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides a shared entry point allowing to configure the OpenIddict services.
 /// </summary>
-public class OpenIddictBuilder
+public sealed class OpenIddictBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictBuilder"/>.

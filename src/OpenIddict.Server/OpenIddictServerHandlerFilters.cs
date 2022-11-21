@@ -14,7 +14,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no access token is generated.
     /// </summary>
-    public class RequireAccessTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    public sealed class RequireAccessTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
@@ -30,7 +30,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no access token is validated.
     /// </summary>
-    public class RequireAccessTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireAccessTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -46,7 +46,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no authorization code is generated.
     /// </summary>
-    public class RequireAuthorizationCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    public sealed class RequireAuthorizationCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
@@ -62,7 +62,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no authorization code is validated.
     /// </summary>
-    public class RequireAuthorizationCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireAuthorizationCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -78,7 +78,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not an authorization request.
     /// </summary>
-    public class RequireAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -94,7 +94,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if authorization storage was not enabled.
     /// </summary>
-    public class RequireAuthorizationStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireAuthorizationStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -110,7 +110,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers when no client identifier is received.
     /// </summary>
-    public class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -126,7 +126,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a configuration request.
     /// </summary>
-    public class RequireConfigurationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireConfigurationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -142,7 +142,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a cryptography request.
     /// </summary>
-    public class RequireCryptographyRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireCryptographyRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -158,7 +158,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the degraded mode was not enabled.
     /// </summary>
-    public class RequireDegradedModeDisabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireDegradedModeDisabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -174,7 +174,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no device code is generated.
     /// </summary>
-    public class RequireDeviceCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    public sealed class RequireDeviceCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
@@ -190,7 +190,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no device code is validated.
     /// </summary>
-    public class RequireDeviceCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireDeviceCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -206,7 +206,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a device request.
     /// </summary>
-    public class RequireDeviceRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireDeviceRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -222,7 +222,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if endpoint permissions were disabled.
     /// </summary>
-    public class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -238,7 +238,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no generic token is validated.
     /// </summary>
-    public class RequireGenericTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireGenericTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -254,7 +254,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if grant type permissions were disabled.
     /// </summary>
-    public class RequireGrantTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireGrantTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -270,7 +270,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no identity token is generated.
     /// </summary>
-    public class RequireIdentityTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    public sealed class RequireIdentityTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
@@ -286,7 +286,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no identity token is validated.
     /// </summary>
-    public class RequireIdentityTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireIdentityTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -302,7 +302,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not an introspection request.
     /// </summary>
-    public class RequireIntrospectionRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireIntrospectionRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -318,7 +318,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the selected token format is not JSON Web Token.
     /// </summary>
-    public class RequireJsonWebTokenFormat : IOpenIddictServerHandlerFilter<GenerateTokenContext>
+    public sealed class RequireJsonWebTokenFormat : IOpenIddictServerHandlerFilter<GenerateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
@@ -334,7 +334,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a logout request.
     /// </summary>
-    public class RequireLogoutRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireLogoutRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -350,7 +350,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers when no post_logout_redirect_uri is received.
     /// </summary>
-    public class RequirePostLogoutRedirectUriParameter : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequirePostLogoutRedirectUriParameter : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -366,7 +366,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if reference access tokens are disabled.
     /// </summary>
-    public class RequireReferenceAccessTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireReferenceAccessTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -382,7 +382,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if reference refresh tokens are disabled.
     /// </summary>
-    public class RequireReferenceRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireReferenceRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -398,7 +398,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no refresh token is generated.
     /// </summary>
-    public class RequireRefreshTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    public sealed class RequireRefreshTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
@@ -414,7 +414,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no refresh token is validated.
     /// </summary>
-    public class RequireRefreshTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireRefreshTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -430,7 +430,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if response type permissions were disabled.
     /// </summary>
-    public class RequireResponseTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireResponseTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -446,7 +446,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a revocation request.
     /// </summary>
-    public class RequireRevocationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireRevocationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -462,7 +462,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if scope permissions were disabled.
     /// </summary>
-    public class RequireScopePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireScopePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -478,7 +478,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if scope validation was not enabled.
     /// </summary>
-    public class RequireScopeValidationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireScopeValidationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -494,7 +494,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if sliding refresh token expiration was disabled.
     /// </summary>
-    public class RequireSlidingRefreshTokenExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireSlidingRefreshTokenExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -510,7 +510,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no token entry is created in the database.
     /// </summary>
-    public class RequireTokenEntryCreated : IOpenIddictServerHandlerFilter<GenerateTokenContext>
+    public sealed class RequireTokenEntryCreated : IOpenIddictServerHandlerFilter<GenerateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
@@ -526,7 +526,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if token lifetime validation was disabled.
     /// </summary>
-    public class RequireTokenLifetimeValidationEnabled : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    public sealed class RequireTokenLifetimeValidationEnabled : IOpenIddictServerHandlerFilter<ValidateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
         {
@@ -542,7 +542,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the token payload is not persisted in the database.
     /// </summary>
-    public class RequireTokenPayloadPersisted : IOpenIddictServerHandlerFilter<GenerateTokenContext>
+    public sealed class RequireTokenPayloadPersisted : IOpenIddictServerHandlerFilter<GenerateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
@@ -558,7 +558,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a token request.
     /// </summary>
-    public class RequireTokenRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireTokenRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -574,7 +574,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if token storage was not enabled.
     /// </summary>
-    public class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -590,7 +590,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no user code is generated.
     /// </summary>
-    public class RequireUserCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    public sealed class RequireUserCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
@@ -606,7 +606,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no user code is validated.
     /// </summary>
-    public class RequireUserCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireUserCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -622,7 +622,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a userinfo request.
     /// </summary>
-    public class RequireUserinfoRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireUserinfoRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -638,7 +638,7 @@ public static class OpenIddictServerHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a verification request.
     /// </summary>
-    public class RequireVerificationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    public sealed class RequireVerificationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {

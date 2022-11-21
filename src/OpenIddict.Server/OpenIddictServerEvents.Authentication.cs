@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace OpenIddict.Server;
@@ -14,7 +15,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the authorization endpoint to give the user code
     /// a chance to manually extract the authorization request from the ambient HTTP context.
     /// </summary>
-    public class ExtractAuthorizationRequestContext : BaseValidatingContext
+    public sealed class ExtractAuthorizationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractAuthorizationRequestContext"/> class.
@@ -38,7 +39,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the authorization endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateAuthorizationRequestContext : BaseValidatingContext
+    public sealed class ValidateAuthorizationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateAuthorizationRequestContext"/> class.
@@ -67,6 +68,7 @@ public static partial class OpenIddictServerEvents
         /// If it's not provided by the client, it must be set by
         /// the user code by calling <see cref="SetRedirectUri(string)"/>.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? RedirectUri { get; private set; }
 
         /// <summary>
@@ -79,7 +81,7 @@ public static partial class OpenIddictServerEvents
         /// Populates the <see cref="RedirectUri"/> property with the specified redirect_uri.
         /// </summary>
         /// <param name="address">The redirect_uri to use when redirecting the user agent.</param>
-        public void SetRedirectUri(string address)
+        public void SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -102,7 +104,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated authorization request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleAuthorizationRequestContext : BaseValidatingTicketContext
+    public sealed class HandleAuthorizationRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleAuthorizationRequestContext"/> class.
@@ -154,7 +156,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the authorization response is returned to the caller.
     /// </summary>
-    public class ApplyAuthorizationResponseContext : BaseRequestContext
+    public sealed class ApplyAuthorizationResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyAuthorizationResponseContext"/> class.

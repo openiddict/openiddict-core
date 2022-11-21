@@ -11,7 +11,7 @@ namespace OpenIddict.Client.Owin;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict OWIN client integration.
 /// </summary>
-public class OpenIddictClientOwinOptions : AuthenticationOptions
+public sealed class OpenIddictClientOwinOptions : AuthenticationOptions
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientOwinOptions"/> class.

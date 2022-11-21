@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict validation services.
 /// </summary>
-public class OpenIddictValidationBuilder
+public sealed class OpenIddictValidationBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictValidationBuilder"/>.
@@ -276,8 +276,6 @@ public class OpenIddictValidationBuilder
     /// to store the private key of the certificate.
     /// </param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The X.509 certificate is attached to the server options.")]
     public OpenIddictValidationBuilder AddEncryptionCertificate(
         Stream stream, string? password, X509KeyStorageFlags flags)
     {
@@ -337,7 +335,6 @@ public class OpenIddictValidationBuilder
 
         using var store = new X509Store(name, location);
         store.Open(OpenFlags.ReadOnly);
-
 
         return AddEncryptionCertificate(
             store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
@@ -456,7 +453,7 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="address">The issuer address.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
-    public OpenIddictValidationBuilder SetIssuer(string address)
+    public OpenIddictValidationBuilder SetIssuer([StringSyntax(StringSyntaxAttribute.Uri)] string address)
     {
         if (string.IsNullOrEmpty(address))
         {

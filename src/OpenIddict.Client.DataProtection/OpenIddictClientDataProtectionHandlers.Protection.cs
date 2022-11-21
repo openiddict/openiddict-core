@@ -35,7 +35,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using Data Protection.
         /// </summary>
-        public class ValidateDataProtectionToken : IOpenIddictClientHandler<ValidateTokenContext>
+        public sealed class ValidateDataProtectionToken : IOpenIddictClientHandler<ValidateTokenContext>
         {
             private readonly IOptionsMonitor<OpenIddictClientDataProtectionOptions> _options;
 
@@ -138,7 +138,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
         /// Contains the logic responsible for overriding the default token format
         /// to generate ASP.NET Core Data Protection tokens instead of JSON Web Tokens.
         /// </summary>
-        public class OverrideGeneratedTokenFormat : IOpenIddictClientHandler<GenerateTokenContext>
+        public sealed class OverrideGeneratedTokenFormat : IOpenIddictClientHandler<GenerateTokenContext>
         {
             private readonly IOptionsMonitor<OpenIddictClientDataProtectionOptions> _options;
 
@@ -184,7 +184,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
         /// <summary>
         /// Contains the logic responsible for generating a token using Data Protection.
         /// </summary>
-        public class GenerateDataProtectionToken : IOpenIddictClientHandler<GenerateTokenContext>
+        public sealed class GenerateDataProtectionToken : IOpenIddictClientHandler<GenerateTokenContext>
         {
             private readonly IOptionsMonitor<OpenIddictClientDataProtectionOptions> _options;
 

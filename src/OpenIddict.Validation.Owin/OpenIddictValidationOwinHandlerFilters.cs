@@ -16,7 +16,7 @@ public static class OpenIddictValidationOwinHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no OWIN request can be found.
     /// </summary>
-    public class RequireOwinRequest : IOpenIddictValidationHandlerFilter<BaseContext>
+    public sealed class RequireOwinRequest : IOpenIddictValidationHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {

@@ -13,7 +13,7 @@ namespace OpenIddict.Validation;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
 /// </summary>
-public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
+public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly OpenIddictValidationService _service;
 
@@ -26,7 +26,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictValidationOptions options)
+    public void PostConfigure(string? name, OpenIddictValidationOptions options)
     {
         if (options is null)
         {
@@ -101,10 +101,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
                 }
 
-                if (options.MetadataAddress is null)
-                {
-                    options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
-                }
+                options.MetadataAddress ??= new Uri(".well-known/openid-configuration", UriKind.Relative);
 
                 if (!options.MetadataAddress.IsAbsoluteUri)
                 {
@@ -126,8 +123,7 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
 
                     if (options.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
                     {
-                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
-                            1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
+                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString[1..], UriKind.Relative);
                     }
 
                     options.MetadataAddress = new Uri(issuer, options.MetadataAddress);

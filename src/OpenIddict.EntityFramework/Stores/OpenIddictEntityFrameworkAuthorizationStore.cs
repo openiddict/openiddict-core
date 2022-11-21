@@ -460,7 +460,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<TAuthorization, TApplic
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(properties);
     }

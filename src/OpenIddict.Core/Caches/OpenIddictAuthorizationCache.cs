@@ -17,7 +17,7 @@ namespace OpenIddict.Core;
 /// Provides methods allowing to cache authorizations after retrieving them from the store.
 /// </summary>
 /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthorizationCache<TAuthorization>, IDisposable where TAuthorization : class
+public sealed class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthorizationCache<TAuthorization>, IDisposable where TAuthorization : class
 {
     private readonly MemoryCache _cache;
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
@@ -452,7 +452,7 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
     /// <param name="authorization">The authorization to store in the cache entry, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(object key, TAuthorization? authorization, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, TAuthorization? authorization, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -467,8 +467,8 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(1L);
-        entry.SetValue(authorization);
+        entry.Size = 1L;
+        entry.Value = authorization;
     }
 
     /// <summary>
@@ -478,8 +478,7 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
     /// <param name="authorizations">The authorizations to store in the cache entry.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(
-        object key, ImmutableArray<TAuthorization> authorizations, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, ImmutableArray<TAuthorization> authorizations, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -494,8 +493,8 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(authorizations.Length);
-        entry.SetValue(authorizations);
+        entry.Size = authorizations.Length;
+        entry.Value = authorizations;
     }
 
     /// <summary>
@@ -508,8 +507,7 @@ public class OpenIddictAuthorizationCache<TAuthorization> : IOpenIddictAuthoriza
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified authorization.
     /// </returns>
-    protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(
-        TAuthorization authorization, CancellationToken cancellationToken)
+    private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TAuthorization authorization, CancellationToken cancellationToken)
     {
         if (authorization is null)
         {

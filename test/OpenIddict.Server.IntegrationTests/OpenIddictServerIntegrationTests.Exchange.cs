@@ -340,6 +340,60 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenScopeIsSent()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.RegisterScopes(Scopes.Phone, Scopes.Profile);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Code = "SplxlOBeZQQYbYS6WxSbIA",
+            GrantType = GrantTypes.AuthorizationCode,
+            Scope = "profile phone"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2074(Parameters.Scope), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2074), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ValidateTokenRequest_DeviceAuthorizationCodeCausesAnErrorWhenScopeIsSent()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.RegisterScopes(Scopes.Phone, Scopes.Profile);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            DeviceCode = "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+            GrantType = GrantTypes.DeviceCode,
+            Scope = "profile phone"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2074(Parameters.Scope), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2074), response.ErrorUri);
+    }
+
+    [Fact]
     public async Task ValidateTokenRequest_InvalidAuthorizationCodeCausesAnError()
     {
         // Arrange
@@ -1035,98 +1089,6 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.NotNull(response.AccessToken);
-    }
-
-    [Fact]
-    public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenScopeIsUnexpected()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.EnableDegradedMode();
-            options.RegisterScopes(Scopes.Phone, Scopes.Profile);
-
-            options.AddEventHandler<ValidateTokenContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
-
-                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AuthorizationCode)
-                        .SetPresenters("Fabrikam")
-                        .SetScopes(Enumerable.Empty<string>())
-                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                    return default;
-                });
-
-                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-            });
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            Code = "SplxlOBeZQQYbYS6WxSbIA",
-            GrantType = GrantTypes.AuthorizationCode,
-            Scope = "profile phone"
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidGrant, response.Error);
-        Assert.Equal(SR.FormatID2074(Parameters.Scope), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2074), response.ErrorUri);
-    }
-
-    [Fact]
-    public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenScopeIsInvalid()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.EnableDegradedMode();
-            options.RegisterScopes(Scopes.Phone, Scopes.Profile);
-
-            options.AddEventHandler<ValidateTokenContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                    Assert.Equal(new[] { TokenTypeHints.AuthorizationCode }, context.ValidTokenTypes);
-
-                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                        .SetTokenType(TokenTypeHints.AuthorizationCode)
-                        .SetPresenters("Fabrikam")
-                        .SetScopes("profile", "email")
-                        .SetClaim(Claims.Subject, "Bob le Bricoleur");
-
-                    return default;
-                });
-
-                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-            });
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            Code = "SplxlOBeZQQYbYS6WxSbIA",
-            GrantType = GrantTypes.AuthorizationCode,
-            Scope = "profile phone"
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidGrant, response.Error);
-        Assert.Equal(SR.FormatID2052(Parameters.Scope), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
     }
 
     [Fact]

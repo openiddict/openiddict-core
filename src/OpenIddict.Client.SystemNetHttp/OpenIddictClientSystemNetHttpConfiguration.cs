@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
@@ -13,8 +14,9 @@ namespace OpenIddict.Client.SystemNetHttp;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client/System.Net.Http integration configuration is valid.
 /// </summary>
-public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                          IConfigureNamedOptions<HttpClientFactoryOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<OpenIddictClientOptions>,
+                                                                 IConfigureNamedOptions<HttpClientFactoryOptions>
 {
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
     private readonly IServiceProvider _provider;
@@ -36,7 +38,7 @@ public class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptions<Open
 
     public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
 
-    public void Configure(string name, HttpClientFactoryOptions options)
+    public void Configure(string? name, HttpClientFactoryOptions options)
     {
         if (options is null)
         {

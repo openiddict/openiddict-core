@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 
@@ -208,7 +209,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing an incoming request.
     /// </summary>
-    public class ProcessRequestContext : BaseValidatingContext
+    public sealed class ProcessRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessRequestContext"/> class.
@@ -222,7 +223,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing an errored response.
     /// </summary>
-    public class ProcessErrorContext : BaseRequestContext
+    public sealed class ProcessErrorContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessErrorContext"/> class.
@@ -274,7 +275,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing an authentication operation.
     /// </summary>
-    public class ProcessAuthenticationContext : BaseValidatingContext
+    public sealed class ProcessAuthenticationContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessAuthenticationContext"/> class.
@@ -294,6 +295,11 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets the user-defined authentication properties, if available.
+        /// </summary>
+        public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets the grant type used for the authentication demand, if applicable.
         /// </summary>
         public string? GrantType { get; set; }
@@ -302,6 +308,16 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the response type used for the authentication demand, if applicable.
         /// </summary>
         public string? ResponseType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request forgery protection resolved from the user session, if applicable.
+        /// </summary>
+        public string? RequestForgeryProtection { get; set; }
+
+        /// <summary>
+        /// Gets the scopes that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the address of the token endpoint, if applicable.
@@ -665,7 +681,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing a challenge response.
     /// </summary>
-    public class ProcessChallengeContext : BaseValidatingTicketContext
+    public sealed class ProcessChallengeContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessChallengeContext"/> class.
@@ -735,6 +751,7 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the redirection endpoint that will
         /// be used for the challenge demand, if applicable.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? RedirectUri { get; set; }
 
         /// <summary>
@@ -769,6 +786,7 @@ public static partial class OpenIddictClientEvents
         /// <summary>
         /// Gets or sets the optional return URL that will be stored in the state token, if applicable.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? TargetLinkUri { get; set; }
 
         /// <summary>
@@ -820,7 +838,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called when processing a sign-out response.
     /// </summary>
-    public class ProcessSignOutContext : BaseValidatingTicketContext
+    public sealed class ProcessSignOutContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ProcessSignOutContext"/> class.
@@ -868,6 +886,7 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the post-logout redirection endpoint that
         /// will be used for the sign-out demand, if applicable.
         /// </summary>
+        [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? PostLogoutRedirectUri { get; set; }
 
         /// <summary>
@@ -885,6 +904,11 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the optional return URL that will be stored in the state token, if applicable.
         /// </summary>
         public string? TargetLinkUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nonce that will be used for the sign-out demand, if applicable.
+        /// </summary>
+        public string? Nonce { get; set; }
 
         /// <summary>
         /// Gets or sets the request forgery protection that will be stored in the state token, if applicable.

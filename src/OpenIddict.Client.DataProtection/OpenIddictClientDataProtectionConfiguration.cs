@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
@@ -12,8 +13,9 @@ namespace OpenIddict.Client.DataProtection;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict ASP.NET Core Data Protection configuration is valid.
 /// </summary>
-public class OpenIddictClientDataProtectionConfiguration : IConfigureOptions<OpenIddictClientOptions>,
-                                                           IPostConfigureOptions<OpenIddictClientDataProtectionOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOptions<OpenIddictClientOptions>,
+                                                                  IPostConfigureOptions<OpenIddictClientDataProtectionOptions>
 {
     private readonly IDataProtectionProvider _dataProtectionProvider;
 
@@ -41,7 +43,7 @@ public class OpenIddictClientDataProtectionConfiguration : IConfigureOptions<Ope
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictClientDataProtectionOptions options)
+    public void PostConfigure(string? name, OpenIddictClientDataProtectionOptions options)
     {
         if (options is null)
         {

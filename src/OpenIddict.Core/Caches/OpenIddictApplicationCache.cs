@@ -6,6 +6,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,7 @@ namespace OpenIddict.Core;
 /// Provides methods allowing to cache applications after retrieving them from the store.
 /// </summary>
 /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCache<TApplication>, IDisposable where TApplication : class
+public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCache<TApplication>, IDisposable where TApplication : class
 {
     private readonly MemoryCache _cache;
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
@@ -167,7 +168,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+    public IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -208,7 +210,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TApplication> FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
+    public IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -276,7 +279,7 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     /// <param name="application">The application to store in the cache entry, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(object key, TApplication? application, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, TApplication? application, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -291,8 +294,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(1L);
-        entry.SetValue(application);
+        entry.Size = 1L;
+        entry.Value = application;
     }
 
     /// <summary>
@@ -302,8 +305,7 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     /// <param name="applications">The applications to store in the cache entry.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    protected virtual async ValueTask CreateEntryAsync(
-        object key, ImmutableArray<TApplication> applications, CancellationToken cancellationToken)
+    private async ValueTask CreateEntryAsync(object key, ImmutableArray<TApplication> applications, CancellationToken cancellationToken)
     {
         if (key is null)
         {
@@ -318,8 +320,8 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0197)));
         }
 
-        entry.SetSize(applications.Length);
-        entry.SetValue(applications);
+        entry.Size = applications.Length;
+        entry.Value = applications;
     }
 
     /// <summary>
@@ -332,8 +334,7 @@ public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCa
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns an expiration signal for the specified application.
     /// </returns>
-    protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(
-        TApplication application, CancellationToken cancellationToken)
+    private async ValueTask<IChangeToken> CreateExpirationSignalAsync(TApplication application, CancellationToken cancellationToken)
     {
         if (application is null)
         {

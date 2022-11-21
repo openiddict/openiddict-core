@@ -14,7 +14,7 @@ public static class OpenIddictValidationHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no access token is extracted.
     /// </summary>
-    public class RequireAccessTokenExtracted : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireAccessTokenExtracted : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -30,7 +30,7 @@ public static class OpenIddictValidationHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if no access token is validated.
     /// </summary>
-    public class RequireAccessTokenValidated : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
+    public sealed class RequireAccessTokenValidated : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
     {
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
@@ -46,7 +46,7 @@ public static class OpenIddictValidationHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if authorization validation was not enabled.
     /// </summary>
-    public class RequireAuthorizationEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
+    public sealed class RequireAuthorizationEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -62,7 +62,7 @@ public static class OpenIddictValidationHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if local validation is not used.
     /// </summary>
-    public class RequireLocalValidation : IOpenIddictValidationHandlerFilter<BaseContext>
+    public sealed class RequireLocalValidation : IOpenIddictValidationHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -78,7 +78,7 @@ public static class OpenIddictValidationHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if introspection is not used.
     /// </summary>
-    public class RequireIntrospectionValidation : IOpenIddictValidationHandlerFilter<BaseContext>
+    public sealed class RequireIntrospectionValidation : IOpenIddictValidationHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
@@ -94,7 +94,7 @@ public static class OpenIddictValidationHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if token validation was not enabled.
     /// </summary>
-    public class RequireTokenEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
+    public sealed class RequireTokenEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation.AspNetCore;
@@ -11,9 +12,10 @@ namespace OpenIddict.Validation.AspNetCore;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
 /// </summary>
-public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
-                                                           IConfigureOptions<OpenIddictValidationOptions>,
-                                                           IPostConfigureOptions<AuthenticationOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
+                                                                  IConfigureOptions<OpenIddictValidationOptions>,
+                                                                  IPostConfigureOptions<AuthenticationOptions>
 {
     /// <summary>
     /// Registers the OpenIddict validation handler in the global authentication options.
@@ -53,7 +55,7 @@ public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<Aut
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, AuthenticationOptions options)
+    public void PostConfigure(string? name, AuthenticationOptions options)
     {
         if (options is null)
         {
@@ -65,6 +67,24 @@ public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<Aut
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0165));
         }
+
+#if SUPPORTS_AUTHENTICATION_HANDLER_SELECTION_FALLBACK
+        // Starting in ASP.NET 7.0, the authentication stack integrates a fallback
+        // mechanism to select the default scheme to use when no value is set, but
+        // only if a single handler has been registered in the authentication options.
+        //
+        // Unfortunately, this behavior is problematic for OpenIddict as it enforces
+        // strict checks to prevent calling certain unsafe authentication operations
+        // on invalid endpoints. To opt out this undesirable behavior, a fake entry
+        // is dynamically added if one of the default schemes properties is not set
+        // and less than 2 handlers were registered in the authentication options.
+        if (options.SchemeMap.Count < 2 && string.IsNullOrEmpty(options.DefaultScheme) &&
+           (string.IsNullOrEmpty(options.DefaultSignInScheme) ||
+            string.IsNullOrEmpty(options.DefaultSignOutScheme)))
+        {
+            options.AddScheme<IAuthenticationHandler>(Guid.NewGuid().ToString(), displayName: null);
+        }
+#endif
 
         static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string? scheme)
         {

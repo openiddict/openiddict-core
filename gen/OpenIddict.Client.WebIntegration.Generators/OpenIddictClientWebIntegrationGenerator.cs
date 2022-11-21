@@ -8,7 +8,7 @@ using Scriban;
 namespace OpenIddict.Client.WebIntegration.Generators
 {
     [Generator]
-    public class OpenIddictClientWebIntegrationGenerator : ISourceGenerator
+    public sealed class OpenIddictClientWebIntegrationGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
@@ -48,6 +48,7 @@ namespace OpenIddict.Client.WebIntegration.Generators
                 var template = Template.Parse(@"#nullable enable
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -57,7 +58,7 @@ using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationCons
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public partial class OpenIddictClientWebIntegrationBuilder
+public sealed partial class OpenIddictClientWebIntegrationBuilder
 {
     {{~ for provider in providers ~}}
     /// <summary>
@@ -108,7 +109,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
     /// <summary>
     /// Exposes the necessary methods required to configure the {{ provider.name }} integration.
     /// </summary>
-    public partial class {{ provider.name }}
+    public sealed partial class {{ provider.name }}
     {
         /// <summary>
         /// Initializes a new instance of <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/>.
@@ -196,7 +197,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""address"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        public {{ provider.name }} SetRedirectUri(string address)
+        public {{ provider.name }} SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -346,7 +347,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
 
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
                                 Description = (string) setting.Attribute("Description") is string description ?
-                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description.Substring(1) : null,
+                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                                 ClrType = (string) setting.Attribute("Type") switch
                                 {
                                     "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")
@@ -427,19 +428,18 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
 using SmartFormat;
 using SmartFormat.Core.Settings;
-using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
 
-public partial class OpenIddictClientWebIntegrationConfiguration
+public sealed partial class OpenIddictClientWebIntegrationConfiguration
 {
     {{~ for provider in providers ~}}
     /// <summary>
     /// Contains the methods required to register the {{ provider.name }} integration in the OpenIddict client options.
     /// </summary>
-    public class {{ provider.name }} : IConfigureOptions<OpenIddictClientOptions>,
-                                       IPostConfigureOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>
+    public sealed class {{ provider.name }} : IConfigureOptions<OpenIddictClientOptions>,
+                                              IPostConfigureOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>
     {
         private readonly IServiceProvider _provider;
 
@@ -456,7 +456,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
         /// </summary>
         /// <param name=""name"">The name of the options instance to configure, if applicable.</param>
         /// <param name=""options"">The options instance to initialize.</param>
-        public void PostConfigure(string name, OpenIddictClientWebIntegrationOptions.{{ provider.name }} options)
+        public void PostConfigure(string? name, OpenIddictClientWebIntegrationOptions.{{ provider.name }} options)
         {
             {{~ for setting in provider.settings ~}}
             {{~ if setting.default_value && setting.type == 'String' ~}} 
@@ -547,6 +547,7 @@ public partial class OpenIddictClientWebIntegrationConfiguration
             var registration = new OpenIddictClientRegistration
             {
                 ProviderName = Providers.{{ provider.name }},
+                ProviderOptions = settings,
 
                 Issuer = settings.Environment switch
                 {
@@ -646,11 +647,6 @@ public partial class OpenIddictClientWebIntegrationConfiguration
                     new SigningCredentials(settings.{{ setting.property_name }}, ""{{ setting.signing_algorithm }}""),
                     {{~ end ~}}
                     {{~ end ~}}
-                },
-
-                Properties =
-                {
-                    [Properties.ProviderOptions] = settings
                 }
             };
 
@@ -777,12 +773,11 @@ using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
 using SmartFormat;
 using SmartFormat.Core.Settings;
-using Properties = OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants.Properties;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace OpenIddict.Client.WebIntegration;
 
-public partial class OpenIddictClientWebIntegrationHelpers
+public static partial class OpenIddictClientWebIntegrationHelpers
 {
     {{~ for provider in providers ~}}
     /// <summary>
@@ -792,7 +787,7 @@ public partial class OpenIddictClientWebIntegrationHelpers
     /// <returns>The {{ provider.name }} provider options.</returns>
     /// <exception cref=""InvalidOperationException"">The provider options cannot be resolved.</exception>
     public static OpenIddictClientWebIntegrationOptions.{{ provider.name }} Get{{ provider.name }}Options(this OpenIddictClientRegistration registration)
-        => registration.GetProviderOptions<OpenIddictClientWebIntegrationOptions.{{ provider.name }}>() ??
+        => registration.ProviderOptions is OpenIddictClientWebIntegrationOptions.{{ provider.name }} options ? options :
             throw new InvalidOperationException(SR.FormatID0333(Providers.{{ provider.name }}));
 
     {{~ end ~}}
@@ -814,13 +809,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client.WebIntegration;
 
-public partial class OpenIddictClientWebIntegrationOptions
+public sealed partial class OpenIddictClientWebIntegrationOptions
 {
     {{~ for provider in providers ~}}
     /// <summary>
     /// Provides various options needed to configure the {{ provider.name }} integration.
     /// </summary>
-    public class {{ provider.name }}
+    public sealed class {{ provider.name }}
     {
         /// <summary>
         /// Gets or sets the client identifier.
@@ -875,7 +870,7 @@ public partial class OpenIddictClientWebIntegrationOptions
 
                                 Collection = (bool?) setting.Attribute("Collection") ?? false,
                                 Description = (string) setting.Attribute("Description") is string description ?
-                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description.Substring(1) : null,
+                                    char.ToLower(description[0], CultureInfo.GetCultureInfo("en-US")) + description[1..] : null,
                                 ClrType = (string) setting.Attribute("Type") switch
                                 {
                                     "EncryptionKey" when (string) setting.Element("EncryptionAlgorithm").Attribute("Value")

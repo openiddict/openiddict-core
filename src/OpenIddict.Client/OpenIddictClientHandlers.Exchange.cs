@@ -24,7 +24,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the token response.
         /// </summary>
-        public class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleTokenResponseContext>
+        public sealed class ValidateWellKnownParameters : IOpenIddictClientHandler<HandleTokenResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -88,7 +88,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the token response.
         /// </summary>
-        public class HandleErrorResponse : IOpenIddictClientHandler<HandleTokenResponseContext>
+        public sealed class HandleErrorResponse : IOpenIddictClientHandler<HandleTokenResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

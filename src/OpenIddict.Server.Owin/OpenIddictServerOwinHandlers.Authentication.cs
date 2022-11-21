@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -16,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
 using JsonWebTokenTypes = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.JsonWebTokenTypes;
@@ -57,7 +57,7 @@ public static partial class OpenIddictServerOwinHandlers
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
+        public sealed class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -151,7 +151,7 @@ public static partial class OpenIddictServerOwinHandlers
         /// Contains the logic responsible for caching authorization requests, if applicable.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class CacheRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
+        public sealed class CacheRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
         {
             private readonly IDistributedCache _cache;
             private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
@@ -202,11 +202,7 @@ public static partial class OpenIddictServerOwinHandlers
                 }
 
                 // Generate a 256-bit request identifier using a crypto-secure random number generator.
-                var data = new byte[256 / 8];
-                using var generator = RandomNumberGenerator.Create();
-                generator.GetBytes(data);
-
-                context.Request.RequestId = Base64UrlEncoder.Encode(data);
+                context.Request.RequestId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
                 // Build a list of claims matching the parameters extracted from the request.
                 //
@@ -261,7 +257,7 @@ public static partial class OpenIddictServerOwinHandlers
         /// Contains the logic responsible for removing cached authorization requests from the distributed cache.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class RemoveCachedRequest : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class RemoveCachedRequest : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -309,7 +305,7 @@ public static partial class OpenIddictServerOwinHandlers
         /// Contains the logic responsible for processing authorization responses using the form_post response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class ProcessFormPostResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class ProcessFormPostResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             private readonly HtmlEncoder _encoder;
 
@@ -403,7 +399,7 @@ public static partial class OpenIddictServerOwinHandlers
         /// Contains the logic responsible for processing authorization responses using the query response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class ProcessQueryResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -467,7 +463,7 @@ public static partial class OpenIddictServerOwinHandlers
         /// Contains the logic responsible for processing authorization responses using the fragment response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
-        public class ProcessFragmentResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class ProcessFragmentResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

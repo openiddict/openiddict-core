@@ -8,11 +8,11 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -47,7 +47,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for resolving the validation parameters used to validate tokens.
         /// </summary>
-        public class ResolveTokenValidationParameters : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ResolveTokenValidationParameters : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -121,7 +121,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateReferenceTokenIdentifier : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateReferenceTokenIdentifier : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -242,7 +242,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating tokens generated using IdentityModel.
         /// </summary>
-        public class ValidateIdentityModelToken : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateIdentityModelToken : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -393,7 +393,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for normalizing the scope claims stored in the tokens.
         /// </summary>
-        public class NormalizeScopeClaims : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class NormalizeScopeClaims : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -438,7 +438,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for mapping internal claims used by OpenIddict.
         /// </summary>
-        public class MapInternalClaims : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class MapInternalClaims : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -542,7 +542,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for restoring the properties associated with a reference token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class RestoreReferenceTokenProperties : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class RestoreReferenceTokenProperties : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -590,7 +590,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands for which no valid principal was resolved.
         /// </summary>
-        public class ValidatePrincipal : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidatePrincipal : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -667,7 +667,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting authentication demands that use an expired token.
         /// </summary>
-        public class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateExpirationDate : IOpenIddictServerHandler<ValidateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -728,7 +728,7 @@ public static partial class OpenIddictServerHandlers
         /// use a token whose entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateTokenEntry : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateTokenEntry : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -931,7 +931,7 @@ public static partial class OpenIddictServerHandlers
         /// associated authorization entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateAuthorizationEntry : IOpenIddictServerHandler<ValidateTokenContext>
+        public sealed class ValidateAuthorizationEntry : IOpenIddictServerHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 
@@ -999,7 +999,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for resolving the signing and encryption credentials used to protect tokens.
         /// </summary>
-        public class AttachSecurityCredentials : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class AttachSecurityCredentials : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1048,7 +1048,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for creating a token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class CreateTokenEntry : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class CreateTokenEntry : IOpenIddictServerHandler<GenerateTokenContext>
         {
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
@@ -1138,7 +1138,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for generating a token using IdentityModel.
         /// </summary>
-        public class GenerateIdentityModelToken : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class GenerateIdentityModelToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1272,7 +1272,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for converting the token to a reference token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ConvertReferenceToken : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class ConvertReferenceToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -1318,30 +1318,21 @@ public static partial class OpenIddictServerHandlers
                 descriptor.Payload = context.Token;
                 descriptor.Principal = context.Principal;
 
-                // Note: unlike other reference tokens, user codes are meant to be used by humans,
-                // who may have to enter it in a web form. To ensure it remains easy enough to type
-                // even by users with non-Latin keyboards, user codes generated by OpenIddict are
-                // only compound of 12 digits, generated using a crypto-secure random number generator.
-                // In this case, the resulting user code is estimated to have at most ~40 bits of entropy.
                 if (context.TokenType is TokenTypeHints.UserCode)
                 {
                     do
                     {
-                        var data = new byte[12];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                        RandomNumberGenerator.Fill(data);
-#else
-                        using var generator = RandomNumberGenerator.Create();
-                        generator.GetBytes(data);
-#endif
-                        var builder = new StringBuilder(data.Length);
+                        // Note: unlike other reference tokens, user codes are meant to be used by humans,
+                        // who may have to enter it in a web form. To ensure it remains easy enough to type
+                        // even by users with non-Latin keyboards, user codes generated by OpenIddict are
+                        // only compound of 12 digits, generated using a crypto-secure random number generator.
+                        // In this case, the resulting user code is estimated to have at most ~40 bits of entropy.
 
-                        for (var index = 0; index < data.Length; index += 4)
-                        {
-                            builder.AppendFormat(CultureInfo.InvariantCulture, "{0:D4}", BitConverter.ToUInt32(data, index) % 10000);
-                        }
+                        static string CreateRandomNumericCode(int length) => OpenIddictHelpers.CreateRandomString(
+                            charset: stackalloc[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' },
+                            length: length);
 
-                        descriptor.ReferenceId = builder.ToString();
+                        descriptor.ReferenceId = CreateRandomNumericCode(length: 12);
                     }
 
                     // User codes are relatively short. To help reduce the risks of collisions with
@@ -1349,18 +1340,10 @@ public static partial class OpenIddictServerHandlers
                     while (await _tokenManager.FindByReferenceIdAsync(descriptor.ReferenceId) is not null);
                 }
 
-                // For other tokens, generate a base64url-encoded 256-bit random identifier.
                 else
                 {
-                    var data = new byte[256 / 8];
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                    RandomNumberGenerator.Fill(data);
-#else
-                    using var generator = RandomNumberGenerator.Create();
-                    generator.GetBytes(data);
-#endif
-
-                    descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
+                    // For other tokens, generate a base64url-encoded 256-bit random identifier.
+                    descriptor.ReferenceId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
                 }
 
                 await _tokenManager.UpdateAsync(token, descriptor);
@@ -1376,7 +1359,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for beautifying user-typed tokens.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
+        public sealed class BeautifyToken : IOpenIddictServerHandler<GenerateTokenContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server.Owin;
@@ -11,8 +12,9 @@ namespace OpenIddict.Server.Owin;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
 /// </summary>
-public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
-                                                 IPostConfigureOptions<OpenIddictServerOwinOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
+                                                        IPostConfigureOptions<OpenIddictServerOwinOptions>
 {
     public void Configure(OpenIddictServerOptions options)
     {
@@ -25,7 +27,7 @@ public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictSer
         options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
     }
 
-    public void PostConfigure(string name, OpenIddictServerOwinOptions options)
+    public void PostConfigure(string? name, OpenIddictServerOwinOptions options)
     {
         if (options is null)
         {

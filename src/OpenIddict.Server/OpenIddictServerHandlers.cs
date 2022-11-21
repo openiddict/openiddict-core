@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -103,7 +104,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands made from unsupported endpoints.
     /// </summary>
-    public class ValidateAuthenticationDemand : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateAuthenticationDemand : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -147,7 +148,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for selecting the token types that should be validated.
     /// </summary>
-    public class EvaluateValidatedTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class EvaluateValidatedTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -252,7 +253,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for resolving the token from the incoming request.
     /// </summary>
-    public class ResolveValidatedTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ResolveValidatedTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -337,7 +338,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands that lack required tokens.
     /// </summary>
-    public class ValidateRequiredTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRequiredTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -382,7 +383,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating the access token resolved from the context.
     /// </summary>
-    public class ValidateAccessToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateAccessToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -449,7 +450,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating the authorization code resolved from the context.
     /// </summary>
-    public class ValidateAuthorizationCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateAuthorizationCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -516,7 +517,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating the device code resolved from the context.
     /// </summary>
-    public class ValidateDeviceCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateDeviceCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -583,7 +584,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating tokens of unknown types resolved from the context.
     /// </summary>
-    public class ValidateGenericToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateGenericToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -657,7 +658,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating the identity token resolved from the context.
     /// </summary>
-    public class ValidateIdentityToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateIdentityToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -727,7 +728,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating the refresh token resolved from the context.
     /// </summary>
-    public class ValidateRefreshToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateRefreshToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -794,7 +795,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating the user code resolved from the context.
     /// </summary>
-    public class ValidateUserCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    public sealed class ValidateUserCode : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -861,7 +862,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for rejecting challenge demands made from unsupported endpoints.
     /// </summary>
-    public class ValidateChallengeDemand : IOpenIddictServerHandler<ProcessChallengeContext>
+    public sealed class ValidateChallengeDemand : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -896,7 +897,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for ensuring that the challenge response contains an appropriate error.
     /// </summary>
-    public class AttachDefaultChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
+    public sealed class AttachDefaultChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -957,7 +958,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for rejecting the device code entry associated with the user code.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
-    public class RejectDeviceCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
+    public sealed class RejectDeviceCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -1016,7 +1017,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for rejecting the user code entry, if applicable.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
-    public class RejectUserCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
+    public sealed class RejectUserCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -1075,7 +1076,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the challenge response.
     /// </summary>
-    public class AttachCustomChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
+    public sealed class AttachCustomChallengeParameters : IOpenIddictServerHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1111,7 +1112,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for ensuring that the sign-in demand
     /// is compatible with the type of the endpoint that handled the request.
     /// </summary>
-    public class ValidateSignInDemand : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class ValidateSignInDemand : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1182,7 +1183,7 @@ public static partial class OpenIddictServerHandlers
     /// the received authorization code, device code, user code or refresh token.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
-    public class RedeemTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class RedeemTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -1298,7 +1299,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for re-attaching internal claims to the authentication principal.
     /// </summary>
-    public class RestoreInternalClaims : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class RestoreInternalClaims : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1386,7 +1387,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the user-defined properties to the authentication principal.
     /// </summary>
-    public class AttachHostProperties : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachHostProperties : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1417,7 +1418,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for attaching default scopes to the authentication principal.
     /// </summary>
-    public class AttachDefaultScopes : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachDefaultScopes : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1454,7 +1455,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for attaching default presenters to the authentication principal.
     /// </summary>
-    public class AttachDefaultPresenters : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachDefaultPresenters : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1490,7 +1491,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for inferring resources from the audience claims if necessary.
     /// </summary>
-    public class InferResources : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class InferResources : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1530,7 +1531,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for selecting the token types that
     /// should be generated and optionally returned in the response.
     /// </summary>
-    public class EvaluateGeneratedTokens : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class EvaluateGeneratedTokens : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1629,7 +1630,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for creating an ad-hoc authorization, if necessary.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
-    public class AttachAuthorization : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachAuthorization : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly IOpenIddictAuthorizationManager _authorizationManager;
@@ -1723,7 +1724,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the access token, if one is going to be returned.
     /// </summary>
-    public class PrepareAccessTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class PrepareAccessTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1844,7 +1845,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the authorization code, if one is going to be returned.
     /// </summary>
-    public class PrepareAuthorizationCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class PrepareAuthorizationCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1933,7 +1934,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the device code, if one is going to be returned.
     /// </summary>
-    public class PrepareDeviceCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class PrepareDeviceCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2009,7 +2010,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the refresh token, if one is going to be returned.
     /// </summary>
-    public class PrepareRefreshTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class PrepareRefreshTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2096,7 +2097,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the identity token, if one is going to be returned.
     /// </summary>
-    public class PrepareIdentityTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class PrepareIdentityTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2211,7 +2212,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the user code, if one is going to be returned.
     /// </summary>
-    public class PrepareUserCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class PrepareUserCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2282,7 +2283,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for generating an access token for the current sign-in operation.
     /// </summary>
-    public class GenerateAccessToken : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class GenerateAccessToken : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -2350,7 +2351,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for generating an authorization code for the current sign-in operation.
     /// </summary>
-    public class GenerateAuthorizationCode : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class GenerateAuthorizationCode : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -2416,7 +2417,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for generating a device code for the current sign-in operation.
     /// </summary>
-    public class GenerateDeviceCode : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class GenerateDeviceCode : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -2489,7 +2490,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for generating a refresh token for the current sign-in operation.
     /// </summary>
-    public class GenerateRefreshToken : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class GenerateRefreshToken : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -2557,7 +2558,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for generating and attaching the device code identifier to the user code principal.
     /// </summary>
-    public class AttachDeviceCodeIdentifier : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachDeviceCodeIdentifier : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2598,7 +2599,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for updating the existing reference device code entry.
     /// Note: this handler is not used when the degraded mode is enabled.
     /// </summary>
-    public class UpdateReferenceDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class UpdateReferenceDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictTokenManager _tokenManager;
 
@@ -2672,7 +2673,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for generating and attaching the hashes of
     /// the access token and authorization code to the identity token principal.
     /// </summary>
-    public class AttachTokenDigests : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachTokenDigests : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -2707,15 +2708,9 @@ public static partial class OpenIddictServerHandlers
                 credentials => credentials.Key is AsymmetricSecurityKey) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
 
-            using var algorithm = GetHashAlgorithm(credentials);
-            if (algorithm is null or KeyedHashAlgorithm)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0267));
-            }
-
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.AccessToken));
+                var digest = ComputeTokenHash(credentials, context.AccessToken);
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
@@ -2724,7 +2719,7 @@ public static partial class OpenIddictServerHandlers
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.AuthorizationCode));
+                var digest = ComputeTokenHash(credentials, context.AuthorizationCode);
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
@@ -2733,70 +2728,41 @@ public static partial class OpenIddictServerHandlers
 
             return default;
 
-            static HashAlgorithm? GetHashAlgorithm(SigningCredentials credentials)
+            static byte[] ComputeTokenHash(SigningCredentials credentials, string token) => credentials switch
             {
-                HashAlgorithm? hash = null;
+                // Note: ASCII is deliberately used here, as it's the encoding required by the specification.
+                // For more information, see https://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken.
 
-                if (!string.IsNullOrEmpty(credentials.Digest))
-                {
-                    hash = CryptoConfig.CreateFromName(credentials.Digest) as HashAlgorithm;
-                }
+                { Digest:    SecurityAlgorithms.Sha256          or SecurityAlgorithms.Sha256Digest             } or
+                { Algorithm: SecurityAlgorithms.EcdsaSha256     or SecurityAlgorithms.EcdsaSha256Signature     } or
+                { Algorithm: SecurityAlgorithms.HmacSha256      or SecurityAlgorithms.HmacSha256Signature      } or
+                { Algorithm: SecurityAlgorithms.RsaSha256       or SecurityAlgorithms.RsaSha256Signature       } or
+                { Algorithm: SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature }
+                    => OpenIddictHelpers.ComputeSha256Hash(Encoding.ASCII.GetBytes(token)),
 
-                if (hash is null)
-                {
-                    var algorithm = credentials.Digest switch
-                    {
-                        SecurityAlgorithms.Sha256 or SecurityAlgorithms.Sha256Digest => HashAlgorithmName.SHA256,
-                        SecurityAlgorithms.Sha384 or SecurityAlgorithms.Sha384Digest => HashAlgorithmName.SHA384,
-                        SecurityAlgorithms.Sha512 or SecurityAlgorithms.Sha512Digest => HashAlgorithmName.SHA512,
+                { Digest:    SecurityAlgorithms.Sha384          or SecurityAlgorithms.Sha384Digest             } or
+                { Algorithm: SecurityAlgorithms.EcdsaSha384     or SecurityAlgorithms.EcdsaSha384Signature     } or
+                { Algorithm: SecurityAlgorithms.HmacSha384      or SecurityAlgorithms.HmacSha384Signature      } or
+                { Algorithm: SecurityAlgorithms.RsaSha384       or SecurityAlgorithms.RsaSha384Signature       } or
+                { Algorithm: SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature }
+                    => OpenIddictHelpers.ComputeSha384Hash(Encoding.ASCII.GetBytes(token)),
 
-                        _ => credentials.Algorithm switch
-                        {
-#if SUPPORTS_ECDSA
-                            SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.EcdsaSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.EcdsaSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.EcdsaSha512Signature
-                                => HashAlgorithmName.SHA512,
-#endif
-                            SecurityAlgorithms.HmacSha256 or SecurityAlgorithms.HmacSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.HmacSha384 or SecurityAlgorithms.HmacSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.HmacSha512 or SecurityAlgorithms.HmacSha512Signature
-                                => HashAlgorithmName.SHA512,
+                { Digest:    SecurityAlgorithms.Sha512          or SecurityAlgorithms.Sha512Digest             } or
+                { Algorithm: SecurityAlgorithms.EcdsaSha512     or SecurityAlgorithms.EcdsaSha512Signature     } or
+                { Algorithm: SecurityAlgorithms.HmacSha512      or SecurityAlgorithms.HmacSha512Signature      } or
+                { Algorithm: SecurityAlgorithms.RsaSha512       or SecurityAlgorithms.RsaSha512Signature       } or
+                { Algorithm: SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature }
+                    => OpenIddictHelpers.ComputeSha512Hash(Encoding.ASCII.GetBytes(token)),
 
-                            SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature
-                                => HashAlgorithmName.SHA512,
-
-                            SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha256Signature
-                                => HashAlgorithmName.SHA256,
-                            SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha384Signature
-                                => HashAlgorithmName.SHA384,
-                            SecurityAlgorithms.RsaSsaPssSha512 or SecurityAlgorithms.RsaSsaPssSha512Signature
-                                => HashAlgorithmName.SHA512,
-
-                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
-                        }
-                    };
-
-                    hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
-                }
-
-                return hash;
-            }
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0267))
+            };
         }
     }
 
     /// <summary>
     /// Contains the logic responsible for generating a user code for the current sign-in operation.
     /// </summary>
-    public class GenerateUserCode : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class GenerateUserCode : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -2862,7 +2828,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for generating an identity token for the current sign-in operation.
     /// </summary>
-    public class GenerateIdentityToken : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class GenerateIdentityToken : IOpenIddictServerHandler<ProcessSignInContext>
     {
         private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -2929,7 +2895,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the sign-in response.
     /// </summary>
-    public class AttachSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3056,7 +3022,7 @@ public static partial class OpenIddictServerHandlers
                 // for Uri's constructor to correctly compute correct absolute URLs.
                 if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
                 {
-                    endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
+                    endpoint = new Uri(endpoint.OriginalString[1..], UriKind.Relative);
                 }
 
                 return new Uri(issuer, endpoint);
@@ -3068,7 +3034,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the sign-in response.
     /// </summary>
-    public class AttachCustomSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
+    public sealed class AttachCustomSignInParameters : IOpenIddictServerHandler<ProcessSignInContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3104,7 +3070,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for ensuring that the sign-out demand
     /// is compatible with the type of the endpoint that handled the request.
     /// </summary>
-    public class ValidateSignOutDemand : IOpenIddictServerHandler<ProcessSignOutContext>
+    public sealed class ValidateSignOutDemand : IOpenIddictServerHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3137,7 +3103,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the sign-out response.
     /// </summary>
-    public class AttachCustomSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
+    public sealed class AttachCustomSignOutParameters : IOpenIddictServerHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3172,7 +3138,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the error response.
     /// </summary>
-    public class AttachErrorParameters : IOpenIddictServerHandler<ProcessErrorContext>
+    public sealed class AttachErrorParameters : IOpenIddictServerHandler<ProcessErrorContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3204,7 +3170,7 @@ public static partial class OpenIddictServerHandlers
     /// Contains the logic responsible for attaching the parameters
     /// populated from user-defined handlers to the error response.
     /// </summary>
-    public class AttachCustomErrorParameters : IOpenIddictServerHandler<ProcessErrorContext>
+    public sealed class AttachCustomErrorParameters : IOpenIddictServerHandler<ProcessErrorContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.

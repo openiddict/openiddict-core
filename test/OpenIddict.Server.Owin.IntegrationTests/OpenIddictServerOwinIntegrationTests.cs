@@ -912,8 +912,6 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
         Assert.Equal("Bob l'Eponge", (string?) response["string_parameter"]);
     }
 
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The caller is responsible for disposing the test server.")]
     protected override ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder>? configuration = null)
     {
         var services = new ServiceCollection();

@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <PolySharpIncludeGeneratedTypes>System.Diagnostics.CodeAnalysis.StringSyntaxAttribute</PolySharpIncludeGeneratedTypes>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Description>Relational entities for the OpenIddict Entity Framework Core stores.</Description>
     <PackageTags>$(PackageTags);entityframeworkcore;models</PackageTags>
   </PropertyGroup>

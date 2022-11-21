@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 
@@ -117,7 +118,8 @@ public interface IOpenIddictApplicationManager
     /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
-    IAsyncEnumerable<object> FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<object> FindByPostLogoutRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves all the applications associated with the specified redirect_uri.
@@ -125,7 +127,8 @@ public interface IOpenIddictApplicationManager
     /// <param name="address">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
-    IAsyncEnumerable<object> FindByRedirectUriAsync(string address, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<object> FindByRedirectUriAsync(
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes the specified query and returns the first element.
@@ -461,7 +464,8 @@ public interface IOpenIddictApplicationManager
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the post_logout_redirect_uri was valid.
     /// </returns>
-    ValueTask<bool> ValidatePostLogoutRedirectUriAsync(object application, string address, CancellationToken cancellationToken = default);
+    ValueTask<bool> ValidatePostLogoutRedirectUriAsync(object application,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Validates the redirect_uri to ensure it's associated with an application.
@@ -473,5 +477,6 @@ public interface IOpenIddictApplicationManager
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the redirect_uri was valid.
     /// </returns>
-    ValueTask<bool> ValidateRedirectUriAsync(object application, string address, CancellationToken cancellationToken = default);
+    ValueTask<bool> ValidateRedirectUriAsync(object application,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
 }

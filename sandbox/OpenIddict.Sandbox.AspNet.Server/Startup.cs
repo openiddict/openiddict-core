@@ -97,6 +97,34 @@ namespace OpenIddict.Sandbox.AspNet.Server
                         }
                     });
                 }
+
+                if (await manager.FindByClientIdAsync("postman") is null)
+                {
+                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                    {
+                        ClientId = "postman",
+                        ConsentType = ConsentTypes.Systematic,
+                        DisplayName = "Postman",
+                        RedirectUris =
+                        {
+                            new Uri("https://oauth.pstmn.io/v1/callback")
+                        },
+                        Permissions =
+                        {
+                            Permissions.Endpoints.Authorization,
+                            Permissions.Endpoints.Device,
+                            Permissions.Endpoints.Token,
+                            Permissions.GrantTypes.AuthorizationCode,
+                            Permissions.GrantTypes.DeviceCode,
+                            Permissions.GrantTypes.Password,
+                            Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
+                            Permissions.Scopes.Email,
+                            Permissions.Scopes.Profile,
+                            Permissions.Scopes.Roles
+                        }
+                    });
+                }
             }).GetAwaiter().GetResult();
         }
 

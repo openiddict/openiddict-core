@@ -100,7 +100,7 @@ public class Worker : IHostedService
                     DisplayName = "Postman",
                     RedirectUris =
                     {
-                        new Uri("urn:postman")
+                        new Uri("https://oauth.pstmn.io/v1/callback")
                     },
                     Permissions =
                     {

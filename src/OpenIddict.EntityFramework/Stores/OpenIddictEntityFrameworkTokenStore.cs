@@ -456,7 +456,7 @@ public class OpenIddictEntityFrameworkTokenStore<TToken, TApplication, TAuthoriz
             }
 
             return builder.ToImmutable();
-        });
+        })!;
 
         return new(properties);
     }

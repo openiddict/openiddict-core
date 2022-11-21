@@ -14,7 +14,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the configuration endpoint
     /// to give the user code a chance to add parameters to the configuration request.
     /// </summary>
-    public class PrepareConfigurationRequestContext : BaseExternalContext
+    public sealed class PrepareConfigurationRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareConfigurationRequestContext"/> class.
@@ -38,7 +38,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the configuration endpoint
     /// to send the configuration request to the remote authorization server.
     /// </summary>
-    public class ApplyConfigurationRequestContext : BaseExternalContext
+    public sealed class ApplyConfigurationRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyConfigurationRequestContext"/> class.
@@ -62,7 +62,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each configuration response
     /// to extract the response parameters from the server response.
     /// </summary>
-    public class ExtractConfigurationResponseContext : BaseExternalContext
+    public sealed class ExtractConfigurationResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractConfigurationResponseContext"/> class.
@@ -94,7 +94,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called for each validated configuration response.
     /// </summary>
-    public class HandleConfigurationResponseContext : BaseExternalContext
+    public sealed class HandleConfigurationResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleConfigurationResponseContext"/> class.
@@ -126,7 +126,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the cryptography endpoint
     /// to give the user code a chance to add parameters to the cryptography request.
     /// </summary>
-    public class PrepareCryptographyRequestContext : BaseExternalContext
+    public sealed class PrepareCryptographyRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareCryptographyRequestContext"/> class.
@@ -150,7 +150,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each request to the cryptography endpoint
     /// to send the cryptography request to the remote authorization server.
     /// </summary>
-    public class ApplyCryptographyRequestContext : BaseExternalContext
+    public sealed class ApplyCryptographyRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyCryptographyRequestContext"/> class.
@@ -174,7 +174,7 @@ public static partial class OpenIddictClientEvents
     /// Represents an event called for each cryptography response
     /// to extract the response parameters from the server response.
     /// </summary>
-    public class ExtractCryptographyResponseContext : BaseExternalContext
+    public sealed class ExtractCryptographyResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractCryptographyResponseContext"/> class.
@@ -206,7 +206,7 @@ public static partial class OpenIddictClientEvents
     /// <summary>
     /// Represents an event called for each validated cryptography response.
     /// </summary>
-    public class HandleCryptographyResponseContext : BaseExternalContext
+    public sealed class HandleCryptographyResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleCryptographyResponseContext"/> class.

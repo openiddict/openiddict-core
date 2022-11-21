@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -19,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using OpenIddict.Extensions;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
 using JsonWebTokenTypes = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.JsonWebTokenTypes;
 
@@ -58,7 +58,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for restoring cached requests from the request_id, if specified.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
+        public sealed class RestoreCachedRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -152,7 +152,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for caching authorization requests, if applicable.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class CacheRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
+        public sealed class CacheRequestParameters : IOpenIddictServerHandler<ExtractAuthorizationRequestContext>
         {
             private readonly IDistributedCache _cache;
             private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
@@ -206,16 +206,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 }
 
                 // Generate a 256-bit request identifier using a crypto-secure random number generator.
-                var data = new byte[256 / 8];
-
-#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
-                RandomNumberGenerator.Fill(data);
-#else
-                using var generator = RandomNumberGenerator.Create();
-                generator.GetBytes(data);
-#endif
-
-                context.Request.RequestId = Base64UrlEncoder.Encode(data);
+                context.Request.RequestId = Base64UrlEncoder.Encode(OpenIddictHelpers.CreateRandomArray(size: 256));
 
                 // Build a list of claims matching the parameters extracted from the request.
                 //
@@ -270,7 +261,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for removing cached authorization requests from the distributed cache.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class RemoveCachedRequest : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class RemoveCachedRequest : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             private readonly IDistributedCache _cache;
 
@@ -318,7 +309,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for processing authorization responses using the form_post response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ProcessFormPostResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class ProcessFormPostResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             private readonly HtmlEncoder _encoder;
 
@@ -409,7 +400,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for processing authorization responses using the query response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class ProcessQueryResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -480,7 +471,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         /// Contains the logic responsible for processing authorization responses using the fragment response mode.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ProcessFragmentResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
+        public sealed class ProcessFragmentResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

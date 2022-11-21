@@ -4,12 +4,14 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server;
 
-public class OpenIddictServerFactory : IOpenIddictServerFactory
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class OpenIddictServerFactory : IOpenIddictServerFactory
 {
     private readonly ILogger _logger;
     private readonly IOptionsMonitor<OpenIddictServerOptions> _options;

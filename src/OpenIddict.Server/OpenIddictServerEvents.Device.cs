@@ -14,7 +14,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the device endpoint to give the user code
     /// a chance to manually extract the device request from the ambient HTTP context.
     /// </summary>
-    public class ExtractDeviceRequestContext : BaseValidatingContext
+    public sealed class ExtractDeviceRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractDeviceRequestContext"/> class.
@@ -38,7 +38,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the device endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateDeviceRequestContext : BaseValidatingClientContext
+    public sealed class ValidateDeviceRequestContext : BaseValidatingClientContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateDeviceRequestContext"/> class.
@@ -62,7 +62,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated device request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleDeviceRequestContext : BaseValidatingTicketContext
+    public sealed class HandleDeviceRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleDeviceRequestContext"/> class.
@@ -108,7 +108,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the device response is returned to the caller.
     /// </summary>
-    public class ApplyDeviceResponseContext : BaseRequestContext
+    public sealed class ApplyDeviceResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyDeviceResponseContext"/> class.
@@ -148,7 +148,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the verification endpoint to give the user code
     /// a chance to manually extract the verification request from the ambient HTTP context.
     /// </summary>
-    public class ExtractVerificationRequestContext : BaseValidatingContext
+    public sealed class ExtractVerificationRequestContext : BaseValidatingContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractVerificationRequestContext"/> class.
@@ -172,7 +172,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each request to the verification endpoint
     /// to determine if the request is valid and should continue to be processed.
     /// </summary>
-    public class ValidateVerificationRequestContext : BaseValidatingClientContext
+    public sealed class ValidateVerificationRequestContext : BaseValidatingClientContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ValidateVerificationRequestContext"/> class.
@@ -201,7 +201,7 @@ public static partial class OpenIddictServerEvents
     /// Represents an event called for each validated verification request
     /// to allow the user code to decide how the request should be handled.
     /// </summary>
-    public class HandleVerificationRequestContext : BaseValidatingTicketContext
+    public sealed class HandleVerificationRequestContext : BaseValidatingTicketContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleVerificationRequestContext"/> class.
@@ -252,7 +252,7 @@ public static partial class OpenIddictServerEvents
     /// <summary>
     /// Represents an event called before the verification response is returned to the caller.
     /// </summary>
-    public class ApplyVerificationResponseContext : BaseRequestContext
+    public sealed class ApplyVerificationResponseContext : BaseRequestContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyVerificationResponseContext"/> class.

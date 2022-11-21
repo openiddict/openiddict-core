@@ -15,7 +15,7 @@ namespace OpenIddict.Validation;
 /// Represents an immutable descriptor of an OpenIddict validation event handler.
 /// </summary>
 [DebuggerDisplay("{ServiceDescriptor?.ServiceType}")]
-public class OpenIddictValidationHandlerDescriptor
+public sealed class OpenIddictValidationHandlerDescriptor
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictValidationHandlerDescriptor"/> class.
@@ -60,7 +60,7 @@ public class OpenIddictValidationHandlerDescriptor
     /// Contains methods allowing to build a descriptor instance.
     /// </summary>
     /// <typeparam name="TContext">The event context type.</typeparam>
-    public class Builder<TContext> where TContext : BaseContext
+    public sealed class Builder<TContext> where TContext : BaseContext
     {
         private ServiceDescriptor? _descriptor;
         private readonly List<Type> _filters = new();

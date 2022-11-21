@@ -36,7 +36,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the configuration response.
         /// </summary>
-        public class ValidateWellKnownConfigurationParameters : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        public sealed class ValidateWellKnownConfigurationParameters : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -116,7 +116,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the configuration response.
         /// </summary>
-        public class HandleConfigurationErrorResponse : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        public sealed class HandleConfigurationErrorResponse : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -159,7 +159,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the issuer from the discovery document.
         /// </summary>
-        public class ValidateIssuer : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        public sealed class ValidateIssuer : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -222,7 +222,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the JWKS endpoint address from the discovery document.
         /// </summary>
-        public class ExtractCryptographyEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractCryptographyEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -274,7 +274,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the introspection endpoint address from the discovery document.
         /// </summary>
-        public class ExtractIntrospectionEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractIntrospectionEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -318,7 +318,7 @@ public static partial class OpenIddictValidationHandlers
         /// Contains the logic responsible for extracting the authentication methods
         /// supported by the introspection endpoint from the discovery document.
         /// </summary>
-        public class ExtractIntrospectionEndpointClientAuthenticationMethods : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        public sealed class ExtractIntrospectionEndpointClientAuthenticationMethods : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -360,7 +360,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the JWKS response.
         /// </summary>
-        public class ValidateWellKnownCryptographyParameters : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
+        public sealed class ValidateWellKnownCryptographyParameters : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -434,7 +434,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for surfacing potential errors from the cryptography response.
         /// </summary>
-        public class HandleCryptographyErrorResponse : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
+        public sealed class HandleCryptographyErrorResponse : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -477,7 +477,7 @@ public static partial class OpenIddictValidationHandlers
         /// <summary>
         /// Contains the logic responsible for extracting the signing keys from the JWKS document.
         /// </summary>
-        public class ExtractSigningKeys : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
+        public sealed class ExtractSigningKeys : IOpenIddictValidationHandler<HandleCryptographyResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

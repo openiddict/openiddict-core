@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Binary;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 using Owin;
 using static OpenIddict.Client.Owin.OpenIddictClientOwinConstants;
@@ -32,7 +34,7 @@ public static partial class OpenIddictClientOwinHandlers
         /*
          * Authentication processing:
          */
-        ValidateCorrelationCookie.Descriptor,
+        ResolveRequestForgeryProtection.Descriptor,
         ValidateEndpointUri.Descriptor,
 
         /*
@@ -53,7 +55,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for inferring the endpoint type from the request address.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class InferEndpointType : IOpenIddictClientHandler<ProcessRequestContext>
+    public sealed class InferEndpointType : IOpenIddictClientHandler<ProcessRequestContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -145,7 +147,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for extracting OpenID Connect requests from GET or POST HTTP requests.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ExtractGetOrPostRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
+    public sealed class ExtractGetOrPostRequest<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseValidatingContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -222,15 +224,14 @@ public static partial class OpenIddictClientOwinHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for validating the correlation cookie that serves as a
-    /// protection against state token injection, forged requests and session fixation attacks.
+    /// Contains the logic responsible for resolving the request forgery protection from the correlation cookie.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ValidateCorrelationCookie : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveRequestForgeryProtection : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
-        public ValidateCorrelationCookie(IOptionsMonitor<OpenIddictClientOwinOptions> options)
+        public ResolveRequestForgeryProtection(IOptionsMonitor<OpenIddictClientOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
         /// <summary>
@@ -240,7 +241,7 @@ public static partial class OpenIddictClientOwinHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireOwinRequest>()
                 .AddFilter<RequireStateTokenValidated>()
-                .UseSingletonHandler<ValidateCorrelationCookie>()
+                .UseSingletonHandler<ResolveRequestForgeryProtection>()
                 .SetOrder(ValidateStateToken.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -260,11 +261,11 @@ public static partial class OpenIddictClientOwinHandlers
             var request = context.Transaction.GetOwinRequest() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
-            // Resolve the request forgery protection from the state token principal.
-            var identifier = context.StateTokenPrincipal.GetClaim(Claims.RequestForgeryProtection);
-            if (string.IsNullOrEmpty(identifier))
+            // Resolve the nonce from the state token principal.
+            var nonce = context.StateTokenPrincipal.GetClaim(Claims.Private.Nonce);
+            if (string.IsNullOrEmpty(nonce))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0339));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0354));
             }
 
             // Resolve the cookie manager and the cookie options from the OWIN integration options.
@@ -272,31 +273,68 @@ public static partial class OpenIddictClientOwinHandlers
                 _options.CurrentValue.CookieManager,
                 _options.CurrentValue.CookieOptions);
 
-            // Compute the name of the cookie name based on the prefix set in the options
-            // and the random request forgery protection claim restored from the state.
+            // Compute the name of the cookie name based on the prefix and the random nonce.
             var name = new StringBuilder(_options.CurrentValue.CookieName)
                 .Append(Separators.Dot)
-                .Append(identifier)
+                .Append(nonce)
                 .ToString();
 
-            // Try to find the cookie matching the request forgery protection stored in the state.
-            // The correlation cookie serves as a binding mechanism ensuring that a state token
-            // stolen from an authorization response with the other parameters cannot be validly
-            // used without sending the matching correlation identifier used as the cookie name.
-            //
-            // If the cookie cannot be found, this may indicate that the authorization response
-            // is unsolicited and potentially malicious or be caused by an invalid or unadequate
-            // same-site configuration.
+            // Try to find the correlation cookie matching the nonce stored in the state. If the cookie
+            // cannot be found, this may indicate that the authorization response is unsolicited and
+            // potentially malicious or be caused by an invalid or unadequate same-site configuration.
             //
             // In any case, the authentication demand MUST be rejected as it's impossible to ensure
             // it's not an injection or session fixation attack without the correlation cookie.
             var value = manager.GetRequestCookie(request.Context, name);
-            if (string.IsNullOrEmpty(value) || !string.Equals(value, "v1", StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(value))
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
                     description: SR.GetResourceString(SR.ID2129),
                     uri: SR.FormatID8000(SR.ID2129));
+
+                return default;
+            }
+
+            try
+            {
+                // Extract the payload and validate the version marker.
+                var payload = Base64UrlEncoder.DecodeBytes(value);
+                if (payload.Length < (1 + sizeof(uint)) || payload[0] is not 0x01)
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2163),
+                        uri: SR.FormatID8000(SR.ID2163));
+
+                    return default;
+                }
+
+                // Extract the length of the request forgery protection.
+                var length = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.AsSpan(1, sizeof(uint)));
+                if (length is 0 || length != (payload.Length - (1 + sizeof(uint))))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2163),
+                        uri: SR.FormatID8000(SR.ID2163));
+
+                    return default;
+                }
+
+                // Note: since the correlation cookie is not protected against tampering, an unexpected
+                // value may be present in the cookie payload and this call may return a string whose
+                // length doesn't match the expected value. In any case, any tampering attempt will be
+                // detected when comparing the resolved value with the expected value stored in the state.
+                context.RequestForgeryProtection = Encoding.UTF8.GetString(payload, index: 5, length);
+            }
+
+            catch
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2163),
+                    uri: SR.FormatID8000(SR.ID2163));
 
                 return default;
             }
@@ -321,7 +359,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for comparing the current request URL to the expected URL stored in the state token.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ValidateEndpointUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ValidateEndpointUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -331,7 +369,7 @@ public static partial class OpenIddictClientOwinHandlers
                 .AddFilter<RequireOwinRequest>()
                 .AddFilter<RequireStateTokenValidated>()
                 .UseSingletonHandler<ValidateEndpointUri>()
-                .SetOrder(ValidateCorrelationCookie.Descriptor.Order + 500)
+                .SetOrder(ResolveRequestForgeryProtection.Descriptor.Order + 500)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -429,7 +467,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// OWIN authentication properties specified by the application that triggered the challenge operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ResolveHostChallengeProperties : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class ResolveHostChallengeProperties : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -506,22 +544,22 @@ public static partial class OpenIddictClientOwinHandlers
                 {
                     // If the property ends with #string, represent it as a string parameter.
                     string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
+                        Name: key[..^PropertyTypes.String.Length],
                         Value: new OpenIddictParameter(property.Value)),
 
                     // If the property ends with #boolean, return it as a boolean parameter.
                     string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
+                        Name: key[..^PropertyTypes.Boolean.Length],
                         Value: new OpenIddictParameter(bool.Parse(property.Value))),
 
                     // If the property ends with #integer, return it as an integer parameter.
                     string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
+                        Name: key[..^PropertyTypes.Integer.Length],
                         Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
 
                     // If the property ends with #json, return it as a JSON parameter.
                     string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
+                        Name: key[..^PropertyTypes.Json.Length],
                         Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
 
                     _ => default
@@ -547,7 +585,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// protection against state token injection, forged requests and session fixation attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class GenerateLoginCorrelationCookie : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class GenerateLoginCorrelationCookie : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
@@ -582,6 +620,11 @@ public static partial class OpenIddictClientOwinHandlers
             // a different protection strategy can remove this handler from the handlers list and add
             // a custom one using a different approach (e.g by storing the value in the session state).
 
+            if (string.IsNullOrEmpty(context.Nonce))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0352));
+            }
+
             if (string.IsNullOrEmpty(context.RequestForgeryProtection))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0343));
@@ -594,12 +637,26 @@ public static partial class OpenIddictClientOwinHandlers
             var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
-            // Compute a collision-resistant and hard-to-guess cookie name based on the prefix set
-            // in the options and the random request forgery protection claim generated earlier.
+            // Compute a collision-resistant and hard-to-guess cookie name using the nonce.
             var name = new StringBuilder(_options.CurrentValue.CookieName)
                 .Append(Separators.Dot)
-                .Append(context.RequestForgeryProtection)
+                .Append(context.Nonce)
                 .ToString();
+
+            // Create the cookie payload containing...
+            var count = Encoding.UTF8.GetByteCount(context.RequestForgeryProtection);
+            var payload = new byte[1 + sizeof(uint) + count];
+
+            // ... the version marker identifying the binary format used to create the payload (1 byte).
+            payload[0] = 0x01;
+
+            // ... the length of the request forgery protection (4 bytes).
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(1, sizeof(uint)), (uint) count);
+
+            // ... the request forgery protection (variable length).
+            var written = Encoding.UTF8.GetBytes(s: context.RequestForgeryProtection, charIndex: 0,
+                charCount: context.RequestForgeryProtection.Length, bytes: payload, byteIndex: 5);
+            Debug.Assert(written == count, SR.FormatID4016(written, count));
 
             // Resolve the cookie manager and the cookie options from the OWIN integration options.
             var (manager, options) = (
@@ -607,7 +664,7 @@ public static partial class OpenIddictClientOwinHandlers
                 _options.CurrentValue.CookieOptions);
 
             // Add the correlation cookie to the response headers.
-            manager.AppendResponseCookie(response.Context, name, "v1", new CookieOptions
+            manager.AppendResponseCookie(response.Context, name, Base64UrlEncoder.Encode(payload), new CookieOptions
             {
                 Domain = options.Domain,
                 HttpOnly = options.HttpOnly,
@@ -629,7 +686,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// OWIN authentication properties specified by the application that triggered the sign-out operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ResolveHostSignOutProperties : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class ResolveHostSignOutProperties : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -706,22 +763,22 @@ public static partial class OpenIddictClientOwinHandlers
                 {
                     // If the property ends with #string, represent it as a string parameter.
                     string key when key.EndsWith(PropertyTypes.String, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.String.Length),
+                        Name: key[..^PropertyTypes.String.Length],
                         Value: new OpenIddictParameter(property.Value)),
 
                     // If the property ends with #boolean, return it as a boolean parameter.
                     string key when key.EndsWith(PropertyTypes.Boolean, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Boolean.Length),
+                        Name: key[..^PropertyTypes.Boolean.Length],
                         Value: new OpenIddictParameter(bool.Parse(property.Value))),
 
                     // If the property ends with #integer, return it as an integer parameter.
                     string key when key.EndsWith(PropertyTypes.Integer, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Integer.Length),
+                        Name: key[..^PropertyTypes.Integer.Length],
                         Value: new OpenIddictParameter(long.Parse(property.Value, CultureInfo.InvariantCulture))),
 
                     // If the property ends with #json, return it as a JSON parameter.
                     string key when key.EndsWith(PropertyTypes.Json, StringComparison.OrdinalIgnoreCase) => (
-                        Name: key.Substring(0, key.Length - PropertyTypes.Json.Length),
+                        Name: key[..^PropertyTypes.Json.Length],
                         Value: new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(property.Value))),
 
                     _ => default
@@ -747,7 +804,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// protection against state token injection, forged requests and denial of service attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class GenerateLogoutCorrelationCookie : IOpenIddictClientHandler<ProcessSignOutContext>
+    public sealed class GenerateLogoutCorrelationCookie : IOpenIddictClientHandler<ProcessSignOutContext>
     {
         private readonly IOptionsMonitor<OpenIddictClientOwinOptions> _options;
 
@@ -781,6 +838,11 @@ public static partial class OpenIddictClientOwinHandlers
             // a different protection strategy can remove this handler from the handlers list and add
             // a custom one using a different approach (e.g by storing the value in the session state).
 
+            if (string.IsNullOrEmpty(context.Nonce))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0353));
+            }
+
             if (string.IsNullOrEmpty(context.RequestForgeryProtection))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0344));
@@ -793,12 +855,26 @@ public static partial class OpenIddictClientOwinHandlers
             var response = context.Transaction.GetOwinRequest()?.Context.Response ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
 
-            // Compute a collision-resistant and hard-to-guess cookie name based on the prefix set
-            // in the options and the random request forgery protection claim generated earlier.
+            // Compute a collision-resistant and hard-to-guess cookie name using the nonce.
             var name = new StringBuilder(_options.CurrentValue.CookieName)
                 .Append(Separators.Dot)
-                .Append(context.RequestForgeryProtection)
+                .Append(context.Nonce)
                 .ToString();
+
+            // Create the cookie payload containing...
+            var count = Encoding.UTF8.GetByteCount(context.RequestForgeryProtection);
+            var payload = new byte[1 + sizeof(uint) + count];
+
+            // ... the version marker identifying the binary format used to create the payload (1 byte).
+            payload[0] = 0x01;
+
+            // ... the length of the request forgery protection (4 bytes).
+            BinaryPrimitives.WriteUInt32BigEndian(payload.AsSpan(1, sizeof(uint)), (uint) count);
+
+            // ... the request forgery protection (variable length).
+            var written = Encoding.UTF8.GetBytes(s: context.RequestForgeryProtection, charIndex: 0,
+                charCount: context.RequestForgeryProtection.Length, bytes: payload, byteIndex: 5);
+            Debug.Assert(written == count, SR.FormatID4016(written, count));
 
             // Resolve the cookie manager and the cookie options from the OWIN integration options.
             var (manager, options) = (
@@ -806,7 +882,7 @@ public static partial class OpenIddictClientOwinHandlers
                 _options.CurrentValue.CookieOptions);
 
             // Add the correlation cookie to the response headers.
-            manager.AppendResponseCookie(response.Context, name, "v1", new CookieOptions
+            manager.AppendResponseCookie(response.Context, name, Base64UrlEncoder.Encode(payload), new CookieOptions
             {
                 Domain = options.Domain,
                 HttpOnly = options.HttpOnly,
@@ -827,7 +903,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for enabling the pass-through mode for the received request.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class EnablePassthroughMode<TContext, TFilter> : IOpenIddictClientHandler<TContext>
+    public sealed class EnablePassthroughMode<TContext, TFilter> : IOpenIddictClientHandler<TContext>
         where TContext : BaseRequestContext
         where TFilter : IOpenIddictClientHandlerFilter<TContext>
     {
@@ -861,7 +937,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for attaching an appropriate HTTP status code.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class AttachHttpResponseCode<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
+    public sealed class AttachHttpResponseCode<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -904,7 +980,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for attaching an OWIN response chalenge to the context, if necessary.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class AttachOwinResponseChallenge<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
+    public sealed class AttachOwinResponseChallenge<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -956,7 +1032,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for suppressing the redirection applied by FormsAuthenticationModule, if necessary.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class SuppressFormsAuthenticationRedirect<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
+    public sealed class SuppressFormsAuthenticationRedirect<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1023,7 +1099,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for attaching the appropriate HTTP response cache headers.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class AttachCacheControlHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
+    public sealed class AttachCacheControlHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -1063,7 +1139,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// middleware in the pipeline at a later stage (e.g an ASP.NET MVC action or a NancyFX module).
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ProcessPassthroughErrorResponse<TContext, TFilter> : IOpenIddictClientHandler<TContext>
+    public sealed class ProcessPassthroughErrorResponse<TContext, TFilter> : IOpenIddictClientHandler<TContext>
         where TContext : BaseRequestContext
         where TFilter : IOpenIddictClientHandlerFilter<TContext>
     {
@@ -1105,7 +1181,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for processing context responses that must be returned as plain-text.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ProcessLocalErrorResponse<TContext> : IOpenIddictClientHandler<TContext>
+    public sealed class ProcessLocalErrorResponse<TContext> : IOpenIddictClientHandler<TContext>
         where TContext : BaseRequestContext
     {
         /// <summary>
@@ -1179,7 +1255,7 @@ public static partial class OpenIddictClientOwinHandlers
     /// Contains the logic responsible for processing OpenID Connect responses that don't specify any parameter.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
     /// </summary>
-    public class ProcessEmptyResponse<TContext> : IOpenIddictClientHandler<TContext>
+    public sealed class ProcessEmptyResponse<TContext> : IOpenIddictClientHandler<TContext>
         where TContext : BaseRequestContext
     {
         /// <summary>

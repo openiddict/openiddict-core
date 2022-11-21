@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Quartz;
@@ -11,7 +12,8 @@ namespace OpenIddict.Quartz;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict Quartz.NET configuration is valid.
 /// </summary>
-public class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
 {
     /// <inheritdoc/>
     public void Configure(QuartzOptions options)
@@ -34,6 +36,7 @@ public class OpenIddictQuartzConfiguration : IConfigureOptions<QuartzOptions>
             // reached if the application is shut down or recycled. As such, this trigger is set up to fire
             // between 1 and 10 minutes after the application starts to ensure the job is executed at least once.
             builder.ForJob(OpenIddictQuartzJob.Identity)
+                   .WithIdentity(SR.GetResourceString(SR.ID8004), SR.GetResourceString(SR.ID8005))
                    .WithSimpleSchedule(options => options.WithIntervalInHours(1).RepeatForever())
                    .WithDescription(SR.GetResourceString(SR.ID8002))
                    .StartAt(DateBuilder.FutureDate(new Random().Next(1, 10), IntervalUnit.Minute));

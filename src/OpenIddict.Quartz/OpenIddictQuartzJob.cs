@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -12,8 +13,8 @@ namespace OpenIddict.Quartz;
 /// <summary>
 /// Represents a Quartz.NET job performing scheduled tasks for OpenIddict.
 /// </summary>
-[DisallowConcurrentExecution]
-public class OpenIddictQuartzJob : IJob
+[DisallowConcurrentExecution, EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictQuartzJob : IJob
 {
     private readonly IOptionsMonitor<OpenIddictQuartzOptions> _options;
     private readonly IServiceProvider _provider;
@@ -38,8 +39,8 @@ public class OpenIddictQuartzJob : IJob
     /// Gets the default identity assigned to this job.
     /// </summary>
     public static JobKey Identity { get; } = new JobKey(
-        name: typeof(OpenIddictQuartzJob).Name,
-        group: typeof(OpenIddictQuartzJob).Assembly.GetName().Name!);
+        name: SR.GetResourceString(SR.ID8003),
+        group: SR.GetResourceString(SR.ID8005));
 
     /// <inheritdoc/>
     public async Task Execute(IJobExecutionContext context)

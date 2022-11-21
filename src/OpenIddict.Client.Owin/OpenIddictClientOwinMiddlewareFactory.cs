@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +14,8 @@ namespace OpenIddict.Client.Owin;
 /// Provides the entry point necessary to instantiate and register the scoped
 /// <see cref="OpenIddictClientOwinMiddleware"/> in an OWIN/Katana pipeline.
 /// </summary>
-public class OpenIddictClientOwinMiddlewareFactory : OwinMiddleware
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictClientOwinMiddlewareFactory : OwinMiddleware
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientOwinMiddlewareFactory"/> class.

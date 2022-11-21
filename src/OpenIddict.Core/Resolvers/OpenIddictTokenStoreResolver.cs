@@ -5,7 +5,7 @@ namespace OpenIddict.Core;
 /// <summary>
 /// Exposes a method allowing to resolve a token store.
 /// </summary>
-public class OpenIddictTokenStoreResolver : IOpenIddictTokenStoreResolver
+public sealed class OpenIddictTokenStoreResolver : IOpenIddictTokenStoreResolver
 {
     private readonly IServiceProvider _provider;
 

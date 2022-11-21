@@ -14,7 +14,7 @@ public static class OpenIddictClientSystemNetHttpHandlerFilters
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the metadata address of the issuer is not available.
     /// </summary>
-    public class RequireHttpMetadataAddress : IOpenIddictClientHandlerFilter<BaseExternalContext>
+    public sealed class RequireHttpMetadataAddress : IOpenIddictClientHandlerFilter<BaseExternalContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseExternalContext context)
         {

@@ -7,10 +7,10 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -60,7 +60,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting configuration requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -122,7 +122,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating configuration requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -179,7 +179,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling configuration requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -265,7 +265,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing configuration responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyConfigurationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyConfigurationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -313,7 +313,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the endpoint URLs to the provider discovery document.
         /// </summary>
-        public class AttachEndpoints : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachEndpoints : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -393,7 +393,7 @@ public static partial class OpenIddictServerHandlers
                     // for Uri's constructor to correctly compute correct absolute URLs.
                     if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
                     {
-                        endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
+                        endpoint = new Uri(endpoint.OriginalString[1..], UriKind.Relative);
                     }
 
                     return new Uri(issuer, endpoint);
@@ -404,7 +404,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported grant types to the provider discovery document.
         /// </summary>
-        public class AttachGrantTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachGrantTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -433,7 +433,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported response modes to the provider discovery document.
         /// </summary>
-        public class AttachResponseModes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachResponseModes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -462,7 +462,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported response types to the provider discovery document.
         /// </summary>
-        public class AttachResponseTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachResponseTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -492,7 +492,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the supported client
         /// authentication methods to the provider discovery document.
         /// </summary>
-        public class AttachClientAuthenticationMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachClientAuthenticationMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -538,7 +538,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the supported
         /// code challenge methods to the provider discovery document.
         /// </summary>
-        public class AttachCodeChallengeMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachCodeChallengeMethods : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -567,7 +567,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported response types to the provider discovery document.
         /// </summary>
-        public class AttachScopes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachScopes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -596,7 +596,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported claims to the provider discovery document.
         /// </summary>
-        public class AttachClaims : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachClaims : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -625,7 +625,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported subject types to the provider discovery document.
         /// </summary>
-        public class AttachSubjectTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachSubjectTypes : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -654,7 +654,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the supported signing algorithms to the provider discovery document.
         /// </summary>
-        public class AttachSigningAlgorithms : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachSigningAlgorithms : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -720,7 +720,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching additional metadata to the provider discovery document.
         /// </summary>
-        public class AttachAdditionalMetadata : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        public sealed class AttachAdditionalMetadata : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -758,7 +758,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting cryptography requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -820,7 +820,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating cryptography requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -877,7 +877,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling cryptography requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -1005,7 +1005,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing cryptography responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyCryptographyResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyCryptographyResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -1053,7 +1053,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the signing keys to the JWKS document.
         /// </summary>
-        public class AttachSigningKeys : IOpenIddictServerHandler<HandleCryptographyRequestContext>
+        public sealed class AttachSigningKeys : IOpenIddictServerHandler<HandleCryptographyRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -1163,7 +1163,7 @@ public static partial class OpenIddictServerHandlers
                         key.Kty = JsonWebAlgorithmsKeyTypes.RSA;
 
                         // Note: both E and N must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7518#section-6.3.1.1
+                        // See https://tools.ietf.org/html/rfc7518#section-6.3.1.1.
                         key.E = Base64UrlEncoder.Encode(parameters.Value.Exponent);
                         key.N = Base64UrlEncoder.Encode(parameters.Value.Modulus);
                     }
@@ -1189,9 +1189,10 @@ public static partial class OpenIddictServerHandlers
                             continue;
                         }
 
-                        var curve = IsCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
-                                    IsCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
-                                    IsCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
+                        var curve =
+                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP256) ? JsonWebKeyECTypes.P256 :
+                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP384) ? JsonWebKeyECTypes.P384 :
+                            OpenIddictHelpers.IsEcCurve(parameters.Value, ECCurve.NamedCurves.nistP521) ? JsonWebKeyECTypes.P521 : null;
 
                         if (string.IsNullOrEmpty(curve))
                         {
@@ -1210,7 +1211,7 @@ public static partial class OpenIddictServerHandlers
                         key.Crv = curve;
 
                         // Note: both X and Y must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2
+                        // See https://tools.ietf.org/html/rfc7518#section-6.2.1.2.
                         key.X = Base64UrlEncoder.Encode(parameters.Value.Q.X);
                         key.Y = Base64UrlEncoder.Encode(parameters.Value.Q.Y);
                     }
@@ -1222,16 +1223,16 @@ public static partial class OpenIddictServerHandlers
                     if (certificate is not null)
                     {
                         // x5t must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7517#section-4.8
+                        // See https://tools.ietf.org/html/rfc7517#section-4.8.
                         key.X5t = Base64UrlEncoder.Encode(certificate.GetCertHash());
 
                         // x5t#S256 must be base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7517#section-4.9
-                        key.X5tS256 = Base64UrlEncoder.Encode(GetCertificateHash(certificate, HashAlgorithmName.SHA256));
+                        // See https://tools.ietf.org/html/rfc7517#section-4.9.
+                        key.X5tS256 = Base64UrlEncoder.Encode(OpenIddictHelpers.ComputeSha256Hash(certificate.RawData));
 
                         // Unlike E or N, the certificates contained in x5c
                         // must be base64-encoded and not base64url-encoded.
-                        // See https://tools.ietf.org/html/rfc7517#section-4.7
+                        // See https://tools.ietf.org/html/rfc7517#section-4.7.
                         key.X5c.Add(Convert.ToBase64String(certificate.RawData));
                     }
 
@@ -1239,45 +1240,6 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 return default;
-
-#if SUPPORTS_ECDSA
-                static bool IsCurve(ECParameters parameters, ECCurve curve)
-                {
-                    Debug.Assert(parameters.Curve.Oid is not null, SR.GetResourceString(SR.ID4011));
-                    Debug.Assert(curve.Oid is not null, SR.GetResourceString(SR.ID4011));
-
-                    // Warning: on .NET Framework 4.x and .NET Core 2.1, exported ECParameters generally have
-                    // a null OID value attached. To work around this limitation, both the raw OID values and
-                    // the friendly names are compared to determine whether the curve is of the specified type.
-                    if (!string.IsNullOrEmpty(parameters.Curve.Oid.Value) && !string.IsNullOrEmpty(curve.Oid.Value))
-                    {
-                        return string.Equals(parameters.Curve.Oid.Value, curve.Oid.Value, StringComparison.Ordinal);
-                    }
-
-                    if (!string.IsNullOrEmpty(parameters.Curve.Oid.FriendlyName) && !string.IsNullOrEmpty(curve.Oid.FriendlyName))
-                    {
-                        return string.Equals(parameters.Curve.Oid.FriendlyName, curve.Oid.FriendlyName, StringComparison.Ordinal);
-                    }
-
-                    Debug.Fail(SR.GetResourceString(SR.ID4012));
-                    return false;
-                }
-#endif
-
-                static byte[] GetCertificateHash(X509Certificate2 certificate, HashAlgorithmName algorithm)
-                {
-#if SUPPORTS_CERTIFICATE_HASHING_WITH_SPECIFIED_ALGORITHM
-                    return certificate.GetCertHash(algorithm);
-#else
-                    using var hash = CryptoConfig.CreateFromName(algorithm.Name!) as HashAlgorithm;
-                    if (hash is null or KeyedHashAlgorithm)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0217));
-                    }
-
-                    return hash.ComputeHash(certificate.RawData);
-#endif
-                }
             }
         }
     }

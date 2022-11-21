@@ -10,6 +10,7 @@ using OpenIddict.Client.WebIntegration;
 #if SUPPORTS_PEM_ENCODED_KEY_IMPORT
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 #endif
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict client services.
 /// </summary>
-public partial class OpenIddictClientWebIntegrationBuilder
+public sealed partial class OpenIddictClientWebIntegrationBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictClientWebIntegrationBuilder"/>.
@@ -96,7 +97,7 @@ public partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0346), nameof(key));
             }
 
-            var algorithm = ECDsa.Create();
+            var algorithm = OpenIddictHelpers.CreateEcdsaKey();
 
             try
             {

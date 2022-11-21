@@ -16,7 +16,11 @@ public class OpenIddictQuartzConfigurationTests
         configuration.Configure(options);
 
         // Assert
-        Assert.Contains(options.JobDetails, job => job.Key.Equals(OpenIddictQuartzJob.Identity));
+        Assert.Equal(1, options.JobDetails.Count);
+        Assert.Equal(OpenIddictQuartzJob.Identity, options.JobDetails[0].Key);
+        Assert.Equal(SR.GetResourceString(SR.ID8003), options.JobDetails[0].Key.Name);
+        Assert.Equal(SR.GetResourceString(SR.ID8005), options.JobDetails[0].Key.Group);
+        Assert.Equal(SR.GetResourceString(SR.ID8001), options.JobDetails[0].Description);
     }
 
     [Fact]
@@ -30,6 +34,10 @@ public class OpenIddictQuartzConfigurationTests
         configuration.Configure(options);
 
         // Assert
-        Assert.Contains(options.Triggers, trigger => trigger.JobKey.Equals(OpenIddictQuartzJob.Identity));
+        Assert.Equal(1, options.Triggers.Count);
+        Assert.Equal(OpenIddictQuartzJob.Identity, options.Triggers[0].JobKey);
+        Assert.Equal(SR.GetResourceString(SR.ID8004), options.Triggers[0].Key.Name);
+        Assert.Equal(SR.GetResourceString(SR.ID8005), options.Triggers[0].Key.Group);
+        Assert.Equal(SR.GetResourceString(SR.ID8002), options.Triggers[0].Description);
     }
 }

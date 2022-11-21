@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -13,7 +14,8 @@ namespace OpenIddict.Server;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
 /// </summary>
-public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
 {
     /// <summary>
     /// Populates the default OpenIddict server options and ensures
@@ -21,7 +23,7 @@ public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictSer
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictServerOptions options)
+    public void PostConfigure(string? name, OpenIddictServerOptions options)
     {
         if (options is null)
         {
@@ -318,7 +320,7 @@ public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictSer
 
                 // Only use the 40 first chars of the base64url-encoded modulus.
                 var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
 #if SUPPORTS_ECDSA
@@ -331,7 +333,7 @@ public class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictSer
 
                 // Only use the 40 first chars of the base64url-encoded X coordinate.
                 var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 #endif
 

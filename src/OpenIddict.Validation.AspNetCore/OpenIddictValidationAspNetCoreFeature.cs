@@ -4,12 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
+
 namespace OpenIddict.Validation.AspNetCore;
 
 /// <summary>
 /// Exposes the current validation transaction to the ASP.NET Core host.
 /// </summary>
-public class OpenIddictValidationAspNetCoreFeature
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictValidationAspNetCoreFeature
 {
     /// <summary>
     /// Gets or sets the validation transaction that encapsulates all specific

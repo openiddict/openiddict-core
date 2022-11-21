@@ -14,7 +14,7 @@ public static partial class OpenIddictValidationEvents
     /// Represents an event called for each request to the introspection endpoint
     /// to give the user code a chance to add parameters to the introspection request.
     /// </summary>
-    public class PrepareIntrospectionRequestContext : BaseExternalContext
+    public sealed class PrepareIntrospectionRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="PrepareIntrospectionRequestContext"/> class.
@@ -48,7 +48,7 @@ public static partial class OpenIddictValidationEvents
     /// Represents an event called for each request to the introspection endpoint
     /// to send the introspection request to the remote authorization server.
     /// </summary>
-    public class ApplyIntrospectionRequestContext : BaseExternalContext
+    public sealed class ApplyIntrospectionRequestContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyIntrospectionRequestContext"/> class.
@@ -72,7 +72,7 @@ public static partial class OpenIddictValidationEvents
     /// Represents an event called for each introspection response
     /// to extract the response parameters from the server response.
     /// </summary>
-    public class ExtractIntrospectionResponseContext : BaseExternalContext
+    public sealed class ExtractIntrospectionResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ExtractIntrospectionResponseContext"/> class.
@@ -104,7 +104,7 @@ public static partial class OpenIddictValidationEvents
     /// <summary>
     /// Represents an event called for each introspection response.
     /// </summary>
-    public class HandleIntrospectionResponseContext : BaseExternalContext
+    public sealed class HandleIntrospectionResponseContext : BaseExternalContext
     {
         /// <summary>
         /// Creates a new instance of the <see cref="HandleIntrospectionResponseContext"/> class.

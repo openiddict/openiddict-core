@@ -15,7 +15,7 @@ public static class OpenIddictClientDataProtectionHandlerFilters
     /// Represents a filter that excludes the associated handlers if
     /// the selected token format is not ASP.NET Core Data Protection.
     /// </summary>
-    public class RequireDataProtectionTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>
+    public sealed class RequireDataProtectionTokenFormat : IOpenIddictClientHandlerFilter<GenerateTokenContext>
     {
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {

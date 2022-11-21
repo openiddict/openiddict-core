@@ -13,7 +13,7 @@ namespace OpenIddict.MongoDb;
 /// <summary>
 /// Exposes a method allowing to resolve a token store.
 /// </summary>
-public class OpenIddictMongoDbTokenStoreResolver : IOpenIddictTokenStoreResolver
+public sealed class OpenIddictMongoDbTokenStoreResolver : IOpenIddictTokenStoreResolver
 {
     private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
     private readonly IServiceProvider _provider;

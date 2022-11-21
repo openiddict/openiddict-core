@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 using OpenIddict.Server;
 
@@ -12,8 +13,9 @@ namespace OpenIddict.Validation.ServerIntegration;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict validation/server integration configuration is valid.
 /// </summary>
-public class OpenIddictValidationServerIntegrationConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
-                                                                  IPostConfigureOptions<OpenIddictValidationOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
+                                                                         IPostConfigureOptions<OpenIddictValidationOptions>
 {
     private readonly IOptionsMonitor<OpenIddictServerOptions> _options;
 
@@ -62,7 +64,7 @@ public class OpenIddictValidationServerIntegrationConfiguration : IConfigureOpti
     /// </summary>
     /// <param name="name">The name of the options instance to configure, if applicable.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictValidationOptions options)
+    public void PostConfigure(string? name, OpenIddictValidationOptions options)
     {
         if (options is null)
         {

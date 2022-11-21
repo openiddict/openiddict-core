@@ -4,13 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.MongoDb;
 
 /// <inheritdoc/>
-public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
 {
     private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
     private readonly IServiceProvider _provider;
@@ -31,12 +33,7 @@ public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
             return new(Task.FromCanceled<IMongoDatabase>(cancellationToken));
         }
 
-        var database = _options.CurrentValue.Database;
-        if (database is null)
-        {
-            database = _provider.GetService<IMongoDatabase>();
-        }
-
+        var database = _options.CurrentValue.Database ?? _provider.GetService<IMongoDatabase>();
         if (database is null)
         {
             return new(Task.FromException<IMongoDatabase>(

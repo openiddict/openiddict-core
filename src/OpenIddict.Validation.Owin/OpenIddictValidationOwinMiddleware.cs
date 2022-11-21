@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security.Infrastructure;
 
@@ -15,7 +16,8 @@ namespace OpenIddict.Validation.Owin;
 /// that support middleware resolution, like Autofac. Since it depends on scoped services,
 /// it is NOT recommended to instantiate it as a singleton like a regular OWIN middleware.
 /// </summary>
-public class OpenIddictValidationOwinMiddleware : AuthenticationMiddleware<OpenIddictValidationOwinOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictValidationOwinMiddleware : AuthenticationMiddleware<OpenIddictValidationOwinOptions>
 {
     private readonly IOpenIddictValidationDispatcher _dispatcher;
     private readonly IOpenIddictValidationFactory _factory;

@@ -10,7 +10,7 @@ namespace OpenIddict.Client;
 /// Represents a handler able to process <typeparamref name="TContext"/> events.
 /// </summary>
 /// <typeparam name="TContext">The type of the events handled by this instance.</typeparam>
-public class OpenIddictClientHandler<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseContext
+public sealed class OpenIddictClientHandler<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseContext
 {
     private readonly Func<TContext, ValueTask> _handler;
 

@@ -12,7 +12,7 @@ namespace OpenIddict.Server.Owin;
 /// <summary>
 /// Provides various settings needed to configure the OpenIddict OWIN server integration.
 /// </summary>
-public class OpenIddictServerOwinOptions : AuthenticationOptions
+public sealed class OpenIddictServerOwinOptions : AuthenticationOptions
 {
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictServerOwinOptions"/> class.

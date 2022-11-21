@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
@@ -14,7 +15,8 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Contains the methods required to ensure that the OpenIddict client configuration is valid.
 /// </summary>
-public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictClientOptions>
 {
     private readonly OpenIddictClientService _service;
 
@@ -27,7 +29,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
     /// </summary>
     /// <param name="name">The authentication scheme associated with the handler instance.</param>
     /// <param name="options">The options instance to initialize.</param>
-    public void PostConfigure(string name, OpenIddictClientOptions options)
+    public void PostConfigure(string? name, OpenIddictClientOptions options)
     {
         if (options is null)
         {
@@ -67,10 +69,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0313));
                     }
 
-                    if (registration.MetadataAddress is null)
-                    {
-                        registration.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
-                    }
+                    registration.MetadataAddress ??= new Uri(".well-known/openid-configuration", UriKind.Relative);
 
                     if (!registration.MetadataAddress.IsAbsoluteUri)
                     {
@@ -82,8 +81,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
 
                         if (registration.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
                         {
-                            registration.MetadataAddress = new Uri(registration.MetadataAddress.OriginalString.Substring(
-                                1, registration.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
+                            registration.MetadataAddress = new Uri(registration.MetadataAddress.OriginalString[1..], UriKind.Relative);
                         }
 
                         registration.MetadataAddress = new Uri(issuer, registration.MetadataAddress);
@@ -196,7 +194,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
 
                 // Only use the 40 first chars of the base64url-encoded modulus.
                 var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 
 #if SUPPORTS_ECDSA
@@ -209,7 +207,7 @@ public class OpenIddictClientConfiguration : IPostConfigureOptions<OpenIddictCli
 
                 // Only use the 40 first chars of the base64url-encoded X coordinate.
                 var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
-                return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                return identifier[..Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
 #endif
 

@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenIddict.EntityFrameworkCore.Models;
 
@@ -78,6 +79,7 @@ public class OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorizati
     /// Gets or sets the additional properties serialized as a JSON object,
     /// or <see langword="null"/> if no bag was associated with the current token.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Properties { get; set; }
 
     /// <summary>

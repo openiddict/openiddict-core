@@ -39,7 +39,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the client credentials to the HTTP Authorization header.
         /// </summary>
-        public class AttachBasicAuthenticationCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
+        public sealed class AttachBasicAuthenticationCredentials : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

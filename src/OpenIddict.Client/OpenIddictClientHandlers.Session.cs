@@ -42,7 +42,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for preparing authorization requests and invoking the corresponding event handlers.
         /// </summary>
-        public class PrepareLogoutRequest : IOpenIddictClientHandler<ProcessSignOutContext>
+        public sealed class PrepareLogoutRequest : IOpenIddictClientHandler<ProcessSignOutContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -86,7 +86,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for applying authorization requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyLogoutRequest : IOpenIddictClientHandler<ProcessSignOutContext>
+        public sealed class ApplyLogoutRequest : IOpenIddictClientHandler<ProcessSignOutContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -130,7 +130,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the address of the authorization request to the request.
         /// </summary>
-        public class AttachLogoutEndpoint : IOpenIddictClientHandler<ApplyLogoutRequestContext>
+        public sealed class AttachLogoutEndpoint : IOpenIddictClientHandler<ApplyLogoutRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -165,7 +165,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for extracting redirection requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractPostLogoutRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
+        public sealed class ExtractPostLogoutRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -226,7 +226,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for validating redirection requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidatePostLogoutRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
+        public sealed class ValidatePostLogoutRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -283,7 +283,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for handling redirection requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandlePostLogoutRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
+        public sealed class HandlePostLogoutRedirectionRequest : IOpenIddictClientHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -339,7 +339,7 @@ public static partial class OpenIddictClientHandlers
         /// <summary>
         /// Contains the logic responsible for processing redirection responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyPostLogoutRedirectionResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyPostLogoutRedirectionResponse<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 
@@ -388,7 +388,7 @@ public static partial class OpenIddictClientHandlers
         /// Contains the logic responsible for rejecting redirection requests that don't
         /// specify a valid access token, authorization code, identity token or state token.
         /// </summary>
-        public class ValidateTokens : IOpenIddictClientHandler<ValidatePostLogoutRedirectionRequestContext>
+        public sealed class ValidateTokens : IOpenIddictClientHandler<ValidatePostLogoutRedirectionRequestContext>
         {
             private readonly IOpenIddictClientDispatcher _dispatcher;
 

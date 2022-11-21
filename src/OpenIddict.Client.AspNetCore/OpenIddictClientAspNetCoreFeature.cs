@@ -4,12 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
+using System.ComponentModel;
+
 namespace OpenIddict.Client.AspNetCore;
 
 /// <summary>
 /// Exposes the current client transaction to the ASP.NET Core host.
 /// </summary>
-public class OpenIddictClientAspNetCoreFeature
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictClientAspNetCoreFeature
 {
     /// <summary>
     /// Gets or sets the client transaction that encapsulates all specific

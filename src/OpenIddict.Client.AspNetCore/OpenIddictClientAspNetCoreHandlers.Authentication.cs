@@ -43,7 +43,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /// Contains the logic responsible for processing authorization requests using 302 redirects.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
-        public class ProcessQueryRequest : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>
+        public sealed class ProcessQueryRequest : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.

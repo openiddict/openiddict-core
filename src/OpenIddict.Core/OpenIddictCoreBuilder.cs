@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Exposes the necessary methods required to configure the OpenIddict core services.
 /// </summary>
-public class OpenIddictCoreBuilder
+public sealed class OpenIddictCoreBuilder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIddictCoreBuilder"/>.

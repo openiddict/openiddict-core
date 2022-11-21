@@ -16,7 +16,7 @@ namespace OpenIddict.EntityFrameworkCore;
 /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
 /// <typeparam name="TKey">The type of the Key entity.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public class OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey> : IEntityTypeConfiguration<TScope>
+public sealed class OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey> : IEntityTypeConfiguration<TScope>
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
     where TKey : notnull, IEquatable<TKey>
 {

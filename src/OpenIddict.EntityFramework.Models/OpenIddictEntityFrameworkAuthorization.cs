@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenIddict.EntityFramework.Models;
 
@@ -53,12 +54,14 @@ public class OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
     /// Gets or sets the additional properties serialized as a JSON object,
     /// or <see langword="null"/> if no bag was associated with the current authorization.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Properties { get; set; }
 
     /// <summary>
     /// Gets or sets the scopes associated with the current
     /// authorization, serialized as a JSON array.
     /// </summary>
+    [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Scopes { get; set; }
 
     /// <summary>

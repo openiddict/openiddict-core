@@ -42,7 +42,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for extracting userinfo requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ExtractUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ExtractUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -104,7 +104,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for validating userinfo requests and invoking the corresponding event handlers.
         /// </summary>
-        public class ValidateUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class ValidateUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -165,7 +165,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for handling userinfo requests and invoking the corresponding event handlers.
         /// </summary>
-        public class HandleUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
+        public sealed class HandleUserinfoRequest : IOpenIddictServerHandler<ProcessRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -257,7 +257,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for processing userinfo responses and invoking the corresponding event handlers.
         /// </summary>
-        public class ApplyUserinfoResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        public sealed class ApplyUserinfoResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -305,7 +305,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting userinfo requests that don't specify an access token.
         /// </summary>
-        public class ValidateAccessTokenParameter : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
+        public sealed class ValidateAccessTokenParameter : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -344,7 +344,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for rejecting userinfo requests that don't specify a valid token.
         /// </summary>
-        public class ValidateToken : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
+        public sealed class ValidateToken : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
         {
             private readonly IOpenIddictServerDispatcher _dispatcher;
 
@@ -406,7 +406,7 @@ public static partial class OpenIddictServerHandlers
         /// Contains the logic responsible for attaching the principal
         /// extracted from the access token to the event context.
         /// </summary>
-        public class AttachPrincipal : IOpenIddictServerHandler<HandleUserinfoRequestContext>
+        public sealed class AttachPrincipal : IOpenIddictServerHandler<HandleUserinfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -441,7 +441,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching the audiences to the userinfo response.
         /// </summary>
-        public class AttachAudiences : IOpenIddictServerHandler<HandleUserinfoRequestContext>
+        public sealed class AttachAudiences : IOpenIddictServerHandler<HandleUserinfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -475,7 +475,7 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for attaching well known claims to the userinfo response.
         /// </summary>
-        public class AttachClaims : IOpenIddictServerHandler<HandleUserinfoRequestContext>
+        public sealed class AttachClaims : IOpenIddictServerHandler<HandleUserinfoRequestContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
