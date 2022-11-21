@@ -85,7 +85,8 @@ public class Startup
                     "/callback/login/github",
                     "/callback/login/google",
                     "/callback/login/reddit",
-                    "/callback/login/twitter");
+                    "/callback/login/twitter",
+                    "/callback/login/cognito");
 
                 // Enable the post-logout redirection endpoints needed to handle the callback stage.
                 options.SetPostLogoutRedirectionEndpointUris(
@@ -148,6 +149,14 @@ public class Startup
                            options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
                                   .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
                                   .SetRedirectUri("https://localhost:44381/callback/login/twitter");
+                       })
+                       .UseCognito(options =>
+                       {
+                           options.SetClientId("COGNITO_CLIENT_ID")
+                                  .SetClientSecret("COGNITO_CLIENT_SECRET")
+                                  .SetRedirectUri("https://localhost:44381/callback/login/cognito")
+                                  .SetRegion("COGNITO_REGION")
+                                  .SetUserPoolId("COGNITO_USER_POOL_ID");
                        });
             });
 
