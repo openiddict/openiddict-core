@@ -13,6 +13,14 @@
              Description="The team ID associated with the developer account" />
   </Provider>
 
+   <Provider Name="Cognito" Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
+    <Environment Issuer="https://cognito-idp.{region}.amazonaws.com/{userPoolId}" />
+    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
+           Description="The AWS region" />
+    <Setting PropertyName="UserPoolId" ParameterName="identifier" Type="String" Required="true"
+           Description="The User Pool ID" />
+  </Provider>
+
   <Provider Name="GitHub" Documentation="https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps">
     <Environment Issuer="https://github.com/">
       <Configuration AuthorizationEndpoint="https://github.com/login/oauth/authorize"
@@ -187,14 +195,6 @@
       <Item Value="verified"        Default="true" Required="false" />
       <Item Value="withheld"        Default="true" Required="false" />
     </Setting>
-  </Provider>
-
- <Provider Name="Cognito" Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
-    <Environment Issuer="https://cognito-idp.{region}.amazonaws.com/{userPoolId}"/>
-    <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
-           Description="The AWS region" />
-    <Setting PropertyName="UserPoolId" ParameterName="userPoolId" Type="String" Required="true"
-           Description="The AWS region" />
   </Provider>
 
 </Providers>
