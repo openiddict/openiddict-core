@@ -43,6 +43,7 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_EPHEMERAL_KEY_SETS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_RSA_KEY_CREATION_WITH_SPECIFIED_SIZE</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TOHASHSET_LINQ_EXTENSION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup

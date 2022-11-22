@@ -1151,13 +1151,13 @@ To validate tokens received by custom API endpoints, the OpenIddict validation h
     <value>The specified grant type is not supported.</value>
   </data>
   <data name="ID0297" xml:space="preserve">
-    <value>A common grant type supported by both the client and the server couldn't be negotiated automatically. If the error persists, consider specifying a list of allowed grant types in the client registration and ensure the supported grant types listed in the authorization server configuration are appropriate.</value>
+    <value>A common grant type supported by both the client and the server couldn't be negotiated automatically. Ensure at least one common flow is enabled in the client options. If the error persists, consider specifying a list of allowed grant types in the client registration and ensure the supported grant types listed in the authorization server configuration are appropriate.</value>
   </data>
   <data name="ID0298" xml:space="preserve">
-    <value>A common response type combination supported by both the client and the server couldn't be negotiated automatically. If the error persists, consider specifying a list of allowed response type combinations in the client registration and ensure the supported response type combinations listed in the authorization server configuration are appropriate.</value>
+    <value>A common response type combination supported by both the client and the server couldn't be negotiated automatically. Ensure at least one common flow is enabled in the client options. If the error persists, consider specifying a list of allowed response type combinations in the client registration and ensure the supported response type combinations listed in the authorization server configuration are appropriate.</value>
   </data>
   <data name="ID0299" xml:space="preserve">
-    <value>A common response mode supported by both the client and the server couldn't be negotiated automatically. If the error persists, consider specifying a list of allowed response modes in the client registration and ensure the supported response modes listed in the authorization server configuration are appropriate.</value>
+    <value>A common response mode supported by both the client and the server couldn't be negotiated automatically. Ensure at least one common flow is enabled in the client options. If the error persists, consider specifying a list of allowed response modes in the client registration and ensure the supported response modes listed in the authorization server configuration are appropriate.</value>
   </data>
   <data name="ID0300" xml:space="preserve">
     <value>A redirection URI must be specified in the client registration options when using OpenID Connect.</value>
@@ -1189,7 +1189,7 @@ To apply redirection responses, create a class implementing 'IOpenIddictClientHa
     <value>The specified list of valid token types is not valid.</value>
   </data>
   <data name="ID0309" xml:space="preserve">
-    <value>A grant type must be specified when triggering authentication demands from endpoints that are not managed by the OpenIddict client stack.</value>
+    <value>A grant type must be specified when triggering authentication demands from endpoints that are not managed by the OpenIddict client stack. This error may also indicate that the redirection endpoint was not correctly enabled in the OpenIddict client options.</value>
   </data>
   <data name="ID0310" xml:space="preserve">
     <value>The specified grant type ({0}) is not currently supported for authentication demands.</value>
@@ -1357,6 +1357,29 @@ Alternatively, you can disable the token storage feature by calling 'services.Ad
   </data>
   <data name="ID0355" xml:space="preserve">
     <value>No issuer was specified in the authentication context.</value>
+  </data>
+  <data name="ID0356" xml:space="preserve">
+    <value>The redirection endpoint must be enabled to use the authorization code and implicit flows.</value>
+  </data>
+  <data name="ID0357" xml:space="preserve">
+    <value>At least one encryption key must be registered in the OpenIddict client options when using interactive login or logout flows.
+Consider registering a certificate using 'services.AddOpenIddict().AddClient().AddEncryptionCertificate()' or 'services.AddOpenIddict().AddClient().AddDevelopmentEncryptionCertificate()' or call 'services.AddOpenIddict().AddClient().AddEphemeralEncryptionKey()' to use an ephemeral key.</value>
+  </data>
+  <data name="ID0358" xml:space="preserve">
+    <value>At least one signing key must be registered in the OpenIddict client options when enabling using interactive login or logout flows.
+Consider registering a certificate using 'services.AddOpenIddict().AddClient().AddSigningCertificate()' or 'services.AddOpenIddict().AddClient().AddDevelopmentSigningCertificate()' or call 'services.AddOpenIddict().AddClient().AddEphemeralSigningKey()' to use an ephemeral key.</value>
+  </data>
+  <data name="ID0359" xml:space="preserve">
+    <value>The specified grant type ({0}) has not been enabled in the OpenIddict client options.</value>
+  </data>
+  <data name="ID0360" xml:space="preserve">
+    <value>No grant type enabled in the client options could be found in the list of grant types allowed by the client registration, which typically indicates an invalid configuration. Ensure the 'OpenIddictClientRegistration.GrantTypes' collection contain at least one of the grant types enabled in the client options or leave it empty to allow OpenIddict to negotiate all the enabled grant types.</value>
+  </data>
+  <data name="ID0361" xml:space="preserve">
+    <value>No response type enabled in the client options could be found in the list of response types allowed by the client registration, which typically indicates an invalid configuration. Ensure the 'OpenIddictClientRegistration.ResponseTypes' collection contain at least one of the response types enabled in the client options or leave it empty to allow OpenIddict to negotiate all the enabled response types.</value>
+  </data>
+  <data name="ID0362" xml:space="preserve">
+    <value>No response mode enabled in the client options could be found in the list of response modes allowed by the client registration, which typically indicates an invalid configuration. Ensure the 'OpenIddictClientRegistration.ResponseModes' collection contain at least one of the response modes enabled in the client options or leave it empty to allow OpenIddict to negotiate all the enabled response modes.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>

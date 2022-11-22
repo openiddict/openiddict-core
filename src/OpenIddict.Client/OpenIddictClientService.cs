@@ -45,7 +45,7 @@ public sealed class OpenIddictClientService
             throw new ArgumentNullException(nameof(issuer));
         }
 
-        if (scopes is not null && scopes.Any(string.IsNullOrEmpty))
+        if (scopes is not null && Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
@@ -163,7 +163,7 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0336), nameof(password));
         }
 
-        if (scopes is not null && scopes.Any(string.IsNullOrEmpty))
+        if (scopes is not null && Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
@@ -277,7 +277,7 @@ public sealed class OpenIddictClientService
             throw new ArgumentException(SR.GetResourceString(SR.ID0156), nameof(token));
         }
 
-        if (scopes is not null && scopes.Any(string.IsNullOrEmpty))
+        if (scopes is not null && Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }

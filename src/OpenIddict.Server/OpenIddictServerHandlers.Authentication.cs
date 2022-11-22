@@ -643,7 +643,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Reject requests that specify an unsupported response_type.
-                var types = new HashSet<string>(context.Request.GetResponseTypes(), StringComparer.Ordinal);
+                var types = context.Request.GetResponseTypes().ToHashSet(StringComparer.Ordinal);
                 if (!context.Options.ResponseTypes.Any(type =>
                     types.SetEquals(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
                 {
@@ -1232,7 +1232,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // If all the specified scopes are registered in the options, avoid making a database lookup.
-                var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
+                var scopes = context.Request.GetScopes().ToHashSet(StringComparer.Ordinal);
                 scopes.ExceptWith(context.Options.Scopes);
 
                 // Note: the remaining scopes are only checked if the degraded mode was not enabled,
@@ -1488,7 +1488,7 @@ public static partial class OpenIddictServerHandlers
                         // Note: response types can be specified in any order. To ensure permissions are correctly
                         // checked even if the order differs from the one specified in the request, a HashSet is used.
                         var values = permission[prefix.Length..].Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries);
-                        if (values.Length is not 0 && new HashSet<string>(values, StringComparer.Ordinal).SetEquals(types))
+                        if (values.Length is not 0 && values.ToHashSet(StringComparer.Ordinal).SetEquals(types))
                         {
                             return true;
                         }

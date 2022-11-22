@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Server;
 
@@ -114,7 +115,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         // Ensure the grant types/response types configuration is consistent.
         foreach (var type in options.ResponseTypes)
         {
-            var types = new HashSet<string>(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal);
+            var types = type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
             if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
             {
                 throw new InvalidOperationException(SR.FormatID0281(ResponseTypes.Code));
@@ -142,20 +143,20 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0085));
         }
 
-        if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey))
+        if (!options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0086));
         }
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+        if (options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }
 
         // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.SigningCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+        if (options.SigningCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));
@@ -166,58 +167,58 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             // If the degraded mode was enabled, ensure custom validation handlers
             // have been registered for the endpoints that require manual validation.
 
-            if (options.AuthorizationEndpointUris.Count is not 0 && !options.Handlers.Any(
-                descriptor => descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
-                              descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                              descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            if (options.AuthorizationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0089));
             }
 
-            if (options.DeviceEndpointUris.Count is not 0 && !options.Handlers.Any(
-                descriptor => descriptor.ContextType == typeof(ValidateDeviceRequestContext) &&
-                              descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                              descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            if (options.DeviceEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateDeviceRequestContext) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0090));
             }
 
-            if (options.IntrospectionEndpointUris.Count is not 0 && !options.Handlers.Any(
-                descriptor => descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) &&
-                              descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                              descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            if (options.IntrospectionEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0091));
             }
 
-            if (options.LogoutEndpointUris.Count is not 0 && !options.Handlers.Any(
-                descriptor => descriptor.ContextType == typeof(ValidateLogoutRequestContext) &&
-                              descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                              descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            if (options.LogoutEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateLogoutRequestContext) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0092));
             }
 
-            if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Any(
-                descriptor => descriptor.ContextType == typeof(ValidateRevocationRequestContext) &&
-                              descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                              descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            if (options.RevocationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateRevocationRequestContext) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0093));
             }
 
-            if (options.TokenEndpointUris.Count is not 0 && !options.Handlers.Any(
-                descriptor => descriptor.ContextType == typeof(ValidateTokenRequestContext) &&
-                              descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                              descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            if (options.TokenEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateTokenRequestContext) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0094));
             }
 
-            if (options.VerificationEndpointUris.Count is not 0 && !options.Handlers.Any(
-                descriptor => descriptor.ContextType == typeof(ValidateVerificationRequestContext) &&
-                              descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                              descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+            if (options.VerificationEndpointUris.Count is not 0 && !options.Handlers.Exists(static descriptor =>
+                descriptor.ContextType == typeof(ValidateVerificationRequestContext) &&
+                descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0095));
             }
@@ -227,18 +228,18 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
             if (options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
-                if (!options.Handlers.Any(
-                    descriptor => descriptor.ContextType == typeof(ValidateTokenContext) &&
-                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                                  descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                if (!options.Handlers.Exists(static descriptor =>
+                    descriptor.ContextType == typeof(ValidateTokenContext) &&
+                    descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                    descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0096));
                 }
 
-                if (!options.Handlers.Any(
-                    descriptor => descriptor.ContextType == typeof(GenerateTokenContext) &&
-                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
-                                  descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                if (!options.Handlers.Exists(static descriptor =>
+                    descriptor.ContextType == typeof(GenerateTokenContext) &&
+                    descriptor.Type == OpenIddictServerHandlerType.Custom &&
+                    descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0097));
                 }

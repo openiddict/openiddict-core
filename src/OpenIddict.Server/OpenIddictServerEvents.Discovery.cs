@@ -129,67 +129,67 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets the list of claims supported by the authorization server.
         /// </summary>
-        public HashSet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Claims { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets a list of the code challenge methods
         /// supported by the authorization server.
         /// </summary>
-        public HashSet<string> CodeChallengeMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> CodeChallengeMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the list of grant types
         /// supported by the authorization server.
         /// </summary>
-        public HashSet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> GrantTypes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets a list of signing algorithms supported by the
         /// authorization server for signing the identity tokens.
         /// </summary>
-        public HashSet<string> IdTokenSigningAlgorithms { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> IdTokenSigningAlgorithms { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets a list of client authentication methods supported by
         /// the introspection endpoint provided by the authorization server.
         /// </summary>
-        public HashSet<string> IntrospectionEndpointAuthenticationMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> IntrospectionEndpointAuthenticationMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the list of response modes
         /// supported by the authorization server.
         /// </summary>
-        public HashSet<string> ResponseModes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the list of response types
         /// supported by the authorization server.
         /// </summary>
-        public HashSet<string> ResponseTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> ResponseTypes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets a list of client authentication methods supported by
         /// the revocation endpoint provided by the authorization server.
         /// </summary>
-        public HashSet<string> RevocationEndpointAuthenticationMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> RevocationEndpointAuthenticationMethods { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the list of scope values
         /// supported by the authorization server.
         /// </summary>
-        public HashSet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the list of subject types
         /// supported by the authorization server.
         /// </summary>
-        public HashSet<string> SubjectTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> SubjectTypes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets a list of client authentication methods supported by
         /// the token endpoint provided by the authorization server.
         /// </summary>
-        public HashSet<string> TokenEndpointAuthenticationMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> TokenEndpointAuthenticationMethods { get; } = new(StringComparer.Ordinal);
     }
 
     /// <summary>

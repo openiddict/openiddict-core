@@ -795,7 +795,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // If all the specified scopes are registered in the options, avoid making a database lookup.
-                var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
+                var scopes = context.Request.GetScopes().ToHashSet(StringComparer.Ordinal);
                 scopes.ExceptWith(context.Options.Scopes);
 
                 // Note: the remaining scopes are only checked if the degraded mode was not enabled,
@@ -1657,7 +1657,7 @@ public static partial class OpenIddictServerHandlers
                 // When an explicit scope parameter has been included in the token request
                 // but was missing from the initial request, the request MUST be rejected.
                 // See http://tools.ietf.org/html/rfc6749#section-6 for more information.
-                var scopes = new HashSet<string>(context.Principal.GetScopes(), StringComparer.Ordinal);
+                var scopes = context.Principal.GetScopes().ToHashSet(StringComparer.Ordinal);
                 if (scopes.Count is 0)
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6094), Parameters.Scope);

@@ -82,6 +82,9 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     options.SetPostLogoutRedirectionEndpointUris(
                         "/callback/logout/local");
 
+                    // Note: this sample uses the code flow, but you can enable the other flows if necessary.
+                    options.AllowAuthorizationCodeFlow();
+
                     // Register the signing and encryption credentials used to protect
                     // sensitive data like the state tokens produced by OpenIddict.
                     options.AddDevelopmentEncryptionCertificate()

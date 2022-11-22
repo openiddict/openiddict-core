@@ -78,6 +78,19 @@ internal static class OpenIddictHelpers
         }
     }
 
+#if !SUPPORTS_TOHASHSET_LINQ_EXTENSION
+    /// <summary>
+    /// Creates a new <see cref="HashSet{T}"/> instance and imports the elements present in the specified source.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements present in the collection.</typeparam>
+    /// <param name="source">The source collection.</param>
+    /// <param name="comparer">The comparer to use.</param>
+    /// <returns>A new <see cref="HashSet{T}"/> instance and imports the elements present in the specified source.</returns>
+    /// <exception cref="ArgumentNullException">The <paramref name="source"/> is <see langword="null"/>.</exception>
+    public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source, IEqualityComparer<TSource>? comparer)
+        => new(source ?? throw new ArgumentNullException(nameof(source)), comparer);
+#endif
+
     /// <summary>
     /// Adds a query string parameter to the specified <see cref="Uri"/>.
     /// </summary>
@@ -212,7 +225,7 @@ internal static class OpenIddictHelpers
         // a user identity, a fake one containing an "unauthenticated" identity (i.e with its
         // AuthenticationType property deliberately left to null) is used to allow the host
         // to return a "successful" authentication result for these delegation-only scenarios.
-        if (!principals.Any(principal => principal?.Identity is ClaimsIdentity { IsAuthenticated: true }))
+        if (!Array.Exists(principals, static principal => principal?.Identity is ClaimsIdentity { IsAuthenticated: true }))
         {
             return new ClaimsPrincipal(new ClaimsIdentity());
         }
