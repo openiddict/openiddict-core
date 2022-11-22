@@ -20,8 +20,7 @@ public class AuthenticationController : Controller
             !string.Equals(provider, Providers.GitHub,  StringComparison.Ordinal) &&
             !string.Equals(provider, Providers.Google,  StringComparison.Ordinal) &&
             !string.Equals(provider, Providers.Reddit,  StringComparison.Ordinal) &&
-            !string.Equals(provider, Providers.Twitter, StringComparison.Ordinal) &&
-            !string.Equals(provider, Providers.Cognito, StringComparison.Ordinal))
+            !string.Equals(provider, Providers.Twitter, StringComparison.Ordinal))
         {
             return BadRequest();
         }
