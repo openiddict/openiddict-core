@@ -208,7 +208,7 @@ public sealed class OpenIddictClientBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
+        if (!certificates.Exists(static certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -321,7 +321,8 @@ public sealed class OpenIddictClientBuilder
         if (certificate.Version >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
-            if (extensions.Count is not 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
+            if (extensions.Count is not 0 && !extensions.Exists(static extension =>
+                extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0060));
             }
@@ -570,7 +571,7 @@ public sealed class OpenIddictClientBuilder
             .OfType<X509Certificate2>()
             .ToList();
 
-        if (!certificates.Any(certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
+        if (!certificates.Exists(static certificate => certificate.NotBefore < DateTime.Now && certificate.NotAfter > DateTime.Now))
         {
 #if SUPPORTS_CERTIFICATE_GENERATION
             using var algorithm = OpenIddictHelpers.CreateRsaKey(size: 2048);
@@ -712,7 +713,8 @@ public sealed class OpenIddictClientBuilder
         if (certificate.Version >= 3)
         {
             var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
-            if (extensions.Count is not 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
+            if (extensions.Count is not 0 && !extensions.Exists(static extension =>
+                extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0070));
             }
@@ -887,6 +889,109 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.DisableTokenStorage = true);
 
     /// <summary>
+    /// Enables authorization code flow support. For more information
+    /// about this specific OAuth 2.0/OpenID Connect flow, visit
+    /// https://tools.ietf.org/html/rfc6749#section-4.1 and
+    /// http://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowAuthorizationCodeFlow()
+        => Configure(options =>
+        {
+            options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
+
+            options.GrantTypes.Add(GrantTypes.AuthorizationCode);
+
+            options.ResponseModes.Add(ResponseModes.FormPost);
+            options.ResponseModes.Add(ResponseModes.Fragment);
+            options.ResponseModes.Add(ResponseModes.Query);
+
+            options.ResponseTypes.Add(ResponseTypes.Code);
+        });
+
+    /// <summary>
+    /// Enables client credentials flow support. For more information about this
+    /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc6749#section-4.4.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowClientCredentialsFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.ClientCredentials));
+
+    /// <summary>
+    /// Enables hybrid flow support. For more information
+    /// about this specific OpenID Connect flow, visit
+    /// http://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowHybridFlow()
+        => Configure(options =>
+        {
+            options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
+
+            options.GrantTypes.Add(GrantTypes.AuthorizationCode);
+            options.GrantTypes.Add(GrantTypes.Implicit);
+
+            options.ResponseModes.Add(ResponseModes.FormPost);
+            options.ResponseModes.Add(ResponseModes.Fragment);
+
+            options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
+            options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
+            options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.Token);
+        });
+
+    /// <summary>
+    /// Enables implicit flow support. For more information
+    /// about this specific OAuth 2.0/OpenID Connect flow, visit
+    /// https://tools.ietf.org/html/rfc6749#section-4.2 and
+    /// http://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth.
+    /// </summary>
+    /// <remarks>
+    /// The implicit flow is not recommended for new applications and should
+    /// only be enabled when maintaining backward compatibility is important.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowImplicitFlow()
+        => Configure(options =>
+        {
+            options.GrantTypes.Add(GrantTypes.Implicit);
+
+            options.ResponseModes.Add(ResponseModes.FormPost);
+            options.ResponseModes.Add(ResponseModes.Fragment);
+
+            options.ResponseTypes.Add(ResponseTypes.IdToken);
+            options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
+
+            // Note: response_type=token is not considered secure enough as it allows malicious
+            // actors to inject access tokens that were initially issued to a different client.
+            // As such, while OpenIddict-based servers allow using response_type=token for backward
+            // compatibility with legacy clients, OpenIddict-based clients are deliberately not
+            // allowed to negotiate the unsafe and OAuth 2.0-only response_type=token flow.
+            //
+            // For more information, see https://datatracker.ietf.org/doc/html/rfc6749#section-10.16 and
+            // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-2.1.2.
+        });
+
+    /// <summary>
+    /// Enables password flow support. For more information about this specific
+    /// OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc6749#section-4.3.
+    /// </summary>
+    /// <remarks>
+    /// The password flow is not recommended for new applications and should
+    /// only be enabled when maintaining backward compatibility is important.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowPasswordFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.Password));
+
+    /// <summary>
+    /// Enables refresh token flow support. For more information about this
+    /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc6749#section-6.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowRefreshTokenFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.RefreshToken));
+
+    /// <summary>
     /// Sets the relative or absolute URLs associated to the redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// </summary>
@@ -928,12 +1033,12 @@ public sealed class OpenIddictClientBuilder
             throw new ArgumentNullException(nameof(addresses));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (Array.Exists(addresses, static address => !address.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(addresses, static address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
         }
@@ -975,12 +1080,12 @@ public sealed class OpenIddictClientBuilder
             throw new ArgumentNullException(nameof(addresses));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (Array.Exists(addresses, static address => !address.IsWellFormedOriginalString()))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(addresses, static address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
         }

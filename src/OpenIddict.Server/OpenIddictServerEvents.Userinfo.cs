@@ -107,7 +107,7 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Gets or sets the values used for the "aud" claim.
         /// </summary>
-        public HashSet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Audiences { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the value used for the "birthdate" claim.

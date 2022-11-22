@@ -46,7 +46,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 
         if (options.ValidationType is OpenIddictValidationType.Introspection)
         {
-            if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
+            if (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0129));
             }
@@ -79,7 +79,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
         if (options.EncryptionCredentials.Count is not 0 &&
-            options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+            options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                 (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
@@ -95,8 +95,8 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 
             else
             {
-                if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
-                    !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
+                if (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                    !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
                 }

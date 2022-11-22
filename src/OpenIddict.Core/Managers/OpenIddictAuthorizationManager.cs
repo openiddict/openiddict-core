@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
@@ -839,8 +840,9 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             throw new ArgumentNullException(nameof(authorization));
         }
 
-        return new HashSet<string>(await Store.GetScopesAsync(
-            authorization, cancellationToken), StringComparer.Ordinal).IsSupersetOf(scopes);
+        return (await Store.GetScopesAsync(authorization, cancellationToken))
+            .ToHashSet(StringComparer.Ordinal)
+            .IsSupersetOf(scopes);
     }
 
     /// <summary>

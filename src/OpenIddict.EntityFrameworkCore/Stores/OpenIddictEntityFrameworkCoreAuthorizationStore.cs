@@ -14,6 +14,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.EntityFrameworkCore.Models;
+using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.EntityFrameworkCore;
@@ -367,7 +368,9 @@ public class OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TAp
 
             await foreach (var authorization in authorizations)
             {
-                if (new HashSet<string>(await GetScopesAsync(authorization, cancellationToken), StringComparer.Ordinal).IsSupersetOf(scopes))
+                if ((await GetScopesAsync(authorization, cancellationToken))
+                    .ToHashSet(StringComparer.Ordinal)
+                    .IsSupersetOf(scopes))
                 {
                     yield return authorization;
                 }

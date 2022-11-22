@@ -167,6 +167,17 @@ public static partial class OpenIddictClientHandlers
             {
                 case OpenIddictClientEndpointType.Redirection:
                 case OpenIddictClientEndpointType.PostLogoutRedirection:
+                    // Ensure signing/and encryption credentials are present as they are required to protect state tokens.
+                    if (context.Options.EncryptionCredentials.Count is 0)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0357));
+                    }
+
+                    if (context.Options.SigningCredentials.Count is 0)
+                    {
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
+                    }
+
                     break;
 
                 case OpenIddictClientEndpointType.Unknown:
@@ -180,6 +191,11 @@ public static partial class OpenIddictClientHandlers
                         GrantTypes.Implicit          or GrantTypes.Password          or GrantTypes.RefreshToken))
                     {
                         throw new InvalidOperationException(SR.FormatID0310(context.GrantType));
+                    }
+
+                    if (!context.Options.GrantTypes.Contains(context.GrantType))
+                    {
+                        throw new InvalidOperationException(SR.FormatID0359(context.GrantType));
                     }
 
                     if (context.GrantType is GrantTypes.Password)
@@ -1313,11 +1329,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     Key: Claims.Audience or Claims.AuthenticationMethodReference,
                     Value: List<Claim> values
-                } => values.Count switch
-                {
-                    1 => values[0].ValueType is ClaimValueTypes.String,
-                    _ => values.All(value => value.ValueType is ClaimValueTypes.String)
-                },
+                } => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
 
                 // The following JWT claims MUST be represented as unique numeric dates.
                 {
@@ -2615,11 +2627,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     Key: Claims.Audience or Claims.AuthenticationMethodReference,
                     Value: List<Claim> values
-                } => values.Count switch
-                {
-                    1 => values[0].ValueType is ClaimValueTypes.String,
-                    _ => values.All(value => value.ValueType is ClaimValueTypes.String)
-                },
+                } => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String),
 
                 // The following JWT claims MUST be represented as unique numeric dates.
                 {
@@ -3539,11 +3547,30 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0006));
             }
 
-            // If an explicit grant type was specified, ensure it is supported by OpenIddict.
-            if (!string.IsNullOrEmpty(context.GrantType) &&
-                context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
+            // If an explicit grant type was specified, ensure it is
+            // supported by OpenIddict and enabled in the client options.
+            if (!string.IsNullOrEmpty(context.GrantType))
             {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0296));
+                if (context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0296));
+                }
+
+                if (!context.Options.GrantTypes.Contains(context.GrantType))
+                {
+                    throw new InvalidOperationException(SR.FormatID0359(context.GrantType));
+                }
+            }
+
+            // Ensure signing/and encryption credentials are present as they are required to protect state tokens.
+            if (context.Options.EncryptionCredentials.Count is 0)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0357));
+            }
+
+            if (context.Options.SigningCredentials.Count is 0)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
             }
 
             // If a provider name was specified, resolve the corresponding issuer.
@@ -3657,40 +3684,39 @@ public static partial class OpenIddictClientHandlers
             // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
             // and https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
 
-            context.GrantType = (context.Registration.GrantTypes, context.Configuration.GrantTypesSupported) switch
+            context.GrantType = (
+                // Note: if grant types are explicitly listed in the client registration, only use
+                // the grant types that are both listed and enabled in the global client options.
+                // Otherwise, always default to the grant types that have been enabled globally.
+                SupportedClientGrantTypes: context.Registration.GrantTypes.Count switch
+                {
+                    0 => context.Options.GrantTypes as ICollection<string>,
+                    _ => context.Options.GrantTypes.Intersect(context.Registration.GrantTypes, StringComparer.Ordinal).ToList()
+                },
+
+                SupportedServerGrantTypes: context.Configuration.GrantTypesSupported) switch
             {
-                // If neither the client nor the server specify a list of grant types,
-                // use the authorization code grant, as it's always supported by default.
-                ({ Count: 0 }, { Count: 0 }) => GrantTypes.AuthorizationCode,
+                // If the list of grant types supported by the client is empty, abort the challenge operation.
+                ({ Count: 0 }, { Count: _ }) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0360)),
+
+                // If both the client and the server support the code grant, prefer it over the implicit grant.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(GrantTypes.AuthorizationCode) && server.Contains(GrantTypes.AuthorizationCode)
+                    => GrantTypes.AuthorizationCode,
 
                 // If the client supports the code grant and the server doesn't specify a list of
                 // grant types, use the authorization code grant, as it's always supported by default.
                 ({ Count: > 0 } client, { Count: 0 }) when client.Contains(GrantTypes.AuthorizationCode)
                     => GrantTypes.AuthorizationCode,
 
-                // If the client supports the code grant and the server doesn't specify a list of
-                // grant types, use the authorization code grant, as it's always supported by default.
-                ({ Count: 0 }, { Count: > 0 } server) when server.Contains(GrantTypes.AuthorizationCode)
-                    => GrantTypes.AuthorizationCode,
-
-                // If both the client and the server support the code grant, prefer it over the implicit grant.
+                // If both the client and the server support the implicit grant, use it as a last chance option.
                 ({ Count: > 0 } client, { Count: > 0 } server) when
-                    server.Contains(GrantTypes.AuthorizationCode) && client.Contains(GrantTypes.AuthorizationCode)
-                    => GrantTypes.AuthorizationCode,
+                    client.Contains(GrantTypes.Implicit) && server.Contains(GrantTypes.Implicit)
+                    => GrantTypes.Implicit,
 
                 // If the client supports the implicit grant and the server doesn't specify a list
                 // of grant types, use the implicit code grant, as it's always supported by default.
                 ({ Count: > 0 } client, { Count: 0 }) when client.Contains(GrantTypes.Implicit)
-                    => GrantTypes.Implicit,
-
-                // If the client supports the implicit grant and the server doesn't specify a list
-                // of grant types, use the implicit code grant, as it's always supported by default.
-                ({ Count: 0 }, { Count: > 0 } server) when server.Contains(GrantTypes.Implicit)
-                    => GrantTypes.Implicit,
-
-                // If both the client and the server support the implicit grant, use it as a last chance option.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    server.Contains(GrantTypes.Implicit) && client.Contains(GrantTypes.Implicit)
                     => GrantTypes.Implicit,
 
                 // If no common grant type can be negotiated, abort the challenge operation.
@@ -3806,12 +3832,40 @@ public static partial class OpenIddictClientHandlers
                 return default;
             }
 
+            // Only attach a response type for the grant types known to support this mechanism.
+            if (context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
+            {
+                return default;
+            }
+
             context.ResponseType = (
-                context.GrantType,
-                context.Registration.ResponseTypes.Select(types => 
-                    types.Split(Separators.Space).ToImmutableHashSet(StringComparer.Ordinal)).ToList(),
-                context.Configuration.ResponseTypesSupported.Select(types =>
-                    types.Split(Separators.Space).ToImmutableHashSet(StringComparer.Ordinal)).ToList()) switch
+                NegotiatedGrantType: context.GrantType,
+
+                // Note: if response types are explicitly listed in the client registration, only use
+                // the response types that are both listed and enabled in the global client options.
+                // Otherwise, always default to the response types that have been enabled globally.
+                SupportedClientResponseTypes: context.Registration.ResponseTypes.Count switch
+                {
+                    0 => context.Options.ResponseTypes.Select(types => types
+                            .Split(Separators.Space, StringSplitOptions.None)
+                            .ToHashSet(StringComparer.Ordinal))
+                        .ToList(),
+
+                    _ => context.Options.ResponseTypes.Select(types => types
+                            .Split(Separators.Space, StringSplitOptions.None)
+                            .ToHashSet(StringComparer.Ordinal))
+                        .Where(types => context.Registration.ResponseTypes.Any(value => value
+                            .Split(Separators.Space, StringSplitOptions.None)
+                            .ToHashSet(StringComparer.Ordinal)
+                            .SetEquals(types)))
+                        .ToList()
+                },
+
+                SupportedServerResponseTypes: context.Configuration.ResponseTypesSupported
+                    .Select(types => types
+                        .Split(Separators.Space, StringSplitOptions.None)
+                        .ToHashSet(StringComparer.Ordinal))
+                    .ToList()) switch
             {
                 // Note: the OAuth 2.0 provider metadata and OpenID Connect discovery specifications define
                 // the supported response types as a required property. Nevertheless, to ensure OpenIddict
@@ -3834,121 +3888,95 @@ public static partial class OpenIddictClientHandlers
                 // concerns that code-based flows - that require a backchannel request - typically don't
                 // have when the client application (confidential or public) is executed on a server.
 
-                // If neither the client nor the server specify a list of response types,
-                // use "response_type=code", as it's the most commonly supported type.
-                (GrantTypes.AuthorizationCode, { Count: 0 }, { Count: 0 })
-                    => ResponseTypes.Code,
-
-                // If the client supports "response_type=code" and the server doesn't
-                // specify a list of response types, use "response_type=code".
-                (GrantTypes.AuthorizationCode, { Count: > 0 } client, { Count: 0 }) when
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code }))
-                    => ResponseTypes.Code,
-
-                // If the server supports "response_type=code" and the client doesn't
-                // specify a list of response types, use "response_type=code".
-                (GrantTypes.AuthorizationCode, { Count: 0 }, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code }))
-                    => ResponseTypes.Code,
+                // If the list of response types supported by the client is empty, abort the challenge operation.
+                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: 0 }, { Count: _ })
+                    => throw new InvalidOperationException(SR.GetResourceString(SR.ID0361)),
 
                 // If both the client and the server support "response_type=code", use it.
                 (GrantTypes.AuthorizationCode, { Count: > 0 } client, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code })) &&
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code }))
+                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code)) &&
+                    server.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code))
                     => ResponseTypes.Code,
 
-                // If the client supports "response_type=code id_token" and the server doesn't
-                // specify a list of response types, use "response_type=code id_token".
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken }))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken,
-
-                // If the server supports "response_type=code id_token" and the client doesn't
-                // specify a list of response types, use "response_type=code id_token".
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: 0 }, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken }))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken,
+                // If the client supports "response_type=code" and the server doesn't
+                // specify a list of response types, assume "response_type=code" is supported.
+                (GrantTypes.AuthorizationCode, { Count: > 0 } client, { Count: 0 }) when
+                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code))
+                    => ResponseTypes.Code,
 
                 // If both the client and the server support "response_type=code id_token", use it.
                 (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken })) &&
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken }))
+                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)     &&
+                                                                      types.Contains(ResponseTypes.IdToken)) &&
+                    server.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)     &&
+                                                                      types.Contains(ResponseTypes.IdToken))
                     => ResponseTypes.Code + ' ' + ResponseTypes.IdToken,
 
-                // If neither the client nor the server specify a list of response types, use "response_type=id_token".
-                (GrantTypes.Implicit, { Count: 0 }, { Count: 0 })
-                    => ResponseTypes.IdToken,
-
-                // If the client supports "response_type=id_token" and the server doesn't
-                // specify a list of response types, use "response_type=id_token".
-                (GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken }))
-                    => ResponseTypes.IdToken,
-
-                // If the server supports "response_type=id_token" and the client doesn't
-                // specify a list of response types, use "response_type=id_token".
-                (GrantTypes.Implicit, { Count: 0 }, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken }))
-                    => ResponseTypes.IdToken,
+                // If the client supports "response_type=code id_token" and the server doesn't
+                // specify a list of response types, assume "response_type=code id_token" is supported.
+                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
+                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code) &&
+                                                                      types.Contains(ResponseTypes.IdToken))
+                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken,
 
                 // If both the client and the server support "response_type=id_token", use it.
                 (GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken })) &&
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken }))
+                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken)) &&
+                    server.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken))
                     => ResponseTypes.IdToken,
 
-                // If the client supports "response_type=code id_token token" and the server doesn't
-                // specify a list of response types, use "response_type=code id_token token".
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken, ResponseTypes.Token }))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
-
-                // If the server supports "response_type=code id_token token" and the client doesn't
-                // specify a list of response types, use "response_type=code id_token token".
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: 0 }, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken, ResponseTypes.Token }))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
+                // If the client supports "response_type=id_token" and the server doesn't
+                // specify a list of response types, assume "response_type=id_token" is supported.
+                (GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
+                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken))
+                    => ResponseTypes.IdToken,
 
                 // If both the client and the server support "response_type=code id_token token", use it.
                 (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken, ResponseTypes.Token })) &&
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.IdToken, ResponseTypes.Token }))
+                    client.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
+                                                                      types.Contains(ResponseTypes.IdToken) &&
+                                                                      types.Contains(ResponseTypes.Token))  &&
+                    server.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
+                                                                      types.Contains(ResponseTypes.IdToken) &&
+                                                                      types.Contains(ResponseTypes.Token))
                     => ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
 
-                // If the client supports "response_type=code token" and the server doesn't
-                // specify a list of response types, use "response_type=code token".
+                // If the client supports "response_type=code id_token token" and the server doesn't
+                // specify a list of response types, assume "response_type=code id_token token" is supported.
                 (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.Token }))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.Token,
-
-                // If the server supports "response_type=code token" and the client doesn't
-                // specify a list of response types, use "response_type=code token".
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: 0 }, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.Token }))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.Token,
+                    client.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
+                                                                      types.Contains(ResponseTypes.IdToken) &&
+                                                                      types.Contains(ResponseTypes.Token))
+                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
 
                 // If both the client and the server support "response_type=code token", use it.
                 (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.Token })) &&
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.Code, ResponseTypes.Token }))
+                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)   &&
+                                                                      types.Contains(ResponseTypes.Token)) &&
+                    server.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)   &&
+                                                                      types.Contains(ResponseTypes.Token))
                     => ResponseTypes.Code + ' ' + ResponseTypes.Token,
 
-                // If the client supports "response_type=id_token token" and the server doesn't
-                // specify a list of response types, use "response_type=id_token token".
-                (GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken, ResponseTypes.Token }))
-                    => ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
-
-                // If the server supports "response_type=id_token token" and the client doesn't
-                // specify a list of response types, use "response_type=id_token token".
-                (GrantTypes.Implicit, { Count: 0 }, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken, ResponseTypes.Token }))
-                    => ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
+                // If the client supports "response_type=code token" and the server doesn't
+                // specify a list of response types, assume "response_type=code token" is supported.
+                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
+                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code) &&
+                                                                      types.Contains(ResponseTypes.Token))
+                    => ResponseTypes.Code + ' ' + ResponseTypes.Token,
 
                 // If both the client and the server support "response_type=id_token token", use it.
                 (GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    server.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken, ResponseTypes.Token })) &&
-                    client.Any(static set => set.SetEquals(new[] { ResponseTypes.IdToken, ResponseTypes.Token }))
+                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
+                                                                      types.Contains(ResponseTypes.Token))  &&
+                    server.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
+                                                                      types.Contains(ResponseTypes.Token))
+                    => ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
+
+                // If the client supports "response_type=id_token token" and the server doesn't
+                // specify a list of response types, assume "response_type=id_token token" is supported.
+                (GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
+                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
+                                                                      types.Contains(ResponseTypes.Token))
                     => ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
 
                 // Note: response_type=token is not considered secure enough as it allows malicious
@@ -3961,7 +3989,7 @@ public static partial class OpenIddictClientHandlers
                 // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-2.1.2.
 
                 // If no common response type can be negotiated, abort the challenge operation.
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0298))
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0298)),
             };
 
             return default;
@@ -3997,6 +4025,12 @@ public static partial class OpenIddictClientHandlers
                 return default;
             }
 
+            // Only attach a response mode for the grant types known to support this mechanism.
+            if (context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
+            {
+                return default;
+            }
+
             // Note: in most cases, the query response mode will be used as it offers the
             // best compatibility and, unlike the form_post response mode, is compatible
             // with SameSite=Lax cookies (as it uses GET requests for the callback stage).
@@ -4014,30 +4048,26 @@ public static partial class OpenIddictClientHandlers
             // can never be used with a response type containing id_token or token, as required by the OAuth 2.0
             // multiple response types specification. To prevent invalid combinations from being sent to the
             // remote server, the response types are taken into account when selecting the best response mode.
-            var types = context.ResponseType!.Split(Separators.Space).ToImmutableHashSet(StringComparer.Ordinal);
-
-            context.ResponseMode = (context.Registration.ResponseModes, context.Configuration.ResponseModesSupported) switch
+            var types = context.ResponseType?.Split(Separators.Space).ToHashSet(StringComparer.Ordinal);
+            if (types is not { Count: > 0 })
             {
-                // If neither the client nor the server specify a list of response modes,
-                // use "response_mode=form_post" if the response types contain a value
-                // that prevents response_mode=query from being used (token/id_token).
-                ({ Count: 0 }, { Count: 0 }) when
-                    types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token)
-                    => ResponseModes.FormPost,
+                return default;
+            }
 
-                // If the client support response_mode=form_post and the server doesn't
-                // specify a list of response modes, use it if the response types contain
-                // a value that prevents response_mode=query from being used (token/id_token).
-                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.FormPost) &&
-                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
-                    => ResponseModes.FormPost,
+            context.ResponseMode = (
+                // Note: if response modes are explicitly listed in the client registration, only use
+                // the response modes that are both listed and enabled in the global client options.
+                // Otherwise, always default to the response modes that have been enabled globally.
+                SupportedClientResponseModes: context.Registration.ResponseModes.Count switch
+                {
+                    0 => context.Options.ResponseModes as ICollection<string>,
+                    _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
+                },
 
-                // If the server support response_mode=form_post and the server doesn't
-                // specify a list of response modes, use it if the response types contain
-                // a value that prevents response_mode=query from being used (token/id_token).
-                ({ Count: 0 }, { Count: > 0 } server) when server.Contains(ResponseModes.FormPost) &&
-                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
-                    => ResponseModes.FormPost,
+                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
+            {
+                // If the list of response modes supported by the client is empty, abort the challenge operation.
+                ({ Count: 0 }, { Count: _ }) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0362)),
 
                 // If both the client and the server support response_mode=form_post, use it if the response
                 // types contain a value that prevents response_mode=query from being used (token/id_token).
@@ -4046,24 +4076,27 @@ public static partial class OpenIddictClientHandlers
                     (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
                     => ResponseModes.FormPost,
 
-                // If neither the client nor the server specify a list of response modes,
-                // use "response_mode=query" as a fallback as it's universally supported:
-                ({ Count: 0 }, { Count: 0 }) => ResponseModes.Query,
+                // If the client support response_mode=form_post and the server doesn't specify a list
+                // of response modes, assume it is supported and use it if the response types contain
+                // a value that prevents response_mode=query from being used (token/id_token).
+                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.FormPost) &&
+                    (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                    => ResponseModes.FormPost,
 
-                // If the client support response_mode=query and the server
-                // doesn't specify a list of response modes, use it:
-                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.Query)
-                    => ResponseModes.Query,
-
-                // If the server support response_mode=query and the client
-                // doesn't specify a list of response modes, use it:
-                ({ Count: 0 }, { Count: > 0 } server) when server.Contains(ResponseModes.Query)
-                    => ResponseModes.Query,
-
-                // If both the client and the server support response_mode=query, use it:
+                // If both the client and the server support response_mode=query, use it.
                 ({ Count: > 0 } client, { Count: > 0 } server) when
                     client.Contains(ResponseModes.Query) && server.Contains(ResponseModes.Query)
                     => ResponseModes.Query,
+
+                // If the client support response_mode=query and the server doesn't
+                // specify a list of response modes, assume it is supported.
+                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(ResponseModes.Query)
+                    => ResponseModes.Query,
+
+                // If both the client and the server support response_mode=form_post, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ResponseModes.FormPost) && server.Contains(ResponseModes.FormPost)
+                    => ResponseModes.FormPost,
 
                 // If no common response mode can be negotiated, abort the challenge operation.
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0299))
@@ -4278,33 +4311,38 @@ public static partial class OpenIddictClientHandlers
             // Don't attach a code challenge method if no authorization code is requested as some implementations
             // (like OpenIddict server) are known to eagerly block authorization requests that specify an invalid
             // code_challenge/code_challenge_method/response_type combination (e.g response_type=id_token).
-            if (!context.ResponseType!.Split(Separators.Space).Contains(ResponseTypes.Code))
+            var types = context.ResponseType?.Split(Separators.Space);
+            if (types is not { Length: > 0 } || !types.Contains(ResponseTypes.Code))
             {
                 return default;
             }
 
             context.CodeChallengeMethod ??= (
-                context.Registration.CodeChallengeMethods,
-                context.Configuration.CodeChallengeMethodsSupported) switch
+                // Note: if code challenge methods are explicitly listed in the client registration, only use
+                // the code challenge methods that are both listed and enabled in the global client options.
+                // Otherwise, always default to the code challenge methods that have been enabled globally.
+                SupportedClientCodeChallengeMethods: context.Registration.CodeChallengeMethods.Count switch
+                {
+                    0 => context.Options.CodeChallengeMethods as ICollection<string>,
+                    _ => context.Options.CodeChallengeMethods
+                        .Intersect(context.Registration.CodeChallengeMethods, StringComparer.Ordinal)
+                        .ToList(),
+                },
+
+                SupportedServerCodeChallengeMethods: context.Configuration.CodeChallengeMethodsSupported) switch
             {
-                // If neither the client nor the server specify a list of code challenge methods, don't use PKCE.
-                ({ Count: 0 }, { Count: 0 }) => null,
+                // If the list of code challenge methods supported by the
+                // client is empty, don't use Proof Key for Code Exchange.
+                ({ Count: 0 }, { Count: _ }) => null,
 
-                // If the server doesn't specify a list of code challenge methods, don't use PKCE.
+                // If the server doesn't specify a list of code challenge methods,
+                // Proof Key for Code Exchange is assumed to be unsupported.
                 ({ Count: > 0 }, { Count: 0 }) => null,
-
-                // If the client doesn't specify a list of code challenge methods but the server support S256, use it.
-                ({ Count: 0 }, { Count: > 0 } server) when server.Contains(CodeChallengeMethods.Sha256)
-                    => CodeChallengeMethods.Sha256,
 
                 // If both the client and the server support S256, use it.
                 ({ Count: > 0 } client, { Count: > 0 } server) when
                     client.Contains(CodeChallengeMethods.Sha256) && server.Contains(CodeChallengeMethods.Sha256)
                     => CodeChallengeMethods.Sha256,
-
-                // If the client doesn't specify a list of code challenge methods but the server support plain, use it.
-                ({ Count: 0 }, { Count: > 0 } server) when server.Contains(CodeChallengeMethods.Plain)
-                    => CodeChallengeMethods.Plain,
 
                 // If both the client and the server support plain, use it.
                 ({ Count: > 0 } client, { Count: > 0 } server) when
@@ -4316,7 +4354,7 @@ public static partial class OpenIddictClientHandlers
 
             // Note: while enforced by OAuth 2.1 under certain circumstances, PKCE is not a required feature for
             // OAuth 2.0 and OpenID Connect (where features like nonce validation can serve similar purposes).
-            // As such, no error is returned at this stage is no common code challenge method could be inferred.
+            // As such, no error is returned at this stage if no common code challenge method could be inferred.
             if (string.IsNullOrEmpty(context.CodeChallengeMethod))
             {
                 return default;
@@ -4689,6 +4727,17 @@ public static partial class OpenIddictClientHandlers
             if (context.EndpointType is not OpenIddictClientEndpointType.Unknown)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0024));
+            }
+
+            // Ensure signing/and encryption credentials are present as they are required to protect state tokens.
+            if (context.Options.EncryptionCredentials.Count is 0)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0357));
+            }
+
+            if (context.Options.SigningCredentials.Count is 0)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
             }
 
             // If a provider name was specified, resolve the corresponding issuer.

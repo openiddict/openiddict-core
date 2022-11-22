@@ -2932,7 +2932,7 @@ public static partial class OpenIddictServerHandlers
 
                     // If the granted access token scopes differ from the requested scopes, return the granted scopes
                     // list as a parameter to inform the client application of the fact the scopes set will be reduced.
-                    var scopes = new HashSet<string>(context.AccessTokenPrincipal.GetScopes(), StringComparer.Ordinal);
+                    var scopes = context.AccessTokenPrincipal.GetScopes().ToHashSet(StringComparer.Ordinal);
                     if ((context.EndpointType is OpenIddictServerEndpointType.Token && context.Request.IsAuthorizationCodeGrantType()) ||
                         !scopes.SetEquals(context.Request.GetScopes()))
                     {

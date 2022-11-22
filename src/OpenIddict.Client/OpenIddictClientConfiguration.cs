@@ -9,6 +9,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Client;
 
@@ -63,8 +64,8 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 
                 else
                 {
-                    if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
-                        !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
+                    if (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                        !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0313));
                     }
@@ -94,6 +95,64 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                         RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval
                     };
                 }
+            }
+        }
+
+        // Ensure at least one flow has been enabled.
+        if (options.GrantTypes.Count is 0)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
+        }
+
+        var addresses = options.RedirectionEndpointUris.Distinct()
+            .Concat(options.PostLogoutRedirectionEndpointUris.Distinct())
+            .ToList();
+
+        // Ensure endpoint addresses are unique across endpoints.
+        if (addresses.Count != addresses.Distinct().Count())
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0285));
+        }
+
+        // Ensure the redirection endpoint has been enabled when the authorization code or implicit grants are supported.
+        if (options.RedirectionEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
+                                                           options.GrantTypes.Contains(GrantTypes.Implicit)))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0356));
+        }
+
+        // Ensure the grant types/response types configuration is consistent.
+        foreach (var type in options.ResponseTypes)
+        {
+            var types = type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
+            if (types.Contains(ResponseTypes.Code) && !options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+            {
+                throw new InvalidOperationException(SR.FormatID0281(ResponseTypes.Code));
+            }
+
+            if (types.Contains(ResponseTypes.IdToken) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.IdToken));
+            }
+
+            if (types.Contains(ResponseTypes.Token) && !options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                throw new InvalidOperationException(SR.FormatID0282(ResponseTypes.Token));
+            }
+        }
+
+        // When the redirection or post-logout redirection endpoint has been enabled, ensure signing
+        // and encryption credentials have been provided as they are required to protect state tokens.
+        if (options.RedirectionEndpointUris.Count is not 0 || options.PostLogoutRedirectionEndpointUris.Count is not 0)
+        {
+            if (options.EncryptionCredentials.Count is 0)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0357));
+            }
+
+            if (options.SigningCredentials.Count is 0)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
             }
         }
 
