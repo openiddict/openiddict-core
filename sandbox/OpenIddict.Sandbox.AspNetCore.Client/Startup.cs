@@ -85,8 +85,7 @@ public class Startup
                     "/callback/login/github",
                     "/callback/login/google",
                     "/callback/login/reddit",
-                    "/callback/login/twitter",
-                    "/callback/login/cognito");
+                    "/callback/login/twitter");
 
                 // Enable the post-logout redirection endpoints needed to handle the callback stage.
                 options.SetPostLogoutRedirectionEndpointUris(
