@@ -28,6 +28,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          3.1.425
+          6.0.403
+          7.0.100
+
     - name: Setup NuGet
       uses: nuget/setup-nuget@v1
       with:
