@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.Userinfo;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
@@ -21,12 +22,57 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Userinfo request preparation:
              */
+            AttachRequestHeaders.Descriptor,
             AttachAccessTokenParameter.Descriptor,
 
             /*
              * Userinfo response extraction:
              */
             UnwrapUserinfoResponse.Descriptor);
+
+        /// <summary>
+        /// Contains the logic responsible for attaching additional
+        /// headers to the request for the providers that require it.
+        /// </summary>
+        public sealed class AttachRequestHeaders : IOpenIddictClientHandler<PrepareUserinfoRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareUserinfoRequestContext>()
+                    .AddFilter<RequireHttpMetadataAddress>()
+                    .UseSingletonHandler<AttachRequestHeaders>()
+                    .SetOrder(AttachUserAgentHeader<PrepareUserinfoRequestContext>.Descriptor.Order + 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(PrepareUserinfoRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                // Trakt requires sending both an API key (which is always the client identifier) and an API version
+                // (which is statically set to the last version known to be supported by the OpenIddict integration).
+                if (context.Registration.ProviderName is Providers.Trakt)
+                {
+                    var options = context.Registration.GetTraktOptions();
+
+                    request.Headers.Add("trakt-api-key", options.ClientId);
+                    request.Headers.Add("trakt-api-version", "2");
+                }
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for attaching the access token
@@ -62,11 +108,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // using the Bearer authentication scheme. Some providers don't support this method
                 // and require sending the access token as part of the userinfo request payload.
 
-                if (context.Registration.ProviderName is Providers.Deezer or Providers.StackExchange)
+                (context.Request.AccessToken, request.Headers.Authorization) = context.Registration.ProviderName switch
                 {
-                    context.Request.AccessToken = request.Headers.Authorization?.Parameter;
-                    request.Headers.Authorization = null;
-                }
+                    Providers.Deezer or Providers.StackExchange
+                        => (request.Headers.Authorization?.Parameter, null),
+
+                    _ => (context.Request.AccessToken, request.Headers.Authorization)
+                };
 
                 return default;
             }

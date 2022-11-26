@@ -238,13 +238,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // of the authorization requests, the value persisted in the state token principal
             // MUST be replaced to include the state token received by the redirection endpoint.
 
-            if (context.Registration.ProviderName is Providers.Deezer)
+            context.TokenRequest.RedirectUri = context.Registration.ProviderName switch
             {
-                context.TokenRequest.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
+                Providers.Deezer => OpenIddictHelpers.AddQueryStringParameter(
                     address: new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
                     name: Parameters.State,
-                    value: context.StateToken).AbsoluteUri;
-            }
+                    value: context.StateToken).AbsoluteUri,
+
+                _ => context.TokenRequest.RedirectUri
+            };
 
             return default;
         }
@@ -336,6 +338,12 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 context.UserinfoRequest["key"] = options.ApplicationKey;
                 context.UserinfoRequest["site"] = options.Site;
+            }
+
+            // Trakt allows retrieving additional user details via the "extended" parameter.
+            else if (context.Registration.ProviderName is Providers.Trakt)
+            {
+                context.UserinfoRequest["extended"] = "full";
             }
 
             // Twitter limits the number of fields returned by the userinfo endpoint
@@ -471,15 +479,15 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             // Note: this workaround only works for providers that allow dynamic
             // redirection URIs and implement a relaxed validation policy logic.
 
-            if (context.Registration.ProviderName is Providers.Deezer)
+            (context.Request.RedirectUri, context.Request.State) = context.Registration.ProviderName switch
             {
-                context.Request.RedirectUri = OpenIddictHelpers.AddQueryStringParameter(
+                Providers.Deezer => (OpenIddictHelpers.AddQueryStringParameter(
                     address: new Uri(context.RedirectUri, UriKind.Absolute),
                     name: Parameters.State,
-                    value: context.Request.State).AbsoluteUri;
+                    value: context.Request.State).AbsoluteUri, null),
 
-                context.Request.State = null;
-            }
+                _ => (context.Request.RedirectUri, context.Request.State)
+            };
 
             return default;
         }

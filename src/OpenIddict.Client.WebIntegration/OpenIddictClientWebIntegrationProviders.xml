@@ -138,6 +138,14 @@
              Description="The site specified in userinfo requests (by default, 'stackoverflow')" />
   </Provider>
 
+  <Provider Name="Trakt" Documentation="https://trakt.docs.apiary.io/#reference/authentication-oauth">
+    <Environment Issuer="https://trakt.tv/">
+      <Configuration AuthorizationEndpoint="https://trakt.tv/oauth/authorize"
+                     TokenEndpoint="https://api.trakt.tv/oauth/token"
+                     UserinfoEndpoint="https://api.trakt.tv/users/me" />
+    </Environment>
+  </Provider>
+
   <Provider Name="Twitter" Documentation="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">
     <Environment Issuer="https://twitter.com/">
       <Configuration AuthorizationEndpoint="https://twitter.com/i/oauth2/authorize"
