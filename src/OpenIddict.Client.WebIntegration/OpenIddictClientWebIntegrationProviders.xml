@@ -168,6 +168,9 @@
                      UserinfoEndpoint="https://api.twitter.com/2/users/me">
         <CodeChallengeMethod Value="S256" />
 
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
         <TokenEndpointAuthMethod Value="client_secret_basic" />
       </Configuration>
 

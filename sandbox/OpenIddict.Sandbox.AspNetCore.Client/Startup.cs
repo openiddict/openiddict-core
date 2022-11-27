@@ -150,7 +150,8 @@ public class Startup
                        {
                            options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
                                   .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                                  .SetRedirectUri("https://localhost:44381/callback/login/twitter");
+                                  .SetRedirectUri("https://localhost:44381/callback/login/twitter")
+                                  .AddScopes("offline.access");
                        });
             });
 
