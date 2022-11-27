@@ -208,12 +208,9 @@ public class AuthenticationController : Controller
             _ => false
         }));
 
-        // Note: "return SignIn(...)" cannot be directly used in this case, as the cookies handler doesn't allow
-        // redirecting from an endpoint that doesn't match the path set in CookieAuthenticationOptions.LoginPath.
-        // For more information about this restriction, visit https://github.com/dotnet/aspnetcore/issues/36934.
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), properties);
-
-        return Redirect(properties.RedirectUri);
+        // Ask the cookie authentication handler to return a new cookie and redirect
+        // the user agent to the return URL stored in the authentication properties.
+        return SignIn(new ClaimsPrincipal(identity), properties, CookieAuthenticationDefaults.AuthenticationScheme);
     }
 
     // Note: this controller uses the same callback action for all providers
