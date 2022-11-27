@@ -57,7 +57,11 @@
     <Environment Issuer="https://www.linkedin.com/">
       <Configuration AuthorizationEndpoint="https://www.linkedin.com/oauth/v2/authorization"
                      TokenEndpoint="https://www.linkedin.com/oauth/v2/accessToken"
-                     UserinfoEndpoint="https://api.linkedin.com/v2/me" />
+                     UserinfoEndpoint="https://api.linkedin.com/v2/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
       <!--
         Note: LinkedIn requires sending at least one scope element. If no scope is set, an error is
         returned to the caller. To prevent that, the "r_liteprofile" scope (that is required by the
