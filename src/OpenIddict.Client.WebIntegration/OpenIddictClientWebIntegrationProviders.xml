@@ -154,7 +154,10 @@
     <Environment Issuer="https://trakt.tv/">
       <Configuration AuthorizationEndpoint="https://trakt.tv/oauth/authorize"
                      TokenEndpoint="https://api.trakt.tv/oauth/token"
-                     UserinfoEndpoint="https://api.trakt.tv/users/me" />
+                     UserinfoEndpoint="https://api.trakt.tv/users/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
     </Environment>
   </Provider>
 
