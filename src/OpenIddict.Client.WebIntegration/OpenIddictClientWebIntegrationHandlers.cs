@@ -102,6 +102,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 }
             }
 
+            else if (context.Registration.ProviderName is Providers.Mixcloud)
+            {
+                var error = (string?) context.Request[Parameters.Error];
+                if (string.Equals(error, "user_denied", StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.AccessDenied,
+                        description: SR.GetResourceString(SR.ID2149),
+                        uri: SR.FormatID8000(SR.ID2149));
+
+                    return default;
+                }
+            }
+
             return default;
         }
     }
@@ -142,6 +156,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             if (context.Registration.ProviderName is Providers.Apple)
             {
                 var options = context.Registration.GetAppleOptions();
+
                 context.ClientAssertionTokenPrincipal.SetClaim(Claims.Private.Issuer, options.TeamId);
                 context.ClientAssertionTokenPrincipal.SetAudiences("https://appleid.apple.com");
             }
@@ -240,7 +255,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.TokenRequest.RedirectUri = context.Registration.ProviderName switch
             {
-                Providers.Deezer => OpenIddictHelpers.AddQueryStringParameter(
+                Providers.Deezer or
+                Providers.Mixcloud => OpenIddictHelpers.AddQueryStringParameter(
                     address: new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
                     name: Parameters.State,
                     value: context.StateToken).AbsoluteUri,
@@ -481,7 +497,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             (context.Request.RedirectUri, context.Request.State) = context.Registration.ProviderName switch
             {
-                Providers.Deezer => (OpenIddictHelpers.AddQueryStringParameter(
+                Providers.Deezer or
+                Providers.Mixcloud => (OpenIddictHelpers.AddQueryStringParameter(
                     address: new Uri(context.RedirectUri, UriKind.Absolute),
                     name: Parameters.State,
                     value: context.Request.State).AbsoluteUri, null),

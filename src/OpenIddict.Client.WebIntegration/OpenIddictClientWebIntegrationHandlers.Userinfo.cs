@@ -6,7 +6,9 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text.Json;
+using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlerFilters;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers.Userinfo;
@@ -28,6 +30,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /*
              * Userinfo response extraction:
              */
+            NormalizeContentType.Descriptor,
             UnwrapUserinfoResponse.Descriptor);
 
         /// <summary>
@@ -110,10 +113,65 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 (context.Request.AccessToken, request.Headers.Authorization) = context.Registration.ProviderName switch
                 {
-                    Providers.Deezer or Providers.StackExchange
+                    Providers.Deezer   or
+                    Providers.Mixcloud or
+                    Providers.StackExchange
                         => (request.Headers.Authorization?.Parameter, null),
 
                     _ => (context.Request.AccessToken, request.Headers.Authorization)
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for normalizing the returned content
+        /// type of userinfo responses for the providers that require it.
+        /// </summary>
+        public sealed class NormalizeContentType : IOpenIddictClientHandler<ExtractUserinfoResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<ExtractUserinfoResponseContext>()
+                    .UseSingletonHandler<NormalizeContentType>()
+                    .SetOrder(ExtractUserinfoTokenHttpResponse.Descriptor.Order - 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ExtractUserinfoResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var response = context.Transaction.GetHttpResponseMessage() ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+                if (response.Content is null)
+                {
+                    return default;
+                }
+
+                // Some providers are known to return invalid or incorrect media types, which prevents
+                // OpenIddict from extracting userinfo responses. To work around that, the declared
+                // content type is replaced by the correct value for the providers that require it.
+
+                response.Content.Headers.ContentType = context.Registration.ProviderName switch
+                {
+                    // Mixcloud returns JSON-formatted contents declared as "text/javascript".
+                    Providers.Mixcloud => new MediaTypeHeaderValue(MediaTypes.Json)
+                    {
+                        CharSet = Charsets.Utf8
+                    },
+
+                    _ => response.Content.Headers.ContentType
                 };
 
                 return default;
