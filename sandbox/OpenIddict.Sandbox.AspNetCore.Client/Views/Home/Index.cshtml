@@ -1,4 +1,6 @@
 ﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication;
+@using OpenIddict.Client.AspNetCore;
 @model string
 
 <div class="jumbotron">
@@ -15,13 +17,20 @@
 
         if (!string.IsNullOrEmpty(Model))
         {
-            <h3>Message received from the resource controller: @Model</h3>
+            <h3>Payload returned by the controller: @Model</h3>
         }
 
         if (User.FindFirst(ClaimTypes.NameIdentifier)?.Issuer is "https://localhost:44395/")
         {
-            <form asp-action="Index" asp-controller="Home" method="post">
+            <form asp-action="GetMessage" asp-controller="Home" method="post">
                 <button class="btn btn-lg btn-warning" type="submit">Query the resource controller</button>
+            </form>
+        }
+
+        if (!string.IsNullOrEmpty(await Context.GetTokenAsync(OpenIddictClientAspNetCoreConstants.Tokens.RefreshToken)))
+        {
+            <form asp-action="RefreshToken" asp-controller="Home" method="post">
+                <button class="btn btn-lg btn-warning" type="submit">Refresh the access token</button>
             </form>
         }
 
