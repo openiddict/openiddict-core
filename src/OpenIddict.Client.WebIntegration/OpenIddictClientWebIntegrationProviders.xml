@@ -92,6 +92,14 @@
              Description="The tenant used to identify the Azure AD instance (by default, the common tenant is used)" />
   </Provider>
 
+  <Provider Name="Mixcloud" Documentation="https://www.mixcloud.com/developers/#authorization">
+    <Environment Issuer="https://www.mixcloud.com/">
+      <Configuration AuthorizationEndpoint="https://www.mixcloud.com/oauth/authorize"
+                     TokenEndpoint="https://www.mixcloud.com/oauth/access_token"
+                     UserinfoEndpoint="https://api.mixcloud.com/me" />
+    </Environment>
+  </Provider>
+
   <Provider Name="PayPal" Documentation="https://developer.paypal.com/docs/log-in-with-paypal/">
     <!--
       Note: PayPal offers a production and a sandbox environment, but the sandbox server metadata
