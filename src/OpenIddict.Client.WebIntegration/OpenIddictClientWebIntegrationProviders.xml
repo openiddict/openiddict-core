@@ -39,6 +39,9 @@
 
   <Provider Name="Google" Documentation="https://developers.google.com/identity/protocols/oauth2/openid-connect">
     <Environment Issuer="https://accounts.google.com/" />
+
+    <Setting PropertyName="AccessType" ParameterName="type" Type="String" Required="false"
+             Description="The value used as the 'access_type' parameter (can be set to 'offline' to retrieve a refresh token)" />
   </Provider>
 
   <Provider Name="Keycloak" Documentation="https://www.keycloak.org/getting-started/getting-started-docker">

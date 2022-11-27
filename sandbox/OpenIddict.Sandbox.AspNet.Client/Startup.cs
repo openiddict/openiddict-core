@@ -82,8 +82,10 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     options.SetPostLogoutRedirectionEndpointUris(
                         "/callback/logout/local");
 
-                    // Note: this sample uses the code flow, but you can enable the other flows if necessary.
-                    options.AllowAuthorizationCodeFlow();
+                    // Note: this sample uses the authorization code and refresh token
+                    // flows, but you can enable the other flows if necessary.
+                    options.AllowAuthorizationCodeFlow()
+                           .AllowRefreshTokenFlow();
 
                     // Register the signing and encryption credentials used to protect
                     // sensitive data like the state tokens produced by OpenIddict.
@@ -128,6 +130,7 @@ namespace OpenIddict.Sandbox.AspNet.Client
                                options.SetClientId("1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com")
                                       .SetClientSecret("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")
                                       .SetRedirectUri("https://localhost:44378/callback/login/google")
+                                      .SetAccessType("offline")
                                       .AddScopes(Scopes.Profile);
                            })
                            .UseTwitter(options =>
