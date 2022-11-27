@@ -545,6 +545,13 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["access_type"] = options.AccessType;
             }
 
+            else if (context.Registration.ProviderName is Providers.Reddit)
+            {
+                var options = context.Registration.GetRedditOptions();
+
+                context.Request["duration"] = options.Duration;
+            }
+
             return default;
         }
     }

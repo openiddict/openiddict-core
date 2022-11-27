@@ -147,7 +147,8 @@ public class Startup
                        {
                            options.SetClientId("vDLNqhrkwrvqHgnoBWF3og")
                                   .SetClientSecret("Tpab28Dz0upyZLqn7AN3GFD1O-zaAw")
-                                  .SetRedirectUri("https://localhost:44381/callback/login/reddit");
+                                  .SetRedirectUri("https://localhost:44381/callback/login/reddit")
+                                  .SetDuration("permanent");
                        })
                        .UseTwitter(options =>
                        {

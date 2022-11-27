@@ -125,6 +125,9 @@
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"
                      TokenEndpoint="https://www.reddit.com/api/v1/access_token"
                      UserinfoEndpoint="https://oauth.reddit.com/api/v1/me">
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+
         <TokenEndpointAuthMethod Value="client_secret_basic" />
       </Configuration>
 
@@ -137,6 +140,9 @@
 
       <Scope Name="identity" Default="true" Required="true" />
     </Environment>
+
+    <Setting PropertyName="Duration" ParameterName="duration" Type="String" Required="false"
+             Description="The value used as the 'duration' parameter (can be set to 'permanent' to retrieve a refresh token)" />
   </Provider>
 
   <Provider Name="StackExchange" Documentation="https://api.stackexchange.com/docs/authentication">
