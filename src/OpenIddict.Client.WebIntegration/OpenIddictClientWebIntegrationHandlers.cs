@@ -32,8 +32,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
          */
         OverrideResponseMode.Descriptor,
         FormatNonStandardScopeParameter.Descriptor,
-        IncludeStateParameterInRedirectUri.Descriptor,
-        AttachAdditionalChallengeParameters.Descriptor)
+        IncludeStateParameterInRedirectUri.Descriptor)
         .AddRange(Discovery.DefaultHandlers)
         .AddRange(Exchange.DefaultHandlers)
         .AddRange(Protection.DefaultHandlers)
@@ -506,44 +505,6 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 _ => (context.Request.RedirectUri, context.Request.State)
             };
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for attaching additional parameters
-    /// to the authorization request for the providers that require it.
-    /// </summary>
-    public sealed class AttachAdditionalChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireInteractiveGrantType>()
-                .UseSingletonHandler<AttachAdditionalChallengeParameters>()
-                .SetOrder(AttachChallengeParameters.Descriptor.Order + 500)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // By default, Google doesn't return a refresh token but allows sending an "access_type"
-            // parameter to retrieve one (but it is only returned during the first authorization dance).
-            if (context.Registration.ProviderName is Providers.Google)
-            {
-                var options = context.Registration.GetGoogleOptions();
-
-                context.Request["access_type"] = options.AccessType;
-            }
 
             return default;
         }
