@@ -1381,6 +1381,9 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
   <data name="ID0362" xml:space="preserve">
     <value>No response mode enabled in the client options could be found in the list of response modes allowed by the client registration, which typically indicates an invalid configuration. Ensure the 'OpenIddictClientRegistration.ResponseModes' collection contain at least one of the response modes enabled in the client options or leave it empty to allow OpenIddict to negotiate all the enabled response modes.</value>
   </data>
+  <data name="ID0363" xml:space="preserve">
+    <value>The specified grant type ({0}) is not listed as a supported grant type in the server configuration. If the error persists, ensure the supported grant types listed in the authorization server configuration are appropriate.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

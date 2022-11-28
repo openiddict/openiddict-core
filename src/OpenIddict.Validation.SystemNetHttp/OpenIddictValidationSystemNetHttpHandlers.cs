@@ -7,7 +7,6 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
@@ -124,7 +123,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue(Charsets.Utf8));
 
             // Note: for security reasons, HTTP compression is never opted-in by default. Providers
-            // that require using HTTP compression that register a custom event handler to send an
+            // that require using HTTP compression can register a custom event handler to send an
             // Accept-Encoding header containing the supported algorithms (e.g GZip/Deflate/Brotli).
 
             return default;

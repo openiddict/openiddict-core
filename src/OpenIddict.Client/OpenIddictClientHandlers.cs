@@ -284,6 +284,13 @@ public static partial class OpenIddictClientHandlers
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
             }
+
+            // Ensure the selected grant type, if explicitly set, is listed as supported in the configuration.
+            if (!string.IsNullOrEmpty(context.GrantType) &&
+                !context.Configuration.GrantTypesSupported.Contains(context.GrantType))
+            {
+                throw new InvalidOperationException(SR.FormatID0363(context.GrantType));
+            }
         }
     }
 

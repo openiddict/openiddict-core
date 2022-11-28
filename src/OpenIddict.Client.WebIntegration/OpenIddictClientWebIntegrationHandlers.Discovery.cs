@@ -19,7 +19,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
              * Configuration response handling:
              */
             AmendIssuer.Descriptor,
-            AmendClientAuthenticationMethods.Descriptor,
+            AmendGrantTypes.Descriptor,
+            AmendTokenEndpointClientAuthenticationMethods.Descriptor,
             AmendCodeChallengeMethods.Descriptor,
             AmendEndpoints.Descriptor);
 
@@ -64,17 +65,62 @@ public static partial class OpenIddictClientWebIntegrationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for amending the supported
-        /// client authentication methods for the providers that require it.
+        /// Contains the logic responsible for amending the supported grant types for the providers that require it.
         /// </summary>
-        public sealed class AmendClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        public sealed class AmendGrantTypes : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<AmendClientAuthenticationMethods>()
+                    .UseSingletonHandler<AmendGrantTypes>()
+                    .SetOrder(ExtractGrantTypes.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // Note: some providers don't list the grant types they support, which prevents the OpenIddict
+                // client from using them (unless they are assumed to be enabled by default, like the
+                // authorization code or implicit flows). To work around that, the list of supported grant
+                // types is amended to include the known supported types for the providers that require it.
+
+                if (context.Registration.ProviderName is Providers.Apple)
+                {
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
+                }
+
+                else if (context.Registration.ProviderName is Providers.Cognito or Providers.Microsoft)
+                {
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.ClientCredentials);
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for amending the client authentication
+        /// methods supported by the token endpoint for the providers that require it.
+        /// </summary>
+        public sealed class AmendTokenEndpointClientAuthenticationMethods : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<AmendTokenEndpointClientAuthenticationMethods>()
                     .SetOrder(ExtractTokenEndpointClientAuthenticationMethods.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
