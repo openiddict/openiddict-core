@@ -15,10 +15,12 @@
 
   <Provider Name="Cognito" Documentation="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-reference.html">
     <Environment Issuer="https://cognito-idp.{region}.amazonaws.com/{userPoolId}" />
+
     <Setting PropertyName="Region" ParameterName="region" Type="String" Required="true"
-           Description="The AWS region" />
+             Description="The AWS region" />
+
     <Setting PropertyName="UserPoolId" ParameterName="identifier" Type="String" Required="true"
-           Description="The User Pool ID" />
+             Description="The User Pool ID" />
   </Provider>
  
   <Provider Name="Deezer" Documentation="https://developers.deezer.com/api/oauth">
