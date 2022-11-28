@@ -170,7 +170,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // prevent the OpenIddict integration from working properly when using the sandbox mode.
                 // To work around that, the endpoints are manually overriden when this environment is used.
                 if (context.Registration.ProviderName is Providers.PayPal &&
-                    context.Registration.GetPayPalOptions() is { Environment: PayPal.Environments.Sandbox })
+                    context.Registration.GetPayPalOptions() is { Environment: string environment } &&
+                    string.Equals(environment, PayPal.Environments.Sandbox, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Configuration.AuthorizationEndpoint =
                         new Uri("https://www.sandbox.paypal.com/signin/authorize", UriKind.Absolute);
