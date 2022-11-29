@@ -250,6 +250,21 @@
     </Setting>
   </Provider>
 
+  <Provider Name="WordPress" Documentation="https://developer.wordpress.com/docs/oauth2/">
+    <Environment Issuer="https://wordpress.com/">
+      <Configuration AuthorizationEndpoint="https://public-api.wordpress.com/oauth2/authorize"
+                     TokenEndpoint="https://public-api.wordpress.com/oauth2/token"
+                     UserinfoEndpoint="https://public-api.wordpress.com/rest/v1/me" />
+      <!--
+        Note: by default, if no specific scope is requested, an unlimited access is granted by
+        WordPress. To avoid that, the special "auth" scope (that shouldn't be used with any
+        of the other scopes) can be used to only grant access to the userinfo endpoint.
+      -->
+
+      <Scope Name="auth" Default="true" Required="false" />
+    </Environment>
+  </Provider>
+
   <Provider Name="Yahoo" Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
     <Environment Issuer="https://api.login.yahoo.com/" />
   </Provider>
