@@ -260,7 +260,6 @@ public static partial class OpenIddictServerOwinHandlers
                 return default;
             }
 
-            // Reject authorization requests sent without transport security.
             if (!request.IsSecure)
             {
                 context.Reject(

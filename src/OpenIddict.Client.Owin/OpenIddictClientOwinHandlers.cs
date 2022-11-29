@@ -30,6 +30,7 @@ public static partial class OpenIddictClientOwinHandlers
          * Top-level request processing:
          */
         InferEndpointType.Descriptor,
+        ValidateTransportSecurityRequirement.Descriptor,
 
         /*
          * Authentication processing:
@@ -41,12 +42,14 @@ public static partial class OpenIddictClientOwinHandlers
          * Challenge processing:
          */
         ResolveHostChallengeProperties.Descriptor,
+        ValidateTransportSecurityRequirementForChallenge.Descriptor,
         GenerateLoginCorrelationCookie.Descriptor,
 
         /*
          * Sign-out processing:
          */
         ResolveHostSignOutProperties.Descriptor,
+        ValidateTransportSecurityRequirementForSignOut.Descriptor,
         GenerateLogoutCorrelationCookie.Descriptor)
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Session.DefaultHandlers);
@@ -140,6 +143,57 @@ public static partial class OpenIddictClientOwinHandlers
                        left.Equals(right + new PathString("/"), StringComparison.OrdinalIgnoreCase) ||
                        right.Equals(left + new PathString("/"), StringComparison.OrdinalIgnoreCase);
             }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for rejecting OpenID Connect requests that don't use transport security.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ValidateTransportSecurityRequirement : IOpenIddictClientHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .AddFilter<RequireOwinRequest>()
+                .AddFilter<RequireTransportSecurityRequirementEnabled>()
+                .UseSingletonHandler<ValidateTransportSecurityRequirement>()
+                .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            // Don't require that the host be present if the request is not handled by OpenIddict.
+            if (context.EndpointType is OpenIddictClientEndpointType.Unknown)
+            {
+                return default;
+            }
+
+            if (!request.IsSecure)
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2083),
+                    uri: SR.FormatID8000(SR.ID2083));
+
+                return default;
+            }
+
+            return default;
         }
     }
 
@@ -581,6 +635,46 @@ public static partial class OpenIddictClientOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for preventing challenge operations from being triggered from non-HTTPS endpoints.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ValidateTransportSecurityRequirementForChallenge : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireOwinRequest>()
+                .AddFilter<RequireTransportSecurityRequirementEnabled>()
+                .UseSingletonHandler<ValidateTransportSecurityRequirementForChallenge>()
+                .SetOrder(ValidateChallengeDemand.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            if (!request.IsSecure)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0364));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for creating a correlation cookie that serves as a
     /// protection against state token injection, forged requests and session fixation attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
@@ -793,6 +887,46 @@ public static partial class OpenIddictClientOwinHandlers
                 {
                     context.Properties[property.Key] = property.Value;
                 }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for preventing sign-out operations from being triggered from non-HTTPS endpoints.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ValidateTransportSecurityRequirementForSignOut : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireOwinRequest>()
+                .AddFilter<RequireTransportSecurityRequirementEnabled>()
+                .UseSingletonHandler<ValidateTransportSecurityRequirementForSignOut>()
+                .SetOrder(ValidateSignOutDemand.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            if (!request.IsSecure)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0365));
             }
 
             return default;

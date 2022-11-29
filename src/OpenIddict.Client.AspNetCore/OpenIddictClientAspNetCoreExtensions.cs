@@ -43,6 +43,7 @@ public static class OpenIddictClientAspNetCoreExtensions
         builder.Services.TryAddSingleton<RequirePostLogoutRedirectionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireRedirectionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireStatusCodePagesIntegrationEnabled>();
+        builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
 
         // Register the option initializer used by the OpenIddict ASP.NET Core client integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
