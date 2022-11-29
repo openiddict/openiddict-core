@@ -250,4 +250,8 @@
     </Setting>
   </Provider>
 
+  <Provider Name="Yahoo" Documentation="https://developer.yahoo.com/oauth2/guide/openid_connect/">
+    <Environment Issuer="https://api.login.yahoo.com/" />
+  </Provider>
+
 </Providers>
