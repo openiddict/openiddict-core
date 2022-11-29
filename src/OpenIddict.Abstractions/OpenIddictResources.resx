@@ -1384,6 +1384,12 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
   <data name="ID0363" xml:space="preserve">
     <value>The specified grant type ({0}) is not listed as a supported grant type in the server configuration. If the error persists, ensure the supported grant types listed in the authorization server configuration are appropriate.</value>
   </data>
+  <data name="ID0364" xml:space="preserve">
+    <value>Challenge operations cannot be triggered from non-HTTPS endpoints when the transport security requirement is enforced. While not recommended (as HTTPS is required for SameSite=None cookies to work correctly in most browsers), the transport security requirement can be disabled in the ASP.NET Core or OWIN options via 'services.AddOpenIddict().AddClient().UseAspNetCore().DisableTransportSecurityRequirement()' or 'services.AddOpenIddict().AddClient().UseOwin().DisableTransportSecurityRequirement()'.</value>
+  </data>
+  <data name="ID0365" xml:space="preserve">
+    <value>Sign-out operations cannot be triggered from non-HTTPS endpoints when the transport security requirement is enforced. While not recommended (as HTTPS is required for SameSite=None cookies to work correctly in most browsers), the transport security requirement can be disabled in the ASP.NET Core or OWIN options via 'services.AddOpenIddict().AddClient().UseAspNetCore().DisableTransportSecurityRequirement()' or 'services.AddOpenIddict().AddClient().UseOwin().DisableTransportSecurityRequirement()'.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

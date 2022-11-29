@@ -117,4 +117,25 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
             return new(_options.CurrentValue.EnableStatusCodePagesIntegration);
         }
     }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the HTTPS requirement was disabled.
+    /// </summary>
+    public sealed class RequireTransportSecurityRequirementEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
+
+        public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!_options.CurrentValue.DisableTransportSecurityRequirement);
+        }
+    }
 }

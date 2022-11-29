@@ -48,6 +48,13 @@ public sealed class OpenIddictClientOwinBuilder
     }
 
     /// <summary>
+    /// Disables the transport security requirement (HTTPS).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
+    public OpenIddictClientOwinBuilder DisableTransportSecurityRequirement()
+        => Configure(options => options.DisableTransportSecurityRequirement = true);
+
+    /// <summary>
     /// Enables the pass-through mode for the OpenID Connect post-logout redirection endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

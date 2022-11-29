@@ -34,6 +34,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
          * Top-level request processing:
          */
         InferEndpointType.Descriptor,
+        ValidateTransportSecurityRequirement.Descriptor,
 
         /*
          * Authentication processing:
@@ -45,12 +46,14 @@ public static partial class OpenIddictClientAspNetCoreHandlers
          * Challenge processing:
          */
         ResolveHostChallengeProperties.Descriptor,
+        ValidateTransportSecurityRequirementForChallenge.Descriptor,
         GenerateLoginCorrelationCookie.Descriptor,
 
         /*
          * Sign-out processing:
          */
         ResolveHostSignOutProperties.Descriptor,
+        ValidateTransportSecurityRequirementForSignOut.Descriptor,
         GenerateLogoutCorrelationCookie.Descriptor)
         .AddRange(Authentication.DefaultHandlers)
         .AddRange(Session.DefaultHandlers);
@@ -141,6 +144,57 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                        left.Equals(right + "/", StringComparison.OrdinalIgnoreCase) ||
                        right.Equals(left + "/", StringComparison.OrdinalIgnoreCase);
             }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for rejecting OpenID Connect requests that don't use transport security.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateTransportSecurityRequirement : IOpenIddictClientHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireTransportSecurityRequirementEnabled>()
+                .UseSingletonHandler<ValidateTransportSecurityRequirement>()
+                .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            // Don't require that the host be present if the request is not handled by OpenIddict.
+            if (context.EndpointType is OpenIddictClientEndpointType.Unknown)
+            {
+                return default;
+            }
+
+            if (!request.IsHttps)
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2083),
+                    uri: SR.FormatID8000(SR.ID2083));
+
+                return default;
+            }
+
+            return default;
         }
     }
 
@@ -552,6 +606,46 @@ public static partial class OpenIddictClientAspNetCoreHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for preventing challenge operations from being triggered from non-HTTPS endpoints.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateTransportSecurityRequirementForChallenge : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireTransportSecurityRequirementEnabled>()
+                .UseSingletonHandler<ValidateTransportSecurityRequirementForChallenge>()
+                .SetOrder(ValidateChallengeDemand.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            if (!request.IsHttps)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0364));
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for creating a correlation cookie that serves as a
     /// protection against state token injection, forged requests and session fixation attacks.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
@@ -738,6 +832,46 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                         _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0115))
                     };
                 }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for preventing sign-out operations from being triggered from non-HTTPS endpoints.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateTransportSecurityRequirementForSignOut : IOpenIddictClientHandler<ProcessSignOutContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireTransportSecurityRequirementEnabled>()
+                .UseSingletonHandler<ValidateTransportSecurityRequirementForSignOut>()
+                .SetOrder(ValidateSignOutDemand.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessSignOutContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            if (!request.IsHttps)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0365));
             }
 
             return default;

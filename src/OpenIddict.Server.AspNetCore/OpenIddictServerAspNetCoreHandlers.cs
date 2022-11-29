@@ -262,7 +262,6 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 return default;
             }
 
-            // Reject authorization requests sent without transport security.
             if (!request.IsHttps)
             {
                 context.Reject(

@@ -45,6 +45,7 @@ public static class OpenIddictClientOwinExtensions
         builder.Services.TryAddSingleton<RequireOwinRequest>();
         builder.Services.TryAddSingleton<RequirePostLogoutRedirectionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireRedirectionEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
 
         // Register the option initializer used by the OpenIddict OWIN client integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
