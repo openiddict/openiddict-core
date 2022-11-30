@@ -105,6 +105,11 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
                 }
 
+                else if (context.Registration.ProviderName is Providers.Google)
+                {
+                    context.Configuration.GrantTypesSupported.Add(GrantTypes.Implicit);
+                }
+
                 return default;
             }
         }
