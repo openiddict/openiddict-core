@@ -945,10 +945,6 @@ public sealed class OpenIddictClientBuilder
     /// https://tools.ietf.org/html/rfc6749#section-4.2 and
     /// http://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth.
     /// </summary>
-    /// <remarks>
-    /// The implicit flow is not recommended for new applications and should
-    /// only be enabled when maintaining backward compatibility is important.
-    /// </remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AllowImplicitFlow()
         => Configure(options =>
@@ -958,9 +954,6 @@ public sealed class OpenIddictClientBuilder
             options.ResponseModes.Add(ResponseModes.FormPost);
             options.ResponseModes.Add(ResponseModes.Fragment);
 
-            options.ResponseTypes.Add(ResponseTypes.IdToken);
-            options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
-
             // Note: response_type=token is not considered secure enough as it allows malicious
             // actors to inject access tokens that were initially issued to a different client.
             // As such, while OpenIddict-based servers allow using response_type=token for backward
@@ -969,16 +962,30 @@ public sealed class OpenIddictClientBuilder
             //
             // For more information, see https://datatracker.ietf.org/doc/html/rfc6749#section-10.16 and
             // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-2.1.2.
+
+            options.ResponseTypes.Add(ResponseTypes.IdToken);
+            options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
+        });
+
+    /// <summary>
+    /// Enables none flow support. For more information about this specific OAuth 2.0 flow,
+    /// visit https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowNoneFlow()
+        => Configure(options =>
+        {
+            options.ResponseModes.Add(ResponseModes.FormPost);
+            options.ResponseModes.Add(ResponseModes.Fragment);
+            options.ResponseModes.Add(ResponseModes.Query);
+
+            options.ResponseTypes.Add(ResponseTypes.None);
         });
 
     /// <summary>
     /// Enables password flow support. For more information about this specific
     /// OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc6749#section-4.3.
     /// </summary>
-    /// <remarks>
-    /// The password flow is not recommended for new applications and should
-    /// only be enabled when maintaining backward compatibility is important.
-    /// </remarks>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder AllowPasswordFlow()
         => Configure(options => options.GrantTypes.Add(GrantTypes.Password));

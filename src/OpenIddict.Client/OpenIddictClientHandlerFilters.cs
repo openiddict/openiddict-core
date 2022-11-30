@@ -152,7 +152,12 @@ public static class OpenIddictClientHandlerFilters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new(context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.Implicit);
+            return new(context.GrantType switch
+            {
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit  => true,
+                null when context.ResponseType is ResponseTypes.None => true,
+                _ => false
+            });
         }
     }
 

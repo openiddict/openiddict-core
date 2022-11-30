@@ -99,7 +99,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         }
 
         // Ensure at least one flow has been enabled.
-        if (options.GrantTypes.Count is 0)
+        if (options.GrantTypes.Count is 0 && options.ResponseTypes.Count is 0)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
         }
