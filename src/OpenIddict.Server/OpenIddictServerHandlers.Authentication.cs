@@ -642,10 +642,24 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                // Reject requests that specify an unsupported response_type.
+                // Prevent response_type=none from being used with any other value.
+                // See https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none for more information.
                 var types = context.Request.GetResponseTypes().ToHashSet(StringComparer.Ordinal);
-                if (!context.Options.ResponseTypes.Any(type =>
-                    types.SetEquals(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
+                if (types.Count > 1 && types.Contains(ResponseTypes.None))
+                {
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6212), context.Request.ResponseType);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2052(Parameters.ResponseType),
+                        uri: SR.FormatID8000(SR.ID2052));
+
+                    return default;
+                }
+
+                // Reject requests that specify an unsupported response_type.
+                if (!context.Options.ResponseTypes.Any(type => types.SetEquals(
+                    type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6036), context.Request.ResponseType);
 

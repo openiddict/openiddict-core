@@ -36,8 +36,7 @@ public static partial class OpenIddictClientHandlers
         ResolveClientRegistrationFromStateToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
         HandleFrontchannelErrorResponse.Descriptor,
-        ResolveGrantTypeFromStateToken.Descriptor,
-        ResolveResponseTypeFromStateToken.Descriptor,
+        ResolveGrantTypeAndResponseTypeFromStateToken.Descriptor,
 
         EvaluateValidatedFrontchannelTokens.Descriptor,
         ResolveValidatedFrontchannelTokens.Descriptor,
@@ -91,10 +90,9 @@ public static partial class OpenIddictClientHandlers
          */
         ValidateChallengeDemand.Descriptor,
         ResolveClientRegistrationFromChallengeContext.Descriptor,
-        AttachGrantType.Descriptor,
+        AttachGrantTypeAndResponseType.Descriptor,
         EvaluateGeneratedChallengeTokens.Descriptor,
         AttachChallengeHostProperties.Descriptor,
-        AttachResponseType.Descriptor,
         AttachResponseMode.Descriptor,
         AttachClientId.Descriptor,
         AttachRedirectUri.Descriptor,
@@ -889,10 +887,10 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the grant type
-    /// initially negotiated and stored in the state token, if applicable.
+    /// Contains the logic responsible for resolving the flow initially
+    /// negotiated and stored in the state token, if applicable.
     /// </summary>
-    public sealed class ResolveGrantTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    public sealed class ResolveGrantTypeAndResponseTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -901,7 +899,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireRedirectionRequest>()
                 .AddFilter<RequireStateTokenPrincipal>()
-                .UseSingletonHandler<ResolveGrantTypeFromStateToken>()
+                .UseSingletonHandler<ResolveGrantTypeAndResponseTypeFromStateToken>()
                 .SetOrder(HandleFrontchannelErrorResponse.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -916,18 +914,22 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-            // Resolve the negotiated grant type from the state token.
-            var type = context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType);
+            // Resolve the negotiated flow from the state token.
+            (context.GrantType, context.ResponseType) = (
+                context.StateTokenPrincipal.GetClaim(Claims.Private.GrantType),
+                context.StateTokenPrincipal.GetClaim(Claims.Private.ResponseType));
 
-            // Note: OpenIddict currently only supports the implicit, authorization code and refresh
-            // token grants but additional grants (like CIBA) may be supported in future versions.
-            switch (context.EndpointType)
+            switch ((context.EndpointType, context.GrantType, context.ResponseType))
             {
                 // Authentication demands triggered from the redirection endpoint are only valid for
                 // the authorization code and implicit grants (which includes the hybrid flow, that
-                // can be represented using either the authorization code or implicit grant types).
-                case OpenIddictClientEndpointType.Redirection when type is not
-                    (GrantTypes.AuthorizationCode or GrantTypes.Implicit):
+                // can be represented using either the authorization code or implicit grant types) and
+                // the "none" flow where no access/identity token or authorization code is returned.
+                case (OpenIddictClientEndpointType.Redirection, GrantTypes.AuthorizationCode or GrantTypes.Implicit, _):
+                case (OpenIddictClientEndpointType.Redirection, null, ResponseTypes.None):
+                    break;
+
+                case (OpenIddictClientEndpointType.Redirection, _, _):
                     context.Reject(
                         error: Errors.InvalidRequest,
                         description: SR.GetResourceString(SR.ID2130),
@@ -935,43 +937,6 @@ public static partial class OpenIddictClientHandlers
 
                     return default;
             }
-
-            context.GrantType = type;
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for resolving the response type
-    /// initially negotiated and stored in the state token, if applicable.
-    /// </summary>
-    public sealed class ResolveResponseTypeFromStateToken : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireRedirectionRequest>()
-                .AddFilter<RequireStateTokenPrincipal>()
-                .UseSingletonHandler<ResolveResponseTypeFromStateToken>()
-                .SetOrder(ResolveGrantTypeFromStateToken.Descriptor.Order + 1_000)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-            // Resolve the negotiated response type from the state token.
-            context.ResponseType = context.StateTokenPrincipal.GetClaim(Claims.Private.ResponseType);
 
             return default;
         }
@@ -988,7 +953,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .UseSingletonHandler<EvaluateValidatedFrontchannelTokens>()
-                .SetOrder(ResolveResponseTypeFromStateToken.Descriptor.Order + 1_000)
+                .SetOrder(ResolveGrantTypeAndResponseTypeFromStateToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -1012,7 +977,9 @@ public static partial class OpenIddictClientHandlers
                 // Note: since authorization codes are supposed to be opaque to the clients, they are never
                 // validated by default. Clients that need to deal with non-standard implementations
                 // can use custom handlers to validate access tokens that use a readable format (e.g JWT).
-                GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                    context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                    types.Contains(ResponseTypes.Code)
                     => (true, true, false),
 
                 _ => (false, false, false)
@@ -1030,7 +997,9 @@ public static partial class OpenIddictClientHandlers
                 // Note: since access tokens are supposed to be opaque to the clients, they are never
                 // validated by default. Clients that need to deal with non-standard implementations
                 // can use custom handlers to validate access tokens that use a readable format (e.g JWT).
-                GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Token)
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                    context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                    types.Contains(ResponseTypes.Token)
                     => (true, true, false),
 
                 _ => (false, false, false)
@@ -1047,15 +1016,15 @@ public static partial class OpenIddictClientHandlers
                 //
                 // Note: the granted scopes list (returned as a "scope" parameter in authorization
                 // responses) is not used in this case as it's not protected against tampering.
-                GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.IdToken)
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                    context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                    types.Contains(ResponseTypes.IdToken)
                     => (true, true, true),
 
                 _ => (false, false, false)
             };
 
             return default;
-
-            bool HasResponseType(string value) => context.ResponseType!.Split(Separators.Space).Contains(value);
         }
     }
 
@@ -1869,7 +1838,9 @@ public static partial class OpenIddictClientHandlers
             {
                 // For the authorization code and implicit grants, always send a token request
                 // if an authorization code was requested in the initial authorization request.
-                GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                    context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                    types.Contains(ResponseTypes.Code)
                     => true,
 
                 // For client credentials, resource owner password credentials
@@ -1880,8 +1851,6 @@ public static partial class OpenIddictClientHandlers
             };
 
             return default;
-
-            bool HasResponseType(string value) => context.ResponseType!.Split(Separators.Space).Contains(value);
         }
     }
 
@@ -2290,7 +2259,9 @@ public static partial class OpenIddictClientHandlers
                  // Note: since access tokens are supposed to be opaque to the clients, they are never
                  // validated by default. Clients that need to deal with non-standard implementations
                  // can use custom handlers to validate access tokens that use a readable format (e.g JWT).
-                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
+                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                     context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                     types.Contains(ResponseTypes.Code)
                      => (true, true, false),
 
                  // An access token is always returned as part of client credentials,
@@ -2309,8 +2280,11 @@ public static partial class OpenIddictClientHandlers
                  // hybrid flows when the authorization server supports OpenID Connect. As such,
                  // a backchannel identity token is only considered required if the negotiated scopes
                  // include "openid", which indicates the initial request was an OpenID Connect request.
-                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code) &&
-                     context.StateTokenPrincipal!.HasScope(Scopes.OpenId) => (true, true, true),
+                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                     context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                     types.Contains(ResponseTypes.Code) &&
+                     context.StateTokenPrincipal is ClaimsPrincipal principal &&
+                     principal.HasScope(Scopes.OpenId) => (true, true, true),
 
                  // The client credentials and resource owner password credentials grants don't have
                  // an equivalent in OpenID Connect so an identity token is typically never returned
@@ -2341,22 +2315,22 @@ public static partial class OpenIddictClientHandlers
                  // Note: since refresh tokens are supposed to be opaque to the clients, they are never
                  // validated by default. Clients that need to deal with non-standard implementations
                  // can use custom handlers to validate access tokens that use a readable format (e.g JWT).
-                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when HasResponseType(ResponseTypes.Code)
-                    => (true, false, false),
+                 GrantTypes.AuthorizationCode or GrantTypes.Implicit when
+                     context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                     types.Contains(ResponseTypes.Code)
+                     => (true, false, false),
 
                  // A refresh token may or may not be returned as part of client credentials,
                  // resource owner password credentials and refresh token responses depending
                  // on the policy adopted by the remote authorization server. As such, a
                  // refresh token is never considered required for such token responses.
                  GrantTypes.ClientCredentials or GrantTypes.Password or GrantTypes.RefreshToken
-                    => (true, false, false),
+                     => (true, false, false),
 
                  _ => (false, false, false)
              };
 
             return default;
-
-            bool HasResponseType(string value) => context.ResponseType!.Split(Separators.Space).Contains(value);
         }
     }
 
@@ -3653,17 +3627,17 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the best grant type
+    /// Contains the logic responsible for negotiating the best flow
     /// supported by both the client and the authorization server.
     /// </summary>
-    public sealed class AttachGrantType : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachGrantTypeAndResponseType : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .UseSingletonHandler<AttachGrantType>()
+                .UseSingletonHandler<AttachGrantTypeAndResponseType>()
                 .SetOrder(ResolveClientRegistrationFromChallengeContext.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -3676,58 +3650,193 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If an explicit grant type was specified, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.GrantType))
+            // If an explicit grant or response type was specified, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.GrantType) || !string.IsNullOrEmpty(context.ResponseType))
             {
                 return default;
             }
 
-            // Note: if no grant type was explicitly returned as part of the server configuration,
-            // the identity provider is assumed to at least support both the authorization code
-            // and the implicit grants, as defined by the discovery specifications. In this case,
-            // the authorization code grant is generally preferred as it offers the broadest
-            // support and the best level of security thanks to additional features like
-            // client authentication, code binding and access token injections mitigations.
-            // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
-            // and https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
+            // In OAuth 2.0/OpenID Connect, the concept of "flow" is actually a quite complex combination
+            // of a grant type and a response type (that can include multiple, space-separated values).
+            //
+            // While the authorization code flow has a unique grant type/response type combination, more
+            // complex flows like the hybrid flow have many valid grant type/response types combinations.
+            //
+            // To evaluate whether a specific flow can be used, both the grant types and response types
+            // MUST be analyzed to find standard combinations that are supported by the both the client
+            // and the authorization server.
 
-            context.GrantType = (
-                // Note: if grant types are explicitly listed in the client registration, only use
-                // the grant types that are both listed and enabled in the global client options.
-                // Otherwise, always default to the grant types that have been enabled globally.
-                SupportedClientGrantTypes: context.Registration.GrantTypes.Count switch
-                {
-                    0 => context.Options.GrantTypes as ICollection<string>,
-                    _ => context.Options.GrantTypes.Intersect(context.Registration.GrantTypes, StringComparer.Ordinal).ToList()
-                },
+            (context.GrantType, context.ResponseType) = (
+                Client: (
+                    // Note: if grant types are explicitly listed in the client registration, only use
+                    // the grant types that are both listed and enabled in the global client options.
+                    // Otherwise, always default to the grant types that have been enabled globally.
+                    GrantTypes: context.Registration.GrantTypes.Count switch
+                    {
+                        0 => context.Options.GrantTypes as ICollection<string>,
+                        _ => context.Options.GrantTypes.Intersect(context.Registration.GrantTypes, StringComparer.Ordinal).ToList()
+                    },
 
-                SupportedServerGrantTypes: context.Configuration.GrantTypesSupported) switch
+                    // Note: if response types are explicitly listed in the client registration, only use
+                    // the response types that are both listed and enabled in the global client options.
+                    // Otherwise, always default to the response types that have been enabled globally.
+                    ResponseTypes: context.Registration.ResponseTypes.Count switch
+                    {
+                        0 => context.Options.ResponseTypes.Select(types => types
+                                .Split(Separators.Space, StringSplitOptions.None)
+                                .ToHashSet(StringComparer.Ordinal))
+                            .ToList(),
+
+                        _ => context.Options.ResponseTypes.Select(types => types
+                                .Split(Separators.Space, StringSplitOptions.None)
+                                .ToHashSet(StringComparer.Ordinal))
+                            .Where(types => context.Registration.ResponseTypes.Any(value => value
+                                .Split(Separators.Space, StringSplitOptions.None)
+                                .ToHashSet(StringComparer.Ordinal)
+                                .SetEquals(types)))
+                            .ToList()
+                    }),
+
+                Server: (
+                    GrantTypes: context.Configuration.GrantTypesSupported,
+
+                    ResponseTypes: context.Configuration.ResponseTypesSupported
+                        .Select(types => types
+                            .Split(Separators.Space, StringSplitOptions.None)
+                            .ToHashSet(StringComparer.Ordinal))
+                        .ToList())) switch
             {
-                // If the list of grant types supported by the client is empty, abort the challenge operation.
-                ({ Count: 0 }, { Count: _ }) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0360)),
+                // Note: if no grant type was explicitly returned as part of the server configuration,
+                // the identity provider is assumed to implicitly support both the authorization code
+                // and the implicit grants, as stated by the OAuth 2.0/OIDC discovery specifications.
+                //
+                // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+                // and https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
 
-                // If both the client and the server support the code grant, prefer it over the implicit grant.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(GrantTypes.AuthorizationCode) && server.Contains(GrantTypes.AuthorizationCode)
-                    => GrantTypes.AuthorizationCode,
+                // Note: response_type=code is always tested first as it doesn't require using
+                // response_mode=form_post or response_mode=fragment: fragment doesn't natively work with
+                // server-side clients and form_post is impacted by the same-site cookies restrictions
+                // that are now enforced by most browser vendors, which requires using SameSite=None for
+                // response_mode=form_post to work correctly. While it doesn't have native protection
+                // against mix-up attacks (due to the missing id_token in the authorization response),
+                // the code flow remains the best compromise and thus always comes first in the list.
 
-                // If the client supports the code grant and the server doesn't specify a list of
-                // grant types, use the authorization code grant, as it's always supported by default.
-                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(GrantTypes.AuthorizationCode)
-                    => GrantTypes.AuthorizationCode,
+                // Authorization code flow with grant_type=authorization_code and response_type=code:
+                (var client, var server) when
+                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    client.GrantTypes.Contains(GrantTypes.AuthorizationCode) &&
+                   (server.GrantTypes.Count is 0 || // If empty, assume the code grant is supported by the server.
+                    server.GrantTypes.Contains(GrantTypes.AuthorizationCode)) &&
 
-                // If both the client and the server support the implicit grant, use it as a last chance option.
-                ({ Count: > 0 } client, { Count: > 0 } server) when
-                    client.Contains(GrantTypes.Implicit) && server.Contains(GrantTypes.Implicit)
-                    => GrantTypes.Implicit,
+                    // Ensure response_type=code is supported.
+                    client.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code)) &&
+                    server.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code))
 
-                // If the client supports the implicit grant and the server doesn't specify a list
-                // of grant types, use the implicit code grant, as it's always supported by default.
-                ({ Count: > 0 } client, { Count: 0 }) when client.Contains(GrantTypes.Implicit)
-                    => GrantTypes.Implicit,
+                     => (GrantTypes.AuthorizationCode, ResponseTypes.Code),
 
-                // If no common grant type can be negotiated, abort the challenge operation.
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0297))
+                // Hybrid flow with grant_type=authorization_code/implicit and response_type=code id_token:
+                (var client, var server) when
+                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
+                    (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
+                    (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
+
+                    // Ensure response_type=code id_token is supported.
+                    client.ResponseTypes.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)     &&
+                                                                                    types.Contains(ResponseTypes.IdToken)) &&
+                    server.ResponseTypes.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)     &&
+                                                                                    types.Contains(ResponseTypes.IdToken))
+
+                    => (GrantTypes.AuthorizationCode, ResponseTypes.Code + ' ' + ResponseTypes.IdToken),
+
+                // Implicit flow with grant_type=implicit and response_type=id_token:
+                (var client, var server) when
+                    // Ensure grant_type=implicit is - explicitly or implicitly - supported.
+                    client.GrantTypes.Contains(GrantTypes.Implicit) &&
+                   (server.GrantTypes.Count is 0 || // If empty, assume the implicit grant is supported by the server.
+                    server.GrantTypes.Contains(GrantTypes.Implicit)) &&
+
+                    // Ensure response_type=id_token is supported.
+                    client.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken)) &&
+                    server.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken))
+
+                     => (GrantTypes.Implicit, ResponseTypes.IdToken),
+
+                // Note: response types combinations containing "token" are always tested last as some
+                // authorization servers - like OpenIddict - are known to block authorization requests
+                // asking for an access token if Proof Key for Code Exchange is used in the same request.
+                //
+                // Returning an identity token directly from the authorization endpoint also has privacy
+                // concerns that code-based flows - that require a backchannel request - typically don't
+                // have when the client application (confidential or public) is executed on a server.
+
+                // Hybrid flow with grant_type=authorization_code/implicit and response_type=code id_token token.
+                (var client, var server) when
+                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
+                    (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
+                    (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
+
+                    // Ensure response_type=code id_token token is supported.
+                    client.ResponseTypes.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
+                                                                                    types.Contains(ResponseTypes.IdToken) &&
+                                                                                    types.Contains(ResponseTypes.Token))  &&
+                    server.ResponseTypes.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
+                                                                                    types.Contains(ResponseTypes.IdToken) &&
+                                                                                    types.Contains(ResponseTypes.Token))
+
+                    => (GrantTypes.AuthorizationCode, ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token),
+
+                // Hybrid flow with grant_type=authorization_code/implicit and response_type=code token.
+                (var client, var server) when
+                    // Ensure grant_type=authorization_code is - explicitly or implicitly - supported.
+                    (client.GrantTypes.Contains(GrantTypes.AuthorizationCode) && client.GrantTypes.Contains(GrantTypes.Implicit)) &&
+                    (server.GrantTypes.Count is 0 || // If empty, assume the code and implicit grants are supported by the server.
+                    (server.GrantTypes.Contains(GrantTypes.AuthorizationCode) && server.GrantTypes.Contains(GrantTypes.Implicit))) &&
+
+                    // Ensure response_type=code token is supported.
+                    client.ResponseTypes.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)   &&
+                                                                                    types.Contains(ResponseTypes.Token)) &&
+                    server.ResponseTypes.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)   &&
+                                                                                    types.Contains(ResponseTypes.Token))
+
+                    => (GrantTypes.AuthorizationCode, ResponseTypes.Code + ' ' + ResponseTypes.Token),
+
+
+                // Implicit flow with grant_type=implicit and response_type=id_token token.
+                (var client, var server) when
+                    // Ensure grant_type=implicit is - explicitly or implicitly - supported.
+                    client.GrantTypes.Contains(GrantTypes.Implicit) &&
+                   (server.GrantTypes.Count is 0 || // If empty, assume the implicit grant is supported by the server.
+                    server.GrantTypes.Contains(GrantTypes.Implicit)) &&
+
+                    // Ensure response_type=code token is supported.
+                    client.ResponseTypes.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
+                                                                                    types.Contains(ResponseTypes.Token))  &&
+                    server.ResponseTypes.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
+                                                                                    types.Contains(ResponseTypes.Token))
+
+                    => (GrantTypes.Implicit, ResponseTypes.IdToken + ' ' + ResponseTypes.Token),
+
+                // None flow with response_type=none.
+                (var client, var server) when
+                    // Ensure response_type=none is supported.
+                    client.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.None)) &&
+                    server.ResponseTypes.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.None))
+
+                    => (null, ResponseTypes.None),
+
+                // Note: this check is only enforced after the none flow was excluded as it doesn't use a grant type.
+                (var client, _) when client.GrantTypes.Count is 0
+                    => throw new InvalidOperationException(SR.GetResourceString(SR.ID0360)),
+
+                (var client, _) when client.ResponseTypes.Count is 0
+                    => throw new InvalidOperationException(SR.GetResourceString(SR.ID0361)),
+
+                (_, var server) when server.ResponseTypes.Count is 0
+                    => throw new InvalidOperationException(SR.GetResourceString(SR.ID0297)),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0298))
             };
 
             return default;
@@ -3746,7 +3855,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .UseSingletonHandler<EvaluateGeneratedChallengeTokens>()
-                .SetOrder(AttachGrantType.Descriptor.Order + 1_000)
+                .SetOrder(AttachGrantTypeAndResponseType.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -3764,13 +3873,14 @@ public static partial class OpenIddictClientHandlers
             // derive the code challenge sent to the remote authorization server. While not strictly
             // required by the OAuth 2.0/2.1 and OpenID Connect specifications, the state parameter is
             // considered essential in OpenIddict and as such, is always included in challenge demands
-            // that use the authorization code or implicit grants (which includes the hybrid flow).
+            // that use the authorization code, hybrid, implicit or the special "none" flows.
             //
             // See https://datatracker.ietf.org/doc/html/draft-bradley-oauth-jwt-encoded-state-09
             // for more information.
             (context.GenerateStateToken, context.IncludeStateToken) = context.GrantType switch
             {
-                GrantTypes.AuthorizationCode or GrantTypes.Implicit => (true, true),
+                GrantTypes.AuthorizationCode or GrantTypes.Implicit  => (true, true),
+                null when context.ResponseType is ResponseTypes.None => (true, true),
 
                 _ => (false, false)
             };
@@ -3811,9 +3921,9 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for attaching the response type to the challenge request.
+    /// Contains the logic responsible for attaching the response mode to the challenge request.
     /// </summary>
-    public sealed class AttachResponseType : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class AttachResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -3821,7 +3931,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveGrantType>()
-                .UseSingletonHandler<AttachResponseType>()
+                .UseSingletonHandler<AttachResponseMode>()
                 .SetOrder(AttachChallengeHostProperties.Descriptor.Order + 1_000)
                 .Build();
 
@@ -3834,206 +3944,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             // If an explicit response type was specified, don't overwrite it.
-            if (!string.IsNullOrEmpty(context.ResponseType))
-            {
-                return default;
-            }
-
-            // Only attach a response type for the grant types known to support this mechanism.
-            if (context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
-            {
-                return default;
-            }
-
-            context.ResponseType = (
-                NegotiatedGrantType: context.GrantType,
-
-                // Note: if response types are explicitly listed in the client registration, only use
-                // the response types that are both listed and enabled in the global client options.
-                // Otherwise, always default to the response types that have been enabled globally.
-                SupportedClientResponseTypes: context.Registration.ResponseTypes.Count switch
-                {
-                    0 => context.Options.ResponseTypes.Select(types => types
-                            .Split(Separators.Space, StringSplitOptions.None)
-                            .ToHashSet(StringComparer.Ordinal))
-                        .ToList(),
-
-                    _ => context.Options.ResponseTypes.Select(types => types
-                            .Split(Separators.Space, StringSplitOptions.None)
-                            .ToHashSet(StringComparer.Ordinal))
-                        .Where(types => context.Registration.ResponseTypes.Any(value => value
-                            .Split(Separators.Space, StringSplitOptions.None)
-                            .ToHashSet(StringComparer.Ordinal)
-                            .SetEquals(types)))
-                        .ToList()
-                },
-
-                SupportedServerResponseTypes: context.Configuration.ResponseTypesSupported
-                    .Select(types => types
-                        .Split(Separators.Space, StringSplitOptions.None)
-                        .ToHashSet(StringComparer.Ordinal))
-                    .ToList()) switch
-            {
-                // Note: the OAuth 2.0 provider metadata and OpenID Connect discovery specifications define
-                // the supported response types as a required property. Nevertheless, to ensure OpenIddict
-                // is compatible with most identity providers, a missing or empty list is not treated as an
-                // error. In this case, response_type=code (for the code grant) and response_type=id_token
-                // (for the implicit grant) are assumed to be the most commonly supported values.
-                //
-                // Note: response_type=code is always tested first as it doesn't require using
-                // response_mode=form_post or response_mode=fragment: fragment doesn't natively work with
-                // server-side clients and form_post is impacted by the same-site cookies restrictions
-                // that are now enforced by most browser vendors, which requires using SameSite=None for
-                // response_mode=form_post to work correctly. While it doesn't have native protection
-                // against mix-up attacks (due to the missing id_token in the authorization response),
-                // the code flow remains the best compromise and thus always comes first in the list.
-                //
-                // Note: response types combinations containing "token" are always tested last as some
-                // authorization servers - like OpenIddict - are known to block authorization requests
-                // asking for an access token if Proof Key for Code Exchange is used in the same request.
-                // Returning an identity token directly from the authorization endpoint also has privacy
-                // concerns that code-based flows - that require a backchannel request - typically don't
-                // have when the client application (confidential or public) is executed on a server.
-
-                // If the list of response types supported by the client is empty, abort the challenge operation.
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: 0 }, { Count: _ })
-                    => throw new InvalidOperationException(SR.GetResourceString(SR.ID0361)),
-
-                // If both the client and the server support "response_type=code", use it.
-                (GrantTypes.AuthorizationCode, { Count: > 0 } client, { Count: > 0 } server) when
-                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code)) &&
-                    server.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code))
-                    => ResponseTypes.Code,
-
-                // If the client supports "response_type=code" and the server doesn't
-                // specify a list of response types, assume "response_type=code" is supported.
-                (GrantTypes.AuthorizationCode, { Count: > 0 } client, { Count: 0 }) when
-                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.Code))
-                    => ResponseTypes.Code,
-
-                // If both the client and the server support "response_type=code id_token", use it.
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)     &&
-                                                                      types.Contains(ResponseTypes.IdToken)) &&
-                    server.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)     &&
-                                                                      types.Contains(ResponseTypes.IdToken))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken,
-
-                // If the client supports "response_type=code id_token" and the server doesn't
-                // specify a list of response types, assume "response_type=code id_token" is supported.
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code) &&
-                                                                      types.Contains(ResponseTypes.IdToken))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken,
-
-                // If both the client and the server support "response_type=id_token", use it.
-                (GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken)) &&
-                    server.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken))
-                    => ResponseTypes.IdToken,
-
-                // If the client supports "response_type=id_token" and the server doesn't
-                // specify a list of response types, assume "response_type=id_token" is supported.
-                (GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Exists(static types => types.Count is 1 && types.Contains(ResponseTypes.IdToken))
-                    => ResponseTypes.IdToken,
-
-                // If both the client and the server support "response_type=code id_token token", use it.
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    client.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
-                                                                      types.Contains(ResponseTypes.IdToken) &&
-                                                                      types.Contains(ResponseTypes.Token))  &&
-                    server.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
-                                                                      types.Contains(ResponseTypes.IdToken) &&
-                                                                      types.Contains(ResponseTypes.Token))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
-
-                // If the client supports "response_type=code id_token token" and the server doesn't
-                // specify a list of response types, assume "response_type=code id_token token" is supported.
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Exists(static types => types.Count is 3 && types.Contains(ResponseTypes.Code)    &&
-                                                                      types.Contains(ResponseTypes.IdToken) &&
-                                                                      types.Contains(ResponseTypes.Token))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
-
-                // If both the client and the server support "response_type=code token", use it.
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)   &&
-                                                                      types.Contains(ResponseTypes.Token)) &&
-                    server.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code)   &&
-                                                                      types.Contains(ResponseTypes.Token))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.Token,
-
-                // If the client supports "response_type=code token" and the server doesn't
-                // specify a list of response types, assume "response_type=code token" is supported.
-                (GrantTypes.AuthorizationCode or GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.Code) &&
-                                                                      types.Contains(ResponseTypes.Token))
-                    => ResponseTypes.Code + ' ' + ResponseTypes.Token,
-
-                // If both the client and the server support "response_type=id_token token", use it.
-                (GrantTypes.Implicit, { Count: > 0 } client, { Count: > 0 } server) when
-                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
-                                                                      types.Contains(ResponseTypes.Token))  &&
-                    server.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
-                                                                      types.Contains(ResponseTypes.Token))
-                    => ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
-
-                // If the client supports "response_type=id_token token" and the server doesn't
-                // specify a list of response types, assume "response_type=id_token token" is supported.
-                (GrantTypes.Implicit, { Count: > 0 } client, { Count: 0 }) when
-                    client.Exists(static types => types.Count is 2 && types.Contains(ResponseTypes.IdToken) &&
-                                                                      types.Contains(ResponseTypes.Token))
-                    => ResponseTypes.IdToken + ' ' + ResponseTypes.Token,
-
-                // Note: response_type=token is not considered secure enough as it allows malicious
-                // actors to inject access tokens that were initially issued to a different client.
-                // As such, while OpenIddict-based servers allow using response_type=token for backward
-                // compatibility with legacy clients, OpenIddict-based clients are deliberately not
-                // allowed to negotiate the unsafe and OAuth 2.0-only response_type=token flow.
-                //
-                // For more information, see https://datatracker.ietf.org/doc/html/rfc6749#section-10.16 and
-                // https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-2.1.2.
-
-                // If no common response type can be negotiated, abort the challenge operation.
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0298)),
-            };
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for attaching the response mode to the challenge request.
-    /// </summary>
-    public sealed class AttachResponseMode : IOpenIddictClientHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireInteractiveGrantType>()
-                .UseSingletonHandler<AttachResponseMode>()
-                .SetOrder(AttachResponseType.Descriptor.Order + 1_000)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // If an explicit response type was specified, don't overwrite it.
             if (!string.IsNullOrEmpty(context.ResponseMode))
-            {
-                return default;
-            }
-
-            // Only attach a response mode for the grant types known to support this mechanism.
-            if (context.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Implicit))
             {
                 return default;
             }
@@ -4055,8 +3966,7 @@ public static partial class OpenIddictClientHandlers
             // can never be used with a response type containing id_token or token, as required by the OAuth 2.0
             // multiple response types specification. To prevent invalid combinations from being sent to the
             // remote server, the response types are taken into account when selecting the best response mode.
-            var types = context.ResponseType?.Split(Separators.Space).ToHashSet(StringComparer.Ordinal);
-            if (types is not { Count: > 0 })
+            if (context.ResponseType?.Split(Separators.Space) is not IList<string> { Count: > 0 } types)
             {
                 return default;
             }
@@ -4646,11 +4556,15 @@ public static partial class OpenIddictClientHandlers
                 context.Request.Scope = string.Join(" ", context.Scopes);
             }
 
-            // If the request is an OpenID Connect request, attach the nonce as a parameter.
+            // If a nonce was generated and the request is an OpenID Connect request where an authorization
+            // code or an identity token are expected to be returned as part of the authorization response,
+            // attach the nonce as a parameter. Otherwise, don't include it to avoid potential rejections.
             //
             // Note: the nonce is always hashed before being sent, as recommended the specification.
             // See https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes for more information.
-            if (context.Scopes.Contains(Scopes.OpenId) && !string.IsNullOrEmpty(context.Nonce))
+            if (context.Scopes.Contains(Scopes.OpenId) && !string.IsNullOrEmpty(context.Nonce) && 
+                context.ResponseType?.Split(Separators.Space) is IList<string> types &&
+                (types.Contains(ResponseTypes.Code) || types.Contains(ResponseTypes.IdToken)))
             {
                 context.Request.Nonce = Base64UrlEncoder.Encode(
                     OpenIddictHelpers.ComputeSha256Hash(Encoding.UTF8.GetBytes(context.Nonce)));

@@ -688,6 +688,34 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2032), response.ErrorUri);
     }
 
+    [Theory]
+    [InlineData("none code")]
+    [InlineData("none code id_token")]
+    [InlineData("none code id_token token")]
+    [InlineData("none code token")]
+    [InlineData("none id_token")]
+    [InlineData("none id_token token")]
+    [InlineData("none token")]
+    public async Task ValidateAuthorizationRequest_InvalidResponseTypeParameterIsRejected(string type)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = type
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2052(Parameters.ResponseType), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
+    }
+
     [Fact]
     public async Task ValidateAuthorizationRequest_UnsupportedResponseModeCausesAnError()
     {
