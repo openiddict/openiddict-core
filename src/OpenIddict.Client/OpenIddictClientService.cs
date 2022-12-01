@@ -35,7 +35,7 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithClientCredentialsAsync(
+    public ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithClientCredentialsAsync(
         Uri issuer, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
         Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
@@ -45,14 +45,63 @@ public sealed class OpenIddictClientService
             throw new ArgumentNullException(nameof(issuer));
         }
 
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+        return AuthenticateWithClientCredentialsAsync(registration, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Authenticates using the client credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="provider">The name of the provider (see <see cref="OpenIddictClientRegistration.ProviderName"/>).</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithClientCredentialsAsync(
+        string provider, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(provider))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => string.Equals(
+            registration.ProviderName, provider, StringComparison.Ordinal)) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+
+        return AuthenticateWithClientCredentialsAsync(registration, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Authenticates using the client credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    private async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithClientCredentialsAsync(
+        OpenIddictClientRegistration registration, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
         if (scopes is not null && Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
-
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
-        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
@@ -143,7 +192,7 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithPasswordAsync(
+    public ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithPasswordAsync(
         Uri issuer, string username, string password, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
         Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
@@ -153,24 +202,77 @@ public sealed class OpenIddictClientService
             throw new ArgumentNullException(nameof(issuer));
         }
 
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+        return AuthenticateWithPasswordAsync(registration, username, password, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="provider">The name of the provider (see <see cref="OpenIddictClientRegistration.ProviderName"/>).</param>
+    /// <param name="username">The username to use.</param>
+    /// <param name="password">The password to use.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithPasswordAsync(
+        string provider, string username, string password, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(provider))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => string.Equals(
+            registration.ProviderName, provider, StringComparison.Ordinal)) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+
+        return AuthenticateWithPasswordAsync(registration, username, password, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="username">The username to use.</param>
+    /// <param name="password">The password to use.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    private async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithPasswordAsync(
+        OpenIddictClientRegistration registration, string username, string password, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
         if (string.IsNullOrEmpty(username))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0335), nameof(username));
+            throw new ArgumentException(SR.FormatID0366(nameof(username)), nameof(username));
         }
 
         if (string.IsNullOrEmpty(password))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0336), nameof(password));
+            throw new ArgumentException(SR.FormatID0366(nameof(password)), nameof(password));
         }
 
         if (scopes is not null && Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
-
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
-        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
@@ -262,7 +364,7 @@ public sealed class OpenIddictClientService
     /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
-    public async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithRefreshTokenAsync(
+    public ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithRefreshTokenAsync(
         Uri issuer, string token, string[]? scopes = null,
         Dictionary<string, OpenIddictParameter>? parameters = null,
         Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
@@ -272,19 +374,70 @@ public sealed class OpenIddictClientService
             throw new ArgumentNullException(nameof(issuer));
         }
 
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
+
+        return AuthenticateWithRefreshTokenAsync(registration, token, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="provider">The name of the provider (see <see cref="OpenIddictClientRegistration.ProviderName"/>).</param>
+    /// <param name="token">The refresh token to use.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    public ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithRefreshTokenAsync(
+        string provider, string token, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(provider))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(provider)), nameof(provider));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var registration = options.CurrentValue.Registrations.Find(registration => string.Equals(
+            registration.ProviderName, provider, StringComparison.Ordinal)) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0348));
+
+        return AuthenticateWithRefreshTokenAsync(registration, token, scopes, parameters, properties, cancellationToken);
+    }
+
+    /// <summary>
+    /// Authenticates using the resource owner password credentials grant and resolves the corresponding tokens.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="token">The refresh token to use.</param>
+    /// <param name="scopes">The scopes to request to the authorization server.</param>
+    /// <param name="parameters">The additional parameters to send as part of the token request.</param>
+    /// <param name="properties">The application-specific properties that will be added to the authentication context.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response and a merged principal containing the claims extracted from the tokens and userinfo response.</returns>
+    private async ValueTask<(OpenIddictResponse Response, ClaimsPrincipal Principal)> AuthenticateWithRefreshTokenAsync(
+        OpenIddictClientRegistration registration, string token, string[]? scopes = null,
+        Dictionary<string, OpenIddictParameter>? parameters = null,
+        Dictionary<string, string>? properties = null, CancellationToken cancellationToken = default)
+    {
+        if (registration is null)
+        {
+            throw new ArgumentNullException(nameof(registration));
+        }
+
         if (string.IsNullOrEmpty(token))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0156), nameof(token));
+            throw new ArgumentException(SR.FormatID0366(nameof(token)), nameof(token));
         }
 
         if (scopes is not null && Array.Exists(scopes, string.IsNullOrEmpty))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID0074), nameof(scopes));
         }
-
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
-        var registration = options.CurrentValue.Registrations.Find(registration => registration.Issuer == issuer) ??
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0292));
 
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
