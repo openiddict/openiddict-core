@@ -39,12 +39,21 @@ public static partial class OpenIddictValidationEvents
         }
 
         /// <summary>
-        /// Gets or sets the issuer address associated with the current transaction, if available.
+        /// Gets or sets the request <see cref="Uri"/> of the current transaction, if available.
         /// </summary>
-        public Uri? Issuer
+        public Uri? RequestUri
         {
-            get => Transaction.Issuer;
-            set => Transaction.Issuer = value;
+            get => Transaction.RequestUri;
+            set => Transaction.RequestUri = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the base <see cref="Uri"/> of the host, if available.
+        /// </summary>
+        public Uri? BaseUri
+        {
+            get => Transaction.BaseUri;
+            set => Transaction.BaseUri = value;
         }
 
         /// <summary>

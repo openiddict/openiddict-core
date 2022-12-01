@@ -60,16 +60,8 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
+            context.Configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-            // Ensure the issuer resolved from the configuration matches the expected value.
-            if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-            }
-
-            context.Configuration = configuration;
         }
     }
 

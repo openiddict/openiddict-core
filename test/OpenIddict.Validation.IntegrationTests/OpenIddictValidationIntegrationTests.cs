@@ -33,29 +33,6 @@ public abstract partial class OpenIddictValidationIntegrationTests
     protected ITestOutputHelper OutputHelper { get; }
 
     [Fact]
-    public async Task ProcessAuthentication_InvalidIssuerThrowsAnException()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options => options.Configure(options =>
-        {
-            options.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(new()
-            {
-                Issuer = new Uri("https://fabrikam.com/")
-            });
-        }));
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act and assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
-        {
-            return client.PostAsync("/authenticate", new OpenIddictRequest());
-        });
-
-        Assert.Equal(SR.GetResourceString(SR.ID0307), exception.Message);
-    }
-
-    [Fact]
     public async Task ProcessAuthentication_EvalutesCorrectValidatedTokens()
     {
         // Arrange

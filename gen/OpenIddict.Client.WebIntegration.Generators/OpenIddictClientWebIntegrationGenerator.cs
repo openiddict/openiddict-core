@@ -184,11 +184,6 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
-            }
-
             return Configure(options => options.RedirectUri = address);
         }
 
@@ -204,12 +199,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
             }
 
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
-            }
-
-            return SetRedirectUri(uri);
+            return SetRedirectUri(new Uri(address, UriKind.RelativeOrAbsolute));
         }
 
         /// <summary>
@@ -285,12 +275,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                 throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof({{ setting.parameter_name }}));
             }
 
-            if (!Uri.TryCreate({{ setting.parameter_name }}, UriKind.Absolute, out Uri? uri))
-            {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof({{ setting.parameter_name }}));
-            }
-
-            return Set{{ setting.property_name }}(uri);
+            return Set{{ setting.property_name }}(new Uri({{ setting.parameter_name }}, UriKind.RelativeOrAbsolute));
         }
         {{~ else ~}}
         /// <summary>

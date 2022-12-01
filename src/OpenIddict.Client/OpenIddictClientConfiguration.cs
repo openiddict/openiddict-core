@@ -70,23 +70,9 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0313));
                     }
 
-                    registration.MetadataAddress ??= new Uri(".well-known/openid-configuration", UriKind.Relative);
-
-                    if (!registration.MetadataAddress.IsAbsoluteUri)
-                    {
-                        var issuer = registration.Issuer;
-                        if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
-                        {
-                            issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
-                        }
-
-                        if (registration.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
-                        {
-                            registration.MetadataAddress = new Uri(registration.MetadataAddress.OriginalString[1..], UriKind.Relative);
-                        }
-
-                        registration.MetadataAddress = new Uri(issuer, registration.MetadataAddress);
-                    }
+                    registration.MetadataAddress = OpenIddictHelpers.CreateAbsoluteUri(
+                        registration.Issuer,
+                        registration.MetadataAddress ?? new Uri(".well-known/openid-configuration", UriKind.Relative));
 
                     registration.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
                         registration.MetadataAddress.AbsoluteUri, new OpenIddictClientRetriever(_service, registration))

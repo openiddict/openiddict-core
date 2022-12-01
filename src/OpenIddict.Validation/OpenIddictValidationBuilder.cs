@@ -463,7 +463,7 @@ public sealed class OpenIddictValidationBuilder
 
         if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0127), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0023), nameof(address));
         }
 
         return SetIssuer(uri);

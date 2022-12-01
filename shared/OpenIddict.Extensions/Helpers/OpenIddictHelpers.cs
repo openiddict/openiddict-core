@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -90,6 +91,83 @@ internal static class OpenIddictHelpers
     public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source, IEqualityComparer<TSource>? comparer)
         => new(source ?? throw new ArgumentNullException(nameof(source)), comparer);
 #endif
+
+    /// <summary>
+    /// Computes an absolute URI from the specified <paramref name="left"/> and <paramref name="right"/> URIs.
+    /// Note: if the <paramref name="right"/> URI is already absolute, it is directly returned.
+    /// </summary>
+    /// <param name="left">The left part.</param>
+    /// <param name="right">The right part.</param>
+    /// <returns>An absolute URI from the specified <paramref name="left"/> and <paramref name="right"/>.</returns>
+    /// <exception cref="InvalidOperationException"><paramref name="left"/> is not an absolute URI.</exception>
+    [return: NotNullIfNotNull(nameof(right))]
+    public static Uri? CreateAbsoluteUri(Uri? left, Uri? right)
+    {
+        if (right is null)
+        {
+            return null;
+        }
+
+        if (right.IsAbsoluteUri)
+        {
+            return right;
+        }
+
+        if (left is not { IsAbsoluteUri: true })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(left));
+        }
+
+        // Ensure the left part ends with a trailing slash, as it is necessary
+        // for Uri's constructor to include the last path segment in the base URI.
+        left = left.AbsolutePath switch
+        {
+            null or { Length: 0 } => new UriBuilder(left) { Path = "/" }.Uri,
+            [.., not '/'] => new UriBuilder(left) { Path = left.AbsolutePath + "/" }.Uri,
+            ['/'] or _ => left
+        };
+
+        return new Uri(left, right);
+    }
+
+    /// <summary>
+    /// Determines whether the <paramref name="left"/> URI is a base of the <paramref name="right"/> URI.
+    /// </summary>
+    /// <param name="left">The left part.</param>
+    /// <param name="right">The right part.</param>
+    /// <returns><see langword="true"/> if <paramref name="left"/> is base of
+    /// <paramref name="right"/>, <see langword="false"/> otherwise.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="left"/> or
+    /// <paramref name="right"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException"><paramref name="left"/> is not an absolute URI.</exception>
+    public static bool IsBaseOf(Uri left, Uri right)
+    {
+        if (left is null)
+        {
+            throw new ArgumentNullException(nameof(left));
+        }
+
+        if (right is null)
+        {
+            throw new ArgumentNullException(nameof(right));
+        }
+
+        if (left is not { IsAbsoluteUri: true })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(left));
+        }
+
+        // Ensure the left part ends with a trailing slash, as it is necessary
+        // for Uri's constructor to include the last path segment in the base URI.
+        left = left.AbsolutePath switch
+        {
+            null or { Length: 0 } => new UriBuilder(left) { Path = "/" }.Uri,
+            [.., not '/'] => new UriBuilder(left) { Path = left.AbsolutePath + "/" }.Uri,
+            ['/'] or _ => left
+        };
+
+        return left.IsBaseOf(right);
+    }
 
     /// <summary>
     /// Adds a query string parameter to the specified <see cref="Uri"/>.

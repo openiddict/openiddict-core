@@ -30,7 +30,6 @@ public sealed class OpenIddictServerFactory : IOpenIddictServerFactory
     public ValueTask<OpenIddictServerTransaction> CreateTransactionAsync()
         => new(new OpenIddictServerTransaction
         {
-            Issuer = _options.CurrentValue.Issuer,
             Logger = _logger,
             Options = _options.CurrentValue
         });

@@ -2552,7 +2552,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [Theory]
     [InlineData(null)]
     [InlineData("http://www.fabrikam.com/")]
-    public async Task ApplyAuthorizationResponse_SetsIssuerParameter(string issuer)
+    public async Task ApplyAuthorizationResponse_SetsIssuerParameter(string? issuer)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -2586,7 +2586,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         });
 
         // Assert
-        Assert.Equal(issuer is not null ? issuer : "http://localhost/", response.Iss);
+        Assert.Equal(!string.IsNullOrEmpty(issuer) ? issuer : "http://localhost/", response.Iss);
     }
 
     [Fact]

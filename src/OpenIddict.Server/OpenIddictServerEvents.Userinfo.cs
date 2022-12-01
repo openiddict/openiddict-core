@@ -145,6 +145,11 @@ public static partial class OpenIddictServerEvents
         public string? GivenName { get; set; }
 
         /// <summary>
+        /// Gets or sets the value used for the "iss" claim.
+        /// </summary>
+        public Uri? Issuer { get; set; }
+
+        /// <summary>
         /// Gets or sets the value used for the "phone_number" claim.
         /// Note: this value should only be populated if the "phone"
         /// scope was requested and accepted by the resource owner.

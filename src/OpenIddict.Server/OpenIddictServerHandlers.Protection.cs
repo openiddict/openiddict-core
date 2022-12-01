@@ -68,8 +68,24 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 var parameters = context.Options.TokenValidationParameters.Clone();
-                parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
-                parameters.ValidateIssuer = !string.IsNullOrEmpty(parameters.ValidIssuer);
+
+                parameters.ValidIssuers ??= (context.Options.Issuer ?? context.BaseUri) switch
+                {
+                    null => null,
+
+                    // If the issuer URI doesn't contain any path/query/fragment, allow both http://www.fabrikam.com
+                    // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
+                    // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
+                    { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
+                    {
+                        uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
+                        uri.AbsoluteUri[..^1]
+                    },
+
+                    Uri uri => new[] { uri.AbsoluteUri }
+                };
+
+                parameters.ValidateIssuer = parameters.ValidIssuers is not null;
 
                 parameters.ValidTypes = context.ValidTokenTypes.Count switch
                 {

@@ -883,6 +883,8 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
+                context.Issuer = context.Options.Issuer ?? context.BaseUri;
+
                 context.TokenId = context.Principal.GetClaim(Claims.JwtId);
                 context.TokenUsage = context.Principal.GetTokenType();
                 context.Subject = context.Principal.GetClaim(Claims.Subject);

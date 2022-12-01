@@ -203,7 +203,8 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                if (context.Issuer is not null && context.Issuer != address)
+                // Ensure the issuer matches the expected value.
+                if (address != context.Options.Issuer)
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -325,7 +326,7 @@ public static partial class OpenIddictValidationHandlers
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                    .UseSingletonHandler<ExtractIntrospectionEndpoint>()
+                    .UseSingletonHandler<ExtractIntrospectionEndpointClientAuthenticationMethods>()
                     .SetOrder(ExtractIntrospectionEndpoint.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();

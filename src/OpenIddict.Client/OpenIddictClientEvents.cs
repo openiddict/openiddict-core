@@ -40,6 +40,24 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
+        /// Gets or sets the request <see cref="Uri"/> of the current transaction, if available.
+        /// </summary>
+        public Uri? RequestUri
+        {
+            get => Transaction.RequestUri;
+            set => Transaction.RequestUri = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the base <see cref="Uri"/> of the host, if available.
+        /// </summary>
+        public Uri? BaseUri
+        {
+            get => Transaction.BaseUri;
+            set => Transaction.BaseUri = value;
+        }
+
+        /// <summary>
         /// Gets the logger responsible for logging processed operations.
         /// </summary>
         public ILogger Logger => Transaction.Logger;
@@ -48,15 +66,6 @@ public static partial class OpenIddictClientEvents
         /// Gets the OpenIddict client options.
         /// </summary>
         public OpenIddictClientOptions Options => Transaction.Options;
-
-        /// <summary>
-        /// Gets or sets the issuer used for the current request.
-        /// </summary>
-        public Uri? Issuer
-        {
-            get => Transaction.Issuer;
-            set => Transaction.Issuer = value;
-        }
 
         /// <summary>
         /// Gets or sets the server configuration used for the current request.
@@ -298,6 +307,11 @@ public static partial class OpenIddictClientEvents
         /// Gets the user-defined authentication properties, if available.
         /// </summary>
         public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets the issuer used for the authentication demand, if applicable.
+        /// </summary>
+        public Uri? Issuer { get; set; }
 
         /// <summary>
         /// Gets or sets the grant type used for the authentication demand, if applicable.
@@ -715,6 +729,11 @@ public static partial class OpenIddictClientEvents
         public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets the issuer used for the challenge demand, if applicable.
+        /// </summary>
+        public Uri? Issuer { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the provider that will be
         /// used to resolve the issuer identity, if applicable.
         /// </summary>
@@ -870,6 +889,11 @@ public static partial class OpenIddictClientEvents
         /// Gets the user-defined authentication properties, if available.
         /// </summary>
         public Dictionary<string, string?> Properties { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets the issuer used for the sign-out demand, if applicable.
+        /// </summary>
+        public Uri? Issuer { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the provider that will be

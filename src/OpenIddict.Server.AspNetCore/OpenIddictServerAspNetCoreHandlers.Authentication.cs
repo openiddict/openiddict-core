@@ -113,8 +113,8 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 }
 
                 var parameters = context.Options.TokenValidationParameters.Clone();
-                parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
-                parameters.ValidAudience = context.Issuer?.AbsoluteUri;
+                parameters.ValidIssuer ??= (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri;
+                parameters.ValidAudience ??= parameters.ValidIssuer;
                 parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.AuthorizationRequest };
 
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenAsync(token, parameters);
@@ -231,9 +231,9 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 // Store the serialized authorization request parameters in the distributed cache.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
                 {
-                    Audience = context.Issuer?.AbsoluteUri,
+                    Audience = (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri,
                     EncryptingCredentials = context.Options.EncryptionCredentials.First(),
-                    Issuer = context.Issuer?.AbsoluteUri,
+                    Issuer = (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.First(),
                     Subject = new ClaimsIdentity(claims, TokenValidationParameters.DefaultAuthenticationType),
                     TokenType = JsonWebTokenTypes.Private.AuthorizationRequest

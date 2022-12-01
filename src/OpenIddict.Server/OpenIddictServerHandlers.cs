@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +19,11 @@ namespace OpenIddict.Server;
 public static partial class OpenIddictServerHandlers
 {
     public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        /*
+         * Top-level request processing:
+         */
+        InferEndpointType.Descriptor,
+
         /*
          * Authentication processing:
          */
@@ -100,6 +104,99 @@ public static partial class OpenIddictServerHandlers
         .AddRange(Revocation.DefaultHandlers)
         .AddRange(Session.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
+
+    /// <summary>
+    /// Contains the logic responsible for inferring the endpoint type from the request address.
+    /// </summary>
+    public sealed class InferEndpointType : IOpenIddictServerHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .UseSingletonHandler<InferEndpointType>()
+                .SetOrder(int.MinValue + 100_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0127));
+            }
+
+            context.EndpointType =
+                Matches(context.Options.AuthorizationEndpointUris) ? OpenIddictServerEndpointType.Authorization :
+                Matches(context.Options.ConfigurationEndpointUris) ? OpenIddictServerEndpointType.Configuration :
+                Matches(context.Options.CryptographyEndpointUris)  ? OpenIddictServerEndpointType.Cryptography  :
+                Matches(context.Options.DeviceEndpointUris)        ? OpenIddictServerEndpointType.Device        :
+                Matches(context.Options.IntrospectionEndpointUris) ? OpenIddictServerEndpointType.Introspection :
+                Matches(context.Options.LogoutEndpointUris)        ? OpenIddictServerEndpointType.Logout        :
+                Matches(context.Options.RevocationEndpointUris)    ? OpenIddictServerEndpointType.Revocation    :
+                Matches(context.Options.TokenEndpointUris)         ? OpenIddictServerEndpointType.Token         :
+                Matches(context.Options.UserinfoEndpointUris)      ? OpenIddictServerEndpointType.Userinfo      :
+                Matches(context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
+                                                                     OpenIddictServerEndpointType.Unknown;
+
+            if (context.EndpointType is not OpenIddictServerEndpointType.Unknown)
+            {
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6053), context.EndpointType);
+            }
+
+            return default;
+
+            bool Matches(IReadOnlyList<Uri> addresses)
+            {
+                for (var index = 0; index < addresses.Count; index++)
+                {
+                    var address = addresses[index];
+                    if (address.IsAbsoluteUri)
+                    {
+                        if (Equals(address, context.RequestUri))
+                        {
+                            return true;
+                        }
+                    }
+
+                    else
+                    {
+                        var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, address);
+                        if (uri.IsWellFormedOriginalString() &&
+                            OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            static bool Equals(Uri left, Uri right) =>
+                string.Equals(left.Scheme, right.Scheme, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(left.Host, right.Host, StringComparison.OrdinalIgnoreCase) &&
+                left.Port == right.Port &&
+                // Note: paths are considered equivalent even if the casing isn't identical or if one of the two
+                // paths only differs by a trailing slash, which matches the classical behavior seen on ASP.NET,
+                // Microsoft.Owin/Katana and ASP.NET Core. Developers who prefer a different behavior can remove
+                // this handler and replace it by a custom version implementing a more strict comparison logic.
+                (string.Equals(left.AbsolutePath, right.AbsolutePath, StringComparison.OrdinalIgnoreCase) ||
+                 (left.AbsolutePath.Length == right.AbsolutePath.Length + 1 &&
+                  left.AbsolutePath.StartsWith(right.AbsolutePath, StringComparison.OrdinalIgnoreCase) &&
+                  left.AbsolutePath[^1] is '/') ||
+                 (right.AbsolutePath.Length == left.AbsolutePath.Length + 1 &&
+                  right.AbsolutePath.StartsWith(left.AbsolutePath, StringComparison.OrdinalIgnoreCase) &&
+                  right.AbsolutePath[^1] is '/'));
+        }
+    }
 
     /// <summary>
     /// Contains the logic responsible for rejecting authentication demands made from unsupported endpoints.
@@ -1815,7 +1912,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             // Set the audiences based on the resource claims stored in the principal.
             principal.SetAudiences(context.Principal.GetResources());
@@ -1902,7 +1999,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             // Attach the redirect_uri to allow for later comparison when
             // receiving a grant_type=authorization_code token request.
@@ -1991,7 +2088,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             // Restore the device code internal token identifier from the principal
             // resolved from the user code used in the user code verification request.
@@ -2085,7 +2182,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             context.RefreshTokenPrincipal = principal;
 
@@ -2181,7 +2278,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             // If available, use the client_id as both the audience and the authorized party.
             // See https://openid.net/specs/openid-connect-core-1_0.html#IDToken for more information.
@@ -2269,7 +2366,7 @@ public static partial class OpenIddictServerHandlers
             }
 
             // Use the server identity as the token issuer.
-            principal.SetClaim(Claims.Private.Issuer, context.Issuer?.AbsoluteUri);
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri)?.AbsoluteUri);
 
             // Store the client_id as a public client_id claim.
             principal.SetClaim(Claims.ClientId, context.Request.ClientId);
@@ -2976,7 +3073,8 @@ public static partial class OpenIddictServerHandlers
             {
                 context.Response.UserCode = context.UserCode;
 
-                var address = GetEndpointAbsoluteUri(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
+                var address = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri,
+                    context.Options.VerificationEndpointUris.FirstOrDefault());
                 if (address is not null)
                 {
                     var builder = new UriBuilder(address)
@@ -2990,43 +3088,6 @@ public static partial class OpenIddictServerHandlers
             }
 
             return default;
-
-            static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri? endpoint)
-            {
-                // If the endpoint is disabled (i.e a null address is specified), return null.
-                if (endpoint is null)
-                {
-                    return null;
-                }
-
-                // If the endpoint address is already an absolute URL, return it as-is.
-                if (endpoint.IsAbsoluteUri)
-                {
-                    return endpoint;
-                }
-
-                // At this stage, throw an exception if the issuer cannot be retrieved.
-                if (issuer is not { IsAbsoluteUri: true })
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
-                }
-
-                // Ensure the issuer ends with a trailing slash, as it is necessary
-                // for Uri's constructor to correctly compute correct absolute URLs.
-                if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
-                {
-                    issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
-                }
-
-                // Ensure the endpoint does not start with a leading slash, as it is necessary
-                // for Uri's constructor to correctly compute correct absolute URLs.
-                if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
-                {
-                    endpoint = new Uri(endpoint.OriginalString[1..], UriKind.Relative);
-                }
-
-                return new Uri(issuer, endpoint);
-            }
         }
     }
 

@@ -7,6 +7,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.Validation;
 
@@ -105,28 +106,17 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 
                 if (!options.MetadataAddress.IsAbsoluteUri)
                 {
-                    var issuer = options.Issuer;
-                    if (issuer is not { IsAbsoluteUri: true })
+                    if (options.Issuer is not { IsAbsoluteUri: true })
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
                     }
 
-                    if (!string.IsNullOrEmpty(issuer.Fragment) || !string.IsNullOrEmpty(issuer.Query))
+                    if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
                     {
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
                     }
 
-                    if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
-                    {
-                        issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
-                    }
-
-                    if (options.MetadataAddress.OriginalString.StartsWith("/", StringComparison.Ordinal))
-                    {
-                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString[1..], UriKind.Relative);
-                    }
-
-                    options.MetadataAddress = new Uri(issuer, options.MetadataAddress);
+                    options.MetadataAddress = OpenIddictHelpers.CreateAbsoluteUri(options.Issuer, options.MetadataAddress);
                 }
 
                 options.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(

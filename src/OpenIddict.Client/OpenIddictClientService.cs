@@ -571,7 +571,6 @@ public sealed class OpenIddictClientService
                 var context = new PrepareConfigurationRequestContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -593,7 +592,6 @@ public sealed class OpenIddictClientService
                 var context = new ApplyConfigurationRequestContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -617,7 +615,6 @@ public sealed class OpenIddictClientService
                 var context = new ExtractConfigurationResponseContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -643,7 +640,6 @@ public sealed class OpenIddictClientService
                 var context = new HandleConfigurationResponseContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,
                     Response = response
@@ -730,7 +726,6 @@ public sealed class OpenIddictClientService
                 var context = new PrepareCryptographyRequestContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -752,7 +747,6 @@ public sealed class OpenIddictClientService
                 var context = new ApplyCryptographyRequestContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -776,7 +770,6 @@ public sealed class OpenIddictClientService
                 var context = new ExtractCryptographyResponseContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -802,7 +795,6 @@ public sealed class OpenIddictClientService
                 var context = new HandleCryptographyResponseContext(transaction)
                 {
                     Address = address,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,
                     Response = response
@@ -898,7 +890,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -921,7 +912,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -946,7 +936,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -973,7 +962,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,
                     Response = response
@@ -1063,7 +1051,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -1086,7 +1073,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -1111,7 +1097,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request
                 };
@@ -1138,7 +1123,6 @@ public sealed class OpenIddictClientService
                 {
                     Address = address,
                     Configuration = configuration,
-                    Issuer = registration.Issuer,
                     Registration = registration,
                     Request = request,
                     Response = response,

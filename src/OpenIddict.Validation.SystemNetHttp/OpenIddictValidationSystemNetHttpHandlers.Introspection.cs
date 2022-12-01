@@ -53,7 +53,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public async ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
+            public ValueTask HandleAsync(PrepareIntrospectionRequestContext context)
             {
                 if (context is null)
                 {
@@ -70,16 +70,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 // If no client identifier was attached to the request, skip the following logic.
                 if (string.IsNullOrEmpty(context.Request.ClientId))
                 {
-                    return;
-                }
-
-                var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-                // Ensure the issuer resolved from the configuration matches the expected value.
-                if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+                    return default;
                 }
 
                 // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
@@ -93,7 +84,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 //
                 // See https://tools.ietf.org/html/rfc8414#section-2
                 // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
-                if (!configuration.IntrospectionEndpointAuthMethodsSupported.Contains(ClientAuthenticationMethods.ClientSecretPost))
+                if (!context.Configuration.IntrospectionEndpointAuthMethodsSupported.Contains(ClientAuthenticationMethods.ClientSecretPost))
                 {
                     // Important: the credentials MUST be formURL-encoded before being base64-encoded.
                     var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(new StringBuilder()
@@ -108,6 +99,8 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                     // Remove the client credentials from the request payload to ensure they are not sent twice.
                     context.Request.ClientId = context.Request.ClientSecret = null;
                 }
+
+                return default;
 
                 static string? EscapeDataString(string? value)
                     => value is not null ? Uri.EscapeDataString(value).Replace("%20", "+") : null;

@@ -225,7 +225,8 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                if (context.Issuer is not null && context.Issuer != address)
+                // Ensure the issuer matches the expected value.
+                if (address != context.Registration.Issuer)
                 {
                     context.Reject(
                         error: Errors.ServerError,
