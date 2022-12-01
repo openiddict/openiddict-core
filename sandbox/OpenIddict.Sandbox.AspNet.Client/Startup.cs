@@ -73,14 +73,13 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     // parameter containing their URL as part of authorization responses. For more information,
                     // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                     options.SetRedirectionEndpointUris(
-                        "/callback/login/local",
-                        "/callback/login/github",
-                        "/callback/login/google",
-                        "/callback/login/twitter");
+                        "callback/login/local",
+                        "callback/login/github",
+                        "callback/login/google",
+                        "callback/login/twitter");
 
-                    // Enable the post-logout redirection endpoints needed to handle the callback stage.
-                    options.SetPostLogoutRedirectionEndpointUris(
-                        "/callback/logout/local");
+                    // Enable the post-logout redirection endpoint needed to handle the callback stage.
+                    options.SetPostLogoutRedirectionEndpointUris("callback/logout/local");
 
                     // Note: this sample uses the authorization code and refresh token
                     // flows, but you can enable the other flows if necessary.
@@ -106,15 +105,15 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     // Add a client registration matching the client application definition in the server project.
                     options.AddRegistration(new OpenIddictClientRegistration
                     {
-                        ProviderName = "Local",
                         Issuer = new Uri("https://localhost:44349/", UriKind.Absolute),
+                        ProviderName = "Local",
 
                         ClientId = "mvc",
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                         Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess, "demo_api" },
 
-                        RedirectUri = new Uri("https://localhost:44378/callback/login/local", UriKind.Absolute),
-                        PostLogoutRedirectUri = new Uri("https://localhost:44378/callback/logout/local", UriKind.Absolute)
+                        RedirectUri = new Uri("callback/login/local", UriKind.Relative),
+                        PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative)
                     });
 
                     // Register the Web providers integrations.
@@ -123,13 +122,13 @@ namespace OpenIddict.Sandbox.AspNet.Client
                            {
                                options.SetClientId("c4ade52327b01ddacff3")
                                       .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
-                                      .SetRedirectUri("https://localhost:44378/callback/login/github");
+                                      .SetRedirectUri("callback/login/github");
                            })
                            .UseGoogle(options =>
                            {
                                options.SetClientId("1016114395689-kgtgq2p6dj27d7v6e2kjkoj54dgrrckh.apps.googleusercontent.com")
                                       .SetClientSecret("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")
-                                      .SetRedirectUri("https://localhost:44378/callback/login/google")
+                                      .SetRedirectUri("callback/login/google")
                                       .SetAccessType("offline")
                                       .AddScopes(Scopes.Profile);
                            })
@@ -137,7 +136,7 @@ namespace OpenIddict.Sandbox.AspNet.Client
                            {
                                options.SetClientId("bXgwc0U3N3A3YWNuaWVsdlRmRWE6MTpjaQ")
                                       .SetClientSecret("VcohOgBp-6yQCurngo4GAyKeZh0D6SUCCSjJgEo1uRzJarjIUS")
-                                      .SetRedirectUri("https://localhost:44378/callback/login/twitter");
+                                      .SetRedirectUri("callback/login/twitter");
                            });
                 });
 

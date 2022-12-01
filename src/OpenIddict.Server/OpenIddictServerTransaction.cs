@@ -21,9 +21,14 @@ public sealed class OpenIddictServerTransaction
     public OpenIddictServerEndpointType EndpointType { get; set; }
 
     /// <summary>
-    /// Gets or sets the issuer address associated with the current transaction, if available.
+    /// Gets or sets the request <see cref="Uri"/> of the current transaction, if available.
     /// </summary>
-    public Uri? Issuer { get; set; }
+    public Uri? RequestUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets the base <see cref="Uri"/> of the host, if available.
+    /// </summary>
+    public Uri? BaseUri { get; set; }
 
     /// <summary>
     /// Gets or sets the logger associated with the current request.

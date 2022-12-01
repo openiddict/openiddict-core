@@ -1126,6 +1126,22 @@ public sealed class OpenIddictClientBuilder
     public OpenIddictClientBuilder SetStateTokenLifetime(TimeSpan? lifetime)
         => Configure(options => options.StateTokenLifetime = lifetime);
 
+    /// <summary>
+    /// Sets the client URI, which is used as the value for the "issuer" claim.
+    /// </summary>
+    /// <param name="address">The client URI.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientBuilder SetClientUri(Uri address)
+    {
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
+        return Configure(options => options.ClientUri = address);
+    }
+
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);

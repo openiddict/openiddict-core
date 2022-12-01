@@ -87,6 +87,11 @@ public static partial class OpenIddictServerEvents
         public Dictionary<string, OpenIddictParameter> Metadata { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets the issuer address.
+        /// </summary>
+        public Uri? Issuer { get; set; }
+
+        /// <summary>
         /// Gets or sets the authorization endpoint address.
         /// </summary>
         public Uri? AuthorizationEndpoint { get; set; }

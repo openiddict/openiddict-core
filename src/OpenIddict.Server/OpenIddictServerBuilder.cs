@@ -1714,8 +1714,8 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.UserCodeLifetime = lifetime);
 
     /// <summary>
-    /// Sets the issuer address, which is used as the base address
-    /// for the endpoint URIs returned from the discovery endpoint.
+    /// Sets the issuer address, which is used as the value for the "issuer" claim and
+    /// is returned from the discovery endpoint to identify the authorization server.
     /// </summary>
     /// <param name="address">The issuer address.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>

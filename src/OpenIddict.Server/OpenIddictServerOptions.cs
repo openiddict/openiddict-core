@@ -16,7 +16,7 @@ namespace OpenIddict.Server;
 public sealed class OpenIddictServerOptions
 {
     /// <summary>
-    /// Gets or sets the optional base address used to uniquely identify the authorization server.
+    /// Gets or sets the optional address used to uniquely identify the authorization server.
     /// The URI must be absolute and may contain a path, but no query string or fragment part.
     /// </summary>
     public Uri? Issuer { get; set; }
@@ -67,8 +67,8 @@ public sealed class OpenIddictServerOptions
     /// </summary>
     public List<Uri> ConfigurationEndpointUris { get; } = new()
     {
-        new Uri("/.well-known/openid-configuration", UriKind.Relative),
-        new Uri("/.well-known/oauth-authorization-server", UriKind.Relative)
+        new Uri(".well-known/openid-configuration", UriKind.Relative),
+        new Uri(".well-known/oauth-authorization-server", UriKind.Relative)
     };
 
     /// <summary>
@@ -76,7 +76,7 @@ public sealed class OpenIddictServerOptions
     /// </summary>
     public List<Uri> CryptographyEndpointUris { get; } = new()
     {
-        new Uri("/.well-known/jwks", UriKind.Relative)
+        new Uri(".well-known/jwks", UriKind.Relative)
     };
 
     /// <summary>

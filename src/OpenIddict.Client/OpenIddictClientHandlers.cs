@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Extensions;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -21,6 +22,11 @@ namespace OpenIddict.Client;
 public static partial class OpenIddictClientHandlers
 {
     public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
+        /*
+         * Top-level request processing:
+         */
+        InferEndpointType.Descriptor,
+
         /*
          * Authentication processing:
          */
@@ -33,6 +39,7 @@ public static partial class OpenIddictClientHandlers
         RedeemStateTokenEntry.Descriptor,
         ValidateStateTokenEndpointType.Descriptor,
         ValidateRequestForgeryProtection.Descriptor,
+        ValidateEndpointUri.Descriptor,
         ResolveClientRegistrationFromStateToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
         HandleFrontchannelErrorResponse.Descriptor,
@@ -100,9 +107,9 @@ public static partial class OpenIddictClientHandlers
         AttachScopes.Descriptor,
         AttachNonce.Descriptor,
         AttachCodeChallengeParameters.Descriptor,
-        PrepareStateTokenPrincipal.Descriptor,
+        PrepareLoginStateTokenPrincipal.Descriptor,
         ValidateRedirectUriParameter.Descriptor,
-        GenerateStateToken.Descriptor,
+        GenerateLoginStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
         AttachCustomChallengeParameters.Descriptor,
 
@@ -133,6 +140,86 @@ public static partial class OpenIddictClientHandlers
         .AddRange(Protection.DefaultHandlers)
         .AddRange(Session.DefaultHandlers)
         .AddRange(Userinfo.DefaultHandlers);
+
+    /// <summary>
+    /// Contains the logic responsible for inferring the endpoint type from the request address.
+    /// </summary>
+    public sealed class InferEndpointType : IOpenIddictClientHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .UseSingletonHandler<InferEndpointType>()
+                .SetOrder(int.MinValue + 100_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0127));
+            }
+
+            context.EndpointType =
+                Matches(context.Options.RedirectionEndpointUris)           ? OpenIddictClientEndpointType.Redirection           :
+                Matches(context.Options.PostLogoutRedirectionEndpointUris) ? OpenIddictClientEndpointType.PostLogoutRedirection :
+                                                                             OpenIddictClientEndpointType.Unknown;
+
+            return default;
+
+            bool Matches(IReadOnlyList<Uri> addresses)
+            {
+                for (var index = 0; index < addresses.Count; index++)
+                {
+                    var address = addresses[index];
+                    if (address.IsAbsoluteUri)
+                    {
+                        if (Equals(address, context.RequestUri))
+                        {
+                            return true;
+                        }
+                    }
+
+                    else
+                    {
+                        var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, address);
+                        if (uri.IsWellFormedOriginalString() &&
+                            OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            static bool Equals(Uri left, Uri right) =>
+                string.Equals(left.Scheme, right.Scheme, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(left.Host, right.Host, StringComparison.OrdinalIgnoreCase) &&
+                left.Port == right.Port &&
+                // Note: paths are considered equivalent even if the casing isn't identical or if one of the two
+                // paths only differs by a trailing slash, which matches the classical behavior seen on ASP.NET,
+                // Microsoft.Owin/Katana and ASP.NET Core. Developers who prefer a different behavior can remove
+                // this handler and replace it by a custom version implementing a more strict comparison logic.
+                (string.Equals(left.AbsolutePath, right.AbsolutePath, StringComparison.OrdinalIgnoreCase) ||
+                 (left.AbsolutePath.Length == right.AbsolutePath.Length + 1 &&
+                  left.AbsolutePath.StartsWith(right.AbsolutePath, StringComparison.OrdinalIgnoreCase) &&
+                  left.AbsolutePath[^1] is '/') ||
+                 (right.AbsolutePath.Length == left.AbsolutePath.Length + 1 &&
+                  right.AbsolutePath.StartsWith(left.AbsolutePath, StringComparison.OrdinalIgnoreCase) &&
+                  right.AbsolutePath[^1] is '/'));
+        }
+    }
 
     /// <summary>
     /// Contains the logic responsible for rejecting invalid authentication demands.
@@ -276,12 +363,6 @@ public static partial class OpenIddictClientHandlers
             // Resolve and attach the server configuration to the context if none has been set already.
             context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-            // Ensure the issuer resolved from the configuration matches the expected value.
-            if (context.Configuration.Issuer != context.Issuer)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-            }
 
             // Ensure the selected grant type, if explicitly set, is listed as supported in the configuration.
             if (!string.IsNullOrEmpty(context.GrantType) &&
@@ -656,6 +737,108 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for comparing the current request URL to the expected URL stored in the state token.
+    /// </summary>
+    public sealed class ValidateEndpointUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireStateTokenValidated>()
+                .UseSingletonHandler<ValidateEndpointUri>()
+                .SetOrder(ValidateRequestForgeryProtection.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Resolve the endpoint type allowed to be used with the state token.
+            if (!Enum.TryParse(context.StateTokenPrincipal.GetClaim(Claims.Private.EndpointType),
+                ignoreCase: true, out OpenIddictClientEndpointType type))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0340));
+            }
+
+            // Resolve the endpoint URI from either the redirect_uri or post_logout_redirect_uri
+            // depending on the type of endpoint meant to be used with the specified state token.
+            var value = type switch
+            {
+                OpenIddictClientEndpointType.PostLogoutRedirection =>
+                    context.StateTokenPrincipal.GetClaim(Claims.Private.PostLogoutRedirectUri),
+
+                OpenIddictClientEndpointType.Redirection =>
+                    context.StateTokenPrincipal.GetClaim(Claims.Private.RedirectUri),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0340))
+            };
+
+            // If the endpoint URI cannot be resolved, this likely means the authorization or
+            // logout request was sent without a redirect_uri/post_logout_redirect_uri attached.
+            if (string.IsNullOrEmpty(value))
+            {
+                return default;
+            }
+
+            // Compare the current HTTP request address to the original endpoint URI. If the two don't
+            // match, this may indicate a mix-up attack. While the authorization server is expected to
+            // abort the authorization flow by rejecting the token request that may be eventually sent
+            // with the original endpoint URI, many servers are known to incorrectly implement this
+            // endpoint URI validation logic. This check also offers limited protection as it cannot
+            // prevent the authorization code from being leaked to a malicious authorization server.
+            // By comparing the endpoint URI directly in the client, a first layer of protection is
+            // provided independently of whether the authorization server will enforce this check.
+            //
+            // See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-4.4.2.2
+            // for more information.
+            var address = new Uri(value, UriKind.Absolute);
+            if (new UriBuilder(address) { Query = null }.Uri !=
+                new UriBuilder(context.RequestUri!) { Query = null }.Uri)
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.GetResourceString(SR.ID2138),
+                    uri: SR.FormatID8000(SR.ID2138));
+
+                return default;
+            }
+
+            // Ensure all the query string parameters that were part of the original endpoint URI
+            // are present in the current request (parameters that were not part of the original
+            // endpoint URI are assumed to be authorization response parameters and are ignored).
+            if (!string.IsNullOrEmpty(address.Query))
+            {
+                var parameters = OpenIddictHelpers.ParseQuery(context.RequestUri!.Query);
+
+                foreach (var parameter in OpenIddictHelpers.ParseQuery(address.Query))
+                {
+                    if (!parameters.TryGetValue(parameter.Key, out StringValues values) ||
+                        !parameter.Value.Equals(values))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.GetResourceString(SR.ID2138),
+                            uri: SR.FormatID8000(SR.ID2138));
+
+                        return default;
+                    }
+                }
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the client registration
     /// based on the authorization server identity stored in the state token.
     /// </summary>
@@ -708,12 +891,6 @@ public static partial class OpenIddictClientHandlers
             // Resolve and attach the server configuration to the context.
             context.Configuration = await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-            // Ensure the issuer resolved from the configuration matches the expected value.
-            if (context.Configuration.Issuer != context.Issuer)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-            }
         }
     }
 
@@ -3617,12 +3794,6 @@ public static partial class OpenIddictClientHandlers
             // Resolve and attach the server configuration to the context if none has been set already.
             context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-            // Ensure the issuer resolved from the configuration matches the expected value.
-            if (context.Configuration.Issuer != context.Issuer)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-            }
         }
     }
 
@@ -4076,10 +4247,13 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Unlike OpenID Connect, OAuth 2.0 and 2.1 don't require specifying a redirect_uri.
+            //
             // To keep OpenIddict compatible with OAuth 2.0/2.1 deployments, the redirect_uri
             // is not required for OAuth 2.0 requests but an exception will be thrown later
             // if the request that is being prepared is an OpenID Connect request.
-            context.RedirectUri ??= context.Registration.RedirectUri?.AbsoluteUri;
+            context.RedirectUri ??= OpenIddictHelpers.CreateAbsoluteUri(
+                context.BaseUri,
+                context.Registration.RedirectUri)?.AbsoluteUri;
 
             return default;
         }
@@ -4303,7 +4477,7 @@ public static partial class OpenIddictClientHandlers
     /// Contains the logic responsible for preparing and attaching the claims principal
     /// used to generate the state token, if one is going to be returned.
     /// </summary>
-    public sealed class PrepareStateTokenPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class PrepareLoginStateTokenPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -4311,7 +4485,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireLoginStateTokenGenerated>()
-                .UseSingletonHandler<PrepareStateTokenPrincipal>()
+                .UseSingletonHandler<PrepareLoginStateTokenPrincipal>()
                 .SetOrder(AttachCodeChallengeParameters.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -4359,6 +4533,9 @@ public static partial class OpenIddictClientHandlers
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
+
+            // Use the client identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.ClientUri ?? context.BaseUri)?.AbsoluteUri);
 
             // Store the identity of the authorization server in the state token principal to allow
             // resolving it when handling the authorization callback. Note: additional security checks
@@ -4418,11 +4595,11 @@ public static partial class OpenIddictClientHandlers
     /// <summary>
     /// Contains the logic responsible for generating a state token for the current challenge operation.
     /// </summary>
-    public sealed class GenerateStateToken : IOpenIddictClientHandler<ProcessChallengeContext>
+    public sealed class GenerateLoginStateToken : IOpenIddictClientHandler<ProcessChallengeContext>
     {
         private readonly IOpenIddictClientDispatcher _dispatcher;
 
-        public GenerateStateToken(IOpenIddictClientDispatcher dispatcher)
+        public GenerateLoginStateToken(IOpenIddictClientDispatcher dispatcher)
             => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
@@ -4431,7 +4608,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireLoginStateTokenGenerated>()
-                .UseScopedHandler<GenerateStateToken>()
+                .UseScopedHandler<GenerateLoginStateToken>()
                 .SetOrder(100_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -4493,7 +4670,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<ValidateRedirectUriParameter>()
-                .SetOrder(GenerateStateToken.Descriptor.Order + 1_000)
+                .SetOrder(GenerateLoginStateToken.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
@@ -4724,12 +4901,6 @@ public static partial class OpenIddictClientHandlers
             // Resolve and attach the server configuration to the context if none has been set already.
             context.Configuration ??= await context.Registration.ConfigurationManager.GetConfigurationAsync(default) ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
-
-            // Ensure the issuer resolved from the configuration matches the expected value.
-            if (context.Configuration.Issuer != context.Issuer)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
-            }
         }
     }
 
@@ -4785,7 +4956,9 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Note: the post_logout_redirect_uri parameter is optional.
-            context.PostLogoutRedirectUri ??= context.Registration.PostLogoutRedirectUri?.AbsoluteUri;
+            context.PostLogoutRedirectUri ??= OpenIddictHelpers.CreateAbsoluteUri(
+                context.BaseUri,
+                context.Registration.PostLogoutRedirectUri)?.AbsoluteUri;
 
             return default;
         }
@@ -4972,6 +5145,9 @@ public static partial class OpenIddictClientHandlers
             {
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
+
+            // Use the client identity as the token issuer.
+            principal.SetClaim(Claims.Private.Issuer, (context.Options.ClientUri ?? context.BaseUri)?.AbsoluteUri);
 
             // Store the identity of the authorization server in the state token
             // principal to allow resolving it when handling the post-logout callback.

@@ -16,6 +16,7 @@ public static class OpenIddictClientOwinConstants
         public const string CacheControl = "Cache-Control";
         public const string ContentType = "Content-Type";
         public const string Expires = "Expires";
+        public const string Host = "Host";
         public const string Pragma = "Pragma";
     }
 

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -29,11 +30,12 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         /*
          * Request top-level processing:
          */
-        InferIssuerFromHost.Descriptor,
+        ResolveRequestUri.Descriptor,
 
         /*
          * Authentication processing:
          */
+        ValidateHostHeader.Descriptor,
         ExtractAccessTokenFromAuthorizationHeader.Descriptor,
         ExtractAccessTokenFromBodyForm.Descriptor,
         ExtractAccessTokenFromQueryString.Descriptor,
@@ -58,10 +60,10 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         ProcessChallengeErrorResponse<ProcessErrorContext>.Descriptor);
 
     /// <summary>
-    /// Contains the logic responsible for infering the default issuer from the HTTP request host and validating it.
+    /// Contains the logic responsible for resolving the request URI from the ASP.NET Core environment.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public sealed class InferIssuerFromHost : IOpenIddictValidationHandler<ProcessRequestContext>
+    public sealed class ResolveRequestUri : IOpenIddictValidationHandler<ProcessRequestContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -69,8 +71,8 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                 .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<InferIssuerFromHost>()
-                .SetOrder(int.MinValue + 100_000)
+                .UseSingletonHandler<ResolveRequestUri>()
+                .SetOrder(int.MinValue + 50_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -87,14 +89,72 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
             var request = context.Transaction.GetHttpRequest() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            // Only use the current host as the issuer if the
-            // issuer was not explicitly set in the options.
-            if (context.Issuer is not null)
+            // OpenIddict supports both absolute and relative URIs for all its endpoints, but only absolute
+            // URIs can be properly canonicalized by the BCL System.Uri class (e.g './path/../' is normalized
+            // to './' once the URI is fully constructed). At this stage of the request processing, rejecting
+            // requests that lack the host information (e.g because HTTP/1.0 was used and no Host header was
+            // sent by the HTTP client) is not desirable as it would affect all requests, including requests
+            // that are not meant to be handled by OpenIddict itself. To avoid that, a fake host is temporarily
+            // used to build an absolute base URI and a request URI that will be used to determine whether the
+            // received request matches one of the addresses assigned to an OpenIddict endpoint. If the request
+            // is later handled by OpenIddict, an additional check will be made to require the Host header.
+
+            (context.BaseUri, context.RequestUri) = request.Host switch
             {
-                return default;
+                { HasValue: true } host => (
+                    BaseUri: new Uri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase, UriKind.Absolute),
+                    RequestUri: new Uri(request.GetEncodedUrl(), UriKind.Absolute)),
+
+                { HasValue: false } => (
+                    BaseUri: new UriBuilder
+                    {
+                        Scheme = request.Scheme,
+                        Path = request.PathBase.ToUriComponent()
+                    }.Uri,
+                    RequestUri: new UriBuilder
+                    {
+                        Scheme = request.Scheme,
+                        Path = (request.PathBase + request.Path).ToUriComponent(),
+                        Query = request.QueryString.ToUriComponent()
+                    }.Uri)
+            };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the Host header extracted from the HTTP header.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateHostHeader : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ValidateHostHeader>()
+                .SetOrder(int.MinValue + 50_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
             }
 
-            if (!request.Host.HasValue)
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            // Don't require that a Host header be present if the issuer was set in the options.
+            if (context.Options.Issuer is null && !request.Host.HasValue)
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -103,19 +163,6 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
 
                 return default;
             }
-
-            if (!Uri.TryCreate(request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase, UriKind.Absolute, out Uri? issuer) ||
-                !issuer.IsWellFormedOriginalString())
-            {
-                context.Reject(
-                    error: Errors.InvalidRequest,
-                    description: SR.FormatID2082(HeaderNames.Host),
-                    uri: SR.FormatID8000(SR.ID2082));
-
-                return default;
-            }
-
-            context.Issuer = issuer;
 
             return default;
         }

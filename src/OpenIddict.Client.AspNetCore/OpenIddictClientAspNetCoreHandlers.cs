@@ -13,7 +13,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -33,14 +33,14 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         /*
          * Top-level request processing:
          */
-        InferEndpointType.Descriptor,
+        ResolveRequestUri.Descriptor,
         ValidateTransportSecurityRequirement.Descriptor,
+        ValidateHostHeader.Descriptor,
 
         /*
          * Authentication processing:
          */
         ResolveRequestForgeryProtection.Descriptor,
-        ValidateEndpointUri.Descriptor,
 
         /*
          * Challenge processing:
@@ -59,10 +59,10 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         .AddRange(Session.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible for inferring the endpoint type from the request address.
+    /// Contains the logic responsible for resolving the request URI from the ASP.NET Core environment.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
-    public sealed class InferEndpointType : IOpenIddictClientHandler<ProcessRequestContext>
+    public sealed class ResolveRequestUri : IOpenIddictClientHandler<ProcessRequestContext>
     {
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
@@ -70,8 +70,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                 .AddFilter<RequireHttpRequest>()
-                .UseSingletonHandler<InferEndpointType>()
+                .UseSingletonHandler<ResolveRequestUri>()
                 .SetOrder(int.MinValue + 50_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
         /// <inheritdoc/>
@@ -87,63 +88,37 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var request = context.Transaction.GetHttpRequest() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            context.EndpointType =
-                Matches(request, context.Options.PostLogoutRedirectionEndpointUris) ? OpenIddictClientEndpointType.PostLogoutRedirection :
-                Matches(request, context.Options.RedirectionEndpointUris)           ? OpenIddictClientEndpointType.Redirection :
-                                                                                      OpenIddictClientEndpointType.Unknown;
+            // OpenIddict supports both absolute and relative URIs for all its endpoints, but only absolute
+            // URIs can be properly canonicalized by the BCL System.Uri class (e.g './path/../' is normalized
+            // to './' once the URI is fully constructed). At this stage of the request processing, rejecting
+            // requests that lack the host information (e.g because HTTP/1.0 was used and no Host header was
+            // sent by the HTTP client) is not desirable as it would affect all requests, including requests
+            // that are not meant to be handled by OpenIddict itself. To avoid that, a fake host is temporarily
+            // used to build an absolute base URI and a request URI that will be used to determine whether the
+            // received request matches one of the addresses assigned to an OpenIddict endpoint. If the request
+            // is later handled by OpenIddict, an additional check will be made to require the Host header.
+
+            (context.BaseUri, context.RequestUri) = request.Host switch
+            {
+                { HasValue: true } host => (
+                    BaseUri: new Uri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase, UriKind.Absolute),
+                    RequestUri: new Uri(request.GetEncodedUrl(), UriKind.Absolute)),
+
+                { HasValue: false } => (
+                    BaseUri: new UriBuilder
+                    {
+                        Scheme = request.Scheme,
+                        Path = request.PathBase.ToUriComponent()
+                    }.Uri,
+                    RequestUri: new UriBuilder
+                    {
+                        Scheme = request.Scheme,
+                        Path = (request.PathBase + request.Path).ToUriComponent(),
+                        Query = request.QueryString.ToUriComponent()
+                    }.Uri)
+            };
 
             return default;
-
-            static bool Matches(HttpRequest request, IReadOnlyList<Uri> addresses)
-            {
-                for (var index = 0; index < addresses.Count; index++)
-                {
-                    var address = addresses[index];
-                    if (address.IsAbsoluteUri)
-                    {
-                        // If the request host is not available (e.g because HTTP/1.0 was used), ignore absolute URLs.
-                        if (!request.Host.HasValue)
-                        {
-                            continue;
-                        }
-
-                        // Create a Uri instance using the request scheme and raw host and compare the two base addresses.
-                        if (!Uri.TryCreate(request.Scheme + Uri.SchemeDelimiter + request.Host, UriKind.Absolute, out Uri? uri) ||
-                            !uri.IsWellFormedOriginalString() || uri.Port != address.Port ||
-                            !string.Equals(uri.Scheme, address.Scheme, StringComparison.OrdinalIgnoreCase) ||
-                            !string.Equals(uri.Host, address.Host, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-
-                        var path = PathString.FromUriComponent(address);
-                        if (AreEquivalent(path, request.PathBase + request.Path))
-                        {
-                            return true;
-                        }
-                    }
-
-                    else if (address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var path = new PathString(address.OriginalString);
-                        if (AreEquivalent(path, request.Path))
-                        {
-                            return true;
-                        }
-                    }
-                }
-
-                return false;
-
-                // ASP.NET Core's routing system ignores trailing slashes when determining
-                // whether the request path matches a registered route, which is not the case
-                // with PathString, that treats /connect/token and /connect/token/ as different
-                // addresses. To mitigate this inconsistency, a manual check is used here.
-                static bool AreEquivalent(PathString left, PathString right)
-                    => left.Equals(right, StringComparison.OrdinalIgnoreCase) ||
-                       left.Equals(right + "/", StringComparison.OrdinalIgnoreCase) ||
-                       right.Equals(left + "/", StringComparison.OrdinalIgnoreCase);
-            }
         }
     }
 
@@ -161,7 +136,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 .AddFilter<RequireHttpRequest>()
                 .AddFilter<RequireTransportSecurityRequirementEnabled>()
                 .UseSingletonHandler<ValidateTransportSecurityRequirement>()
-                .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                .SetOrder(InferEndpointType.Descriptor.Order + 250)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
@@ -178,18 +153,58 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             var request = context.Transaction.GetHttpRequest() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
-            // Don't require that the host be present if the request is not handled by OpenIddict.
-            if (context.EndpointType is OpenIddictClientEndpointType.Unknown)
-            {
-                return default;
-            }
-
-            if (!request.IsHttps)
+            // Don't require that transport security be used if the request is not handled by OpenIddict.
+            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown && !request.IsHttps)
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
                     description: SR.GetResourceString(SR.ID2083),
                     uri: SR.FormatID8000(SR.ID2083));
+
+                return default;
+            }
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the Host header extracted from the HTTP header.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ValidateHostHeader : IOpenIddictClientHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .AddFilter<RequireHttpRequest>()
+                .UseSingletonHandler<ValidateHostHeader>()
+                .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            // Don't require that the request host be present if the request is not handled by OpenIddict.
+            if (context.EndpointType is not OpenIddictClientEndpointType.Unknown && !request.Host.HasValue)
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2081(HeaderNames.Host),
+                    uri: SR.FormatID8000(SR.ID2081));
 
                 return default;
             }
@@ -396,110 +411,6 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             //
             // Note: when deleting a cookie, the same options used when creating it MUST be specified.
             request.HttpContext.Response.Cookies.Delete(name, builder.Build(request.HttpContext));
-
-            return default;
-        }
-    }
-
-    /// <summary>
-    /// Contains the logic responsible for comparing the current request URL to the expected URL stored in the state token.
-    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-    /// </summary>
-    public sealed class ValidateEndpointUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireHttpRequest>()
-                .AddFilter<RequireStateTokenValidated>()
-                .UseSingletonHandler<ValidateEndpointUri>()
-                .SetOrder(ResolveRequestForgeryProtection.Descriptor.Order + 500)
-                .SetType(OpenIddictClientHandlerType.BuiltIn)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            Debug.Assert(context.StateTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-            // this may indicate that the request was incorrectly processed by another server stack.
-            var request = context.Transaction.GetHttpRequest() ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
-
-            // Resolve the endpoint type allowed to be used with the state token.
-            if (!Enum.TryParse(context.StateTokenPrincipal.GetClaim(Claims.Private.EndpointType),
-                ignoreCase: true, out OpenIddictClientEndpointType type))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0340));
-            }
-
-            // Resolve the endpoint URI from either the redirect_uri or post_logout_redirect_uri
-            // depending on the type of endpoint meant to be used with the specified state token.
-            var value = type switch
-            {
-                OpenIddictClientEndpointType.PostLogoutRedirection =>
-                    context.StateTokenPrincipal.GetClaim(Claims.Private.PostLogoutRedirectUri),
-
-                OpenIddictClientEndpointType.Redirection =>
-                    context.StateTokenPrincipal.GetClaim(Claims.Private.RedirectUri),
-
-                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0340))
-            };
-
-            // If the endpoint URI cannot be resolved, this likely means the authorization or
-            // logout request was sent without a redirect_uri/post_logout_redirect_uri attached.
-            if (string.IsNullOrEmpty(value))
-            {
-                return default;
-            }
-
-            // Compute the absolute URL of the current request without the query string.
-            var uri = new Uri(request.Scheme + Uri.SchemeDelimiter + request.Host +
-                request.PathBase + request.Path, UriKind.Absolute);
-
-            // Compare the current HTTP request address to the original endpoint URI. If the two don't
-            // match, this may indicate a mix-up attack. While the authorization server is expected to
-            // abort the authorization flow by rejecting the token request that may be eventually sent
-            // with the original endpoint URI, many servers are known to incorrectly implement this
-            // endpoint URI validation logic. This check also offers limited protection as it cannot
-            // prevent the authorization code from being leaked to a malicious authorization server.
-            // By comparing the endpoint URI directly in the client, a first layer of protection is
-            // provided independently of whether the authorization server will enforce this check.
-            //
-            // See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-4.4.2.2
-            // for more information.
-            var address = new Uri(value, UriKind.Absolute);
-            if (uri != new UriBuilder(address) { Query = null }.Uri)
-            {
-                context.Reject(
-                    error: Errors.InvalidRequest,
-                    description: SR.GetResourceString(SR.ID2138),
-                    uri: SR.FormatID8000(SR.ID2138));
-
-                return default;
-            }
-
-            // Ensure all the query string parameters that were part of the original endpoint URI
-            // are present in the current request (parameters that were not part of the original
-            // endpoint URI are assumed to be authorization response parameters and are ignored).
-            if (!string.IsNullOrEmpty(address.Query) && QueryHelpers.ParseQuery(address.Query)
-                .Any(parameter => request.Query[parameter.Key] != parameter.Value))
-            {
-                context.Reject(
-                    error: Errors.InvalidRequest,
-                    description: SR.GetResourceString(SR.ID2138),
-                    uri: SR.FormatID8000(SR.ID2138));
-
-                return default;
-            }
 
             return default;
         }

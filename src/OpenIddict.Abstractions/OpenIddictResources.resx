@@ -547,7 +547,7 @@ To register the server services, use 'services.AddOpenIddict().AddServer()'.</va
     <value>The issuer cannot be null or empty.</value>
   </data>
   <data name="ID0127" xml:space="preserve">
-    <value>The issuer must be a valid absolute URL.</value>
+    <value>The base URI or request URI cannot be retrieved from the request context or are now valid absolute URIs.</value>
   </data>
   <data name="ID0128" xml:space="preserve">
     <value>An OAuth 2.0/OpenID Connect server configuration or an issuer address must be registered.

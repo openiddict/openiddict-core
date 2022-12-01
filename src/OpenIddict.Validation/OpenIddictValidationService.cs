@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
@@ -48,12 +49,17 @@ public sealed class OpenIddictValidationService
         // can be disposed of asynchronously if it implements IAsyncDisposable.
         try
         {
+            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+            var configuration = await options.CurrentValue.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
             var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
             var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
             var transaction = await factory.CreateTransactionAsync();
 
             var context = new ValidateTokenContext(transaction)
             {
+                Configuration = configuration,
                 Token = token,
                 ValidTokenTypes = { TokenTypeHints.AccessToken }
             };
@@ -409,6 +415,10 @@ public sealed class OpenIddictValidationService
         // can be disposed of asynchronously if it implements IAsyncDisposable.
         try
         {
+            var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
+            var configuration = await options.CurrentValue.ConfigurationManager.GetConfigurationAsync(default) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
             var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
             var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
             var transaction = await factory.CreateTransactionAsync();
@@ -426,6 +436,7 @@ public sealed class OpenIddictValidationService
                 var context = new PrepareIntrospectionRequestContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Request = request,
                     Token = token,
                     TokenTypeHint = hint
@@ -448,6 +459,7 @@ public sealed class OpenIddictValidationService
                 var context = new ApplyIntrospectionRequestContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Request = request
                 };
 
@@ -470,6 +482,7 @@ public sealed class OpenIddictValidationService
                 var context = new ExtractIntrospectionResponseContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Request = request
                 };
 
@@ -494,6 +507,7 @@ public sealed class OpenIddictValidationService
                 var context = new HandleIntrospectionResponseContext(transaction)
                 {
                     Address = address,
+                    Configuration = configuration,
                     Request = request,
                     Response = response,
                     Token = token

@@ -74,7 +74,7 @@ public class Startup
                 // address per provider, unless all the registered providers support returning an "iss"
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                options.SetRedirectionEndpointUris("/callback/login/github");
+                options.SetRedirectionEndpointUris("callback/login/github");
 
                 // Note: this sample uses the code flow, but you can enable the other flows if necessary.
                 options.AllowAuthorizationCodeFlow();
@@ -101,7 +101,7 @@ public class Startup
                        {
                            options.SetClientId("c4ade52327b01ddacff3")
                                   .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
-                                  .SetRedirectUri("https://localhost:44395/callback/login/github");
+                                  .SetRedirectUri("callback/login/github");
                        });
             })
 
@@ -110,13 +110,13 @@ public class Startup
             {
                 // Enable the authorization, device, introspection,
                 // logout, token, userinfo and verification endpoints.
-                options.SetAuthorizationEndpointUris("/connect/authorize")
-                       .SetDeviceEndpointUris("/connect/device")
-                       .SetIntrospectionEndpointUris("/connect/introspect")
-                       .SetLogoutEndpointUris("/connect/logout")
-                       .SetTokenEndpointUris("/connect/token")
-                       .SetUserinfoEndpointUris("/connect/userinfo")
-                       .SetVerificationEndpointUris("/connect/verify");
+                options.SetAuthorizationEndpointUris("connect/authorize")
+                       .SetDeviceEndpointUris("connect/device")
+                       .SetIntrospectionEndpointUris("connect/introspect")
+                       .SetLogoutEndpointUris("connect/logout")
+                       .SetTokenEndpointUris("connect/token")
+                       .SetUserinfoEndpointUris("connect/userinfo")
+                       .SetVerificationEndpointUris("connect/verify");
 
                 // Note: this sample uses the code, device code, password and refresh token flows, but you
                 // can enable the other flows if you need to support implicit or client credentials.

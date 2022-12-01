@@ -63,8 +63,12 @@ public static partial class OpenIddictValidationHandlers
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
                 var parameters = context.Options.TokenValidationParameters.Clone();
 
-                parameters.ValidIssuers ??= context.Configuration.Issuer switch
+                // If the issuer was not explicitly set, assume the authorization server
+                // is located in the same application as the component validating tokens.
+                parameters.ValidIssuers ??= (context.Configuration.Issuer ?? context.BaseUri) switch
                 {
+                    // Note: the issuer may be null at this point (e.g when validating a token
+                    // issued by a local authorization server outside a request context).
                     null => null,
 
                     // If the issuer URI doesn't contain any path/query/fragment, allow both http://www.fabrikam.com

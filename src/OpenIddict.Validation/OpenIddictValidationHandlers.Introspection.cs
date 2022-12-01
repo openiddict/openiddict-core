@@ -317,7 +317,8 @@ public static partial class OpenIddictValidationHandlers
                         return default;
                     }
 
-                    if (context.Issuer is not null && context.Issuer != uri)
+                    // Ensure the issuer matches the expected value.
+                    if (uri != context.Configuration.Issuer)
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -426,7 +427,7 @@ public static partial class OpenIddictValidationHandlers
                 // to be valid, as it is guarded against unknown values by the ValidateIssuer handler.
                 var issuer = (string?) context.Response[Claims.Issuer] ??
                     context.Configuration.Issuer?.AbsoluteUri ??
-                    context.Issuer?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
+                    context.BaseUri?.AbsoluteUri ?? ClaimsIdentity.DefaultIssuer;
 
                 foreach (var parameter in context.Response.GetParameters())
                 {

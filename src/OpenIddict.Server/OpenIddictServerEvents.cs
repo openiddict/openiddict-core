@@ -30,21 +30,30 @@ public static partial class OpenIddictServerEvents
         public OpenIddictServerTransaction Transaction { get; }
 
         /// <summary>
-        /// Gets or sets the issuer address associated with the current transaction, if available.
-        /// </summary>
-        public Uri? Issuer
-        {
-            get => Transaction.Issuer;
-            set => Transaction.Issuer = value;
-        }
-
-        /// <summary>
         /// Gets or sets the endpoint type that handled the request, if applicable.
         /// </summary>
         public OpenIddictServerEndpointType EndpointType
         {
             get => Transaction.EndpointType;
             set => Transaction.EndpointType = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the request <see cref="Uri"/> of the current transaction, if available.
+        /// </summary>
+        public Uri? RequestUri
+        {
+            get => Transaction.RequestUri;
+            set => Transaction.RequestUri = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the base <see cref="Uri"/> of the host, if available.
+        /// </summary>
+        public Uri? BaseUri
+        {
+            get => Transaction.BaseUri;
+            set => Transaction.BaseUri = value;
         }
 
         /// <summary>

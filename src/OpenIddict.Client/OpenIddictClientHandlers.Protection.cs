@@ -83,7 +83,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     // When only state tokens are considered valid, use the token validation parameters of the client.
                     1 when context.ValidTokenTypes.Contains(TokenTypeHints.StateToken)
-                        => GetClientTokenValidationParameters(context.Options),
+                        => GetClientTokenValidationParameters(context.BaseUri, context.Options),
 
                     // Otherwise, use the token validation parameters of the authorization server.
                     _ => GetServerTokenValidationParameters(context.Registration, context.Configuration)
@@ -94,10 +94,27 @@ public static partial class OpenIddictClientHandlers
 
                 return default;
 
-                static TokenValidationParameters GetClientTokenValidationParameters(OpenIddictClientOptions options)
+                static TokenValidationParameters GetClientTokenValidationParameters(Uri? address, OpenIddictClientOptions options)
                 {
                     var parameters = options.TokenValidationParameters.Clone();
-                    parameters.ValidateIssuer = false;
+
+                    parameters.ValidIssuers ??= (options.ClientUri ?? address) switch
+                    {
+                        null => null,
+
+                        // If the client URI doesn't contain any path/query/fragment, allow both http://www.fabrikam.com
+                        // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
+                        // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
+                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
+                        {
+                            uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
+                            uri.AbsoluteUri[..^1]
+                        },
+
+                        Uri uri => new[] { uri.AbsoluteUri }
+                    };
+
+                    parameters.ValidateIssuer = parameters.ValidIssuers is not null;
 
                     // For state tokens, only the short "oi_stet+jwt" form is valid.
                     parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.StateToken };
@@ -117,13 +134,13 @@ public static partial class OpenIddictClientHandlers
                         // If the issuer URI doesn't contain any path/query/fragment, allow both http://www.fabrikam.com
                         // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
                         // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
-                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } issuer => new[]
+                        { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
                         {
-                            issuer.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
-                            issuer.AbsoluteUri[..^1]
+                            uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
+                            uri.AbsoluteUri[..^1]
                         },
 
-                        Uri issuer => new[] { issuer.AbsoluteUri }
+                        Uri uri => new[] { uri.AbsoluteUri }
                     };
 
                     parameters.ValidateIssuer = parameters.ValidIssuers is not null;

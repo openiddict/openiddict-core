@@ -1933,19 +1933,16 @@ public static partial class OpenIddictServerHandlers
                 // Note: this applies to all authorization responses, whether they represent valid or errored responses.
                 // For more information, see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.
 
-                if (!string.IsNullOrEmpty(context.RedirectUri))
+                // Note: don't override the issuer if one was already attached to the response instance.
+                if (!string.IsNullOrEmpty(context.RedirectUri) && string.IsNullOrEmpty(context.Response.Iss))
                 {
-                    // At this stage, throw an exception if the issuer cannot be retrieved.
-                    if (context.Issuer is not { IsAbsoluteUri: true })
+                    context.Response.Iss = (context.Options.Issuer ?? context.BaseUri) switch
                     {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
-                    }
+                        { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
 
-                    // Note: don't override the issuer if one was already attached to the response instance.
-                    if (string.IsNullOrEmpty(context.Response.Iss))
-                    {
-                        context.Response.Iss = context.Issuer.AbsoluteUri;
-                    }
+                        // At this stage, throw an exception if the issuer cannot be retrieved or is not valid.
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0023))
+                    };
                 }
 
                 return default;

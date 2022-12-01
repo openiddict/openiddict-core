@@ -31,6 +31,7 @@ public static partial class OpenIddictServerHandlers
             /*
              * Configuration request handling:
              */
+            AttachIssuer.Descriptor,
             AttachEndpoints.Descriptor,
             AttachGrantTypes.Descriptor,
             AttachResponseModes.Descriptor,
@@ -311,6 +312,35 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for attaching the issuer to the provider discovery document.
+        /// </summary>
+        public sealed class AttachIssuer : IOpenIddictServerHandler<HandleConfigurationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
+                    .UseSingletonHandler<AttachIssuer>()
+                    .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationRequestContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                context.Issuer = context.Options.Issuer ?? context.BaseUri;
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for attaching the endpoint URLs to the provider discovery document.
         /// </summary>
         public sealed class AttachEndpoints : IOpenIddictServerHandler<HandleConfigurationRequestContext>
@@ -321,7 +351,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                     .UseSingletonHandler<AttachEndpoints>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(AttachIssuer.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -336,68 +366,31 @@ public static partial class OpenIddictServerHandlers
                 // Note: while OpenIddict allows specifying multiple endpoint addresses, the OAuth 2.0
                 // and OpenID Connect discovery specifications only allow a single address per endpoint.
 
-                context.AuthorizationEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.AuthorizationEndpointUris.FirstOrDefault());
+                context.AuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.AuthorizationEndpointUris.FirstOrDefault());
 
-                context.CryptographyEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.CryptographyEndpointUris.FirstOrDefault());
+                context.CryptographyEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.CryptographyEndpointUris.FirstOrDefault());
 
-                context.DeviceEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.DeviceEndpointUris.FirstOrDefault());
+                context.DeviceEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.DeviceEndpointUris.FirstOrDefault());
 
-                context.IntrospectionEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.IntrospectionEndpointUris.FirstOrDefault());
+                context.IntrospectionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.IntrospectionEndpointUris.FirstOrDefault());
 
-                context.LogoutEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.LogoutEndpointUris.FirstOrDefault());
+                context.LogoutEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.LogoutEndpointUris.FirstOrDefault());
 
-                context.RevocationEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.RevocationEndpointUris.FirstOrDefault());
+                context.RevocationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.RevocationEndpointUris.FirstOrDefault());
 
-                context.TokenEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.TokenEndpointUris.FirstOrDefault());
+                context.TokenEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.TokenEndpointUris.FirstOrDefault());
 
-                context.UserinfoEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
-                    context.Options.UserinfoEndpointUris.FirstOrDefault());
+                context.UserinfoEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.UserinfoEndpointUris.FirstOrDefault());
 
                 return default;
-
-                static Uri? GetEndpointAbsoluteUri(Uri? issuer, Uri? endpoint)
-                {
-                    // If the endpoint is disabled (i.e a null address is specified), return null.
-                    if (endpoint is null)
-                    {
-                        return null;
-                    }
-
-                    // If the endpoint address is already an absolute URL, return it as-is.
-                    if (endpoint.IsAbsoluteUri)
-                    {
-                        return endpoint;
-                    }
-
-                    // At this stage, throw an exception if the issuer cannot be retrieved.
-                    if (issuer is not { IsAbsoluteUri: true })
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0023));
-                    }
-
-                    // Ensure the issuer ends with a trailing slash, as it is necessary
-                    // for Uri's constructor to correctly compute correct absolute URLs.
-                    if (!issuer.OriginalString.EndsWith("/", StringComparison.Ordinal))
-                    {
-                        issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
-                    }
-
-                    // Ensure the endpoint does not start with a leading slash, as it is necessary
-                    // for Uri's constructor to correctly compute correct absolute URLs.
-                    if (endpoint.OriginalString.StartsWith("/", StringComparison.Ordinal))
-                    {
-                        endpoint = new Uri(endpoint.OriginalString[1..], UriKind.Relative);
-                    }
-
-                    return new Uri(issuer, endpoint);
-                }
             }
         }
 
