@@ -80,23 +80,23 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Populates the <see cref="RedirectUri"/> property with the specified redirect_uri.
         /// </summary>
-        /// <param name="address">The redirect_uri to use when redirecting the user agent.</param>
-        public void SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
+        /// <param name="uri">The redirect_uri to use when redirecting the user agent.</param>
+        public void SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(address))
+            if (string.IsNullOrEmpty(uri))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0100), nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0100), nameof(uri));
             }
 
             // Don't allow validation to alter the redirect_uri parameter extracted
-            // from the request if the address was explicitly provided by the client.
+            // from the request if the URI was explicitly provided by the client.
             if (!string.IsNullOrEmpty(Request?.RedirectUri) &&
-                !string.Equals(Request.RedirectUri, address, StringComparison.Ordinal))
+                !string.Equals(Request.RedirectUri, uri, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0101));
             }
 
-            RedirectUri = address;
+            RedirectUri = uri;
         }
     }
 
@@ -206,10 +206,10 @@ public static partial class OpenIddictServerEvents
         public string? Error => Response?.Error;
 
         /// <summary>
-        /// Gets or sets the callback URL the user agent will be redirected to, if applicable.
+        /// Gets or sets the redirect URI the user agent will be redirected to, if applicable.
         /// Note: manually changing the value of this property is generally not recommended
         /// and extreme caution must be taken to ensure the user agent is not redirected to
-        /// an untrusted address, which would result in an "open redirection" vulnerability.
+        /// an untrusted URI, which would result in an "open redirection" vulnerability.
         /// </summary>
         public string? RedirectUri { get; set; }
 

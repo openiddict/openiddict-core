@@ -106,7 +106,7 @@ public static partial class OpenIddictServerHandlers
         .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible for inferring the endpoint type from the request address.
+    /// Contains the logic responsible for inferring the endpoint type from the request URI.
     /// </summary>
     public sealed class InferEndpointType : IOpenIddictServerHandler<ProcessRequestContext>
     {
@@ -153,14 +153,14 @@ public static partial class OpenIddictServerHandlers
 
             return default;
 
-            bool Matches(IReadOnlyList<Uri> addresses)
+            bool Matches(IReadOnlyList<Uri> candidates)
             {
-                for (var index = 0; index < addresses.Count; index++)
+                for (var index = 0; index < candidates.Count; index++)
                 {
-                    var address = addresses[index];
-                    if (address.IsAbsoluteUri)
+                    var candidate = candidates[index];
+                    if (candidate.IsAbsoluteUri)
                     {
-                        if (Equals(address, context.RequestUri))
+                        if (Equals(candidate, context.RequestUri))
                         {
                             return true;
                         }
@@ -168,7 +168,7 @@ public static partial class OpenIddictServerHandlers
 
                     else
                     {
-                        var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, address);
+                        var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, candidate);
                         if (uri.IsWellFormedOriginalString() &&
                             OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
                         {
@@ -3073,16 +3073,15 @@ public static partial class OpenIddictServerHandlers
             {
                 context.Response.UserCode = context.UserCode;
 
-                var address = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri,
-                    context.Options.VerificationEndpointUris.FirstOrDefault());
-                if (address is not null)
+                if (OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri,
+                    context.Options.VerificationEndpointUris.FirstOrDefault()) is Uri uri)
                 {
-                    var builder = new UriBuilder(address)
+                    var builder = new UriBuilder(uri)
                     {
                         Query = string.Concat(Parameters.UserCode, "=", context.UserCode)
                     };
 
-                    context.Response[Parameters.VerificationUri] = address.AbsoluteUri;
+                    context.Response[Parameters.VerificationUri] = uri.AbsoluteUri;
                     context.Response[Parameters.VerificationUriComplete] = builder.Uri.AbsoluteUri;
                 }
             }

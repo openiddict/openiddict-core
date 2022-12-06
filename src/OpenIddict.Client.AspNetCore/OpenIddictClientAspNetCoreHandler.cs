@@ -172,8 +172,8 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Op
             properties.ExpiresUtc = principal.GetExpirationDate();
             properties.IssuedUtc = principal.GetCreationDate();
 
-            // Restore the return URL using the "target_link_uri" that was stored
-            // in the state token when the challenge operation started, if available.
+            // Restore the target link URI that was stored in the state
+            // token when the challenge operation started, if available.
             properties.RedirectUri = context.StateTokenPrincipal?.GetClaim(Claims.TargetLinkUri);
 
             List<AuthenticationToken>? tokens = null;

@@ -138,7 +138,7 @@ public sealed class OpenIddictServerOwinBuilder
     /// <summary>
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
-    /// <param name="realm">The issuer address.</param>
+    /// <param name="realm">The realm.</param>
     /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
     public OpenIddictServerOwinBuilder SetRealm(string realm)
     {

@@ -79,15 +79,15 @@ public sealed class OpenIddictValidationOptions
     public bool EnableTokenEntryValidation { get; set; }
 
     /// <summary>
-    /// Gets or sets the absolute URL of the OAuth 2.0/OpenID Connect server.
+    /// Gets or sets the absolute URI of the OAuth 2.0/OpenID Connect server.
     /// </summary>
     public Uri? Issuer { get; set; }
 
     /// <summary>
-    /// Gets or sets the URL of the OAuth 2.0/OpenID Connect server discovery endpoint.
-    /// When the URL is relative, <see cref="Issuer"/> must be set and absolute.
+    /// Gets or sets the URI of the configuration endpoint exposed by the server.
+    /// When the URI is relative, <see cref="Issuer"/> must be set and absolute.
     /// </summary>
-    public Uri? MetadataAddress { get; set; }
+    public Uri? ConfigurationEndpoint { get; set; }
 
     /// <summary>
     /// Gets or sets the OAuth 2.0/OpenID Connect static server configuration, if applicable.

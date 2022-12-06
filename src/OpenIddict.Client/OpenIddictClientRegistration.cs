@@ -27,12 +27,12 @@ public sealed class OpenIddictClientRegistration
     public string? ClientSecret { get; set; }
 
     /// <summary>
-    /// Gets or sets the address of the redirection endpoint that will handle the callback.
+    /// Gets or sets the URI of the redirection endpoint that will handle the callback.
     /// </summary>
     public Uri? RedirectUri { get; set; }
 
     /// <summary>
-    /// Gets or sets the address of the post-logout redirection endpoint that will handle the callback.
+    /// Gets or sets the URI of the post-logout redirection endpoint that will handle the callback.
     /// </summary>
     public Uri? PostLogoutRedirectUri { get; set; }
 
@@ -91,7 +91,7 @@ public sealed class OpenIddictClientRegistration
     public HashSet<string> ResponseModes { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets or sets the address of the authorization server.
+    /// Gets or sets the URI of the authorization server.
     /// </summary>
     public Uri? Issuer { get; set; }
 
@@ -120,14 +120,10 @@ public sealed class OpenIddictClientRegistration
     public IConfigurationManager<OpenIddictConfiguration> ConfigurationManager { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the address of the authorization endpoint exposed by the server.
+    /// Gets or sets the URI of the configuration endpoint exposed by the server.
+    /// When the URI is relative, <see cref="Issuer"/> must be set and absolute.
     /// </summary>
-    public Uri? AuthorizationEndpoint { get; set; }
-
-    /// <summary>
-    /// Gets or sets the address of the token endpoint exposed by the server.
-    /// </summary>
-    public Uri? TokenEndpoint { get; set; }
+    public Uri? ConfigurationEndpoint { get; set; }
 
     /// <summary>
     /// Gets or sets the token validation parameters associated with the authorization server.
@@ -142,12 +138,6 @@ public sealed class OpenIddictClientRegistration
         ValidateAudience = false,
         ValidateLifetime = false
     };
-
-    /// <summary>
-    /// Gets or sets the URL of the OAuth 2.0/OpenID Connect server discovery endpoint.
-    /// When the URL is relative, <see cref="Issuer"/> must be set and absolute.
-    /// </summary>
-    public Uri? MetadataAddress { get; set; }
 
     /// <summary>
     /// Gets the list of scopes sent by default as part of authorization requests.

@@ -128,7 +128,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching the address of the authorization request to the request.
+        /// Contains the logic responsible for attaching the URI of the authorization request to the request.
         /// </summary>
         public sealed class AttachLogoutEndpoint : IOpenIddictClientHandler<ApplyLogoutRequestContext>
         {
@@ -149,7 +149,7 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Ensure the end session endpoint is present and is a valid absolute URL.
+                // Ensure the end session endpoint is present and is a valid absolute URI.
                 if (context.Configuration.EndSessionEndpoint is not { IsAbsoluteUri: true } ||
                    !context.Configuration.EndSessionEndpoint.IsWellFormedOriginalString())
                 {

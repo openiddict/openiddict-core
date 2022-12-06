@@ -106,7 +106,7 @@ public sealed class OpenIddictClientService
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } address || !address.IsWellFormedOriginalString())
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } uri || !uri.IsWellFormedOriginalString())
         {
             throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
         }
@@ -132,7 +132,7 @@ public sealed class OpenIddictClientService
                 GrantType = GrantTypes.ClientCredentials,
                 Issuer = registration.Issuer,
                 Registration = registration,
-                TokenEndpoint = address,
+                TokenEndpoint = uri,
                 TokenRequest = parameters is not null ? new(parameters) : null,
             };
 
@@ -277,7 +277,7 @@ public sealed class OpenIddictClientService
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } address || !address.IsWellFormedOriginalString())
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } uri || !uri.IsWellFormedOriginalString())
         {
             throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
         }
@@ -304,7 +304,7 @@ public sealed class OpenIddictClientService
                 Issuer = registration.Issuer,
                 Password = password,
                 Registration = registration,
-                TokenEndpoint = address,
+                TokenEndpoint = uri,
                 TokenRequest = parameters is not null ? new(parameters) : null,
                 Username = username
             };
@@ -442,7 +442,7 @@ public sealed class OpenIddictClientService
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
-        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } address || !address.IsWellFormedOriginalString())
+        if (configuration.TokenEndpoint is not { IsAbsoluteUri: true } uri || !uri.IsWellFormedOriginalString())
         {
             throw new InvalidOperationException(SR.FormatID0301(Metadata.TokenEndpoint));
         }
@@ -469,7 +469,7 @@ public sealed class OpenIddictClientService
                 Issuer = registration.Issuer,
                 RefreshToken = token,
                 Registration = registration,
-                TokenEndpoint = address,
+                TokenEndpoint = uri,
                 TokenRequest = parameters is not null ? new(parameters) : null,
             };
 
@@ -519,28 +519,28 @@ public sealed class OpenIddictClientService
     }
 
     /// <summary>
-    /// Retrieves the OpenID Connect server configuration from the specified address.
+    /// Retrieves the OpenID Connect server configuration from the specified uri.
     /// </summary>
     /// <param name="registration">The client registration.</param>
-    /// <param name="address">The address of the remote metadata endpoint.</param>
+    /// <param name="uri">The uri of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
     internal async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(
-        OpenIddictClientRegistration registration, Uri address, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration, Uri uri, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -570,7 +570,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareConfigurationRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -591,7 +591,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyConfigurationRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -605,7 +605,7 @@ public sealed class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.Address, context.Request);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6186), context.RemoteUri, context.Request);
 
                 return context.Request;
             }
@@ -614,7 +614,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractConfigurationResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -630,7 +630,7 @@ public sealed class OpenIddictClientService
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.Address, context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6187), context.RemoteUri, context.Response);
 
                 return context.Response;
             }
@@ -639,7 +639,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleConfigurationResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request,
                     Response = response
@@ -676,25 +676,25 @@ public sealed class OpenIddictClientService
     /// Retrieves the security keys exposed by the specified JWKS endpoint.
     /// </summary>
     /// <param name="registration">The client registration.</param>
-    /// <param name="address">The address of the remote metadata endpoint.</param>
+    /// <param name="uri">The uri of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The security keys retrieved from the remote server.</returns>
     internal async ValueTask<JsonWebKeySet> GetSecurityKeysAsync(
-        OpenIddictClientRegistration registration, Uri address, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration, Uri uri, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
             throw new ArgumentNullException(nameof(registration));
         }
 
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -725,7 +725,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareCryptographyRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -746,7 +746,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyCryptographyRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -760,7 +760,7 @@ public sealed class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.Address, context.Request);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6188), context.RemoteUri, context.Request);
 
                 return context.Request;
             }
@@ -769,7 +769,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractCryptographyResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request
                 };
@@ -785,7 +785,7 @@ public sealed class OpenIddictClientService
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.Address, context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6189), context.RemoteUri, context.Response);
 
                 return context.Response;
             }
@@ -794,7 +794,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleCryptographyResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Registration = registration,
                     Request = request,
                     Response = response
@@ -832,12 +832,12 @@ public sealed class OpenIddictClientService
     /// </summary>
     /// <param name="registration">The client registration.</param>
     /// <param name="request">The token request.</param>
-    /// <param name="address">The address of the remote token endpoint.</param>
+    /// <param name="uri">The uri of the remote token endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictRequest request,
-        Uri? address = null, CancellationToken cancellationToken = default)
+        Uri? uri = null, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
@@ -849,14 +849,14 @@ public sealed class OpenIddictClientService
             throw new ArgumentNullException(nameof(request));
         }
 
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
 
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
@@ -888,7 +888,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareTokenRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request
@@ -910,7 +910,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyTokenRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request
@@ -925,7 +925,7 @@ public sealed class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.Address, context.Request);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
 
                 return context.Request;
             }
@@ -934,7 +934,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractTokenResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request
@@ -951,7 +951,7 @@ public sealed class OpenIddictClientService
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.Address, context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
 
                 return context.Response;
             }
@@ -960,7 +960,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleTokenResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request,
@@ -999,25 +999,25 @@ public sealed class OpenIddictClientService
     /// </summary>
     /// <param name="registration">The client registration.</param>
     /// <param name="request">The userinfo request.</param>
-    /// <param name="address">The address of the remote userinfo endpoint.</param>
+    /// <param name="uri">The uri of the remote userinfo endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
     internal async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserinfoRequestAsync(
-        OpenIddictClientRegistration registration, OpenIddictRequest request, Uri address, CancellationToken cancellationToken = default)
+        OpenIddictClientRegistration registration, OpenIddictRequest request, Uri uri, CancellationToken cancellationToken = default)
     {
         if (registration is null)
         {
             throw new ArgumentNullException(nameof(registration));
         }
 
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        if (!address.IsAbsoluteUri || !address.IsWellFormedOriginalString())
+        if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
         }
 
         var configuration = await registration.ConfigurationManager.GetConfigurationAsync(default) ??
@@ -1049,7 +1049,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new PrepareUserinfoRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request
@@ -1071,7 +1071,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ApplyUserinfoRequestContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request
@@ -1086,7 +1086,7 @@ public sealed class OpenIddictClientService
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6194), context.Address, context.Request);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6194), context.RemoteUri, context.Request);
 
                 return context.Request;
             }
@@ -1095,7 +1095,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new ExtractUserinfoResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request
@@ -1112,7 +1112,7 @@ public sealed class OpenIddictClientService
 
                 Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6195), context.Address, context.Response);
+                context.Logger.LogInformation(SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
 
                 return (context.Response, context.UserinfoToken);
             }
@@ -1121,7 +1121,7 @@ public sealed class OpenIddictClientService
             {
                 var context = new HandleUserinfoResponseContext(transaction)
                 {
-                    Address = address,
+                    RemoteUri = uri,
                     Configuration = configuration,
                     Registration = registration,
                     Request = request,

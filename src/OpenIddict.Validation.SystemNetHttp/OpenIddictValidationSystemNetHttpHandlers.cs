@@ -35,7 +35,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<PrepareGetHttpRequest<TContext>>()
                 .SetOrder(int.MinValue + 100_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -51,7 +51,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
             // Store the HttpRequestMessage in the transaction properties.
             context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
-                new HttpRequestMessage(HttpMethod.Get, context.Address));
+                new HttpRequestMessage(HttpMethod.Get, context.RemoteUri));
 
             return default;
         }
@@ -67,7 +67,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<PreparePostHttpRequest<TContext>>()
                 .SetOrder(PrepareGetHttpRequest<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -83,7 +83,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
 
             // Store the HttpRequestMessage in the transaction properties.
             context.Transaction.SetProperty(typeof(HttpRequestMessage).FullName!,
-                new HttpRequestMessage(HttpMethod.Post, context.Address));
+                new HttpRequestMessage(HttpMethod.Post, context.RemoteUri));
 
             return default;
         }
@@ -100,7 +100,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<AttachJsonAcceptHeaders<TContext>>()
                 .SetOrder(PreparePostHttpRequest<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -145,7 +145,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<AttachUserAgentHeader<TContext>>()
                 .SetOrder(AttachJsonAcceptHeaders<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -196,7 +196,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<AttachQueryStringParameters<TContext>>()
                 .SetOrder(AttachFormParameters<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -241,7 +241,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<AttachFormParameters<TContext>>()
                 .SetOrder(int.MaxValue - 100_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -288,7 +288,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<SendHttpRequest<TContext>>()
                 .SetOrder(DisposeHttpRequest<TContext>.Descriptor.Order - 50_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -361,7 +361,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<DisposeHttpRequest<TContext>>()
                 .SetOrder(int.MaxValue - 100_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -399,7 +399,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<DecompressResponseContent<TContext>>()
                 .SetOrder(ExtractJsonHttpResponse<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -538,7 +538,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<ExtractJsonHttpResponse<TContext>>()
                 .SetOrder(ExtractWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -606,7 +606,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<ExtractWwwAuthenticateHeader<TContext>>()
                 .SetOrder(ValidateHttpResponse<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -689,7 +689,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<ValidateHttpResponse<TContext>>()
                 .SetOrder(DisposeHttpResponse<TContext>.Descriptor.Order - 50_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -759,7 +759,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
         /// </summary>
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
-                .AddFilter<RequireHttpMetadataAddress>()
+                .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<DisposeHttpResponse<TContext>>()
                 .SetOrder(int.MaxValue - 100_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)

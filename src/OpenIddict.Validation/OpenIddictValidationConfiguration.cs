@@ -40,9 +40,15 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
         }
 
         if (options.Configuration is null && options.ConfigurationManager is null &&
-            options.Issuer is null && options.MetadataAddress is null)
+            options.Issuer is null && options.ConfigurationEndpoint is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0128));
+        }
+
+        if (options.Issuer is not null && (!string.IsNullOrEmpty(options.Issuer.Fragment) ||
+                                           !string.IsNullOrEmpty(options.Issuer.Query)))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
         }
 
         if (options.ValidationType is OpenIddictValidationType.Introspection)
@@ -52,7 +58,7 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0129));
             }
 
-            if (options.Issuer is null && options.MetadataAddress is null)
+            if (options.Issuer is null && options.ConfigurationEndpoint is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0130));
             }
@@ -102,25 +108,12 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0135));
                 }
 
-                options.MetadataAddress ??= new Uri(".well-known/openid-configuration", UriKind.Relative);
-
-                if (!options.MetadataAddress.IsAbsoluteUri)
-                {
-                    if (options.Issuer is not { IsAbsoluteUri: true })
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0136));
-                    }
-
-                    if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0137));
-                    }
-
-                    options.MetadataAddress = OpenIddictHelpers.CreateAbsoluteUri(options.Issuer, options.MetadataAddress);
-                }
+                options.ConfigurationEndpoint = OpenIddictHelpers.CreateAbsoluteUri(
+                    options.Issuer,
+                    options.ConfigurationEndpoint ?? new Uri(".well-known/openid-configuration", UriKind.Relative));
 
                 options.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
-                    options.MetadataAddress.AbsoluteUri, new OpenIddictValidationRetriever(_service))
+                    options.ConfigurationEndpoint.AbsoluteUri, new OpenIddictValidationRetriever(_service))
                 {
                     AutomaticRefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultAutomaticRefreshInterval,
                     RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval

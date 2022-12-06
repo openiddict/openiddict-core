@@ -83,10 +83,10 @@ public static partial class OpenIddictClientHandlers
                 {
                     // When only state tokens are considered valid, use the token validation parameters of the client.
                     1 when context.ValidTokenTypes.Contains(TokenTypeHints.StateToken)
-                        => GetClientTokenValidationParameters(context.BaseUri, context.Options),
+                        => GetClientTokenValidationParameters(),
 
                     // Otherwise, use the token validation parameters of the authorization server.
-                    _ => GetServerTokenValidationParameters(context.Registration, context.Configuration)
+                    _ => GetServerTokenValidationParameters()
                 };
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
@@ -94,11 +94,11 @@ public static partial class OpenIddictClientHandlers
 
                 return default;
 
-                static TokenValidationParameters GetClientTokenValidationParameters(Uri? address, OpenIddictClientOptions options)
+                TokenValidationParameters GetClientTokenValidationParameters()
                 {
-                    var parameters = options.TokenValidationParameters.Clone();
+                    var parameters = context.Options.TokenValidationParameters.Clone();
 
-                    parameters.ValidIssuers ??= (options.ClientUri ?? address) switch
+                    parameters.ValidIssuers ??= (context.Options.ClientUri ?? context.BaseUri) switch
                     {
                         null => null,
 
@@ -122,12 +122,11 @@ public static partial class OpenIddictClientHandlers
                     return parameters;
                 }
 
-                static TokenValidationParameters GetServerTokenValidationParameters(
-                    OpenIddictClientRegistration registration, OpenIddictConfiguration configuration)
+                TokenValidationParameters GetServerTokenValidationParameters()
                 {
-                    var parameters = registration!.TokenValidationParameters.Clone();
+                    var parameters = context.Registration.TokenValidationParameters.Clone();
 
-                    parameters.ValidIssuers ??= configuration.Issuer switch
+                    parameters.ValidIssuers ??= context.Configuration.Issuer switch
                     {
                         null => null,
 
@@ -148,7 +147,7 @@ public static partial class OpenIddictClientHandlers
                     // Combine the signing keys registered statically in the token validation parameters
                     // with the signing keys resolved from the OpenID Connect server configuration.
                     parameters.IssuerSigningKeys =
-                        parameters.IssuerSigningKeys?.Concat(configuration.SigningKeys) ?? configuration.SigningKeys;
+                        parameters.IssuerSigningKeys?.Concat(context.Configuration.SigningKeys) ?? context.Configuration.SigningKeys;
 
                     // For maximum compatibility, all "typ" values are accepted for all types of JSON Web Tokens,
                     // which typically includes identity tokens but can also include access tokens, authorization

@@ -41,7 +41,7 @@ public class OpenIddictApplicationDescriptor
     public HashSet<string> Permissions { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the logout callback URLs associated with the application.
+    /// Gets the post-logout redirect URIs associated with the application.
     /// </summary>
     public HashSet<Uri> PostLogoutRedirectUris { get; } = new();
 
@@ -51,7 +51,7 @@ public class OpenIddictApplicationDescriptor
     public Dictionary<string, JsonElement> Properties { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the callback URLs associated with the application.
+    /// Gets the redirect URIs associated with the application.
     /// </summary>
     public HashSet<Uri> RedirectUris { get; } = new();
 

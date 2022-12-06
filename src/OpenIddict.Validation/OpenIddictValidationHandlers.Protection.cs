@@ -320,7 +320,7 @@ public static partial class OpenIddictValidationHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.Token), SR.GetResourceString(SR.ID4010));
 
-                // Ensure the introspection endpoint is present and is a valid absolute URL.
+                // Ensure the introspection endpoint is present and is a valid absolute URI.
                 if (context.Configuration.IntrospectionEndpoint is not { IsAbsoluteUri: true } ||
                    !context.Configuration.IntrospectionEndpoint.IsWellFormedOriginalString())
                 {

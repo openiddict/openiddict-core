@@ -510,7 +510,7 @@ public static partial class OpenIddictServerHandlers
                 // See http://tools.ietf.org/html/rfc6749#section-3.1.2
                 // and http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
                 //
-                // Note: on Linux/macOS, "/path" URLs are treated as valid absolute file URLs.
+                // Note: on Linux/macOS, "/path" URIs are treated as valid absolute file URIs.
                 // To ensure relative redirect_uris are correctly rejected on these platforms,
                 // an additional check using IsWellFormedOriginalString() is made here.
                 // See https://github.com/dotnet/corefx/issues/22098 for more information.
@@ -1168,12 +1168,12 @@ public static partial class OpenIddictServerHandlers
                 var application = await _applicationManager.FindByClientIdAsync(context.ClientId) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-                // If no explicit redirect_uri was specified, retrieve the addresses associated with
-                // the client and ensure exactly one redirect_uri was attached to the client definition.
+                // If no explicit redirect_uri was specified, retrieve the URI associated with the
+                // client and ensure exactly one redirect_uri was attached to the client definition.
                 if (string.IsNullOrEmpty(context.RedirectUri))
                 {
-                    var addresses = await _applicationManager.GetRedirectUrisAsync(application);
-                    if (addresses.Length is not 1)
+                    var uris = await _applicationManager.GetRedirectUrisAsync(application);
+                    if (uris.Length is not 1)
                     {
                         context.Logger.LogInformation(SR.GetResourceString(SR.ID6033), Parameters.RedirectUri);
 
@@ -1185,7 +1185,7 @@ public static partial class OpenIddictServerHandlers
                         return;
                     }
 
-                    context.SetRedirectUri(addresses[0]);
+                    context.SetRedirectUri(uris[0]);
 
                     return;
                 }
@@ -1782,7 +1782,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for inferring the redirect URL
+        /// Contains the logic responsible for inferring the redirect URI
         /// used to send the response back to the client application.
         /// </summary>
         public sealed class AttachRedirectUri : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
@@ -1905,7 +1905,7 @@ public static partial class OpenIddictServerHandlers
 
         /// <summary>
         /// Contains the logic responsible for attaching an "iss" parameter
-        /// containing the address of the authorization server to the response.
+        /// containing the URI of the authorization server to the response.
         /// </summary>
         public sealed class AttachIssuer : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
         {
@@ -1928,7 +1928,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // If the user agent is expected to be redirected to the client application, attach the
-                // issuer address to the authorization response to help the client detect mix-up attacks.
+                // issuer URI to the authorization response to help the client detect mix-up attacks.
                 //
                 // Note: this applies to all authorization responses, whether they represent valid or errored responses.
                 // For more information, see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.

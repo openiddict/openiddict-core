@@ -175,31 +175,31 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Sets the redirection URI, if applicable.
         /// </summary>
-        /// <param name=""address"">The redirection URI.</param>
+        /// <param name=""uri"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        public {{ provider.name }} SetRedirectUri(Uri address)
+        public {{ provider.name }} SetRedirectUri(Uri uri)
         {
-            if (address is null)
+            if (uri is null)
             {
-                throw new ArgumentNullException(nameof(address));
+                throw new ArgumentNullException(nameof(uri));
             }
 
-            return Configure(options => options.RedirectUri = address);
+            return Configure(options => options.RedirectUri = uri);
         }
 
         /// <summary>
         /// Sets the redirection URI, if applicable.
         /// </summary>
-        /// <param name=""address"">The redirection URI.</param>
+        /// <param name=""uri"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        public {{ provider.name }} SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
+        public {{ provider.name }} SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(address))
+            if (string.IsNullOrEmpty(uri))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
             }
 
-            return SetRedirectUri(new Uri(address, UriKind.RelativeOrAbsolute));
+            return SetRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
         }
 
         /// <summary>
@@ -813,7 +813,7 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
         public string? ClientSecret { get; set; }
 
         /// <summary>
-        /// Gets or sets the redirection URL.
+        /// Gets or sets the redirect URI.
         /// </summary>
         public Uri? RedirectUri { get; set; }
 

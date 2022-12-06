@@ -391,7 +391,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData("/custom/connect/token", OpenIddictServerEndpointType.Token)]
     [InlineData("/custom/connect/userinfo", OpenIddictServerEndpointType.Userinfo)]
     [InlineData("/custom/connect/verification", OpenIddictServerEndpointType.Verification)]
-    public async Task ProcessRequest_AllowsOverridingEndpoint(string address, OpenIddictServerEndpointType type)
+    public async Task ProcessRequest_AllowsOverridingEndpoint(string uri, OpenIddictServerEndpointType type)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -434,7 +434,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var client = await server.CreateClientAsync();
 
         // Act
-        await client.PostAsync(address, new OpenIddictRequest());
+        await client.PostAsync(uri, new OpenIddictRequest());
     }
 
     [Fact]

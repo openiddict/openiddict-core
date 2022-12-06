@@ -172,18 +172,18 @@ internal static class OpenIddictHelpers
     /// <summary>
     /// Adds a query string parameter to the specified <see cref="Uri"/>.
     /// </summary>
-    /// <param name="address">The address, to which the query string parameter will be appended.</param>
+    /// <param name="uri">The URI to which the query string parameter will be appended.</param>
     /// <param name="name">The name of the query string parameter to append.</param>
     /// <param name="value">The value of the query string parameter to append.</param>
     /// <returns>The final <see cref="Uri"/> instance, with the specified parameter appended.</returns>
-    public static Uri AddQueryStringParameter(Uri address, string name, string? value)
+    public static Uri AddQueryStringParameter(Uri uri, string name, string? value)
     {
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        var builder = new StringBuilder(address.Query);
+        var builder = new StringBuilder(uri.Query);
         if (builder.Length > 0)
         {
             builder.Append('&');
@@ -197,22 +197,22 @@ internal static class OpenIddictHelpers
             builder.Append(Uri.EscapeDataString(value));
         }
 
-        return new UriBuilder(address) { Query = builder.ToString() }.Uri;
+        return new UriBuilder(uri) { Query = builder.ToString() }.Uri;
     }
 
     /// <summary>
     /// Adds query string parameters to the specified <see cref="Uri"/>.
     /// </summary>
-    /// <param name="address">The address, to which the query string parameters will be appended.</param>
+    /// <param name="uri">The URI to which the query string parameters will be appended.</param>
     /// <param name="parameters">The query string parameters to append.</param>
     /// <returns>The final <see cref="Uri"/> instance, with the specified parameters appended.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="address"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="parameters"/> is <see langword="null"/>.</exception>
-    public static Uri AddQueryStringParameters(Uri address, IReadOnlyDictionary<string, StringValues> parameters)
+    public static Uri AddQueryStringParameters(Uri uri, IReadOnlyDictionary<string, StringValues> parameters)
     {
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
         if (parameters is null)
@@ -222,10 +222,10 @@ internal static class OpenIddictHelpers
 
         if (parameters.Count is 0)
         {
-            return address;
+            return uri;
         }
 
-        var builder = new StringBuilder(address.Query);
+        var builder = new StringBuilder(uri.Query);
 
         foreach (var parameter in parameters)
         {
@@ -263,7 +263,7 @@ internal static class OpenIddictHelpers
             }
         }
 
-        return new UriBuilder(address) { Query = builder.ToString() }.Uri;
+        return new UriBuilder(uri) { Query = builder.ToString() }.Uri;
     }
 
     /// <summary>

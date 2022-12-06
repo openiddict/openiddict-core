@@ -142,7 +142,7 @@ public static partial class OpenIddictClientHandlers
         .AddRange(Userinfo.DefaultHandlers);
 
     /// <summary>
-    /// Contains the logic responsible for inferring the endpoint type from the request address.
+    /// Contains the logic responsible for inferring the endpoint type from the request URI.
     /// </summary>
     public sealed class InferEndpointType : IOpenIddictClientHandler<ProcessRequestContext>
     {
@@ -176,14 +176,14 @@ public static partial class OpenIddictClientHandlers
 
             return default;
 
-            bool Matches(IReadOnlyList<Uri> addresses)
+            bool Matches(IReadOnlyList<Uri> candidates)
             {
-                for (var index = 0; index < addresses.Count; index++)
+                for (var index = 0; index < candidates.Count; index++)
                 {
-                    var address = addresses[index];
-                    if (address.IsAbsoluteUri)
+                    var candidate = candidates[index];
+                    if (candidate.IsAbsoluteUri)
                     {
-                        if (Equals(address, context.RequestUri))
+                        if (Equals(candidate, context.RequestUri))
                         {
                             return true;
                         }
@@ -191,7 +191,7 @@ public static partial class OpenIddictClientHandlers
 
                     else
                     {
-                        var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, address);
+                        var uri = OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, candidate);
                         if (uri.IsWellFormedOriginalString() &&
                             OpenIddictHelpers.IsBaseOf(context.BaseUri, uri) && Equals(uri, context.RequestUri))
                         {
@@ -737,7 +737,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for comparing the current request URL to the expected URL stored in the state token.
+    /// Contains the logic responsible for comparing the current request URI to the expected URI stored in the state token.
     /// </summary>
     public sealed class ValidateEndpointUri : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -789,7 +789,7 @@ public static partial class OpenIddictClientHandlers
                 return default;
             }
 
-            // Compare the current HTTP request address to the original endpoint URI. If the two don't
+            // Compare the current HTTP request URI to the original endpoint URI. If the two don't
             // match, this may indicate a mix-up attack. While the authorization server is expected to
             // abort the authorization flow by rejecting the token request that may be eventually sent
             // with the original endpoint URI, many servers are known to incorrectly implement this
@@ -800,8 +800,8 @@ public static partial class OpenIddictClientHandlers
             //
             // See https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-19#section-4.4.2.2
             // for more information.
-            var address = new Uri(value, UriKind.Absolute);
-            if (new UriBuilder(address) { Query = null }.Uri !=
+            var uri = new Uri(value, UriKind.Absolute);
+            if (new UriBuilder(uri) { Query = null }.Uri !=
                 new UriBuilder(context.RequestUri!) { Query = null }.Uri)
             {
                 context.Reject(
@@ -815,11 +815,11 @@ public static partial class OpenIddictClientHandlers
             // Ensure all the query string parameters that were part of the original endpoint URI
             // are present in the current request (parameters that were not part of the original
             // endpoint URI are assumed to be authorization response parameters and are ignored).
-            if (!string.IsNullOrEmpty(address.Query))
+            if (!string.IsNullOrEmpty(uri.Query))
             {
                 var parameters = OpenIddictHelpers.ParseQuery(context.RequestUri!.Query);
 
-                foreach (var parameter in OpenIddictHelpers.ParseQuery(address.Query))
+                foreach (var parameter in OpenIddictHelpers.ParseQuery(uri.Query))
                 {
                     if (!parameters.TryGetValue(parameter.Key, out StringValues values) ||
                         !parameter.Value.Equals(values))
@@ -1953,7 +1953,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the address of the token endpoint.
+    /// Contains the logic responsible for resolving the URI of the token endpoint.
     /// </summary>
     public sealed class ResolveTokenEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -1975,11 +1975,11 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If the address of the token endpoint wasn't explicitly set
-            // at this stage, try to extract it from the server configuration.
+            // If the URI of the token endpoint wasn't explicitly set at
+            // this stage, try to extract it from the server configuration.
             context.TokenEndpoint ??= context.Configuration.TokenEndpoint switch
             {
-                { IsAbsoluteUri: true } address when address.IsWellFormedOriginalString() => address,
+                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
 
                 _ => null
             };
@@ -2193,7 +2193,7 @@ public static partial class OpenIddictClientHandlers
                 principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
             }
 
-            // Use the address of the token endpoint as the audience, as recommended by the specifications.
+            // Use the URI of the token endpoint as the audience, as recommended by the specifications.
             // Applications that need to use a different value can register a custom event handler.
             //
             // See https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
@@ -2203,7 +2203,7 @@ public static partial class OpenIddictClientHandlers
                 principal.SetAudiences(context.TokenEndpoint.OriginalString);
             }
 
-            // If the token endpoint address is not available, use the issuer address as the audience.
+            // If the token endpoint URI is not available, use the issuer URI as the audience.
             else
             {
                 principal.SetAudiences(context.Issuer.OriginalString);
@@ -2376,7 +2376,7 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.TokenRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Ensure the token endpoint is present and is a valid absolute URL.
+            // Ensure the token endpoint is present and is a valid absolute URI.
             if (context.TokenEndpoint is not { IsAbsoluteUri: true } ||
                !context.TokenEndpoint.IsWellFormedOriginalString())
             {
@@ -3220,7 +3220,7 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for resolving the address of the userinfo endpoint.
+    /// Contains the logic responsible for resolving the URI of the userinfo endpoint.
     /// </summary>
     public sealed class ResolveUserinfoEndpoint : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
@@ -3242,11 +3242,11 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If the address of the userinfo endpoint wasn't explicitly set
-            // at this stage, try to extract it from the server configuration.
+            // If the URI of the userinfo endpoint wasn't explicitly set at
+            // this stage, try to extract it from the server configuration.
             context.UserinfoEndpoint ??= context.Configuration.UserinfoEndpoint switch
             {
-                { IsAbsoluteUri: true } address when address.IsWellFormedOriginalString() => address,
+                { IsAbsoluteUri: true } uri when uri.IsWellFormedOriginalString() => uri,
 
                 _ => null
             };
@@ -3362,7 +3362,7 @@ public static partial class OpenIddictClientHandlers
 
             Debug.Assert(context.UserinfoRequest is not null, SR.GetResourceString(SR.ID4008));
 
-            // Ensure the userinfo endpoint is present and is a valid absolute URL.
+            // Ensure the userinfo endpoint is present and is a valid absolute URI.
             if (context.UserinfoEndpoint is not { IsAbsoluteUri: true } ||
                !context.UserinfoEndpoint.IsWellFormedOriginalString())
             {
@@ -4127,7 +4127,7 @@ public static partial class OpenIddictClientHandlers
             // However, browser-based hosts like Blazor may typically want to use the fragment
             // response mode as it offers a better protection for SPA applications.
             // Unfortunately, server-side clients like ASP.NET Core applications cannot
-            // natively use response_mode=fragment as URL fragments are never sent to servers.
+            // natively use response_mode=fragment as URI fragments are never sent to servers.
             // 
             // As such, this handler will not choose response_mode=fragment by default and it is
             // expected that specialized hosts like Blazor implement custom event handlers to
@@ -4550,7 +4550,7 @@ public static partial class OpenIddictClientHandlers
             // ensure the authorization response sent to the redirection endpoint is not forged.
             principal.SetClaim(Claims.RequestForgeryProtection, context.RequestForgeryProtection);
 
-            // Store the optional return URL in the state token.
+            // Store the optional target link URI in the state token.
             principal.SetClaim(Claims.TargetLinkUri, context.TargetLinkUri);
 
             // Attach the negotiated grant type to the state token.
@@ -4718,7 +4718,7 @@ public static partial class OpenIddictClientHandlers
 
             // Note: while the exact order of the parameters has typically no effect on how requests
             // are handled by an authorization server, client_id and redirect_uri are deliberately
-            // set first so that they appear early in the URL (when GET requests are used), making
+            // set first so that they appear early in the URI (when GET requests are used), making
             // mistyped values easier to spot when an error is returned by the identity provider.
             context.Request.ClientId = context.ClientId;
             context.Request.RedirectUri = context.RedirectUri;
@@ -5160,7 +5160,7 @@ public static partial class OpenIddictClientHandlers
             // ensure the logout response sent to the post-logout redirection endpoint is not forged.
             principal.SetClaim(Claims.RequestForgeryProtection, context.RequestForgeryProtection);
 
-            // Store the optional return URL in the state token.
+            // Store the optional target link URI in the state token.
             principal.SetClaim(Claims.TargetLinkUri, context.TargetLinkUri);
 
             // Store the type of endpoint allowed to receive the generated state token.
@@ -5168,7 +5168,7 @@ public static partial class OpenIddictClientHandlers
                 typeof(OpenIddictClientEndpointType),
                 OpenIddictClientEndpointType.PostLogoutRedirection)!.ToLowerInvariant());
 
-            // Store the post_logout_redirect_uri to allow comparing to the actual redirection URL.
+            // Store the post_logout_redirect_uri to allow comparing to the actual redirection URI.
             principal.SetClaim(Claims.Private.PostLogoutRedirectUri, context.PostLogoutRedirectUri);
 
             // Store the nonce in the state token.
@@ -5273,7 +5273,7 @@ public static partial class OpenIddictClientHandlers
 
             // Note: while the exact order of the parameters has typically no effect on how requests
             // are handled by an authorization server, client_id and post_logout_redirect_uri are
-            // set first so that they appear early in the URL (when GET requests are used), making
+            // set first so that they appear early in the URI (when GET requests are used), making
             // mistyped values easier to spot when an error is returned by the identity provider.
             context.Request.ClientId = context.ClientId;
             context.Request.PostLogoutRedirectUri = context.PostLogoutRedirectUri;

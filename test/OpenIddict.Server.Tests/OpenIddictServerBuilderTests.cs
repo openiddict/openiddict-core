@@ -753,27 +753,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetAuthorizationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetAuthorizationEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetAuthorizationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetAuthorizationEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetAuthorizationEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -786,7 +786,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -800,7 +800,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -837,27 +837,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetConfigurationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetConfigurationEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetConfigurationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetConfigurationEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetConfigurationEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -870,7 +870,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -884,7 +884,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetConfigurationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -921,27 +921,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetCryptographyEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetCryptographyEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetCryptographyEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetCryptographyEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetCryptographyEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -954,7 +954,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -968,7 +968,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetCryptographyEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1005,27 +1005,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetDeviceEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetDeviceEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetDeviceEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetDeviceEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetDeviceEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -1038,7 +1038,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -1052,7 +1052,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetDeviceEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1089,27 +1089,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetIntrospectionEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetIntrospectionEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetIntrospectionEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetIntrospectionEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIntrospectionEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -1122,7 +1122,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetIntrospectionEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -1136,7 +1136,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetIntrospectionEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1173,27 +1173,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetLogoutEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetLogoutEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetLogoutEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetLogoutEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetLogoutEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -1206,7 +1206,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetLogoutEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -1220,7 +1220,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetLogoutEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1257,27 +1257,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetRevocationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetRevocationEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetRevocationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetRevocationEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRevocationEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -1290,7 +1290,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetRevocationEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -1304,7 +1304,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetRevocationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1341,27 +1341,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetTokenEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetTokenEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetTokenEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetTokenEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetTokenEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -1374,7 +1374,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetTokenEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -1388,7 +1388,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetTokenEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1425,27 +1425,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetUserinfoEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetUserinfoEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetUserinfoEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetUserinfoEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetUserinfoEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -1458,7 +1458,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetUserinfoEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -1472,7 +1472,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetUserinfoEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1509,27 +1509,27 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
-    public void SetVerificationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+    public void SetVerificationEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses: (null as Uri[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(uris: (null as Uri[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Fact]
-    public void SetVerificationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+    public void SetVerificationEndpointUris_Strings_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange
         var services = CreateServices();
         var builder = CreateBuilder(services);
 
         // Act and assert
-        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(addresses: (null as string[])!));
-        Assert.Equal("addresses", exception.ParamName);
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.SetVerificationEndpointUris(uris: (null as string[])!));
+        Assert.Equal("uris", exception.ParamName);
     }
 
     [Theory]
@@ -1542,7 +1542,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetVerificationEndpointUris(new Uri(uri)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.GetResourceString(SR.ID0072), exception.Message);
     }
 
@@ -1556,7 +1556,7 @@ public class OpenIddictServerBuilderTests
 
         // Act and assert
         var exception = Assert.Throws<ArgumentException>(() => builder.SetVerificationEndpointUris(new Uri(uri, UriKind.RelativeOrAbsolute)));
-        Assert.Equal("addresses", exception.ParamName);
+        Assert.Equal("uris", exception.ParamName);
         Assert.Contains(SR.FormatID0081("~"), exception.Message);
     }
 
@@ -1810,11 +1810,11 @@ public class OpenIddictServerBuilderTests
         // Act and assert
         var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIssuer(null!));
 
-        Assert.Equal("address", exception.ParamName);
+        Assert.Equal("uri", exception.ParamName);
     }
 
     [Fact]
-    public void SetIssuer_AddressIsReplaced()
+    public void SetIssuer_IssuerIsReplaced()
     {
         // Arrange
         var services = CreateServices();

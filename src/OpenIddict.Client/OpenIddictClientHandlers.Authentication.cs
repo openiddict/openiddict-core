@@ -135,7 +135,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching the address of the authorization request to the request.
+        /// Contains the logic responsible for attaching the URI of the authorization request to the request.
         /// </summary>
         public sealed class AttachAuthorizationEndpoint : IOpenIddictClientHandler<ApplyAuthorizationRequestContext>
         {
@@ -156,7 +156,7 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Ensure the authorization endpoint is present and is a valid absolute URL.
+                // Ensure the authorization endpoint is present and is a valid absolute URI.
                 if (context.Configuration.AuthorizationEndpoint is not { IsAbsoluteUri: true } ||
                    !context.Configuration.AuthorizationEndpoint.IsWellFormedOriginalString())
                 {

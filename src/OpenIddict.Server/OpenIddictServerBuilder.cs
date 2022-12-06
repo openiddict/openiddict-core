@@ -1002,492 +1002,492 @@ public sealed class OpenIddictServerBuilder
         });
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the authorization endpoint.
+    /// Sets the relative or absolute URIs associated to the authorization endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetAuthorizationEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetAuthorizationEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetAuthorizationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the authorization endpoint.
+    /// Sets the relative or absolute URIs associated to the authorization endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetAuthorizationEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetAuthorizationEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.AuthorizationEndpointUris.Clear();
-            options.AuthorizationEndpointUris.AddRange(addresses);
+            options.AuthorizationEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the configuration endpoint.
+    /// Sets the relative or absolute URIs associated to the configuration endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetConfigurationEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetConfigurationEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetConfigurationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the configuration endpoint.
+    /// Sets the relative or absolute URIs associated to the configuration endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetConfigurationEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetConfigurationEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.ConfigurationEndpointUris.Clear();
-            options.ConfigurationEndpointUris.AddRange(addresses);
+            options.ConfigurationEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the cryptography endpoint.
+    /// Sets the relative or absolute URIs associated to the cryptography endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetCryptographyEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetCryptographyEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetCryptographyEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the cryptography endpoint.
+    /// Sets the relative or absolute URIs associated to the cryptography endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetCryptographyEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetCryptographyEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.CryptographyEndpointUris.Clear();
-            options.CryptographyEndpointUris.AddRange(addresses);
+            options.CryptographyEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the device endpoint.
+    /// Sets the relative or absolute URIs associated to the device endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetDeviceEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetDeviceEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetDeviceEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the device endpoint.
+    /// Sets the relative or absolute URIs associated to the device endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetDeviceEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetDeviceEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.DeviceEndpointUris.Clear();
-            options.DeviceEndpointUris.AddRange(addresses);
+            options.DeviceEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the introspection endpoint.
+    /// Sets the relative or absolute URIs associated to the introspection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetIntrospectionEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetIntrospectionEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetIntrospectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the introspection endpoint.
+    /// Sets the relative or absolute URIs associated to the introspection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetIntrospectionEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetIntrospectionEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.IntrospectionEndpointUris.Clear();
-            options.IntrospectionEndpointUris.AddRange(addresses);
+            options.IntrospectionEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the logout endpoint.
+    /// Sets the relative or absolute URIs associated to the logout endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetLogoutEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetLogoutEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetLogoutEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the logout endpoint.
+    /// Sets the relative or absolute URIs associated to the logout endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetLogoutEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetLogoutEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.LogoutEndpointUris.Clear();
-            options.LogoutEndpointUris.AddRange(addresses);
+            options.LogoutEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the revocation endpoint.
+    /// Sets the relative or absolute URIs associated to the revocation endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetRevocationEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetRevocationEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetRevocationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the revocation endpoint.
+    /// Sets the relative or absolute URIs associated to the revocation endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetRevocationEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetRevocationEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.RevocationEndpointUris.Clear();
-            options.RevocationEndpointUris.AddRange(addresses);
+            options.RevocationEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the token endpoint.
+    /// Sets the relative or absolute URIs associated to the token endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetTokenEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetTokenEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetTokenEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the token endpoint.
+    /// Sets the relative or absolute URIs associated to the token endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetTokenEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetTokenEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.TokenEndpointUris.Clear();
-            options.TokenEndpointUris.AddRange(addresses);
+            options.TokenEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the userinfo endpoint.
+    /// Sets the relative or absolute URIs associated to the userinfo endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetUserinfoEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetUserinfoEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetUserinfoEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the userinfo endpoint.
+    /// Sets the relative or absolute URIs associated to the userinfo endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned as part of the discovery document.
+    /// Note: only the first URI will be returned as part of the discovery document.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetUserinfoEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetUserinfoEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.UserinfoEndpointUris.Clear();
-            options.UserinfoEndpointUris.AddRange(addresses);
+            options.UserinfoEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the verification endpoint.
+    /// Sets the relative or absolute URIs associated to the verification endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned by the device endpoint.
+    /// Note: only the first URI will be returned by the device endpoint.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetVerificationEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetVerificationEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetVerificationEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the verification endpoint.
+    /// Sets the relative or absolute URIs associated to the verification endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
-    /// Note: only the first address will be returned by the device endpoint.
+    /// Note: only the first URI will be returned by the device endpoint.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetVerificationEndpointUris(params Uri[] addresses)
+    public OpenIddictServerBuilder SetVerificationEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+        if (uris.Any(uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (addresses.Any(address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (uris.Any(uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.VerificationEndpointUris.Clear();
-            options.VerificationEndpointUris.AddRange(addresses);
+            options.VerificationEndpointUris.AddRange(uris);
         });
     }
 
@@ -1714,19 +1714,19 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.UserCodeLifetime = lifetime);
 
     /// <summary>
-    /// Sets the issuer address, which is used as the value for the "issuer" claim and
+    /// Sets the issuer URI, which is used as the value of the "issuer" claim and
     /// is returned from the discovery endpoint to identify the authorization server.
     /// </summary>
-    /// <param name="address">The issuer address.</param>
+    /// <param name="uri">The issuer uri.</param>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
-    public OpenIddictServerBuilder SetIssuer(Uri address)
+    public OpenIddictServerBuilder SetIssuer(Uri uri)
     {
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        return Configure(options => options.Issuer = address);
+        return Configure(options => options.Issuer = uri);
     }
 
     /// <summary>

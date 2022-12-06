@@ -80,20 +80,20 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     /// <summary>
     /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
     /// </summary>
-    /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
+    /// <param name="uri">The post_logout_redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
     IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves all the applications associated with the specified redirect_uri.
     /// </summary>
-    /// <param name="address">The redirect_uri associated with the applications.</param>
+    /// <param name="uri">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
     IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken);
 
     /// <summary>
     /// Executes the specified query and returns the first element.
@@ -202,7 +202,7 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     ValueTask<ImmutableArray<string>> GetPermissionsAsync(TApplication application, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieves the logout callback addresses associated with an application.
+    /// Retrieves the post-logout redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -224,7 +224,7 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(TApplication application, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieves the callback addresses associated with an application.
+    /// Retrieves the redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -344,14 +344,13 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
     ValueTask SetPermissionsAsync(TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Sets the logout callback addresses associated with an application.
+    /// Sets the post-logout redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
-    /// <param name="addresses">The logout callback addresses associated with the application </param>
+    /// <param name="uris">The post-logout redirect URIs associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    ValueTask SetPostLogoutRedirectUrisAsync(TApplication application,
-        ImmutableArray<string> addresses, CancellationToken cancellationToken);
+    ValueTask SetPostLogoutRedirectUrisAsync(TApplication application, ImmutableArray<string> uris, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the additional properties associated with an application.
@@ -364,14 +363,13 @@ public interface IOpenIddictApplicationStore<TApplication> where TApplication : 
         ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Sets the callback addresses associated with an application.
+    /// Sets the redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
-    /// <param name="addresses">The callback addresses associated with the application </param>
+    /// <param name="uris">The redirect URIs associated with the application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-    ValueTask SetRedirectUrisAsync(TApplication application,
-        ImmutableArray<string> addresses, CancellationToken cancellationToken);
+    ValueTask SetRedirectUrisAsync(TApplication application, ImmutableArray<string> uris, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the requirements associated with an application.

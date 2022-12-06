@@ -258,7 +258,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 Providers.Deezer or
                 Providers.Mixcloud => OpenIddictHelpers.AddQueryStringParameter(
-                    address: new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
+                    uri: new Uri(context.TokenRequest.RedirectUri, UriKind.Absolute),
                     name: Parameters.State,
                     value: context.StateToken).AbsoluteUri,
 
@@ -500,7 +500,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             {
                 Providers.Deezer or
                 Providers.Mixcloud => (OpenIddictHelpers.AddQueryStringParameter(
-                    address: new Uri(context.RedirectUri, UriKind.Absolute),
+                    uri: new Uri(context.RedirectUri, UriKind.Absolute),
                     name: Parameters.State,
                     value: context.Request.State).AbsoluteUri, null),
 

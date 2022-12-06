@@ -242,12 +242,12 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     token, _options.CurrentValue.LogoutRequestCachingPolicy);
 
                 // Create a new GET logout request containing only the request_id parameter.
-                var address = QueryHelpers.AddQueryString(
+                var location = QueryHelpers.AddQueryString(
                     uri: request.Scheme + Uri.SchemeDelimiter + request.Host + request.PathBase + request.Path,
                     name: Parameters.RequestId,
                     value: context.Request.RequestId);
 
-                request.HttpContext.Response.Redirect(address);
+                request.HttpContext.Response.Redirect(location);
 
                 // Mark the response as handled to skip the rest of the pipeline.
                 context.HandleRequest();

@@ -201,7 +201,7 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: the issuer returned in the discovery document must exactly match the URL used to access it.
+                // Note: the issuer returned in the discovery document must exactly match the URI used to access it.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
 
                 var issuer = (string?) context.Response[Metadata.Issuer];
@@ -215,7 +215,7 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? address))
+                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri))
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -226,7 +226,7 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 // Ensure the issuer matches the expected value.
-                if (address != context.Registration.Issuer)
+                if (uri != context.Registration.Issuer)
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -236,14 +236,14 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                context.Configuration.Issuer = address;
+                context.Configuration.Issuer = uri;
 
                 return default;
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the authorization endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the authorization endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractAuthorizationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -269,15 +269,15 @@ public static partial class OpenIddictClientHandlers
                 // but is optional in the OAuth 2.0 authorization server metadata specification. To make OpenIddict
                 // compatible with the newer OAuth 2.0 specification, null/empty and missing values are allowed here.
                 //
-                // Handlers that require a non-null authorization endpoint URL are expected to return an error
-                // if the authorization endpoint URL couldn't be resolved from the authorization server metadata.
+                // Handlers that require a non-null authorization endpoint URI are expected to return an error
+                // if the authorization endpoint URI couldn't be resolved from the authorization server metadata.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient
                 // and https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
                 //
-                var address = (string?) context.Response[Metadata.AuthorizationEndpoint];
-                if (!string.IsNullOrEmpty(address))
+                var endpoint = (string?) context.Response[Metadata.AuthorizationEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -295,7 +295,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the JWKS endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the JWKS endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractCryptographyEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -319,8 +319,8 @@ public static partial class OpenIddictClientHandlers
 
                 // Note: the jwks_uri node is required by the OpenID Connect discovery specification.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationClient.
-                var address = (string?) context.Response[Metadata.JwksUri];
-                if (string.IsNullOrEmpty(address))
+                var endpoint = (string?) context.Response[Metadata.JwksUri];
+                if (string.IsNullOrEmpty(endpoint))
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -330,7 +330,7 @@ public static partial class OpenIddictClientHandlers
                     return default;
                 }
 
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -347,7 +347,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the logout endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the logout endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractLogoutEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -369,10 +369,10 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var address = (string?) context.Response[Metadata.EndSessionEndpoint];
-                if (!string.IsNullOrEmpty(address))
+                var endpoint = (string?) context.Response[Metadata.EndSessionEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -390,7 +390,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the token endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the token endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractTokenEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -412,10 +412,10 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var address = (string?) context.Response[Metadata.TokenEndpoint];
-                if (!string.IsNullOrEmpty(address))
+                var endpoint = (string?) context.Response[Metadata.TokenEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Reject(
                             error: Errors.ServerError,
@@ -433,7 +433,7 @@ public static partial class OpenIddictClientHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the userinfo endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the userinfo endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractUserinfoEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
         {
@@ -455,10 +455,10 @@ public static partial class OpenIddictClientHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var address = (string?) context.Response[Metadata.UserinfoEndpoint];
-                if (!string.IsNullOrEmpty(address))
+                var endpoint = (string?) context.Response[Metadata.UserinfoEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Reject(
                             error: Errors.ServerError,

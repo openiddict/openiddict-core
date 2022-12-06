@@ -138,11 +138,11 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         return ExecuteAsync(cancellationToken);
@@ -153,7 +153,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             await foreach (var application in collection.Find(application =>
-                application.PostLogoutRedirectUris!.Contains(address)).ToAsyncEnumerable(cancellationToken))
+                application.PostLogoutRedirectUris!.Contains(uri)).ToAsyncEnumerable(cancellationToken))
             {
                 yield return application;
             }
@@ -162,11 +162,11 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         return ExecuteAsync(cancellationToken);
@@ -177,7 +177,7 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
 
             await foreach (var application in collection.Find(application =>
-                application.RedirectUris!.Contains(address)).ToAsyncEnumerable(cancellationToken))
+                application.RedirectUris!.Contains(uri)).ToAsyncEnumerable(cancellationToken))
             {
                 yield return application;
             }
@@ -554,21 +554,21 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public virtual ValueTask SetPostLogoutRedirectUrisAsync(TApplication application,
-        ImmutableArray<string> addresses, CancellationToken cancellationToken)
+        ImmutableArray<string> uris, CancellationToken cancellationToken)
     {
         if (application is null)
         {
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (addresses.IsDefaultOrEmpty)
+        if (uris.IsDefaultOrEmpty)
         {
             application.PostLogoutRedirectUris = null;
 
             return default;
         }
 
-        application.PostLogoutRedirectUris = addresses.ToImmutableList();
+        application.PostLogoutRedirectUris = uris.ToImmutableList();
 
         return default;
     }
@@ -614,21 +614,21 @@ public class OpenIddictMongoDbApplicationStore<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public virtual ValueTask SetRedirectUrisAsync(TApplication application,
-        ImmutableArray<string> addresses, CancellationToken cancellationToken)
+        ImmutableArray<string> uris, CancellationToken cancellationToken)
     {
         if (application is null)
         {
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (addresses.IsDefaultOrEmpty)
+        if (uris.IsDefaultOrEmpty)
         {
             application.RedirectUris = null;
 
             return default;
         }
 
-        application.RedirectUris = addresses.ToImmutableList();
+        application.RedirectUris = uris.ToImmutableList();
 
         return default;
     }

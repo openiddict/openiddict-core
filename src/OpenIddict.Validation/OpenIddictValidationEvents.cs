@@ -130,9 +130,9 @@ public static partial class OpenIddictValidationEvents
         }
 
         /// <summary>
-        /// Gets or sets the address of the external endpoint to communicate with.
+        /// Gets or sets the URI of the external endpoint to communicate with.
         /// </summary>
-        public Uri? Address { get; set; }
+        public Uri? RemoteUri { get; set; }
     }
 
     /// <summary>
@@ -241,7 +241,7 @@ public static partial class OpenIddictValidationEvents
         public string? ErrorDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the error URL returned to the caller.
+        /// Gets or sets the error URI returned to the caller.
         /// </summary>
         public string? ErrorUri { get; set; }
 

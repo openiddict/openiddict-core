@@ -87,47 +87,47 @@ public static partial class OpenIddictServerEvents
         public Dictionary<string, OpenIddictParameter> Metadata { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// Gets or sets the issuer address.
+        /// Gets or sets the issuer URI.
         /// </summary>
         public Uri? Issuer { get; set; }
 
         /// <summary>
-        /// Gets or sets the authorization endpoint address.
+        /// Gets or sets the authorization endpoint URI.
         /// </summary>
         public Uri? AuthorizationEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the JWKS endpoint address.
+        /// Gets or sets the JWKS endpoint URI.
         /// </summary>
         public Uri? CryptographyEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the device endpoint address.
+        /// Gets or sets the device endpoint URI.
         /// </summary>
         public Uri? DeviceEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the introspection endpoint address.
+        /// Gets or sets the introspection endpoint URI.
         /// </summary>
         public Uri? IntrospectionEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the logout endpoint address.
+        /// Gets or sets the logout endpoint URI.
         /// </summary>
         public Uri? LogoutEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the revocation endpoint address.
+        /// Gets or sets the revocation endpoint URI.
         /// </summary>
         public Uri? RevocationEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the token endpoint address.
+        /// Gets or sets the token endpoint URI.
         /// </summary>
         public Uri? TokenEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the userinfo endpoint address.
+        /// Gets or sets the userinfo endpoint URI.
         /// </summary>
         public Uri? UserinfoEndpoint { get; set; }
 

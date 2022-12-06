@@ -115,20 +115,20 @@ public interface IOpenIddictApplicationManager
     /// <summary>
     /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
     /// </summary>
-    /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
+    /// <param name="uri">The post_logout_redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
     IAsyncEnumerable<object> FindByPostLogoutRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves all the applications associated with the specified redirect_uri.
     /// </summary>
-    /// <param name="address">The redirect_uri associated with the applications.</param>
+    /// <param name="uri">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
     IAsyncEnumerable<object> FindByRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes the specified query and returns the first element.
@@ -264,7 +264,7 @@ public interface IOpenIddictApplicationManager
     ValueTask<ImmutableArray<string>> GetPermissionsAsync(object application, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves the logout callback addresses associated with an application.
+    /// Retrieves the post-logout redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -286,7 +286,7 @@ public interface IOpenIddictApplicationManager
     ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync(object application, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves the callback addresses associated with an application.
+    /// Retrieves the redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -457,7 +457,7 @@ public interface IOpenIddictApplicationManager
     /// Validates the post_logout_redirect_uri to ensure it's associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
-    /// <param name="address">The address that should be compared to one of the post_logout_redirect_uri stored in the database.</param>
+    /// <param name="uri">The URI that should be compared to one of the post_logout_redirect_uri stored in the database.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <remarks>Note: if no client_id parameter is specified in logout requests, this method may not be called.</remarks>
     /// <returns>
@@ -465,18 +465,18 @@ public interface IOpenIddictApplicationManager
     /// whose result returns a boolean indicating whether the post_logout_redirect_uri was valid.
     /// </returns>
     ValueTask<bool> ValidatePostLogoutRedirectUriAsync(object application,
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Validates the redirect_uri to ensure it's associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
-    /// <param name="address">The address that should be compared to one of the redirect_uri stored in the database.</param>
+    /// <param name="uri">The URI that should be compared to one of the redirect_uri stored in the database.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the redirect_uri was valid.
     /// </returns>
     ValueTask<bool> ValidateRedirectUriAsync(object application,
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default);
 }

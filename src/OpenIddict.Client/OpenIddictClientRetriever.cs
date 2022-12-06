@@ -29,7 +29,7 @@ public sealed class OpenIddictClientRetriever : IConfigurationRetriever<OpenIddi
     }
 
     /// <summary>
-    /// Retrieves the OpenID Connect server configuration from the specified address.
+    /// Retrieves the OpenID Connect server configuration from the specified URI.
     /// </summary>
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="retriever">The retriever used by IdentityModel.</param>

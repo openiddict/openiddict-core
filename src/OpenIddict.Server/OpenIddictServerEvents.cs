@@ -266,7 +266,7 @@ public static partial class OpenIddictServerEvents
         public string? ErrorDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the error URL returned to the caller.
+        /// Gets or sets the error URI returned to the caller.
         /// </summary>
         public string? ErrorUri { get; set; }
 

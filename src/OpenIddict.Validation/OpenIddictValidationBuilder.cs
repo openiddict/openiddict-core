@@ -433,40 +433,40 @@ public sealed class OpenIddictValidationBuilder
     }
 
     /// <summary>
-    /// Sets the issuer address, which is used to determine the actual location of the
+    /// Sets the issuer URI, which is used to determine the actual location of the
     /// OAuth 2.0/OpenID Connect configuration document when using provider discovery.
     /// </summary>
-    /// <param name="address">The issuer address.</param>
+    /// <param name="uri">The issuer URI.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
-    public OpenIddictValidationBuilder SetIssuer(Uri address)
+    public OpenIddictValidationBuilder SetIssuer(Uri uri)
     {
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        return Configure(options => options.Issuer = address);
+        return Configure(options => options.Issuer = uri);
     }
 
     /// <summary>
-    /// Sets the issuer address, which is used to determine the actual location of the
+    /// Sets the issuer URI, which is used to determine the actual location of the
     /// OAuth 2.0/OpenID Connect configuration document when using provider discovery.
     /// </summary>
-    /// <param name="address">The issuer address.</param>
+    /// <param name="uri">The issuer URI.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
-    public OpenIddictValidationBuilder SetIssuer([StringSyntax(StringSyntaxAttribute.Uri)] string address)
+    public OpenIddictValidationBuilder SetIssuer([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0126), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0126), nameof(uri));
         }
 
-        if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0023), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0023), nameof(uri));
         }
 
-        return SetIssuer(uri);
+        return SetIssuer(value);
     }
 
     /// <summary>

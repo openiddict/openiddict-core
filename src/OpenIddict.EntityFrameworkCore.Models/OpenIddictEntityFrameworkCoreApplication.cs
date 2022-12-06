@@ -91,7 +91,7 @@ public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TTok
     public virtual string? Permissions { get; set; }
 
     /// <summary>
-    /// Gets or sets the logout callback URLs associated with
+    /// Gets or sets the post-logout redirect URIs associated with
     /// the current application, serialized as a JSON array.
     /// </summary>
     [StringSyntax(StringSyntaxAttribute.Json)]
@@ -105,7 +105,7 @@ public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TTok
     public virtual string? Properties { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback URLs associated with the
+    /// Gets or sets the redirect URIs associated with the
     /// current application, serialized as a JSON array.
     /// </summary>
     [StringSyntax(StringSyntaxAttribute.Json)]

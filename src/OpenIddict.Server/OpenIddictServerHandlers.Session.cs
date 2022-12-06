@@ -472,7 +472,7 @@ public static partial class OpenIddictServerHandlers
                 //
                 //   * The client_id parameter is supported by the client and was explicitly sent:
                 //     in this case, the post_logout_redirect_uris allowed for this client application
-                //     are retrieved from the database: if one of them matches the specified address,
+                //     are retrieved from the database: if one of them matches the specified URI,
                 //     the request is considered valid. Otherwise, it's automatically rejected.
                 //
                 //   * The client_id parameter is not supported by the client or was not explicitly sent:
@@ -514,12 +514,12 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                async ValueTask<bool> ValidatePostLogoutRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string address)
+                async ValueTask<bool> ValidatePostLogoutRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
                 {
                     // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
                     // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
 
-                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(address))
+                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri))
                     {
                         if (context.Options.IgnoreEndpointPermissions ||
                             await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
@@ -755,12 +755,12 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 async ValueTask<bool> ValidateAuthorizedParty(ClaimsPrincipal principal,
-                    [StringSyntax(StringSyntaxAttribute.Uri)] string address)
+                    [StringSyntax(StringSyntaxAttribute.Uri)] string uri)
                 {
                     // To be considered valid, one of the clients matching the specified post_logout_redirect_uri
                     // must be listed either as an audience or as a presenter in the identity token hint.
 
-                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(address))
+                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri))
                     {
                         var identifier = await _applicationManager.GetClientIdAsync(application);
                         if (!string.IsNullOrEmpty(identifier) && (principal.HasAudience(identifier) ||
@@ -810,7 +810,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for inferring the redirect URL
+        /// Contains the logic responsible for inferring the redirect URI
         /// used to send the response back to the client application.
         /// </summary>
         public sealed class AttachPostLogoutRedirectUri : IOpenIddictServerHandler<ApplyLogoutResponseContext>

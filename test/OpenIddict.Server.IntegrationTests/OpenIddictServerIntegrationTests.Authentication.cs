@@ -222,7 +222,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData("/tmp/file.xml", SR.ID2030)]
     [InlineData("C:\\tmp\\file.xml", SR.ID2030)]
     [InlineData("http://www.fabrikam.com/path#param=value", SR.ID2031)]
-    public async Task ValidateAuthorizationRequest_InvalidRedirectUriCausesAnError(string address, string message)
+    public async Task ValidateAuthorizationRequest_InvalidRedirectUriCausesAnError(string uri, string message)
     {
         // Arrange
         await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
@@ -232,7 +232,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
         {
             ClientId = "Fabrikam",
-            RedirectUri = address,
+            RedirectUri = uri,
             Scope = Scopes.OpenId
         });
 
@@ -257,7 +257,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData("http://www.fabrikam.com/path?state=abc;iss=value")]
     [InlineData("http://www.fabrikam.com/path?state=abc&iss")]
     [InlineData("http://www.fabrikam.com/path?state=abc&iss=value")]
-    public async Task ValidateAuthorizationRequest_RedirectUriWithIssuerParameterCausesAnError(string address)
+    public async Task ValidateAuthorizationRequest_RedirectUriWithIssuerParameterCausesAnError(string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
@@ -267,7 +267,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
         {
             ClientId = "Fabrikam",
-            RedirectUri = address,
+            RedirectUri = uri,
             Scope = Scopes.OpenId
         });
 

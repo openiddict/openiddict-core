@@ -91,7 +91,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
 
         if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
+            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
         }
 
         return GetAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
@@ -123,7 +123,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
 
         if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
+            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
         }
 
         return PostAsync(new Uri(uri, UriKind.RelativeOrAbsolute), request);
@@ -161,7 +161,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
 
         if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
+            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
         }
 
         return SendAsync(new HttpMethod(method), uri, request);
@@ -189,7 +189,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
 
         if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException("The URL cannot be null or empty.", nameof(uri));
+            throw new ArgumentException("The URI cannot be null or empty.", nameof(uri));
         }
 
         return SendAsync(method, new Uri(uri, UriKind.RelativeOrAbsolute), request);
@@ -222,7 +222,7 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
 
         if (HttpClient.BaseAddress is null && !uri.IsAbsoluteUri)
         {
-            throw new ArgumentException("The address cannot be a relative URI when no base address " +
+            throw new ArgumentException("The URI cannot be a relative URI when no base URI " +
                                         "is associated with the HTTP client.", nameof(uri));
         }
 

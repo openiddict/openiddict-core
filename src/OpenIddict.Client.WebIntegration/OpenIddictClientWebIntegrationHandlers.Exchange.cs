@@ -38,7 +38,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
-                    .AddFilter<RequireHttpMetadataAddress>()
+                    .AddFilter<RequireHttpMetadataUri>()
                     .UseSingletonHandler<AttachNonStandardQueryStringParameters>()
                     .SetOrder(AttachQueryStringParameters<PrepareTokenRequestContext>.Descriptor.Order + 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)

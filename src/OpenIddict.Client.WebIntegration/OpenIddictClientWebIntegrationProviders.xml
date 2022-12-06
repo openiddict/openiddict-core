@@ -56,14 +56,14 @@
 
   <Provider Name="Keycloak" Documentation="https://www.keycloak.org/getting-started/getting-started-docker">
     <!--
-      Note: Keycloak is a self-hosted-only identity provider that doesn't have a generic issuer address.
-      As such, the complete address must always be set in the options and include the realm, if applicable.
+      Note: Keycloak is a self-hosted-only identity provider that doesn't have a generic issuer URI.
+      As such, the complete URI must always be set in the options and include the realm, if applicable.
     -->
 
     <Environment Issuer="{issuer}" />
 
     <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
-             Description="The address used to access the Keycloak identity provider (including the realm, if applicable)" />
+             Description="The URI used to access the Keycloak identity provider (including the realm, if applicable)" />
   </Provider>
 
   <Provider Name="LinkedIn" Documentation="https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin">

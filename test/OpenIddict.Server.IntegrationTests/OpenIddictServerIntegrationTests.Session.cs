@@ -134,7 +134,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [InlineData("/tmp/file.xml", SR.ID2030)]
     [InlineData("C:\\tmp\\file.xml", SR.ID2030)]
     [InlineData("http://www.fabrikam.com/path#param=value", SR.ID2031)]
-    public async Task ValidateLogoutRequest_InvalidRedirectUriCausesAnError(string address, string message)
+    public async Task ValidateLogoutRequest_InvalidRedirectUriCausesAnError(string uri, string message)
     {
         // Arrange
         await using var server = await CreateServerAsync();
@@ -143,7 +143,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Act
         var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
         {
-            PostLogoutRedirectUri = address
+            PostLogoutRedirectUri = uri
         });
 
         // Assert
