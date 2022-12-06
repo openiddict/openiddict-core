@@ -193,7 +193,7 @@ Alternatively, you can disable the built-in database-based server features by en
     <value>A token cannot be created from a null principal.</value>
   </data>
   <data name="ID0023" xml:space="preserve">
-    <value>The issuer must be a non-null, non-empty absolute URL.</value>
+    <value>The issuer must be a non-null, non-empty absolute URI.</value>
   </data>
   <data name="ID0024" xml:space="preserve">
     <value>A sign-out response cannot be returned from this endpoint.</value>
@@ -367,7 +367,7 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
     <value>The grant type cannot be null or empty.</value>
   </data>
   <data name="ID0072" xml:space="preserve">
-    <value>Endpoint addresses must be valid URLs.</value>
+    <value>Endpoint URIs must be valid URIs.</value>
   </data>
   <data name="ID0073" xml:space="preserve">
     <value>Claims cannot be null or empty.</value>
@@ -394,7 +394,7 @@ Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.</val
     <value>The verification endpoint must be enabled to use the device flow.</value>
   </data>
   <data name="ID0081" xml:space="preserve">
-    <value>Endpoint addresses cannot start with '{0}'.</value>
+    <value>Endpoint URIs cannot start with '{0}'.</value>
   </data>
   <data name="ID0082" xml:space="preserve">
     <value>Dependency injection support must be enabled in Quartz.NET when using the OpenIddict integration.
@@ -550,7 +550,7 @@ To register the server services, use 'services.AddOpenIddict().AddServer()'.</va
     <value>The base URI or request URI cannot be retrieved from the request context or are now valid absolute URIs.</value>
   </data>
   <data name="ID0128" xml:space="preserve">
-    <value>An OAuth 2.0/OpenID Connect server configuration or an issuer address must be registered.
+    <value>An OAuth 2.0/OpenID Connect server configuration or an issuer URI must be registered.
 To use a local OpenIddict server, reference the 'OpenIddict.Validation.ServerIntegration' package and call 'services.AddOpenIddict().AddValidation().UseLocalServer()' to import the server settings.
 To use a remote server, reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' and 'services.AddOpenIddict().AddValidation().SetIssuer()' to use server discovery.
 Alternatively, you can register a static server configuration by calling 'services.AddOpenIddict().AddValidation().SetConfiguration()'.</value>
@@ -560,7 +560,7 @@ Alternatively, you can register a static server configuration by calling 'servic
 Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
   </data>
   <data name="ID0130" xml:space="preserve">
-    <value>The issuer or the metadata address must be set when using introspection.</value>
+    <value>The issuer or the configuration endpoint URI must be set when using introspection.</value>
   </data>
   <data name="ID0131" xml:space="preserve">
     <value>The client identifier cannot be null or empty when using introspection.</value>
@@ -579,10 +579,10 @@ Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.A
 Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' to register the default System.Net.Http-based integration.</value>
   </data>
   <data name="ID0136" xml:space="preserve">
-    <value>The authority must be provided and must be an absolute URL.</value>
+    <value>The issuer must be provided and must be an absolute URI.</value>
   </data>
   <data name="ID0137" xml:space="preserve">
-    <value>The authority cannot contain a fragment or a query string.</value>
+    <value>The issuer cannot contain a fragment or a query string.</value>
   </data>
   <data name="ID0138" xml:space="preserve">
     <value>The event handler of type '{0}' couldn't be resolved.
@@ -603,10 +603,10 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
   </data>
   <data name="ID0143" xml:space="preserve">
-    <value>The address cannot be null or empty.</value>
+    <value>The URI cannot be null or empty.</value>
   </data>
   <data name="ID0144" xml:space="preserve">
-    <value>The address must be a valid absolute URI.</value>
+    <value>The URI must be a valid absolute URI.</value>
   </data>
   <data name="ID0145" xml:space="preserve">
     <value>The server configuration couldn't be retrieved.</value>
@@ -857,10 +857,10 @@ To register the validation services, use 'services.AddOpenIddict().AddValidation
     <value>The requirement name cannot be null or empty.</value>
   </data>
   <data name="ID0213" xml:space="preserve">
-    <value>Callback URLs cannot be null or empty.</value>
+    <value>Callback URIs cannot be null or empty.</value>
   </data>
   <data name="ID0214" xml:space="preserve">
-    <value>Callback URLs must be valid absolute URLs.</value>
+    <value>Callback URIs must be valid absolute URIs.</value>
   </data>
   <data name="ID0215" xml:space="preserve">
     <value>One or more validation error(s) occurred while trying to update an existing application:</value>
@@ -1111,7 +1111,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>The context type associated with the specified descriptor doesn't match the context type of this builder.</value>
   </data>
   <data name="ID0285" xml:space="preserve">
-    <value>Endpoint addresses must be unique across endpoints.</value>
+    <value>Endpoint URIs must be unique across endpoints.</value>
   </data>
   <data name="ID0286" xml:space="preserve">
     <value>The specified principal doesn't contain a valid claims-based identity.</value>
@@ -1180,7 +1180,7 @@ To apply redirection responses, create a class implementing 'IOpenIddictClientHa
     <value>No issuer was specified in the challenge properties. When multiple clients are registered, an issuer (or a provider name) must be specified in the challenge properties.</value>
   </data>
   <data name="ID0306" xml:space="preserve">
-    <value>The specified issuer is not a valid or absolute URL.</value>
+    <value>The specified issuer is not a valid or absolute URI.</value>
   </data>
   <data name="ID0307" xml:space="preserve">
     <value>The issuer extracted from the server configuration metadata doesn't match the expected value.</value>
@@ -1484,7 +1484,7 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>The mandatory '{0}' parameter is missing.</value>
   </data>
   <data name="ID2030" xml:space="preserve">
-    <value>The '{0}' parameter must be a valid absolute URL.</value>
+    <value>The '{0}' parameter must be a valid absolute URI.</value>
   </data>
   <data name="ID2031" xml:space="preserve">
     <value>The '{0}' parameter must not include a fragment.</value>
@@ -1577,10 +1577,10 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>A scope with the same name already exists.</value>
   </data>
   <data name="ID2061" xml:space="preserve">
-    <value>Callback URLs cannot be null or empty.</value>
+    <value>Callback URIs cannot be null or empty.</value>
   </data>
   <data name="ID2062" xml:space="preserve">
-    <value>Callback URLs must be valid absolute URLs.</value>
+    <value>Callback URIs must be valid absolute URIs.</value>
   </data>
   <data name="ID2063" xml:space="preserve">
     <value>This client application is not allowed to use the token endpoint.</value>
@@ -1610,7 +1610,7 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>The specified refresh token cannot be used by this client application.</value>
   </data>
   <data name="ID2072" xml:space="preserve">
-    <value>The specified '{0}' parameter doesn't match the client redirection address the authorization code was initially sent to.</value>
+    <value>The specified '{0}' parameter doesn't match the client redirection URI the authorization code was initially sent to.</value>
   </data>
   <data name="ID2073" xml:space="preserve">
     <value>The '{0}' parameter cannot be used when no '{1}' was specified in the authorization request.</value>
@@ -1694,7 +1694,7 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>No JWKS endpoint could be found in the server configuration.</value>
   </data>
   <data name="ID2100" xml:space="preserve">
-    <value>A server configuration containing an invalid '{0}' URL was returned.</value>
+    <value>A server configuration containing an invalid '{0}' URI was returned.</value>
   </data>
   <data name="ID2102" xml:space="preserve">
     <value>The JWKS document didn't contain a valid '{0}' node with at least one key.</value>
@@ -1736,7 +1736,7 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>A client secret cannot be associated with a public application.</value>
   </data>
   <data name="ID2115" xml:space="preserve">
-    <value>Callback URLs cannot contain a fragment.</value>
+    <value>Callback URIs cannot contain a fragment.</value>
   </data>
   <data name="ID2116" xml:space="preserve">
     <value>The authorization type cannot be null or empty.</value>
@@ -1793,7 +1793,7 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>The '{0}' claim returned in the specified userinfo response/token doesn't match the expected value.</value>
   </data>
   <data name="ID2134" xml:space="preserve">
-    <value>Callback URLs cannot contain an "{0}" parameter.</value>
+    <value>Callback URIs cannot contain an "{0}" parameter.</value>
   </data>
   <data name="ID2135" xml:space="preserve">
     <value>The '{0}' parameter must not include a '{1}' component.</value>
@@ -1805,7 +1805,7 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>An invalid JSON response was returned by the remote HTTP server.</value>
   </data>
   <data name="ID2138" xml:space="preserve">
-    <value>The current address doesn't match the address of the redirection endpoint selected during the initial authorization request.</value>
+    <value>The current URI doesn't match the URI of the redirection endpoint selected during the initial authorization request.</value>
   </data>
   <data name="ID2139" xml:space="preserve">
     <value>The specified state token has already been redeemed.</value>
@@ -1925,7 +1925,7 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>EC-based keys should have a non-null OID raw value or friendly name.</value>
   </data>
   <data name="ID4013" xml:space="preserve">
-    <value>The issuer should be a valid absolute URL at this point.</value>
+    <value>The issuer should be a valid absolute URI at this point.</value>
   </data>
   <data name="ID4014" xml:space="preserve">
     <value>The username shouldn't be null or empty at this point.</value>
@@ -1998,10 +1998,10 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The authorization request was rejected because the mandatory '{Parameter}' parameter was missing.</value>
   </data>
   <data name="ID6034" xml:space="preserve">
-    <value>The authorization request was rejected because the '{Parameter}' parameter wasn't a valid absolute URL: {RedirectUri}.</value>
+    <value>The authorization request was rejected because the '{Parameter}' parameter wasn't a valid absolute URI: {RedirectUri}.</value>
   </data>
   <data name="ID6035" xml:space="preserve">
-    <value>The authorization request was rejected because the '{Parameter}' contained a URL fragment: {RedirectUri}.</value>
+    <value>The authorization request was rejected because the '{Parameter}' contained a URI fragment: {RedirectUri}.</value>
   </data>
   <data name="ID6036" xml:space="preserve">
     <value>The authorization request was rejected because the '{ResponseType}' response type is not supported.</value>
@@ -2055,7 +2055,7 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the '{Scope}' scope.</value>
   </data>
   <data name="ID6053" xml:space="preserve">
-    <value>The request address matched a server endpoint: {Endpoint}.</value>
+    <value>The request URI matched a server endpoint: {Endpoint}.</value>
   </data>
   <data name="ID6054" xml:space="preserve">
     <value>The device request was successfully extracted: {Request}.</value>
@@ -2274,10 +2274,10 @@ The principal used to create the token contained the following claims: {Claims}.
     <value>The logout request was successfully validated.</value>
   </data>
   <data name="ID6126" xml:space="preserve">
-    <value>The logout request was rejected because the '{Parameter}' parameter wasn't a valid absolute URL: {PostLogoutRedirectUri}.</value>
+    <value>The logout request was rejected because the '{Parameter}' parameter wasn't a valid absolute URI: {PostLogoutRedirectUri}.</value>
   </data>
   <data name="ID6127" xml:space="preserve">
-    <value>The logout request was rejected because the '{Parameter}' contained a URL fragment: {PostLogoutRedirectUri}.</value>
+    <value>The logout request was rejected because the '{Parameter}' contained a URI fragment: {PostLogoutRedirectUri}.</value>
   </data>
   <data name="ID6128" xml:space="preserve">
     <value>The logout request was rejected because the specified post_logout_redirect_uri was invalid: {PostLogoutRedirectUri}.</value>
@@ -2455,34 +2455,34 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>An unsupported {StatusCode} response was returned by the remote HTTP server: {ContentType} {Payload}.</value>
   </data>
   <data name="ID6186" xml:space="preserve">
-    <value>The configuration request was successfully sent to {Address}: {Request}.</value>
+    <value>The configuration request was successfully sent to {Uri}: {Request}.</value>
   </data>
   <data name="ID6187" xml:space="preserve">
-    <value>The configuration response returned by {Address} was successfully extracted: {Response}.</value>
+    <value>The configuration response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID6188" xml:space="preserve">
-    <value>The cryptography request was successfully sent to {Address}: {Request}.</value>
+    <value>The cryptography request was successfully sent to {Uri}: {Request}.</value>
   </data>
   <data name="ID6189" xml:space="preserve">
-    <value>The cryptography response returned by {Address} was successfully extracted: {Response}.</value>
+    <value>The cryptography response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID6190" xml:space="preserve">
-    <value>The introspection request was successfully sent to {Address}: {Request}.</value>
+    <value>The introspection request was successfully sent to {Uri}: {Request}.</value>
   </data>
   <data name="ID6191" xml:space="preserve">
-    <value>The introspection response returned by {Address} was successfully extracted: {Response}.</value>
+    <value>The introspection response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID6192" xml:space="preserve">
-    <value>The token request was successfully sent to {Address}: {Request}.</value>
+    <value>The token request was successfully sent to {Uri}: {Request}.</value>
   </data>
   <data name="ID6193" xml:space="preserve">
-    <value>The token response returned by {Address} was successfully extracted: {Response}.</value>
+    <value>The token response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID6194" xml:space="preserve">
-    <value>The userinfo request was successfully sent to {Address}: {Request}.</value>
+    <value>The userinfo request was successfully sent to {Uri}: {Request}.</value>
   </data>
   <data name="ID6195" xml:space="preserve">
-    <value>The userinfo response returned by {Address} was successfully extracted: {Response}.</value>
+    <value>The userinfo response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID6196" xml:space="preserve">
     <value>The logout request was rejected because the client application was not found: '{ClientId}'.</value>

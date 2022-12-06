@@ -341,7 +341,7 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for attaching the endpoint URLs to the provider discovery document.
+        /// Contains the logic responsible for attaching the endpoint URIs to the provider discovery document.
         /// </summary>
         public sealed class AttachEndpoints : IOpenIddictServerHandler<HandleConfigurationRequestContext>
         {
@@ -363,8 +363,8 @@ public static partial class OpenIddictServerHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: while OpenIddict allows specifying multiple endpoint addresses, the OAuth 2.0
-                // and OpenID Connect discovery specifications only allow a single address per endpoint.
+                // Note: while OpenIddict allows specifying multiple endpoint URIs, the OAuth 2.0
+                // and OpenID Connect discovery specifications only allow a single URI per endpoint.
 
                 context.AuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.AuthorizationEndpointUris.FirstOrDefault());
@@ -739,7 +739,7 @@ public static partial class OpenIddictServerHandlers
                 context.Metadata[Metadata.RequestParameterSupported] = false;
                 context.Metadata[Metadata.RequestUriParameterSupported] = false;
 
-                // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its own address as
+                // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its identity as
                 // part of authorization responses to help clients mitigate mix-up attacks. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.
                 context.Metadata[Metadata.AuthorizationResponseIssParameterSupported] = true;

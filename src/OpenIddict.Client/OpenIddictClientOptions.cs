@@ -16,7 +16,7 @@ namespace OpenIddict.Client;
 public sealed class OpenIddictClientOptions
 {
     /// <summary>
-    /// Gets or sets the optional address used to uniquely identify the client/relying party.
+    /// Gets or sets the optional URI used to uniquely identify the client/relying party.
     /// The URI must be absolute and may contain a path, but no query string or fragment part.
     /// </summary>
     public Uri? ClientUri { get; set; }

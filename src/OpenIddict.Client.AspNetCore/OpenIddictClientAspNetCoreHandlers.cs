@@ -95,7 +95,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
             // sent by the HTTP client) is not desirable as it would affect all requests, including requests
             // that are not meant to be handled by OpenIddict itself. To avoid that, a fake host is temporarily
             // used to build an absolute base URI and a request URI that will be used to determine whether the
-            // received request matches one of the addresses assigned to an OpenIddict endpoint. If the request
+            // received request matches one of the URIs assigned to an OpenIddict endpoint. If the request
             // is later handled by OpenIddict, an additional check will be made to require the Host header.
 
             (context.BaseUri, context.RequestUri) = request.Host switch
@@ -464,7 +464,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     context.ProviderName = provider;
                 }
 
-                // If a return URL was specified, use it as the target_link_uri claim.
+                // If a target link URI was specified, attach it to the context.
                 if (!string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     context.TargetLinkUri = properties.RedirectUri;
@@ -697,7 +697,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     context.ProviderName = provider;
                 }
 
-                // If a return URL was specified, use it as the target_link_uri claim.
+                // If a target link URI was specified, attach it to the context.
                 if (!string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     context.TargetLinkUri = properties.RedirectUri;

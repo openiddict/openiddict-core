@@ -1486,8 +1486,8 @@ public static partial class OpenIddictServerHandlers
                 // if the authorization request didn't contain an explicit redirect_uri.
                 // See https://tools.ietf.org/html/rfc6749#section-4.1.3
                 // and http://openid.net/specs/openid-connect-core-1_0.html#TokenRequestValidation.
-                var address = context.Principal.GetClaim(Claims.Private.RedirectUri);
-                if (string.IsNullOrEmpty(address))
+                var uri = context.Principal.GetClaim(Claims.Private.RedirectUri);
+                if (string.IsNullOrEmpty(uri))
                 {
                     return default;
                 }
@@ -1504,7 +1504,7 @@ public static partial class OpenIddictServerHandlers
                     return default;
                 }
 
-                if (!string.Equals(address, context.Request.RedirectUri, StringComparison.Ordinal))
+                if (!string.Equals(uri, context.Request.RedirectUri, StringComparison.Ordinal))
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6092), Parameters.RedirectUri);
 

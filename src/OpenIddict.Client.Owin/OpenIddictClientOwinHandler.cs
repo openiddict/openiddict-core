@@ -187,8 +187,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<OpenIddi
             properties.ExpiresUtc = principal.GetExpirationDate();
             properties.IssuedUtc = principal.GetCreationDate();
 
-            // Restore the return URL using the "target_link_uri" that was stored
-            // in the state token when the challenge operation started, if available.
+            // Restore the target link URI that was stored in the state
+            // token when the challenge operation started, if available.
             properties.RedirectUri = context.StateTokenPrincipal?.GetClaim(Claims.TargetLinkUri);
 
             // Attach the tokens to allow any OWIN component (e.g a controller)

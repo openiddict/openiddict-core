@@ -49,7 +49,7 @@ public sealed class OpenIddictValidationAspNetCoreBuilder
     /// <summary>
     /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
     /// </summary>
-    /// <param name="realm">The issuer address.</param>
+    /// <param name="realm">The realm.</param>
     /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/> instance.</returns>
     public OpenIddictValidationAspNetCoreBuilder SetRealm(string realm)
     {

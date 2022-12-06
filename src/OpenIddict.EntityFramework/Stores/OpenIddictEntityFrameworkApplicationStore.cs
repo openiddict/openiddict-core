@@ -237,15 +237,15 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         // To optimize the efficiency of the query a bit, only applications whose stringified
-        // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
+        // PostLogoutRedirectUris contains the specified URI are returned. Once the applications
         // are retrieved, a second pass is made to ensure only valid elements are returned.
         // Implementers that use this method in a hot path may want to override this method
         // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
@@ -255,13 +255,13 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var applications = (from application in Applications
-                                where application.PostLogoutRedirectUris!.Contains(address)
+                                where application.PostLogoutRedirectUris!.Contains(uri)
                                 select application).AsAsyncEnumerable(cancellationToken);
 
             await foreach (var application in applications)
             {
-                var addresses = await GetPostLogoutRedirectUrisAsync(application, cancellationToken);
-                if (addresses.Contains(address, StringComparer.Ordinal))
+                var uris = await GetPostLogoutRedirectUrisAsync(application, cancellationToken);
+                if (uris.Contains(uri, StringComparer.Ordinal))
                 {
                     yield return application;
                 }
@@ -271,15 +271,15 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
     /// <inheritdoc/>
     public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         // To optimize the efficiency of the query a bit, only applications whose stringified
-        // RedirectUris property contains the specified URL are returned. Once the applications
+        // RedirectUris property contains the specified URI are returned. Once the applications
         // are retrieved, a second pass is made to ensure only valid elements are returned.
         // Implementers that use this method in a hot path may want to override this method
         // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
@@ -289,13 +289,13 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
         async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var applications = (from application in Applications
-                                where application.RedirectUris!.Contains(address)
+                                where application.RedirectUris!.Contains(uri)
                                 select application).AsAsyncEnumerable(cancellationToken);
 
             await foreach (var application in applications)
             {
-                var addresses = await GetRedirectUrisAsync(application, cancellationToken);
-                if (addresses.Contains(address, StringComparer.Ordinal))
+                var uris = await GetRedirectUrisAsync(application, cancellationToken);
+                if (uris.Contains(uri, StringComparer.Ordinal))
                 {
                     yield return application;
                 }
@@ -477,10 +477,10 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             return new(ImmutableArray.Create<string>());
         }
 
-        // Note: parsing the stringified addresses is an expensive operation.
+        // Note: parsing the stringified URIs is an expensive operation.
         // To mitigate that, the resulting array is stored in the memory cache.
         var key = string.Concat("fb14dfb9-9216-4b77-bfa9-7e85f8201ff4", "\x1e", application.PostLogoutRedirectUris);
-        var addresses = Cache.GetOrCreate(key, entry =>
+        var uris = Cache.GetOrCreate(key, entry =>
         {
             entry.SetPriority(CacheItemPriority.High)
                  .SetSlidingExpiration(TimeSpan.FromMinutes(1));
@@ -502,7 +502,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             return builder.ToImmutable();
         });
 
-        return new(addresses);
+        return new(uris);
     }
 
     /// <inheritdoc/>
@@ -553,10 +553,10 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             return new(ImmutableArray.Create<string>());
         }
 
-        // Note: parsing the stringified addresses is an expensive operation.
+        // Note: parsing the stringified URIs is an expensive operation.
         // To mitigate that, the resulting array is stored in the memory cache.
         var key = string.Concat("851d6f08-2ee0-4452-bbe5-ab864611ecaa", "\x1e", application.RedirectUris);
-        var addresses = Cache.GetOrCreate(key, entry =>
+        var uris = Cache.GetOrCreate(key, entry =>
         {
             entry.SetPriority(CacheItemPriority.High)
                  .SetSlidingExpiration(TimeSpan.FromMinutes(1));
@@ -578,7 +578,7 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
             return builder.ToImmutable();
         });
 
-        return new(addresses);
+        return new(uris);
     }
 
     /// <inheritdoc/>
@@ -812,14 +812,14 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
     /// <inheritdoc/>
     public virtual ValueTask SetPostLogoutRedirectUrisAsync(TApplication application,
-        ImmutableArray<string> addresses, CancellationToken cancellationToken)
+        ImmutableArray<string> uris, CancellationToken cancellationToken)
     {
         if (application is null)
         {
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (addresses.IsDefaultOrEmpty)
+        if (uris.IsDefaultOrEmpty)
         {
             application.PostLogoutRedirectUris = null;
 
@@ -835,9 +835,9 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
         writer.WriteStartArray();
 
-        foreach (var address in addresses)
+        foreach (var uri in uris)
         {
-            writer.WriteStringValue(address);
+            writer.WriteStringValue(uri);
         }
 
         writer.WriteEndArray();
@@ -889,14 +889,14 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
     /// <inheritdoc/>
     public virtual ValueTask SetRedirectUrisAsync(TApplication application,
-        ImmutableArray<string> addresses, CancellationToken cancellationToken)
+        ImmutableArray<string> uris, CancellationToken cancellationToken)
     {
         if (application is null)
         {
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (addresses.IsDefaultOrEmpty)
+        if (uris.IsDefaultOrEmpty)
         {
             application.RedirectUris = null;
 
@@ -912,9 +912,9 @@ public class OpenIddictEntityFrameworkApplicationStore<TApplication, TAuthorizat
 
         writer.WriteStartArray();
 
-        foreach (var address in addresses)
+        foreach (var uri in uris)
         {
-            writer.WriteStringValue(address);
+            writer.WriteStringValue(uri);
         }
 
         writer.WriteEndArray();

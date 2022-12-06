@@ -16,7 +16,7 @@ namespace OpenIddict.Server;
 public sealed class OpenIddictServerOptions
 {
     /// <summary>
-    /// Gets or sets the optional address used to uniquely identify the authorization server.
+    /// Gets or sets the optional URI used to uniquely identify the authorization server.
     /// The URI must be absolute and may contain a path, but no query string or fragment part.
     /// </summary>
     public Uri? Issuer { get; set; }

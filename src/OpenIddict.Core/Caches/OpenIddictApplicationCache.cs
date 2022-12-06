@@ -57,21 +57,21 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
             Identifier = await _store.GetIdAsync(application, cancellationToken)
         });
 
-        foreach (var address in await _store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+        foreach (var uri in await _store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
         {
             _cache.Remove(new
             {
                 Method = nameof(FindByPostLogoutRedirectUriAsync),
-                Address = address
+                Uri = uri
             });
         }
 
-        foreach (var address in await _store.GetRedirectUrisAsync(application, cancellationToken))
+        foreach (var uri in await _store.GetRedirectUrisAsync(application, cancellationToken))
         {
             _cache.Remove(new
             {
                 Method = nameof(FindByRedirectUriAsync),
-                Address = address
+                Uri = uri
             });
         }
 
@@ -169,11 +169,11 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         return ExecuteAsync(cancellationToken);
@@ -183,14 +183,14 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
             var parameters = new
             {
                 Method = nameof(FindByPostLogoutRedirectUriAsync),
-                Address = address
+                Uri = uri
             };
 
             if (!_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
             {
                 var builder = ImmutableArray.CreateBuilder<TApplication>();
 
-                await foreach (var application in _store.FindByPostLogoutRedirectUriAsync(address, cancellationToken))
+                await foreach (var application in _store.FindByPostLogoutRedirectUriAsync(uri, cancellationToken))
                 {
                     builder.Add(application);
 
@@ -211,11 +211,11 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         return ExecuteAsync(cancellationToken);
@@ -225,14 +225,14 @@ public sealed class OpenIddictApplicationCache<TApplication> : IOpenIddictApplic
             var parameters = new
             {
                 Method = nameof(FindByRedirectUriAsync),
-                Address = address
+                Uri = uri
             };
 
             if (!_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
             {
                 var builder = ImmutableArray.CreateBuilder<TApplication>();
 
-                await foreach (var application in _store.FindByRedirectUriAsync(address, cancellationToken))
+                await foreach (var application in _store.FindByRedirectUriAsync(uri, cancellationToken))
                 {
                     builder.Add(application);
 

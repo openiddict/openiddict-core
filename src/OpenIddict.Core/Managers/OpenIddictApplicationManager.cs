@@ -326,20 +326,20 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <summary>
     /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
     /// </summary>
-    /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
+    /// <param name="uri">The post_logout_redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
     public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         var applications = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken) :
-            Cache.FindByPostLogoutRedirectUriAsync(address, cancellationToken);
+            Store.FindByPostLogoutRedirectUriAsync(uri, cancellationToken) :
+            Cache.FindByPostLogoutRedirectUriAsync(uri, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -356,8 +356,8 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         {
             await foreach (var application in applications)
             {
-                var addresses = await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken);
-                if (addresses.Contains(address, StringComparer.Ordinal))
+                var uris = await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken);
+                if (uris.Contains(uri, StringComparer.Ordinal))
                 {
                     yield return application;
                 }
@@ -368,20 +368,20 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// <summary>
     /// Retrieves all the applications associated with the specified redirect_uri.
     /// </summary>
-    /// <param name="address">The redirect_uri associated with the applications.</param>
+    /// <param name="uri">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
     public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
         var applications = Options.CurrentValue.DisableEntityCaching ?
-            Store.FindByRedirectUriAsync(address, cancellationToken) :
-            Cache.FindByRedirectUriAsync(address, cancellationToken);
+            Store.FindByRedirectUriAsync(uri, cancellationToken) :
+            Cache.FindByRedirectUriAsync(uri, cancellationToken);
 
         if (Options.CurrentValue.DisableAdditionalFiltering)
         {
@@ -398,8 +398,8 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         {
             await foreach (var application in applications)
             {
-                var addresses = await Store.GetRedirectUrisAsync(application, cancellationToken);
-                if (addresses.Contains(address, StringComparer.Ordinal))
+                var uris = await Store.GetRedirectUrisAsync(application, cancellationToken);
+                if (uris.Contains(uri, StringComparer.Ordinal))
                 {
                     yield return application;
                 }
@@ -665,7 +665,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
-    /// Retrieves the logout callback addresses associated with an application.
+    /// Retrieves the post-logout redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -705,7 +705,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     }
 
     /// <summary>
-    /// Retrieves the callback addresses associated with an application.
+    /// Retrieves the redirect URIs associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -916,10 +916,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         await Store.SetDisplayNamesAsync(application, descriptor.DisplayNames.ToImmutableDictionary(), cancellationToken);
         await Store.SetPermissionsAsync(application, descriptor.Permissions.ToImmutableArray(), cancellationToken);
         await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
-            descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
+            descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString)), cancellationToken);
         await Store.SetPropertiesAsync(application, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
         await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
-            descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
+            descriptor.RedirectUris.Select(uri => uri.OriginalString)), cancellationToken);
         await Store.SetRequirementsAsync(application, descriptor.Requirements.ToImmutableArray(), cancellationToken);
     }
 
@@ -963,21 +963,21 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         }
 
         descriptor.PostLogoutRedirectUris.Clear();
-        foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+        foreach (var uri in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
         {
-            // Ensure the address is not null or empty.
-            if (string.IsNullOrEmpty(address))
+            // Ensure the URI is not null or empty.
+            if (string.IsNullOrEmpty(uri))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0213));
             }
 
-            // Ensure the address is a valid absolute URL.
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+            // Ensure the URI is a valid absolute URI.
+            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0214));
             }
 
-            descriptor.PostLogoutRedirectUris.Add(uri);
+            descriptor.PostLogoutRedirectUris.Add(value);
         }
 
         descriptor.Properties.Clear();
@@ -987,21 +987,21 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         }
 
         descriptor.RedirectUris.Clear();
-        foreach (var address in await Store.GetRedirectUrisAsync(application, cancellationToken))
+        foreach (var uri in await Store.GetRedirectUrisAsync(application, cancellationToken))
         {
-            // Ensure the address is not null or empty.
-            if (string.IsNullOrEmpty(address))
+            // Ensure the URI is not null or empty.
+            if (string.IsNullOrEmpty(uri))
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0213));
             }
 
-            // Ensure the address is a valid absolute URL.
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+            // Ensure the URI is a valid absolute URI.
+            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
             {
                 throw new ArgumentException(SR.GetResourceString(SR.ID0214));
             }
 
-            descriptor.RedirectUris.Add(uri);
+            descriptor.RedirectUris.Add(value);
         }
     }
 
@@ -1192,30 +1192,30 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
         }
 
-        // When callback URLs are specified, ensure they are valid and spec-compliant.
+        // When callback URIs are specified, ensure they are valid and spec-compliant.
         // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
-        foreach (var address in ImmutableArray.Create<string>()
+        foreach (var uri in ImmutableArray.Create<string>()
             .AddRange(await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
             .AddRange(await Store.GetRedirectUrisAsync(application, cancellationToken)))
         {
-            // Ensure the address is not null or empty.
-            if (string.IsNullOrEmpty(address))
+            // Ensure the URI is not null or empty.
+            if (string.IsNullOrEmpty(uri))
             {
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2061));
 
                 break;
             }
 
-            // Ensure the address is a valid absolute URL.
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+            // Ensure the URI is a valid absolute URI.
+            if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) || !value.IsWellFormedOriginalString())
             {
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2062));
 
                 break;
             }
 
-            // Ensure the address doesn't contain a fragment.
-            if (!string.IsNullOrEmpty(uri.Fragment))
+            // Ensure the URI doesn't contain a fragment.
+            if (!string.IsNullOrEmpty(value.Fragment))
             {
                 yield return new ValidationResult(SR.GetResourceString(SR.ID2115));
 
@@ -1223,10 +1223,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             }
 
             // To prevent issuer fixation attacks where a malicious client would specify an "iss" parameter
-            // in the callback URL, ensure the query - if present - doesn't include an "iss" parameter.
-            if (!string.IsNullOrEmpty(uri.Query))
+            // in the callback URI, ensure the query - if present - doesn't include an "iss" parameter.
+            if (!string.IsNullOrEmpty(value.Query))
             {
-                var parameters = OpenIddictHelpers.ParseQuery(uri.Query);
+                var parameters = OpenIddictHelpers.ParseQuery(value.Query);
                 if (parameters.ContainsKey(Parameters.Iss))
                 {
                     yield return new ValidationResult(SR.FormatID2134(Parameters.Iss));
@@ -1289,7 +1289,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// Validates the post_logout_redirect_uri to ensure it's associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
-    /// <param name="address">The address that should be compared to one of the post_logout_redirect_uri stored in the database.</param>
+    /// <param name="uri">The URI that should be compared to one of the post_logout_redirect_uri stored in the database.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <remarks>Note: if no client_id parameter is specified in logout requests, this method may not be called.</remarks>
     /// <returns>
@@ -1297,28 +1297,28 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// whose result returns a boolean indicating whether the post_logout_redirect_uri was valid.
     /// </returns>
     public virtual async ValueTask<bool> ValidatePostLogoutRedirectUriAsync(TApplication application,
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default)
     {
         if (application is null)
         {
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
-        foreach (var uri in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+        foreach (var candidate in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
         {
             // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
-            if (string.Equals(uri, address, StringComparison.Ordinal))
+            if (string.Equals(candidate, uri, StringComparison.Ordinal))
             {
                 return true;
             }
         }
 
-        Logger.LogInformation(SR.GetResourceString(SR.ID6202), address, await GetClientIdAsync(application, cancellationToken));
+        Logger.LogInformation(SR.GetResourceString(SR.ID6202), uri, await GetClientIdAsync(application, cancellationToken));
 
         return false;
     }
@@ -1327,36 +1327,36 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
     /// Validates the redirect_uri to ensure it's associated with an application.
     /// </summary>
     /// <param name="application">The application.</param>
-    /// <param name="address">The address that should be compared to one of the redirect_uri stored in the database.</param>
+    /// <param name="uri">The URI that should be compared to one of the redirect_uri stored in the database.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
     /// whose result returns a boolean indicating whether the redirect_uri was valid.
     /// </returns>
     public virtual async ValueTask<bool> ValidateRedirectUriAsync(TApplication application,
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken = default)
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken = default)
     {
         if (application is null)
         {
             throw new ArgumentNullException(nameof(application));
         }
 
-        if (string.IsNullOrEmpty(address))
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(address));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
         }
 
-        foreach (var uri in await Store.GetRedirectUrisAsync(application, cancellationToken))
+        foreach (var candidate in await Store.GetRedirectUrisAsync(application, cancellationToken))
         {
             // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
-            if (string.Equals(uri, address, StringComparison.Ordinal))
+            if (string.Equals(candidate, uri, StringComparison.Ordinal))
             {
                 return true;
             }
         }
 
-        Logger.LogInformation(SR.GetResourceString(SR.ID6162), address, await GetClientIdAsync(application, cancellationToken));
+        Logger.LogInformation(SR.GetResourceString(SR.ID6162), uri, await GetClientIdAsync(application, cancellationToken));
 
         return false;
     }
@@ -1567,12 +1567,12 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => await FindByIdAsync(identifier, cancellationToken);
 
     /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByPostLogoutRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
-        => FindByPostLogoutRedirectUriAsync(address, cancellationToken);
+    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByPostLogoutRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
+        => FindByPostLogoutRedirectUriAsync(uri, cancellationToken);
 
     /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
-        => FindByRedirectUriAsync(address, cancellationToken);
+    IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByRedirectUriAsync([StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
+        => FindByRedirectUriAsync(uri, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<TResult?> IOpenIddictApplicationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken) where TResult : default
@@ -1691,10 +1691,10 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
         => ValidateClientSecretAsync((TApplication) application, secret, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<bool> IOpenIddictApplicationManager.ValidatePostLogoutRedirectUriAsync(object application, [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
-        => ValidatePostLogoutRedirectUriAsync((TApplication) application, address, cancellationToken);
+    ValueTask<bool> IOpenIddictApplicationManager.ValidatePostLogoutRedirectUriAsync(object application, [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
+        => ValidatePostLogoutRedirectUriAsync((TApplication) application, uri, cancellationToken);
 
     /// <inheritdoc/>
-    ValueTask<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken)
-        => ValidateRedirectUriAsync((TApplication) application, address, cancellationToken);
+    ValueTask<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
+        => ValidateRedirectUriAsync((TApplication) application, uri, cancellationToken);
 }

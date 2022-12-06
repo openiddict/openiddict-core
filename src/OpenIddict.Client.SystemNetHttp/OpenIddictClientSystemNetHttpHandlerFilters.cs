@@ -12,9 +12,9 @@ namespace OpenIddict.Client.SystemNetHttp;
 public static class OpenIddictClientSystemNetHttpHandlerFilters
 {
     /// <summary>
-    /// Represents a filter that excludes the associated handlers if the metadata address of the issuer is not available.
+    /// Represents a filter that excludes the associated handlers if the metadata URI of the issuer is not available.
     /// </summary>
-    public sealed class RequireHttpMetadataAddress : IOpenIddictClientHandlerFilter<BaseExternalContext>
+    public sealed class RequireHttpMetadataUri : IOpenIddictClientHandlerFilter<BaseExternalContext>
     {
         public ValueTask<bool> IsActiveAsync(BaseExternalContext context)
         {
@@ -24,8 +24,8 @@ public static class OpenIddictClientSystemNetHttpHandlerFilters
             }
 
             return new(
-                string.Equals(context.Address?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(context.Address?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+                string.Equals(context.RemoteUri?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(context.RemoteUri?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

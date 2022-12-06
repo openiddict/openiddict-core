@@ -57,7 +57,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
         }
 
-        var addresses = options.AuthorizationEndpointUris.Distinct()
+        var uris = options.AuthorizationEndpointUris.Distinct()
             .Concat(options.ConfigurationEndpointUris.Distinct())
             .Concat(options.CryptographyEndpointUris.Distinct())
             .Concat(options.DeviceEndpointUris.Distinct())
@@ -69,8 +69,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             .Concat(options.VerificationEndpointUris.Distinct())
             .ToList();
 
-        // Ensure endpoint addresses are unique across endpoints.
-        if (addresses.Count != addresses.Distinct().Count())
+        // Ensure endpoint URIs are unique across endpoints.
+        if (uris.Count != uris.Distinct().Count())
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0285));
         }

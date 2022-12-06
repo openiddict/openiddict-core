@@ -216,7 +216,7 @@
 
                   <xs:attribute name="Issuer" type="xs:string" use="required">
                     <xs:annotation>
-                      <xs:documentation>The issuer URL corresponding to the environment.</xs:documentation>
+                      <xs:documentation>The issuer URI corresponding to the environment.</xs:documentation>
                     </xs:annotation>
                   </xs:attribute>
 
@@ -421,7 +421,7 @@
 
             <xs:attribute name="Documentation" type="xs:anyURI" use="optional">
               <xs:annotation>
-                <xs:documentation>The documentation URL, if applicable.</xs:documentation>
+                <xs:documentation>The documentation URI, if applicable.</xs:documentation>
               </xs:annotation>
             </xs:attribute>
           </xs:complexType>

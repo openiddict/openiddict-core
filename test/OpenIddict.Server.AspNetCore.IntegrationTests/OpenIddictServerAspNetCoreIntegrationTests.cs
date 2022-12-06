@@ -269,7 +269,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
     [InlineData("/connect/token")]
     [InlineData("/connect/userinfo")]
     [InlineData("/connect/verification")]
-    public async Task ProcessRequest_RejectsInsecureHttpRequests(string address)
+    public async Task ProcessRequest_RejectsInsecureHttpRequests(string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -283,7 +283,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync(address, new OpenIddictRequest());
+        var response = await client.PostAsync(uri, new OpenIddictRequest());
 
         // Assert
         Assert.Equal(Errors.InvalidRequest, response.Error);
@@ -303,7 +303,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
     [InlineData("/connect/token")]
     [InlineData("/connect/userinfo")]
     [InlineData("/connect/verification")]
-    public async Task ProcessRequest_AllowsHandlingResponse(string address)
+    public async Task ProcessRequest_AllowsHandlingResponse(string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -327,7 +327,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync(address, new OpenIddictRequest());
+        var response = await client.PostAsync(uri, new OpenIddictRequest());
 
         // Assert
         Assert.Equal("Bob le Bricoleur", (string?) response["name"]);
@@ -345,7 +345,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
     [InlineData("/connect/token")]
     [InlineData("/connect/userinfo")]
     [InlineData("/connect/verification")]
-    public async Task ProcessRequest_AllowsSkippingHandler(string address)
+    public async Task ProcessRequest_AllowsSkippingHandler(string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -364,7 +364,7 @@ public partial class OpenIddictServerAspNetCoreIntegrationTests : OpenIddictServ
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync(address, new OpenIddictRequest());
+        var response = await client.PostAsync(uri, new OpenIddictRequest());
 
         // Assert
         Assert.Equal("Bob le Magnifique", (string?) response["name"]);

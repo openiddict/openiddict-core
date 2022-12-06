@@ -77,7 +77,7 @@ public class Startup
                 // Enable the redirection endpoint needed to handle the callback stage.
                 //
                 // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-                // address per provider, unless all the registered providers support returning an "iss"
+                // URI per provider, unless all the registered providers support returning a special "iss"
                 // parameter containing their URL as part of authorization responses. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                 options.SetRedirectionEndpointUris(

@@ -109,7 +109,7 @@ namespace OpenIddict.Sandbox.AspNet.Server.Controllers
             var properties = new AuthenticationProperties(result.Properties.Dictionary
                 .Where(item => item switch
                 {
-                    // Preserve the redirect URL.
+                    // Preserve the return URL.
                     { Key: ".redirect" } => true,
 
                     // If needed, the tokens returned by the authorization server can be stored in the authentication cookie.

@@ -67,7 +67,7 @@ public class OpenIddictMongoDbApplication
     public virtual IReadOnlyList<string>? Permissions { get; set; } = ImmutableList.Create<string>();
 
     /// <summary>
-    /// Gets or sets the logout callback URLs associated with the current application.
+    /// Gets or sets the post-logout redirect URIs associated with the current application.
     /// </summary>
     [BsonElement("post_logout_redirect_uris"), BsonIgnoreIfNull]
     public virtual IReadOnlyList<string>? PostLogoutRedirectUris { get; set; } = ImmutableList.Create<string>();
@@ -79,7 +79,7 @@ public class OpenIddictMongoDbApplication
     public virtual BsonDocument? Properties { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback URLs associated with the current application.
+    /// Gets or sets the redirect URIs associated with the current application.
     /// </summary>
     [BsonElement("redirect_uris"), BsonIgnoreIfNull]
     public virtual IReadOnlyList<string>? RedirectUris { get; set; } = ImmutableList.Create<string>();

@@ -17,7 +17,7 @@ namespace OpenIddict.Abstractions;
 public sealed class OpenIddictConfiguration
 {
     /// <summary>
-    /// Gets or sets the address of the authorization endpoint.
+    /// Gets or sets the URI of the authorization endpoint.
     /// </summary>
     public Uri? AuthorizationEndpoint { get; set; }
 
@@ -32,7 +32,7 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> CodeChallengeMethodsSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets or sets the address of the end session endpoint.
+    /// Gets or sets the URI of the end session endpoint.
     /// </summary>
     public Uri? EndSessionEndpoint { get; set; }
 
@@ -42,7 +42,7 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> GrantTypesSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets or sets the address of the introspection endpoint.
+    /// Gets or sets the URI of the introspection endpoint.
     /// </summary>
     public Uri? IntrospectionEndpoint { get; set; }
 
@@ -52,7 +52,7 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> IntrospectionEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets or sets the address of the issuer.
+    /// Gets or sets the URI of the issuer.
     /// </summary>
     public Uri? Issuer { get; set; }
 
@@ -62,7 +62,7 @@ public sealed class OpenIddictConfiguration
     public JsonWebKeySet? JsonWebKeySet { get; set; }
 
     /// <summary>
-    /// Gets or sets the address of the JWKS endpoint.
+    /// Gets or sets the URI of the JWKS endpoint.
     /// </summary>
     public Uri? JwksUri { get; set; }
 
@@ -92,7 +92,7 @@ public sealed class OpenIddictConfiguration
     public List<SecurityKey> SigningKeys { get; } = new();
 
     /// <summary>
-    /// Gets or sets the address of the token endpoint.
+    /// Gets or sets the URI of the token endpoint.
     /// </summary>
     public Uri? TokenEndpoint { get; set; }
 
@@ -102,7 +102,7 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> TokenEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets or sets the address of the userinfo endpoint.
+    /// Gets or sets the URI of the userinfo endpoint.
     /// </summary>
     public Uri? UserinfoEndpoint { get; set; }
 }

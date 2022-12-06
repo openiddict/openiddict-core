@@ -78,23 +78,23 @@ public static partial class OpenIddictServerEvents
         /// <summary>
         /// Populates the <see cref="PostLogoutRedirectUri"/> property with the specified redirect_uri.
         /// </summary>
-        /// <param name="address">The post_logout_redirect_uri to use when redirecting the user agent.</param>
-        public void SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string address)
+        /// <param name="uri">The post_logout_redirect_uri to use when redirecting the user agent.</param>
+        public void SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
         {
-            if (string.IsNullOrEmpty(address))
+            if (string.IsNullOrEmpty(uri))
             {
-                throw new ArgumentException(SR.GetResourceString(SR.ID0102), nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID0102), nameof(uri));
             }
 
             // Don't allow validation to alter the post_logout_redirect_uri parameter extracted
-            // from the request if the address was explicitly provided by the client application.
+            // from the request if the URI was explicitly provided by the client application.
             if (!string.IsNullOrEmpty(Request?.PostLogoutRedirectUri) &&
-                !string.Equals(Request.PostLogoutRedirectUri, address, StringComparison.Ordinal))
+                !string.Equals(Request.PostLogoutRedirectUri, uri, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0103));
             }
 
-            PostLogoutRedirectUri = address;
+            PostLogoutRedirectUri = uri;
         }
     }
 
@@ -193,10 +193,10 @@ public static partial class OpenIddictServerEvents
         public string? Error => Response.Error;
 
         /// <summary>
-        /// Gets or sets the callback URL the user agent will be redirected to, if applicable.
+        /// Gets or sets the post-logout redirect URI the user agent will be redirected to, if applicable.
         /// Note: manually changing the value of this property is generally not recommended
         /// and extreme caution must be taken to ensure the user agent is not redirected to
-        /// an untrusted address, which would result in an "open redirection" vulnerability.
+        /// an untrusted URI, which would result in an "open redirection" vulnerability.
         /// </summary>
         public string? PostLogoutRedirectUri { get; set; }
     }

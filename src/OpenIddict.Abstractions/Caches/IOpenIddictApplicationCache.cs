@@ -45,22 +45,22 @@ public interface IOpenIddictApplicationCache<TApplication> where TApplication : 
     ValueTask<TApplication?> FindByIdAsync(string identifier, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Retrieves all the applications associated with the specified redirect_uri.
+    /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
     /// </summary>
-    /// <param name="address">The redirect_uri associated with the applications.</param>
+    /// <param name="uri">The post_logout_redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
     IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves all the applications associated with the specified redirect_uri.
     /// </summary>
-    /// <param name="address">The redirect_uri associated with the applications.</param>
+    /// <param name="uri">The redirect_uri associated with the applications.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
     IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
-        [StringSyntax(StringSyntaxAttribute.Uri)] string address, CancellationToken cancellationToken);
+        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken);
 
     /// <summary>
     /// Removes the specified application from the cache.

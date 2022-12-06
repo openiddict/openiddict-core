@@ -999,108 +999,108 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.GrantTypes.Add(GrantTypes.RefreshToken));
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the redirection endpoint.
+    /// Sets the relative or absolute URIs associated to the redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// </summary>
     /// <remarks>
     /// Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-    /// address per provider, unless all the registered providers support returning an "iss"
-    /// parameter containing their URL as part of authorization responses. For more information,
+    /// URI per provider, unless all the registered providers support returning an "iss" parameter
+    /// containing their identity as part of authorization responses. For more information,
     /// see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
     /// </remarks>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder SetRedirectionEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetRedirectionEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetRedirectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the redirection endpoint.
+    /// Sets the relative or absolute URIs associated to the redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// </summary>
     /// <remarks>
     /// Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-    /// address per provider, unless all the registered providers support returning an "iss"
-    /// parameter containing their URL as part of authorization responses. For more information,
+    /// URI per provider, unless all the registered providers support returning an "iss" parameter
+    /// containing their identity as part of authorization responses. For more information,
     /// see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
     /// </remarks>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder SetRedirectionEndpointUris(params Uri[] addresses)
+    public OpenIddictClientBuilder SetRedirectionEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (Array.Exists(addresses, static address => !address.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (Array.Exists(addresses, static address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.RedirectionEndpointUris.Clear();
-            options.RedirectionEndpointUris.AddRange(addresses);
+            options.RedirectionEndpointUris.AddRange(uris);
         });
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the post-logout redirection endpoint.
+    /// Sets the relative or absolute URIs associated to the post-logout redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(
-        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] addresses)
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        return SetPostLogoutRedirectionEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        return SetPostLogoutRedirectionEndpointUris(uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute)).ToArray());
     }
 
     /// <summary>
-    /// Sets the relative or absolute URLs associated to the post-logout redirection endpoint.
+    /// Sets the relative or absolute URIs associated to the post-logout redirection endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// </summary>
-    /// <param name="addresses">The addresses associated to the endpoint.</param>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
-    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(params Uri[] addresses)
+    public OpenIddictClientBuilder SetPostLogoutRedirectionEndpointUris(params Uri[] uris)
     {
-        if (addresses is null)
+        if (uris is null)
         {
-            throw new ArgumentNullException(nameof(addresses));
+            throw new ArgumentNullException(nameof(uris));
         }
 
-        if (Array.Exists(addresses, static address => !address.IsWellFormedOriginalString()))
+        if (Array.Exists(uris, static uri => !uri.IsWellFormedOriginalString()))
         {
-            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(addresses));
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
         }
 
-        if (Array.Exists(addresses, static address => address.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ArgumentException(SR.FormatID0081("~"), nameof(addresses));
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
         }
 
         return Configure(options =>
         {
             options.PostLogoutRedirectionEndpointUris.Clear();
-            options.PostLogoutRedirectionEndpointUris.AddRange(addresses);
+            options.PostLogoutRedirectionEndpointUris.AddRange(uris);
         });
     }
 
@@ -1127,19 +1127,19 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.StateTokenLifetime = lifetime);
 
     /// <summary>
-    /// Sets the client URI, which is used as the value for the "issuer" claim.
+    /// Sets the client URI, which is used as the value of the "issuer" claim.
     /// </summary>
-    /// <param name="address">The client URI.</param>
+    /// <param name="uri">The client URI.</param>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictClientBuilder SetClientUri(Uri address)
+    public OpenIddictClientBuilder SetClientUri(Uri uri)
     {
-        if (address is null)
+        if (uri is null)
         {
-            throw new ArgumentNullException(nameof(address));
+            throw new ArgumentNullException(nameof(uri));
         }
 
-        return Configure(options => options.ClientUri = address);
+        return Configure(options => options.ClientUri = uri);
     }
 
     /// <inheritdoc/>

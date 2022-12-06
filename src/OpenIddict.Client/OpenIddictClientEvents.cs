@@ -140,9 +140,9 @@ public static partial class OpenIddictClientEvents
         }
 
         /// <summary>
-        /// Gets or sets the address of the external endpoint to communicate with.
+        /// Gets or sets the URI of the external endpoint to communicate with.
         /// </summary>
-        public Uri? Address { get; set; }
+        public Uri? RemoteUri { get; set; }
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ public static partial class OpenIddictClientEvents
         public string? ErrorDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the error URL returned to the caller.
+        /// Gets or sets the error URI returned to the caller.
         /// </summary>
         public string? ErrorUri { get; set; }
 
@@ -334,12 +334,12 @@ public static partial class OpenIddictClientEvents
         public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// Gets or sets the address of the token endpoint, if applicable.
+        /// Gets or sets the URI of the token endpoint, if applicable.
         /// </summary>
         public Uri? TokenEndpoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the address of the userinfo endpoint, if applicable.
+        /// Gets or sets the URI of the userinfo endpoint, if applicable.
         /// </summary>
         public Uri? UserinfoEndpoint { get; set; }
 
@@ -803,7 +803,7 @@ public static partial class OpenIddictClientEvents
         public string? RequestForgeryProtection { get; set; }
 
         /// <summary>
-        /// Gets or sets the optional return URL that will be stored in the state token, if applicable.
+        /// Gets or sets the optional target link URI that will be stored in the state token, if applicable.
         /// </summary>
         [StringSyntax(StringSyntaxAttribute.Uri)]
         public string? TargetLinkUri { get; set; }
@@ -925,7 +925,7 @@ public static partial class OpenIddictClientEvents
         public string? LoginHint { get; set; }
 
         /// <summary>
-        /// Gets or sets the optional return URL that will be stored in the state token, if applicable.
+        /// Gets or sets the optional target link URI that will be stored in the state token, if applicable.
         /// </summary>
         public string? TargetLinkUri { get; set; }
 

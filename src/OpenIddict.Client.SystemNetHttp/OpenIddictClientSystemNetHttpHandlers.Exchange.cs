@@ -46,7 +46,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<PrepareTokenRequestContext>()
-                    .AddFilter<RequireHttpMetadataAddress>()
+                    .AddFilter<RequireHttpMetadataUri>()
                     .UseSingletonHandler<AttachBasicAuthenticationCredentials>()
                     .SetOrder(AttachFormParameters<PrepareTokenRequestContext>.Descriptor.Order - 500)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)

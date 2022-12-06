@@ -70,12 +70,12 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0313));
                     }
 
-                    registration.MetadataAddress = OpenIddictHelpers.CreateAbsoluteUri(
+                    registration.ConfigurationEndpoint = OpenIddictHelpers.CreateAbsoluteUri(
                         registration.Issuer,
-                        registration.MetadataAddress ?? new Uri(".well-known/openid-configuration", UriKind.Relative));
+                        registration.ConfigurationEndpoint ?? new Uri(".well-known/openid-configuration", UriKind.Relative));
 
                     registration.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
-                        registration.MetadataAddress.AbsoluteUri, new OpenIddictClientRetriever(_service, registration))
+                        registration.ConfigurationEndpoint.AbsoluteUri, new OpenIddictClientRetriever(_service, registration))
                     {
                         AutomaticRefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultAutomaticRefreshInterval,
                         RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval
@@ -90,12 +90,12 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0076));
         }
 
-        var addresses = options.RedirectionEndpointUris.Distinct()
+        var uris = options.RedirectionEndpointUris.Distinct()
             .Concat(options.PostLogoutRedirectionEndpointUris.Distinct())
             .ToList();
 
-        // Ensure endpoint addresses are unique across endpoints.
-        if (addresses.Count != addresses.Distinct().Count())
+        // Ensure endpoint URIs are unique across endpoints.
+        if (uris.Count != uris.Distinct().Count())
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0285));
         }

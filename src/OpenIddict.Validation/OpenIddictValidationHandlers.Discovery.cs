@@ -179,7 +179,7 @@ public static partial class OpenIddictValidationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: the issuer returned in the discovery document must exactly match the URL used to access it.
+                // Note: the issuer returned in the discovery document must exactly match the URI used to access it.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
 
                 var issuer = (string?) context.Response[Metadata.Issuer];
@@ -193,7 +193,7 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? address))
+                if (!Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri))
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -204,7 +204,7 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 // Ensure the issuer matches the expected value.
-                if (address != context.Options.Issuer)
+                if (uri != context.Options.Issuer)
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -214,14 +214,14 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                context.Configuration.Issuer = address;
+                context.Configuration.Issuer = uri;
 
                 return default;
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the JWKS endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the JWKS endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractCryptographyEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
@@ -245,8 +245,8 @@ public static partial class OpenIddictValidationHandlers
 
                 // Note: the jwks_uri node is required by the OpenID Connect discovery specification.
                 // See https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationValidation.
-                var address = (string?) context.Response[Metadata.JwksUri];
-                if (string.IsNullOrEmpty(address))
+                var endpoint = (string?) context.Response[Metadata.JwksUri];
+                if (string.IsNullOrEmpty(endpoint))
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -256,7 +256,7 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                 {
                     context.Reject(
                         error: Errors.ServerError,
@@ -273,7 +273,7 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extracting the introspection endpoint address from the discovery document.
+        /// Contains the logic responsible for extracting the introspection endpoint URI from the discovery document.
         /// </summary>
         public sealed class ExtractIntrospectionEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
         {
@@ -295,10 +295,10 @@ public static partial class OpenIddictValidationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var address = (string?) context.Response[Metadata.IntrospectionEndpoint];
-                if (!string.IsNullOrEmpty(address))
+                var endpoint = (string?) context.Response[Metadata.IntrospectionEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
                 {
-                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Reject(
                             error: Errors.ServerError,
