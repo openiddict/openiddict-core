@@ -851,7 +851,7 @@ public static partial class OpenIddictClientHandlers
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenPrincipal>()
                 .UseSingletonHandler<ResolveClientRegistrationFromStateToken>()
-                .SetOrder(ValidateRequestForgeryProtection.Descriptor.Order + 1_000)
+                .SetOrder(ValidateEndpointUri.Descriptor.Order + 1_000)
                 .Build();
 
         /// <inheritdoc/>
