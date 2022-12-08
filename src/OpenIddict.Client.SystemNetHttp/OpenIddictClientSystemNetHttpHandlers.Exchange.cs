@@ -22,6 +22,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             PreparePostHttpRequest<PrepareTokenRequestContext>.Descriptor,
             AttachJsonAcceptHeaders<PrepareTokenRequestContext>.Descriptor,
             AttachUserAgentHeader<PrepareTokenRequestContext>.Descriptor,
+            AttachFromHeader<PrepareTokenRequestContext>.Descriptor,
             AttachBasicAuthenticationCredentials.Descriptor,
             AttachFormParameters<PrepareTokenRequestContext>.Descriptor,
             SendHttpRequest<ApplyTokenRequestContext>.Descriptor,

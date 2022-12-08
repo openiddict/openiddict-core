@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Net.Http.Headers;
+using System.Net.Mail;
 using System.Reflection;
 using OpenIddict.Validation.SystemNetHttp;
 using Polly;
@@ -49,6 +50,38 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     }
 
     /// <summary>
+    /// Sets the contact address used in the "From" header that is attached
+    /// to the backchannel HTTP requests sent to the authorization server.
+    /// </summary>
+    /// <param name="address">The mail address.</param>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictValidationSystemNetHttpBuilder SetContactAddress(MailAddress address)
+    {
+        if (address is null)
+        {
+            throw new ArgumentNullException(nameof(address));
+        }
+
+        return Configure(options => options.ContactAddress = address);
+    }
+
+    /// <summary>
+    /// Sets the contact address used in the "From" header that is attached
+    /// to the backchannel HTTP requests sent to the authorization server.
+    /// </summary>
+    /// <param name="address">The mail address.</param>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictValidationSystemNetHttpBuilder SetContactAddress(string address)
+    {
+        if (string.IsNullOrEmpty(address))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0366), nameof(address));
+        }
+
+        return SetContactAddress(new MailAddress(address));
+    }
+
+    /// <summary>
     /// Replaces the default HTTP error policy used by the OpenIddict client services.
     /// </summary>
     /// <param name="policy">The HTTP Polly error policy.</param>
@@ -64,7 +97,7 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     }
 
     /// <summary>
-    /// Sets the product information used in the user agent header that is attached
+    /// Sets the product information used in the "User-Agent" header that is attached
     /// to the backchannel HTTP requests sent to the authorization server.
     /// </summary>
     /// <param name="information">The product information.</param>
@@ -80,7 +113,7 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     }
 
     /// <summary>
-    /// Sets the product information used in the user agent header that is attached
+    /// Sets the product information used in the "User-Agent" header that is attached
     /// to the backchannel HTTP requests sent to the authorization server.
     /// </summary>
     /// <param name="name">The product name.</param>
@@ -97,7 +130,7 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     }
 
     /// <summary>
-    /// Sets the product information used in the user agent header that is attached
+    /// Sets the product information used in the "User-Agent" header that is attached
     /// to the backchannel HTTP requests sent to the authorization server based
     /// on the identity of the specified .NET assembly (name and version).
     /// </summary>

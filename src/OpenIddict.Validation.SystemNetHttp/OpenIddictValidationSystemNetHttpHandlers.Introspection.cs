@@ -22,6 +22,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             PreparePostHttpRequest<PrepareIntrospectionRequestContext>.Descriptor,
             AttachJsonAcceptHeaders<PrepareIntrospectionRequestContext>.Descriptor,
             AttachUserAgentHeader<PrepareIntrospectionRequestContext>.Descriptor,
+            AttachFromHeader<PrepareIntrospectionRequestContext>.Descriptor,
             AttachBasicAuthenticationCredentials.Descriptor,
             AttachFormParameters<PrepareIntrospectionRequestContext>.Descriptor,
             SendHttpRequest<ApplyIntrospectionRequestContext>.Descriptor,

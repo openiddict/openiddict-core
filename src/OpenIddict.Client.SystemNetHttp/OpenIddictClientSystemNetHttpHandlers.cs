@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http.Headers;
+using System.Net.Mail;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -180,6 +181,47 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             request.Headers.UserAgent.Add(new ProductInfoHeaderValue(
                 productName: assembly.Name!,
                 productVersion: assembly.Version!.ToString()));
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the contact address to the HTTP request.
+    /// </summary>
+    public sealed class AttachFromHeader<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
+
+        public AttachFromHeader(IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataUri>()
+                .UseSingletonHandler<AttachFromHeader<TContext>>()
+                .SetOrder(AttachUserAgentHeader<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var request = context.Transaction.GetHttpRequestMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            // Attach the contact address specified in the options, if available.
+            request.Headers.From = _options.CurrentValue.ContactAddress?.ToString();
 
             return default;
         }
