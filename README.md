@@ -32,7 +32,7 @@ can be found in the [dedicated repository](https://github.com/openiddict/openidd
 
 ## Compatibility matrix
 
-| Web framework version | .NET runtime version | OpenIddict 3.x                          | OpenIddict 4.x (preview)                |
+| Web framework version | .NET runtime version | OpenIddict 3.x                          | OpenIddict 4.x                          |
 |-----------------------|----------------------|-----------------------------------------|-----------------------------------------|
 | ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: :information_source: | :heavy_check_mark: :information_source: |
 | ASP.NET Core 2.1      | .NET Framework 4.7.2 | :heavy_check_mark:                      | :heavy_check_mark:                      |
