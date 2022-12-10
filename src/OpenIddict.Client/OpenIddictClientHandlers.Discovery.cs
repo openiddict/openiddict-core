@@ -230,8 +230,8 @@ public static partial class OpenIddictClientHandlers
                 {
                     context.Reject(
                         error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2098),
-                        uri: SR.FormatID8000(SR.ID2098));
+                        description: SR.GetResourceString(SR.ID2165),
+                        uri: SR.FormatID8000(SR.ID2165));
 
                     return default;
                 }
