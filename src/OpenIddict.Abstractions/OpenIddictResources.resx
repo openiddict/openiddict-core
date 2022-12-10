@@ -1888,6 +1888,9 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
   <data name="ID2164" xml:space="preserve">
     <value>The request forgery protection is missing or doesn't contain the expected value.</value>
   </data>
+  <data name="ID2165" xml:space="preserve">
+    <value>The issuer returned in the server configuration doesn't match the value set in the client registration options.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>

@@ -71,16 +71,26 @@ public static partial class OpenIddictValidationHandlers
                     // issued by a local authorization server outside a request context).
                     null => null,
 
-                    // If the issuer URI doesn't contain any path/query/fragment, allow both http://www.fabrikam.com
+                    // If the issuer URI doesn't contain any query/fragment, allow both http://www.fabrikam.com
                     // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
                     // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
-                    { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } issuer => new[]
+                    { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 } uri => new[]
                     {
-                        issuer.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
-                        issuer.AbsoluteUri[..^1]
+                        uri.AbsoluteUri, // Uri.AbsoluteUri is normalized and always contains a trailing slash.
+                        uri.AbsoluteUri[..^1]
                     },
 
-                    Uri issuer => new[] { issuer.AbsoluteUri }
+                    // When properly normalized, Uri.AbsolutePath should never be empty and should at least
+                    // contain a leading slash. While dangerous, System.Uri now offers a way to create a URI
+                    // instance without applying the default canonicalization logic. To support such URIs,
+                    // a special case is added here to add back the missing trailing slash when necessary.
+                    { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 } uri => new[]
+                    {
+                        uri.AbsoluteUri,
+                        uri.AbsoluteUri + "/"
+                    },
+
+                    Uri uri => new[] { uri.AbsoluteUri }
                 };
 
                 parameters.ValidateIssuer = parameters.ValidIssuers is not null;
