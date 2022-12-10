@@ -40,7 +40,7 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>authentication;jwt;openidconnect;openiddict;security</PackageTags>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/openiddict/openiddict-core</RepositoryUrl>
+    <RepositoryUrl>https://github.com/openiddict/openiddict-core.git</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup>
