@@ -1335,7 +1335,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var server = await CreateServerAsync(options =>
         {
             options.RegisterScopes("scope_registered_in_options");
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableTokenStorage();
             options.DisableSlidingRefreshTokenExpiration();
 
@@ -1909,7 +1911,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
             options.Services.AddSingleton(manager);
 
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableTokenStorage();
             options.DisableSlidingRefreshTokenExpiration();
         });
@@ -1977,7 +1981,9 @@ public abstract partial class OpenIddictServerIntegrationTests
 
             options.Services.AddSingleton(manager);
 
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableTokenStorage();
             options.DisableSlidingRefreshTokenExpiration();
         });
@@ -2153,7 +2159,9 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(true);
             }));
 
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableTokenStorage();
             options.DisableSlidingRefreshTokenExpiration();
         });
@@ -2206,7 +2214,9 @@ public abstract partial class OpenIddictServerIntegrationTests
                     return default;
                 }));
 
+            options.SetDeviceEndpointUris(Array.Empty<Uri>());
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
             options.DisableTokenStorage();
             options.DisableSlidingRefreshTokenExpiration();
         });

@@ -138,6 +138,13 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0083));
         }
 
+        // Prevent the device authorization flow from being used if token storage is disabled, unless the degraded
+        // mode has been enabled (in this case, additional checks will be enforced later to require custom handlers).
+        if (options.DisableTokenStorage && !options.EnableDegradedMode && options.GrantTypes.Contains(GrantTypes.DeviceCode))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0367));
+        }
+
         if (options.EncryptionCredentials.Count is 0)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0085));
@@ -149,14 +156,14 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         }
 
         // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+        if (options.EncryptionCredentials.TrueForAll(static credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0087));
         }
 
         // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.SigningCredentials.TrueForAll(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
+        if (options.SigningCredentials.TrueForAll(static credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0088));

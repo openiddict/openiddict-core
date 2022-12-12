@@ -1393,6 +1393,9 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
   <data name="ID0366" xml:space="preserve">
     <value>The '{0}' parameter cannot be null or empty.</value>
   </data>
+  <data name="ID0367" xml:space="preserve">
+    <value>The device authorization flow cannot be enabled when token storage is disabled (unless the degraded mode is used).</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

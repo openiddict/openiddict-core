@@ -230,6 +230,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     {
         // Arrange
         var application = new OpenIddictApplication();
+        var token = new OpenIddictToken();
 
         await using var server = await CreateServerAsync(options =>
         {
@@ -242,10 +243,21 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(true);
             }));
 
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+            }));
+
             options.RegisterScopes("registered_scope");
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.DisableAuthorizationStorage();
-            options.DisableTokenStorage();
             options.DisableSlidingRefreshTokenExpiration();
 
             options.AddEventHandler<HandleDeviceRequestContext>(builder =>
@@ -280,6 +292,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Arrange
         var application = new OpenIddictApplication();
         var scope = new OpenIddictScope();
+        var token = new OpenIddictToken();
 
         var manager = CreateScopeManager(mock =>
         {
@@ -303,10 +316,21 @@ public abstract partial class OpenIddictServerIntegrationTests
                     .ReturnsAsync(true);
             }));
 
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+            }));
+
             options.RegisterScopes("scope_registered_in_options");
             options.SetRevocationEndpointUris(Array.Empty<Uri>());
             options.DisableAuthorizationStorage();
-            options.DisableTokenStorage();
             options.DisableSlidingRefreshTokenExpiration();
 
             options.Services.AddSingleton(manager);
