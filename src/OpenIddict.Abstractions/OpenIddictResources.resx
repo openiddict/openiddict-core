@@ -1939,6 +1939,12 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
   <data name="ID4016" xml:space="preserve">
     <value>The number of written bytes ({0}) doesn't match the expected value ({1}).</value>
   </data>
+  <data name="ID4017" xml:space="preserve">
+    <value>The token identifier shouldn't be null or empty at this point.</value>
+  </data>
+  <data name="ID4018" xml:space="preserve">
+    <value>The authorization identifier shouldn't be null or empty at this point.</value>
+  </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
   </data>
@@ -1979,14 +1985,21 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
     <value>The token entry for '{Type}' token '{Identifier}' was successfully created.</value>
   </data>
   <data name="ID6013" xml:space="preserve">
-    <value>A new '{Type}' token was successfully created: {Payload}.
+    <value>A new '{Type}' JSON Web Token was successfully created: {Payload}.
 The principal used to create the token contained the following claims: {Claims}.</value>
   </data>
   <data name="ID6014" xml:space="preserve">
-    <value>The token entry for '{Type}' token '{Identifier}' was successfully converted to a reference token with the identifier '{ReferenceId}'.</value>
+    <value>The token payload ({Payload}) was successfully attached to the token entry '{Identifier}' of type '{Type}'.</value>
+  </data>
+  <data name="ID6015" xml:space="preserve">
+    <value>The reference identifier ({ReferenceId}) was successfully attached to the token entry '{Identifier}' of type '{Type}'.</value>
+  </data>
+  <data name="ID6016" xml:space="preserve">
+    <value>A new '{Type}' ASP.NET Core Data Protection token was successfully created: {Payload}.
+The principal used to create the token contained the following claims: {Claims}.</value>
   </data>
   <data name="ID6021" xml:space="preserve">
-    <value>The reference token entry for device code '{Identifier}' was successfully updated'.</value>
+    <value>The token entry for device code '{Identifier}' was successfully updated with the new payload.</value>
   </data>
   <data name="ID6030" xml:space="preserve">
     <value>The authorization request was successfully extracted: {Request}.</value>

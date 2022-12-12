@@ -3057,6 +3057,9 @@ public abstract partial class OpenIddictServerIntegrationTests
             mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                 .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
+            mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeHints.AuthorizationCode);
+
             mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
@@ -3132,6 +3135,9 @@ public abstract partial class OpenIddictServerIntegrationTests
             mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
                 .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
 
+            mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeHints.RefreshToken);
+
             mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
@@ -3197,6 +3203,9 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             mock.Setup(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(token);
+
+            mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeHints.RefreshToken);
 
             mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Redeemed, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);

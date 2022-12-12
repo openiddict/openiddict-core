@@ -47,6 +47,12 @@ public static partial class OpenIddictServerEvents
         public bool CreateTokenEntry { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a reference token should be used
+        /// and, if applicable, returned to the caller instead of the actual token payload.
+        /// </summary>
+        public bool IsReferenceToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether the token payload
         /// should be persisted alongside the token metadata in the database.
         /// </summary>
@@ -134,6 +140,16 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the token type hint specified by the client, if applicable.
         /// </summary>
         public string? TokenTypeHint { get; set; } = default!;
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the validated token is a reference token.
+        /// </summary>
+        public bool IsReferenceToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorization entry identifier associated with the token, if applicable.
+        /// </summary>
+        public string? AuthorizationId { get; set; }
 
         /// <summary>
         /// Gets or sets the token entry identifier associated with the token, if applicable.
