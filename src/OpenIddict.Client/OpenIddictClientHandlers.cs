@@ -2258,6 +2258,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 CreateTokenEntry = false,
+                IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.ClientAssertionTokenPrincipal!,
                 TokenFormat = TokenFormats.Jwt,
@@ -4624,6 +4625,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
+                IsReferenceToken = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.StateTokenPrincipal!,
                 TokenFormat = TokenFormats.Jwt,
@@ -5215,6 +5217,7 @@ public static partial class OpenIddictClientHandlers
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
+                IsReferenceToken = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.StateTokenPrincipal!,
                 TokenFormat = TokenFormats.Jwt,

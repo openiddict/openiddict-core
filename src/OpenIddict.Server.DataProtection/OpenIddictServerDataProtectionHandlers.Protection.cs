@@ -189,31 +189,31 @@ public static partial class OpenIddictServerDataProtectionHandlers
                     // 
                     // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                        (type, context.TokenId) switch
+                        (type, context.IsReferenceToken) switch
                         {
-                            (TokenTypeHints.AccessToken, { Length: not 0 })
+                            (TokenTypeHints.AccessToken, true)
                                 => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
-                            (TokenTypeHints.AccessToken, null or { Length: 0 })
+                            (TokenTypeHints.AccessToken, false)
                                 => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
 
-                            (TokenTypeHints.AuthorizationCode, { Length: not 0 })
+                            (TokenTypeHints.AuthorizationCode, true)
                                 => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
-                            (TokenTypeHints.AuthorizationCode, null or { Length: 0 })
+                            (TokenTypeHints.AuthorizationCode, false)
                                 => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },
 
-                            (TokenTypeHints.DeviceCode, { Length: not 0 })
+                            (TokenTypeHints.DeviceCode, true)
                                 => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server },
-                            (TokenTypeHints.DeviceCode, null or { Length: 0 })
+                            (TokenTypeHints.DeviceCode, false)
                                 => new[] { Handlers.Server, Formats.DeviceCode, Schemes.Server },
 
-                            (TokenTypeHints.RefreshToken, { Length: not 0 })
+                            (TokenTypeHints.RefreshToken, true)
                                 => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server },
-                            (TokenTypeHints.RefreshToken, null or { Length: 0 })
+                            (TokenTypeHints.RefreshToken, false)
                                 => new[] { Handlers.Server, Formats.RefreshToken, Schemes.Server },
 
-                            (TokenTypeHints.UserCode, { Length: not 0 })
+                            (TokenTypeHints.UserCode, true)
                                 => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server },
-                            (TokenTypeHints.UserCode, null or { Length: 0 })
+                            (TokenTypeHints.UserCode, false)
                                 => new[] { Handlers.Server, Formats.UserCode, Schemes.Server },
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
@@ -337,7 +337,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
                 //
                 // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
                 var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                    (context.TokenType, context.PersistTokenPayload) switch
+                    (context.TokenType, context.IsReferenceToken) switch
                     {
                         (TokenTypeHints.AccessToken, true)
                             => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
@@ -374,7 +374,7 @@ public static partial class OpenIddictServerDataProtectionHandlers
 
                 context.Token = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType,
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), context.TokenType,
                     context.Token, context.Principal.Claims);
 
                 return default;

@@ -2412,6 +2412,7 @@ public static partial class OpenIddictServerHandlers
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
                 // Access tokens can be converted to reference tokens if the
                 // corresponding option was enabled in the server options.
+                IsReferenceToken = context.Options.UseReferenceAccessTokens,
                 PersistTokenPayload = context.Options.UseReferenceAccessTokens,
                 Principal = context.AccessTokenPrincipal!,
                 TokenFormat = TokenFormats.Jwt,
@@ -2478,6 +2479,7 @@ public static partial class OpenIddictServerHandlers
             {
                 ClientId = context.ClientId,
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
+                IsReferenceToken = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
                 Principal = context.AuthorizationCodePrincipal!,
                 TokenFormat = TokenFormats.Jwt,
@@ -2543,8 +2545,16 @@ public static partial class OpenIddictServerHandlers
             var notification = new GenerateTokenContext(context.Transaction)
             {
                 ClientId = context.ClientId,
-                CreateTokenEntry = !context.Options.DisableTokenStorage,
-                // Device codes can be converted to reference tokens if they are not generated
+                // Don't create a new entry if the device code is generated as part
+                // of a device code swap made by the user code verification endpoint.
+                CreateTokenEntry = context.EndpointType switch
+                {
+                    OpenIddictServerEndpointType.Verification => false,
+
+                    _ => !context.Options.DisableTokenStorage
+                },
+                IsReferenceToken = !context.Options.DisableTokenStorage,
+                // Device codes are not persisted using the generic logic if they are generated
                 // as part of a device code swap made by the user code verification endpoint.
                 PersistTokenPayload = context.EndpointType switch
                 {
@@ -2554,7 +2564,7 @@ public static partial class OpenIddictServerHandlers
                 },
                 Principal = context.DeviceCodePrincipal!,
                 TokenFormat = TokenFormats.Jwt,
-                TokenType = TokenTypeHints.DeviceCode
+                TokenType = TokenTypeHints.DeviceCode,
             };
 
             await _dispatcher.DispatchAsync(notification);
@@ -2619,6 +2629,7 @@ public static partial class OpenIddictServerHandlers
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
                 // Refresh tokens can be converted to reference tokens if the
                 // corresponding option was enabled in the server options.
+                IsReferenceToken = context.Options.UseReferenceRefreshTokens,
                 PersistTokenPayload = context.Options.UseReferenceRefreshTokens,
                 Principal = context.RefreshTokenPrincipal!,
                 TokenFormat = TokenFormats.Jwt,
@@ -2738,7 +2749,7 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0020));
             }
 
-            // Extract the token identifier from the authentication principal.
+            // Extract the device code identifier from the user code principal.
             var identifier = context.Principal.GetClaim(Claims.Private.DeviceCodeId);
             if (string.IsNullOrEmpty(identifier))
             {
@@ -2890,6 +2901,7 @@ public static partial class OpenIddictServerHandlers
                 ClientId = context.ClientId,
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
                 PersistTokenPayload = !context.Options.DisableTokenStorage,
+                IsReferenceToken = !context.Options.DisableTokenStorage,
                 Principal = context.UserCodePrincipal!,
                 TokenFormat = TokenFormats.Jwt,
                 TokenType = TokenTypeHints.UserCode
@@ -2955,7 +2967,8 @@ public static partial class OpenIddictServerHandlers
             {
                 ClientId = context.ClientId,
                 CreateTokenEntry = !context.Options.DisableTokenStorage,
-                // Identity tokens cannot never be reference tokens.
+                // Identity tokens cannot be reference tokens.
+                IsReferenceToken = false,
                 PersistTokenPayload = false,
                 Principal = context.IdentityTokenPrincipal!,
                 TokenFormat = TokenFormats.Jwt,

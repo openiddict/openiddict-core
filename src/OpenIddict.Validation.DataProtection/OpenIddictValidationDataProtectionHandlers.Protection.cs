@@ -98,11 +98,11 @@ public static partial class OpenIddictValidationDataProtectionHandlers
                     //
                     // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                        (type, context.TokenId) switch
+                        (type, context.IsReferenceToken) switch
                         {
-                            (TokenTypeHints.AccessToken, { Length: not 0 })
+                            (TokenTypeHints.AccessToken, true)
                                 => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
-                            (TokenTypeHints.AccessToken, null or { Length: 0 })
+                            (TokenTypeHints.AccessToken, false)
                                 => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))

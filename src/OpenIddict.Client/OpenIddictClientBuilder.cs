@@ -881,8 +881,7 @@ public sealed class OpenIddictClientBuilder
     /// <summary>
     /// Disables token storage, so that no database entry is created
     /// for the tokens and codes returned by the OpenIddict client.
-    /// Using this option is generally NOT recommended as it prevents
-    /// the tokens from being revoked (if needed).
+    /// Using this option is generally NOT recommended.
     /// </summary>
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder DisableTokenStorage()

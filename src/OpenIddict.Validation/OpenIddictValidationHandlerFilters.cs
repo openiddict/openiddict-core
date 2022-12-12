@@ -60,6 +60,22 @@ public static class OpenIddictValidationHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no authorization identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireAuthorizationIdResolved : IOpenIddictValidationHandlerFilter<ValidateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!string.IsNullOrEmpty(context.AuthorizationId));
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if local validation is not used.
     /// </summary>
     public sealed class RequireLocalValidation : IOpenIddictValidationHandlerFilter<BaseContext>
@@ -88,6 +104,22 @@ public static class OpenIddictValidationHandlerFilters
             }
 
             return new(context.Options.ValidationType is OpenIddictValidationType.Introspection);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no token identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireTokenIdResolved : IOpenIddictValidationHandlerFilter<ValidateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!string.IsNullOrEmpty(context.TokenId));
         }
     }
 

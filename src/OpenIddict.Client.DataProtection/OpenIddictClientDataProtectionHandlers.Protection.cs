@@ -104,11 +104,11 @@ public static partial class OpenIddictClientDataProtectionHandlers
                     //
                     // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                        (type, context.TokenId) switch
+                        (type, context.IsReferenceToken) switch
                         {
-                            (TokenTypeHints.StateToken, { Length: not 0 })
+                            (TokenTypeHints.StateToken, true)
                                 => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
-                            (TokenTypeHints.StateToken, null or { Length: 0 })
+                            (TokenTypeHints.StateToken, false)
                                 => new[] { Handlers.Client, Formats.StateToken, Schemes.Server },
 
                             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0003))
@@ -220,7 +220,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
                 //
                 // Note: reference tokens are encrypted using a different "purpose" string than non-reference tokens.
                 var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                    (context.TokenType, context.PersistTokenPayload) switch
+                    (context.TokenType, context.IsReferenceToken) switch
                     {
                         (TokenTypeHints.StateToken, true)
                             => new[] { Handlers.Client, Formats.StateToken, Features.ReferenceTokens, Schemes.Server },
@@ -237,7 +237,7 @@ public static partial class OpenIddictClientDataProtectionHandlers
 
                 context.Token = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
 
-                context.Logger.LogTrace(SR.GetResourceString(SR.ID6013), context.TokenType,
+                context.Logger.LogTrace(SR.GetResourceString(SR.ID6016), context.TokenType,
                     context.Token, context.Principal.Claims);
 
                 return default;
