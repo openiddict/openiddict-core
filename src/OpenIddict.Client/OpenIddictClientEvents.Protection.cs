@@ -141,11 +141,6 @@ public static partial class OpenIddictClientEvents
         public bool IsReferenceToken { get; set; }
 
         /// <summary>
-        /// Gets or sets the authorization entry identifier associated with the token, if applicable.
-        /// </summary>
-        public string? AuthorizationId { get; set; }
-
-        /// <summary>
         /// Gets or sets the token entry identifier associated with the token, if applicable.
         /// </summary>
         public string? TokenId { get; set; }

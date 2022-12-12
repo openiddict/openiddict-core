@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -494,7 +493,6 @@ public static partial class OpenIddictClientHandlers
                 context.Principal
                     .SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
                     .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
-                    .SetAuthorizationId(context.AuthorizationId = await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetTokenId(context.TokenId = await _tokenManager.GetIdAsync(token))
                     .SetTokenType(await _tokenManager.GetTypeAsync(token));
             }
