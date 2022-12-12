@@ -28,7 +28,7 @@ public static partial class OpenIddictValidationHandlers
             IntrospectToken.Descriptor,
             NormalizeScopeClaims.Descriptor,
             MapInternalClaims.Descriptor,
-            RestoreReferenceTokenProperties.Descriptor,
+            RestoreTokenEntryProperties.Descriptor,
             ValidatePrincipal.Descriptor,
             ValidateExpirationDate.Descriptor,
             ValidateAudience.Descriptor,
@@ -189,6 +189,7 @@ public static partial class OpenIddictValidationHandlers
                 // Replace the token parameter by the payload resolved from the token entry
                 // and store the identifier of the reference token so it can be later
                 // used to restore the properties associated with the token.
+                context.IsReferenceToken = true;
                 context.Token = payload;
                 context.TokenId = await _tokenManager.GetIdAsync(token);
             }
@@ -533,16 +534,16 @@ public static partial class OpenIddictValidationHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for restoring the properties associated with a reference token entry.
+        /// Contains the logic responsible for restoring the properties associated with a token entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public sealed class RestoreReferenceTokenProperties : IOpenIddictValidationHandler<ValidateTokenContext>
+        public sealed class RestoreTokenEntryProperties : IOpenIddictValidationHandler<ValidateTokenContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0139));
+            public RestoreTokenEntryProperties() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0139));
 
-            public RestoreReferenceTokenProperties(IOpenIddictTokenManager tokenManager)
+            public RestoreTokenEntryProperties(IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
 
             /// <summary>
@@ -552,7 +553,7 @@ public static partial class OpenIddictValidationHandlers
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
                     .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireTokenEntryValidationEnabled>()
-                    .UseScopedHandler<RestoreReferenceTokenProperties>()
+                    .UseScopedHandler<RestoreTokenEntryProperties>()
                     .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
@@ -565,20 +566,40 @@ public static partial class OpenIddictValidationHandlers
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Principal is null || string.IsNullOrEmpty(context.TokenId))
+                if (context.Principal is null)
                 {
                     return;
                 }
 
-                var token = await _tokenManager.FindByIdAsync(context.TokenId) ??
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
+                // Extract the token identifier from the authentication principal.
+                //
+                // If no token identifier can be found, this indicates that the token
+                // has no backing database entry (e.g if token storage was disabled).
+                var identifier = context.Principal.GetTokenId();
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    return;
+                }
+
+                // If the token entry cannot be found, return a generic error.
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token is null)
+                {
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2019),
+                        uri: SR.FormatID8000(SR.ID2019));
+
+                    return;
+                }
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
-                context.Principal.SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
-                                 .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
-                                 .SetAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
-                                 .SetTokenId(await _tokenManager.GetIdAsync(token))
-                                 .SetTokenType(await _tokenManager.GetTypeAsync(token));
+                context.Principal
+                    .SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
+                    .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
+                    .SetAuthorizationId(context.AuthorizationId = await _tokenManager.GetAuthorizationIdAsync(token))
+                    .SetTokenId(context.TokenId = await _tokenManager.GetIdAsync(token))
+                    .SetTokenType(await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -593,7 +614,7 @@ public static partial class OpenIddictValidationHandlers
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
                     .UseSingletonHandler<ValidatePrincipal>()
-                    .SetOrder(RestoreReferenceTokenProperties.Descriptor.Order + 1_000)
+                    .SetOrder(RestoreTokenEntryProperties.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
@@ -761,6 +782,7 @@ public static partial class OpenIddictValidationHandlers
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
                     .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireTokenEntryValidationEnabled>()
+                    .AddFilter<RequireTokenIdResolved>()
                     .UseScopedHandler<ValidateTokenEntry>()
                     .SetOrder(ValidateAudience.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -775,17 +797,14 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(!string.IsNullOrEmpty(context.TokenId), SR.GetResourceString(SR.ID4017));
 
-                var identifier = context.Principal.GetTokenId();
-                if (string.IsNullOrEmpty(identifier))
-                {
-                    return;
-                }
+                var token = await _tokenManager.FindByIdAsync(context.TokenId) ??
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0021));
 
-                var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token is null || !await _tokenManager.HasStatusAsync(token, Statuses.Valid))
+                if (!await _tokenManager.HasStatusAsync(token, Statuses.Valid))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6005), context.TokenId);
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -794,13 +813,6 @@ public static partial class OpenIddictValidationHandlers
 
                     return;
                 }
-
-                // Restore the creation/expiration dates/identifiers from the token entry metadata.
-                context.Principal.SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
-                                 .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
-                                 .SetAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
-                                 .SetTokenId(await _tokenManager.GetIdAsync(token))
-                                 .SetTokenType(await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -825,6 +837,7 @@ public static partial class OpenIddictValidationHandlers
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
                     .AddFilter<RequireLocalValidation>()
                     .AddFilter<RequireAuthorizationEntryValidationEnabled>()
+                    .AddFilter<RequireAuthorizationIdResolved>()
                     .UseScopedHandler<ValidateAuthorizationEntry>()
                     .SetOrder(ValidateTokenEntry.Descriptor.Order + 1_000)
                     .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -839,17 +852,12 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(!string.IsNullOrEmpty(context.AuthorizationId), SR.GetResourceString(SR.ID4018));
 
-                var identifier = context.Principal.GetAuthorizationId();
-                if (string.IsNullOrEmpty(identifier))
-                {
-                    return;
-                }
-
-                var authorization = await _authorizationManager.FindByIdAsync(identifier);
+                var authorization = await _authorizationManager.FindByIdAsync(context.AuthorizationId);
                 if (authorization is null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
-                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), identifier);
+                    context.Logger.LogInformation(SR.GetResourceString(SR.ID6006), context.AuthorizationId);
 
                     context.Reject(
                         error: Errors.InvalidToken,

@@ -50,6 +50,16 @@ public static partial class OpenIddictValidationEvents
         public string Token { get; set; } = default!;
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the validated token is a reference token.
+        /// </summary>
+        public bool IsReferenceToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorization entry identifier associated with the token, if applicable.
+        /// </summary>
+        public string? AuthorizationId { get; set; }
+
+        /// <summary>
         /// Gets or sets the token entry identifier associated with the token, if applicable.
         /// </summary>
         public string? TokenId { get; set; }

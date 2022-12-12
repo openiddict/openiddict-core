@@ -76,6 +76,22 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no authorization identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireAuthorizationIdResolved : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!string.IsNullOrEmpty(context.AuthorizationId));
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not an authorization request.
     /// </summary>
     public sealed class RequireAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
@@ -504,6 +520,22 @@ public static class OpenIddictServerHandlerFilters
             }
 
             return new(!context.Options.DisableSlidingRefreshTokenExpiration);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no token identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireTokenIdResolved : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!string.IsNullOrEmpty(context.TokenId));
         }
     }
 

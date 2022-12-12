@@ -28,6 +28,22 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no authorization identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireAuthorizationIdResolved : IOpenIddictClientHandlerFilter<ValidateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!string.IsNullOrEmpty(context.AuthorizationId));
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no backchannel access token is validated.
     /// </summary>
     public sealed class RequireBackchannelAccessTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
@@ -302,6 +318,22 @@ public static class OpenIddictClientHandlerFilters
             }
 
             return new(context.CreateTokenEntry);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no token identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireTokenIdResolved : IOpenIddictClientHandlerFilter<ValidateTokenContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new(!string.IsNullOrEmpty(context.TokenId));
         }
     }
 

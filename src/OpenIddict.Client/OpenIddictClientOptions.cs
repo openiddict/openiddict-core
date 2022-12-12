@@ -120,8 +120,7 @@ public sealed class OpenIddictClientOptions
     /// <summary>
     /// Gets or sets a boolean indicating whether token storage should be disabled.
     /// When disabled, no database entry is created for the tokens created by the
-    /// OpenIddict client services. Using this option is generally NOT recommended
-    /// as it prevents the tokens from being revoked (if needed).
+    /// OpenIddict client services. Using this option is generally NOT recommended.
     /// </summary>
     public bool DisableTokenStorage { get; set; }
 
