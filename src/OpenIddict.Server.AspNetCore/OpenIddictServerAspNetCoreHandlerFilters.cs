@@ -26,6 +26,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireAuthorizationRequestCachingEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -48,6 +49,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireAuthorizationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -69,6 +71,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireErrorPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -85,6 +88,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
     /// </summary>
     public sealed class RequireHttpRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -106,6 +110,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireLogoutRequestCachingEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -128,6 +133,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireLogoutEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -149,6 +155,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireStatusCodePagesIntegrationEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -170,6 +177,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -192,6 +200,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireTokenEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -214,6 +223,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireUserinfoEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -236,6 +246,7 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
         public RequireVerificationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)

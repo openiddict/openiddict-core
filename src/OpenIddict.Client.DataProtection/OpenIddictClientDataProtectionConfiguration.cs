@@ -26,6 +26,7 @@ public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOpti
     public OpenIddictClientDataProtectionConfiguration(IDataProtectionProvider dataProtectionProvider)
         => _dataProtectionProvider = dataProtectionProvider;
 
+    /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
         if (options is null)
@@ -37,12 +38,7 @@ public sealed class OpenIddictClientDataProtectionConfiguration : IConfigureOpti
         options.Handlers.AddRange(OpenIddictClientDataProtectionHandlers.DefaultHandlers);
     }
 
-    /// <summary>
-    /// Populates the default OpenIddict ASP.NET Core Data Protection server options
-    /// and ensures that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The name of the options instance to configure, if applicable.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientDataProtectionOptions options)
     {
         if (options is null)

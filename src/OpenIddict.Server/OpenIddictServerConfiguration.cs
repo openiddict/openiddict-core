@@ -18,12 +18,7 @@ namespace OpenIddict.Server;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenIddictServerOptions>
 {
-    /// <summary>
-    /// Populates the default OpenIddict server options and ensures
-    /// that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The name of the options instance to configure, if applicable.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerOptions options)
     {
         if (options is null)

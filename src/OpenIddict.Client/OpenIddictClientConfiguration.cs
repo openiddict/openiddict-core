@@ -21,15 +21,14 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 {
     private readonly OpenIddictClientService _service;
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictClientConfiguration"/> class.
+    /// </summary>
+    /// <param name="service">The OpenIddict client service.</param>
     public OpenIddictClientConfiguration(OpenIddictClientService service)
         => _service = service ?? throw new ArgumentNullException(nameof(service));
 
-    /// <summary>
-    /// Populates the default OpenIddict client options and ensures
-    /// that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The authentication scheme associated with the handler instance.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictClientOptions options)
     {
         if (options is null)

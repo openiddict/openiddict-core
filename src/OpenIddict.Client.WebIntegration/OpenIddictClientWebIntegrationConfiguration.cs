@@ -15,11 +15,7 @@ namespace OpenIddict.Client.WebIntegration;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfigureOptions<OpenIddictClientOptions>
 {
-    /// <summary>
-    /// Populates the default OpenIddict client Web integration options
-    /// and ensures that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
         if (options is null)

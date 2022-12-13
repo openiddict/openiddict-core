@@ -24,6 +24,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireAuthorizationRequestCachingEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -46,6 +47,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireAuthorizationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -67,6 +69,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireErrorPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -88,6 +91,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireLogoutRequestCachingEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -110,6 +114,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireLogoutEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -126,6 +131,7 @@ public static class OpenIddictServerOwinHandlerFilters
     /// </summary>
     public sealed class RequireOwinRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -147,6 +153,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -169,6 +176,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireTokenEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -191,6 +199,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireUserinfoEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -213,6 +222,7 @@ public static class OpenIddictServerOwinHandlerFilters
         public RequireVerificationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)

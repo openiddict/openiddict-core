@@ -20,11 +20,16 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
 {
 #if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
     private readonly IServiceProvider _provider;
-
+    
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictValidationSystemNetHttpConfiguration"/> class.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
     public OpenIddictValidationSystemNetHttpConfiguration(IServiceProvider provider)
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 #endif
 
+    /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
         if (options is null)
@@ -36,8 +41,10 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
         options.Handlers.AddRange(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers);
     }
 
+    /// <inheritdoc/>
     public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
 
+    /// <inheritdoc/>
     public void Configure(string? name, HttpClientFactoryOptions options)
     {
         if (options is null)

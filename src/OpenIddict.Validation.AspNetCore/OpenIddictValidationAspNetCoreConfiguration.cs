@@ -17,10 +17,7 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
                                                                   IConfigureOptions<OpenIddictValidationOptions>,
                                                                   IPostConfigureOptions<AuthenticationOptions>
 {
-    /// <summary>
-    /// Registers the OpenIddict validation handler in the global authentication options.
-    /// </summary>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
         if (options is null)
@@ -39,6 +36,7 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
             OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
+    /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
         if (options is null)
@@ -50,11 +48,7 @@ public sealed class OpenIddictValidationAspNetCoreConfiguration : IConfigureOpti
         options.Handlers.AddRange(OpenIddictValidationAspNetCoreHandlers.DefaultHandlers);
     }
 
-    /// <summary>
-    /// Ensures that the authentication configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The name of the options instance to configure, if applicable.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, AuthenticationOptions options)
     {
         if (options is null)

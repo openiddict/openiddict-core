@@ -18,10 +18,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
                                                               IPostConfigureOptions<AuthenticationOptions>,
                                                               IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>
 {
-    /// <summary>
-    /// Registers the OpenIddict server handler in the global authentication options.
-    /// </summary>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
         if (options is null)
@@ -40,6 +37,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
             OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
+    /// <inheritdoc/>
     public void Configure(OpenIddictServerOptions options)
     {
         if (options is null)
@@ -51,11 +49,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
         options.Handlers.AddRange(OpenIddictServerAspNetCoreHandlers.DefaultHandlers);
     }
 
-    /// <summary>
-    /// Ensures that the authentication configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The name of the options instance to configure, if applicable.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, AuthenticationOptions options)
     {
         if (options is null)
@@ -106,12 +100,7 @@ public sealed class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<
         }
     }
 
-    /// <summary>
-    /// Populates the default OpenIddict server ASP.NET Core options and
-    /// ensures that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The name of the options instance to configure, if applicable.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerAspNetCoreOptions options)
     {
         if (options is null)

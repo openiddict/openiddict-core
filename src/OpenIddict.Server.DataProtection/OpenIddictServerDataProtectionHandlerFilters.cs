@@ -17,6 +17,7 @@ public static class OpenIddictServerDataProtectionHandlerFilters
     /// </summary>
     public sealed class RequireDataProtectionTokenFormat : IOpenIddictServerHandlerFilter<GenerateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
             if (context is null)

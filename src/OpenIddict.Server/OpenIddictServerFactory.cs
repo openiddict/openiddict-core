@@ -10,6 +10,9 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server;
 
+/// <summary>
+/// Represents a service responsible for creating transactions.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictServerFactory : IOpenIddictServerFactory
 {
@@ -27,6 +30,7 @@ public sealed class OpenIddictServerFactory : IOpenIddictServerFactory
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
+    /// <inheritdoc/>
     public ValueTask<OpenIddictServerTransaction> CreateTransactionAsync()
         => new(new OpenIddictServerTransaction
         {

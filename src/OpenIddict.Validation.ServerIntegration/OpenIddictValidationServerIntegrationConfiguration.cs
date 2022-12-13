@@ -26,11 +26,7 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
     public OpenIddictValidationServerIntegrationConfiguration(IOptionsMonitor<OpenIddictServerOptions> options)
         => _options = options ?? throw new ArgumentNullException(nameof(options));
 
-    /// <summary>
-    /// Populates the default OpenIddict validation/server integration options
-    /// and ensures that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
         if (options is null)
@@ -58,12 +54,7 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
         options.EnableTokenEntryValidation = _options.CurrentValue.UseReferenceAccessTokens;
     }
 
-    /// <summary>
-    /// Populates the default OpenIddict validation/server integration options
-    /// and ensures that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The name of the options instance to configure, if applicable.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictValidationOptions options)
     {
         if (options is null)

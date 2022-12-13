@@ -20,6 +20,7 @@ public static class OpenIddictValidationAspNetCoreHandlerFilters
     /// </summary>
     public sealed class RequireHttpRequest : IOpenIddictValidationHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)

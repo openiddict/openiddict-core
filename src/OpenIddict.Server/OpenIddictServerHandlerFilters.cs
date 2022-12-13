@@ -16,6 +16,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireAccessTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
             if (context is null)
@@ -32,6 +33,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireAccessTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -48,6 +50,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireAuthorizationCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
             if (context is null)
@@ -64,6 +67,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireAuthorizationCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -80,6 +84,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireAuthorizationIdResolved : IOpenIddictServerHandlerFilter<ValidateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
         {
             if (context is null)
@@ -96,6 +101,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -112,6 +118,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireAuthorizationStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -128,6 +135,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -144,6 +152,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireConfigurationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -160,6 +169,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireCryptographyRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -176,6 +186,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireDegradedModeDisabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -192,6 +203,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireDeviceCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
             if (context is null)
@@ -208,6 +220,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireDeviceCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -224,6 +237,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireDeviceRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -240,6 +254,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -256,6 +271,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireGenericTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -272,6 +288,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireGrantTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -288,6 +305,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireIdentityTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
             if (context is null)
@@ -304,6 +322,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireIdentityTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -320,6 +339,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireIntrospectionRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -336,6 +356,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireJsonWebTokenFormat : IOpenIddictServerHandlerFilter<GenerateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
             if (context is null)
@@ -352,6 +373,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireLogoutRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -368,6 +390,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequirePostLogoutRedirectUriParameter : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -384,6 +407,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireReferenceAccessTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -400,6 +424,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireReferenceRefreshTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -416,6 +441,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireRefreshTokenGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
             if (context is null)
@@ -432,6 +458,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireRefreshTokenValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -448,6 +475,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireResponseTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -464,6 +492,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireRevocationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -480,6 +509,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireScopePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -496,6 +526,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireScopeValidationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -512,6 +543,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireSlidingRefreshTokenExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -528,6 +560,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireTokenIdResolved : IOpenIddictServerHandlerFilter<ValidateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
         {
             if (context is null)
@@ -544,6 +577,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireTokenEntryCreated : IOpenIddictServerHandlerFilter<GenerateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
             if (context is null)
@@ -560,6 +594,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireTokenLifetimeValidationEnabled : IOpenIddictServerHandlerFilter<ValidateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
         {
             if (context is null)
@@ -576,6 +611,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireTokenPayloadPersisted : IOpenIddictServerHandlerFilter<GenerateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(GenerateTokenContext context)
         {
             if (context is null)
@@ -592,6 +628,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireTokenRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -608,6 +645,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -624,6 +662,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireUserCodeGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
         {
             if (context is null)
@@ -640,6 +679,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireUserCodeValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -656,6 +696,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireUserinfoRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -672,6 +713,7 @@ public static class OpenIddictServerHandlerFilters
     /// </summary>
     public sealed class RequireVerificationRequest : IOpenIddictServerHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
