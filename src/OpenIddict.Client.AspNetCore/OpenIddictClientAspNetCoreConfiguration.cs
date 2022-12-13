@@ -17,10 +17,7 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
                                                               IConfigureOptions<OpenIddictClientOptions>,
                                                               IPostConfigureOptions<AuthenticationOptions>
 {
-    /// <summary>
-    /// Registers the OpenIddict client handler in the global authentication options.
-    /// </summary>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void Configure(AuthenticationOptions options)
     {
         if (options is null)
@@ -39,6 +36,7 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
             OpenIddictClientAspNetCoreDefaults.AuthenticationScheme, displayName: null);
     }
 
+    /// <inheritdoc/>
     public void Configure(OpenIddictClientOptions options)
     {
         if (options is null)
@@ -50,11 +48,7 @@ public sealed class OpenIddictClientAspNetCoreConfiguration : IConfigureOptions<
         options.Handlers.AddRange(OpenIddictClientAspNetCoreHandlers.DefaultHandlers);
     }
 
-    /// <summary>
-    /// Ensures that the authentication configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The authentication scheme associated with the handler instance.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, AuthenticationOptions options)
     {
         if (options is null)

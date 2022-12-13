@@ -16,6 +16,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireAccessTokenExtracted : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -32,6 +33,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireAccessTokenValidated : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
         {
             if (context is null)
@@ -48,6 +50,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireAuthorizationEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -64,6 +67,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireAuthorizationIdResolved : IOpenIddictValidationHandlerFilter<ValidateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
         {
             if (context is null)
@@ -80,6 +84,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireLocalValidation : IOpenIddictValidationHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -96,6 +101,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireIntrospectionValidation : IOpenIddictValidationHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -112,6 +118,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireTokenIdResolved : IOpenIddictValidationHandlerFilter<ValidateTokenContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
         {
             if (context is null)
@@ -128,6 +135,7 @@ public static class OpenIddictValidationHandlerFilters
     /// </summary>
     public sealed class RequireTokenEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)

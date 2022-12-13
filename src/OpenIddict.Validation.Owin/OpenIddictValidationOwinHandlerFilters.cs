@@ -18,6 +18,7 @@ public static class OpenIddictValidationOwinHandlerFilters
     /// </summary>
     public sealed class RequireOwinRequest : IOpenIddictValidationHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
