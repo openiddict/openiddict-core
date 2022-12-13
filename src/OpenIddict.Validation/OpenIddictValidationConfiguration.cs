@@ -18,15 +18,14 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
 {
     private readonly OpenIddictValidationService _service;
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictValidationConfiguration"/> class.
+    /// </summary>
+    /// <param name="service">The validation service.</param>
     public OpenIddictValidationConfiguration(OpenIddictValidationService service)
         => _service = service ?? throw new ArgumentNullException(nameof(service));
 
-    /// <summary>
-    /// Populates the default OpenIddict validation options and ensures
-    /// that the configuration is in a consistent and valid state.
-    /// </summary>
-    /// <param name="name">The name of the options instance to configure, if applicable.</param>
-    /// <param name="options">The options instance to initialize.</param>
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictValidationOptions options)
     {
         if (options is null)

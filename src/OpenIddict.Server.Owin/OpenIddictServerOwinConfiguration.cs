@@ -16,6 +16,7 @@ namespace OpenIddict.Server.Owin;
 public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
                                                         IPostConfigureOptions<OpenIddictServerOwinOptions>
 {
+    /// <inheritdoc/>
     public void Configure(OpenIddictServerOptions options)
     {
         if (options is null)
@@ -27,6 +28,7 @@ public sealed class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenId
         options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
     }
 
+    /// <inheritdoc/>
     public void PostConfigure(string? name, OpenIddictServerOwinOptions options)
     {
         if (options is null)

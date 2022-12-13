@@ -436,11 +436,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
         public {{ provider.name }}(IServiceProvider provider)
             => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
-        /// <summary>
-        /// Ensures the {{ provider.name }} configuration is in a consistent and valid state.
-        /// </summary>
-        /// <param name=""name"">The name of the options instance to configure, if applicable.</param>
-        /// <param name=""options"">The options instance to initialize.</param>
+        /// <inheritdoc/>
         public void PostConfigure(string? name, OpenIddictClientWebIntegrationOptions.{{ provider.name }} options)
         {
             {{~ for setting in provider.settings ~}}
@@ -515,10 +511,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             {{~ end ~}}
         }
 
-        /// <summary>
-        /// Registers the {{ provider.name }} integration in the OpenIddict client options.
-        /// </summary>
-        /// <param name=""options"">The options instance to initialize.</param>
+        /// <inheritdoc/>
         public void Configure(OpenIddictClientOptions options)
         {
             // Resolve the provider options from the service provider and create a registration based on the specified settings.

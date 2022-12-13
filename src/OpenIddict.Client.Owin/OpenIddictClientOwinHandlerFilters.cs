@@ -27,6 +27,7 @@ public static class OpenIddictClientOwinHandlerFilters
         public RequirePostLogoutRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -49,6 +50,7 @@ public static class OpenIddictClientOwinHandlerFilters
         public RequireRedirectionEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -70,6 +72,7 @@ public static class OpenIddictClientOwinHandlerFilters
         public RequireErrorPassthroughEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -86,6 +89,7 @@ public static class OpenIddictClientOwinHandlerFilters
     /// </summary>
     public sealed class RequireOwinRequest : IOpenIddictClientHandlerFilter<BaseContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)
@@ -107,6 +111,7 @@ public static class OpenIddictClientOwinHandlerFilters
         public RequireTransportSecurityRequirementEnabled(IOptionsMonitor<OpenIddictClientOwinOptions> options)
             => _options = options ?? throw new ArgumentNullException(nameof(options));
 
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseContext context)
         {
             if (context is null)

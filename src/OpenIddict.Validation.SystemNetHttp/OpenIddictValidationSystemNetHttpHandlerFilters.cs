@@ -16,6 +16,7 @@ public static class OpenIddictValidationSystemNetHttpHandlerFilters
     /// </summary>
     public sealed class RequireHttpMetadataUri : IOpenIddictValidationHandlerFilter<BaseExternalContext>
     {
+        /// <inheritdoc/>
         public ValueTask<bool> IsActiveAsync(BaseExternalContext context)
         {
             if (context is null)

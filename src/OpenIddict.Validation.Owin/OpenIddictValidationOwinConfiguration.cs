@@ -15,6 +15,7 @@ namespace OpenIddict.Validation.Owin;
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
 {
+    /// <inheritdoc/>
     public void Configure(OpenIddictValidationOptions options)
     {
         if (options is null)

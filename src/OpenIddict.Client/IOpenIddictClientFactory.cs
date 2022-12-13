@@ -8,8 +8,19 @@ using System.ComponentModel;
 
 namespace OpenIddict.Client;
 
+/// <summary>
+/// Represents a service responsible for creating transactions.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IOpenIddictClientFactory
 {
+    /// <summary>
+    /// Creates a new <see cref="OpenIddictClientTransaction"/> that is used as a
+    /// way to store per-request data needed to process the requested operation.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous
+    /// operation, whose result returns the created transaction.
+    /// </returns>
     ValueTask<OpenIddictClientTransaction> CreateTransactionAsync();
 }

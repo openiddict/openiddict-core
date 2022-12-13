@@ -10,6 +10,9 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Validation;
 
+/// <summary>
+/// Represents a service responsible for creating transactions.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictValidationFactory : IOpenIddictValidationFactory
 {
@@ -27,6 +30,7 @@ public sealed class OpenIddictValidationFactory : IOpenIddictValidationFactory
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
+    /// <inheritdoc/>
     public ValueTask<OpenIddictValidationTransaction> CreateTransactionAsync()
         => new(new OpenIddictValidationTransaction
         {

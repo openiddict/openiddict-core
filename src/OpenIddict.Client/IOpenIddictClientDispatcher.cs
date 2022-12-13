@@ -8,8 +8,20 @@ using System.ComponentModel;
 
 namespace OpenIddict.Client;
 
+/// <summary>
+/// Represents a service able to dispatch events to a list of handlers.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public interface IOpenIddictClientDispatcher
 {
+    /// <summary>
+    /// Dispatches an event of the specified type to the handlers that
+    /// implement <see cref="IOpenIddictClientHandler{TContext}"/>.
+    /// </summary>
+    /// <typeparam name="TContext">The type of the context associated with the event to dispatch.</typeparam>
+    /// <param name="context">The context associated with the event to dispatch.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+    /// </returns>
     ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext;
 }

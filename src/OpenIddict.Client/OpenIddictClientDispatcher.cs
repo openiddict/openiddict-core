@@ -10,6 +10,9 @@ using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Client;
 
+/// <summary>
+/// Represents a service able to dispatch events to a list of handlers.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
 {
@@ -30,6 +33,7 @@ public sealed class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
         _provider = provider ?? throw new ArgumentNullException(nameof(provider));
     }
 
+    /// <inheritdoc/>
     public async ValueTask DispatchAsync<TContext>(TContext context) where TContext : BaseContext
     {
         if (context is null)
