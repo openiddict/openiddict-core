@@ -2312,7 +2312,10 @@ public class OpenIddictExtensionsTests
         var identity = new ClaimsIdentity();
 
         // Act
-        identity.AddClaims("type", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"), "issuer");
+        identity.AddClaims(
+            "type",
+            JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"", ""Contoso"", { ""Foo"": ""Bar"" }]"),
+            "issuer");
 
         // Assert
         var claims = identity.FindAll("type").ToArray();
@@ -2322,6 +2325,9 @@ public class OpenIddictExtensionsTests
         Assert.Equal("Contoso", claims[1].Value);
         Assert.Equal(ClaimValueTypes.String, claims[1].ValueType);
         Assert.Equal("issuer", claims[1].Issuer);
+        Assert.Equal("{ \"Foo\": \"Bar\" }", claims[2].Value);
+        Assert.Equal("JSON", claims[2].ValueType);
+        Assert.Equal("issuer", claims[2].Issuer);
     }
 
     [Fact]
@@ -2331,17 +2337,23 @@ public class OpenIddictExtensionsTests
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        principal.AddClaims("type", JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"",""Contoso""]"), "issuer");
+        principal.AddClaims(
+            "type",
+            JsonSerializer.Deserialize<JsonElement>(@"[""Fabrikam"", ""Contoso"", { ""Foo"": ""Bar"" }]"),
+            "issuer");
 
         // Assert
         var claims = principal.FindAll("type").ToArray();
-        Assert.Equal(2, claims.Length);
+        Assert.Equal(3, claims.Length);
         Assert.Equal("Fabrikam", claims[0].Value);
         Assert.Equal(ClaimValueTypes.String, claims[0].ValueType);
         Assert.Equal("issuer", claims[0].Issuer);
         Assert.Equal("Contoso", claims[1].Value);
         Assert.Equal(ClaimValueTypes.String, claims[1].ValueType);
         Assert.Equal("issuer", claims[1].Issuer);
+        Assert.Equal("{ \"Foo\": \"Bar\" }", claims[2].Value);
+        Assert.Equal("JSON", claims[2].ValueType);
+        Assert.Equal("issuer", claims[2].Issuer);
     }
 
     [Fact]
