@@ -1409,7 +1409,8 @@ public static class OpenIddictExtensions
 
         var set = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach (var element in value.EnumerateArray())
+        foreach (var element in value.EnumerateArray().Where(e =>
+            e.ValueKind is JsonValueKind.False or JsonValueKind.Number or JsonValueKind.String or JsonValueKind.True))
         {
             var item = element.GetString()!;
             if (set.Add(item))
