@@ -216,7 +216,7 @@ public static partial class OpenIddictClientHandlers
 
                 if (notification.Request is null)
                 {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0302));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0369));
                 }
 
                 context.Logger.LogInformation(SR.GetResourceString(SR.ID6199), notification.Request);
@@ -332,7 +332,7 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6201));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0370));
             }
         }
 
@@ -380,7 +380,7 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0303));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0371));
             }
         }
 

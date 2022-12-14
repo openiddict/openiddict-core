@@ -339,7 +339,7 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
-                context.Logger.LogInformation(SR.GetResourceString(SR.ID6180));
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0368));
             }
         }
 
