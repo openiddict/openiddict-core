@@ -1396,6 +1396,24 @@ Consider registering a certificate using 'services.AddOpenIddict().AddClient().A
   <data name="ID0367" xml:space="preserve">
     <value>The device authorization flow cannot be enabled when token storage is disabled (unless the degraded mode is used).</value>
   </data>
+  <data name="ID0368" xml:space="preserve">
+    <value>The redirection request was not handled.
+To handle redirection requests in a controller, create a custom action with the same route as the redirection endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddClient().UseAspNetCore().EnableRedirectionEndpointPassthrough()'.
+Alternatively, create a class implementing 'IOpenIddictClientHandler&lt;HandleRedirectionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0369" xml:space="preserve">
+    <value>The post-logout redirection request was not correctly extracted.
+To extract post-logout redirection requests, create a class implementing 'IOpenIddictClientHandler&lt;ExtractPostLogoutRedirectionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0370" xml:space="preserve">
+    <value>The post-logout redirection request was not handled.
+To handle post-logout redirection requests in a controller, create a custom action with the same route as the post-logout redirection endpoint and enable the pass-through mode in the server ASP.NET Core or OWIN options using 'services.AddOpenIddict().AddClient().UseAspNetCore().EnablePostLogoutRedirectionEndpointPassthrough()'.
+Alternatively, create a class implementing 'IOpenIddictClientHandler&lt;HandlePostLogoutRedirectionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0371" xml:space="preserve">
+    <value>The post-logout redirection response was not correctly applied.
+To apply post-logout redirection responses, create a class implementing 'IOpenIddictClientHandler&lt;ApplyPostLogoutRedirectionResponseContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2455,9 +2473,6 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6179" xml:space="preserve">
     <value>The redirection request was successfully validated.</value>
   </data>
-  <data name="ID6180" xml:space="preserve">
-    <value>The redirection request was successfully validated.</value>
-  </data>
   <data name="ID6181" xml:space="preserve">
     <value>The authorization request was rejected because the '{Parameter}' contained a forbidden parameter: {Name}.</value>
   </data>
@@ -2516,9 +2531,6 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The post-logout redirection request was successfully extracted: {Request}.</value>
   </data>
   <data name="ID6200" xml:space="preserve">
-    <value>The post-logout redirection request was successfully validated.</value>
-  </data>
-  <data name="ID6201" xml:space="preserve">
     <value>The post-logout redirection request was successfully validated.</value>
   </data>
   <data name="ID6202" xml:space="preserve">
