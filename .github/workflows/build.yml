@@ -32,9 +32,9 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
-          3.1.425
-          6.0.403
-          7.0.100
+          3.1.426
+          6.0.404
+          7.0.101
 
     - name: Setup NuGet
       uses: nuget/setup-nuget@v1
