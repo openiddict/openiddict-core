@@ -88,6 +88,21 @@ public sealed class OpenIddictClientOwinBuilder
     public OpenIddictClientOwinBuilder EnableErrorPassthrough()
         => Configure(options => options.EnableErrorPassthrough = true);
 
+    /// <summary>
+    /// Sets the cookie manager used to read and write the cookies produced by the OWIN host.
+    /// </summary>
+    /// <param name="manager">The cookie manager to use.</param>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
+    public OpenIddictClientOwinBuilder SetCookieManager(ICookieManager manager)
+    {
+        if (manager is null)
+        {
+            throw new ArgumentNullException(nameof(manager));
+        }
+
+        return Configure(options => options.CookieManager = manager);
+    }
+
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => base.Equals(obj);
