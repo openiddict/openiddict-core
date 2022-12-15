@@ -8,6 +8,7 @@ using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
+using Microsoft.Owin.Host.SystemWeb;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.Owin;
 using OpenIddict.Sandbox.AspNet.Server.Models;
@@ -22,113 +23,6 @@ namespace OpenIddict.Sandbox.AspNet.Server
     public partial class Startup
     {
         public void Configuration(IAppBuilder app)
-        {
-            ConfigureAuth(app);
-
-            var container = CreateContainer();
-
-            // Register the Autofac scope injector middleware.
-            app.UseAutofacLifetimeScopeInjector(container);
-
-            // Register the OpenIddict middleware.
-            app.UseMiddlewareFromContainer<OpenIddictClientOwinMiddleware>();
-            app.UseMiddlewareFromContainer<OpenIddictServerOwinMiddleware>();
-            app.UseMiddlewareFromContainer<OpenIddictValidationOwinMiddleware>();
-
-            // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances.
-            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
-
-            // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances
-            // and infer the Web API routes using the HTTP attributes used in the controllers.
-            var configuration = new HttpConfiguration
-            {
-                DependencyResolver = new AutofacWebApiDependencyResolver(container)
-            };
-
-            configuration.MapHttpAttributeRoutes();
-
-            // Register the Autofac Web API integration and Web API middleware.
-            app.UseAutofacWebApi(configuration);
-            app.UseWebApi(configuration);
-
-            // Seed the database with the sample client using the OpenIddict application manager.
-            // Note: in a real world application, this step should be part of a setup script.
-            Task.Run(async delegate
-            {
-                using var scope = container.BeginLifetimeScope();
-
-                var context = scope.Resolve<ApplicationDbContext>();
-                context.Database.CreateIfNotExists();
-
-                var manager = scope.Resolve<IOpenIddictApplicationManager>();
-
-                if (await manager.FindByClientIdAsync("mvc") is null)
-                {
-                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
-                    {
-                        ClientId = "mvc",
-                        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                        ConsentType = ConsentTypes.Explicit,
-                        DisplayName = "MVC client application",
-                        RedirectUris =
-                        {
-                            new Uri("https://localhost:44378/callback/login/local")
-                        },
-                        PostLogoutRedirectUris =
-                        {
-                            new Uri("https://localhost:44378/callback/logout/local")
-                        },
-                        Permissions =
-                        {
-                            Permissions.Endpoints.Authorization,
-                            Permissions.Endpoints.Logout,
-                            Permissions.Endpoints.Token,
-                            Permissions.GrantTypes.AuthorizationCode,
-                            Permissions.GrantTypes.RefreshToken,
-                            Permissions.ResponseTypes.Code,
-                            Permissions.Scopes.Email,
-                            Permissions.Scopes.Profile,
-                            Permissions.Scopes.Roles,
-                            Permissions.Prefixes.Scope + "demo_api"
-                        },
-                        Requirements =
-                        {
-                            Requirements.Features.ProofKeyForCodeExchange
-                        }
-                    });
-                }
-
-                if (await manager.FindByClientIdAsync("postman") is null)
-                {
-                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
-                    {
-                        ClientId = "postman",
-                        ConsentType = ConsentTypes.Systematic,
-                        DisplayName = "Postman",
-                        RedirectUris =
-                        {
-                            new Uri("https://oauth.pstmn.io/v1/callback")
-                        },
-                        Permissions =
-                        {
-                            Permissions.Endpoints.Authorization,
-                            Permissions.Endpoints.Device,
-                            Permissions.Endpoints.Token,
-                            Permissions.GrantTypes.AuthorizationCode,
-                            Permissions.GrantTypes.DeviceCode,
-                            Permissions.GrantTypes.Password,
-                            Permissions.GrantTypes.RefreshToken,
-                            Permissions.ResponseTypes.Code,
-                            Permissions.Scopes.Email,
-                            Permissions.Scopes.Profile,
-                            Permissions.Scopes.Roles
-                        }
-                    });
-                }
-            }).GetAwaiter().GetResult();
-        }
-
-        private static IContainer CreateContainer()
         {
             var services = new ServiceCollection();
 
@@ -169,7 +63,8 @@ namespace OpenIddict.Sandbox.AspNet.Server
 
                     // Register the OWIN host and configure the OWIN-specific options.
                     options.UseOwin()
-                           .EnableRedirectionEndpointPassthrough();
+                           .EnableRedirectionEndpointPassthrough()
+                           .SetCookieManager(new SystemWebCookieManager());
 
                     // Register the System.Net.Http integration and use the identity of the current
                     // assembly as a more specific user agent, which can be useful when dealing with
@@ -244,7 +139,109 @@ namespace OpenIddict.Sandbox.AspNet.Server
             // Register the Web API controllers.
             builder.RegisterApiControllers(typeof(Startup).Assembly);
 
-            return builder.Build();
+            var container = builder.Build();
+
+            // Register the Autofac scope injector middleware.
+            app.UseAutofacLifetimeScopeInjector(container);
+
+            ConfigureAuth(app);
+
+            // Register the OpenIddict middleware.
+            app.UseMiddlewareFromContainer<OpenIddictClientOwinMiddleware>();
+            app.UseMiddlewareFromContainer<OpenIddictServerOwinMiddleware>();
+            app.UseMiddlewareFromContainer<OpenIddictValidationOwinMiddleware>();
+
+            // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances.
+            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
+
+            // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances
+            // and infer the Web API routes using the HTTP attributes used in the controllers.
+            var configuration = new HttpConfiguration
+            {
+                DependencyResolver = new AutofacWebApiDependencyResolver(container)
+            };
+
+            configuration.MapHttpAttributeRoutes();
+
+            // Register the Autofac Web API integration and Web API middleware.
+            app.UseAutofacWebApi(configuration);
+            app.UseWebApi(configuration);
+
+            // Seed the database with the sample client using the OpenIddict application manager.
+            // Note: in a real world application, this step should be part of a setup script.
+            Task.Run(async delegate
+            {
+                await using var scope = container.BeginLifetimeScope();
+
+                var context = scope.Resolve<ApplicationDbContext>();
+                context.Database.CreateIfNotExists();
+
+                var manager = scope.Resolve<IOpenIddictApplicationManager>();
+
+                if (await manager.FindByClientIdAsync("mvc") is null)
+                {
+                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                    {
+                        ClientId = "mvc",
+                        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                        ConsentType = ConsentTypes.Explicit,
+                        DisplayName = "MVC client application",
+                        RedirectUris =
+                        {
+                            new Uri("https://localhost:44378/callback/login/local")
+                        },
+                        PostLogoutRedirectUris =
+                        {
+                            new Uri("https://localhost:44378/callback/logout/local")
+                        },
+                        Permissions =
+                        {
+                            Permissions.Endpoints.Authorization,
+                            Permissions.Endpoints.Logout,
+                            Permissions.Endpoints.Token,
+                            Permissions.GrantTypes.AuthorizationCode,
+                            Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
+                            Permissions.Scopes.Email,
+                            Permissions.Scopes.Profile,
+                            Permissions.Scopes.Roles,
+                            Permissions.Prefixes.Scope + "demo_api"
+                        },
+                        Requirements =
+                        {
+                            Requirements.Features.ProofKeyForCodeExchange
+                        }
+                    });
+                }
+
+                if (await manager.FindByClientIdAsync("postman") is null)
+                {
+                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                    {
+                        ClientId = "postman",
+                        ConsentType = ConsentTypes.Systematic,
+                        DisplayName = "Postman",
+                        RedirectUris =
+                        {
+                            new Uri("https://oauth.pstmn.io/v1/callback")
+                        },
+                        Permissions =
+                        {
+                            Permissions.Endpoints.Authorization,
+                            Permissions.Endpoints.Device,
+                            Permissions.Endpoints.Token,
+                            Permissions.GrantTypes.AuthorizationCode,
+                            Permissions.GrantTypes.DeviceCode,
+                            Permissions.GrantTypes.Password,
+                            Permissions.GrantTypes.RefreshToken,
+                            Permissions.ResponseTypes.Code,
+                            Permissions.Scopes.Email,
+                            Permissions.Scopes.Profile,
+                            Permissions.Scopes.Roles
+                        }
+                    });
+                }
+            }).GetAwaiter().GetResult();
         }
     }
 }

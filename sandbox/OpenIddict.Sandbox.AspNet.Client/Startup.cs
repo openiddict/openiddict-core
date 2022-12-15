@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Integration.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Owin.Host.SystemWeb;
 using Microsoft.Owin.Security.Cookies;
 using OpenIddict.Client;
 using OpenIddict.Client.Owin;
@@ -16,34 +18,6 @@ namespace OpenIddict.Sandbox.AspNet.Client
     public partial class Startup
     {
         public void Configuration(IAppBuilder app)
-        {
-            var container = CreateContainer();
-
-            // Register the Autofac scope injector middleware.
-            app.UseAutofacLifetimeScopeInjector(container);
-
-            // Register the cookie middleware responsible for storing the user sessions.
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                ExpireTimeSpan = TimeSpan.FromMinutes(50),
-                SlidingExpiration = false
-            });
-
-            // Register the OpenIddict middleware.
-            app.UseMiddlewareFromContainer<OpenIddictClientOwinMiddleware>();
-
-            // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances.
-            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
-
-            // Create the database used by the OpenIddict client stack to store tokens.
-            // Note: in a real world application, this step should be part of a setup script.
-            using var scope = container.BeginLifetimeScope();
-
-            var context = scope.Resolve<ApplicationDbContext>();
-            context.Database.CreateIfNotExists();
-        }
-
-        private static IContainer CreateContainer()
         {
             var services = new ServiceCollection();
 
@@ -94,7 +68,8 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     // Register the OWIN host and configure the OWIN-specific options.
                     options.UseOwin()
                            .EnableRedirectionEndpointPassthrough()
-                           .EnablePostLogoutRedirectionEndpointPassthrough();
+                           .EnablePostLogoutRedirectionEndpointPassthrough()
+                           .SetCookieManager(new SystemWebCookieManager());
 
                     // Register the System.Net.Http integration and use the identity of the current
                     // assembly as a more specific user agent, which can be useful when dealing with
@@ -147,7 +122,33 @@ namespace OpenIddict.Sandbox.AspNet.Client
             // Register the MVC controllers.
             builder.RegisterControllers(typeof(Startup).Assembly);
 
-            return builder.Build();
+            var container = builder.Build();
+
+            // Register the Autofac scope injector middleware.
+            app.UseAutofacLifetimeScopeInjector(container);
+
+            // Register the cookie middleware responsible for storing the user sessions.
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                ExpireTimeSpan = TimeSpan.FromMinutes(50),
+                SlidingExpiration = false
+            });
+
+            // Register the OpenIddict middleware.
+            app.UseMiddlewareFromContainer<OpenIddictClientOwinMiddleware>();
+
+            // Configure ASP.NET MVC 5.2 to use Autofac when activating controller instances.
+            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
+
+            // Create the database used by the OpenIddict client stack to store tokens.
+            // Note: in a real world application, this step should be part of a setup script.
+            Task.Run(async delegate
+            {
+                await using var scope = container.BeginLifetimeScope();
+
+                var context = scope.Resolve<ApplicationDbContext>();
+                context.Database.CreateIfNotExists();
+            }).GetAwaiter().GetResult();
         }
     }
 }
