@@ -173,6 +173,36 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         }
 
         /// <summary>
+        /// Sets the post-logout redirection URI, if applicable.
+        /// </summary>
+        /// <param name=""uri"">The post-logout redirection URI.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} SetPostLogoutRedirectUri(Uri uri)
+        {
+            if (uri is null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            return Configure(options => options.PostLogoutRedirectUri = uri);
+        }
+
+        /// <summary>
+        /// Sets the post-logout redirection URI, if applicable.
+        /// </summary>
+        /// <param name=""uri"">The post-logout redirection URI.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+        {
+            if (string.IsNullOrEmpty(uri))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0143), nameof(uri));
+            }
+
+            return SetPostLogoutRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
+        }
+
+        /// <summary>
         /// Sets the redirection URI, if applicable.
         /// </summary>
         /// <param name=""uri"">The redirection URI.</param>
@@ -539,6 +569,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                 ClientId = settings.ClientId,
                 ClientSecret = settings.ClientSecret,
+
+                PostLogoutRedirectUri = settings.PostLogoutRedirectUri,
                 RedirectUri = settings.RedirectUri,
 
                 Configuration = settings.Environment switch
@@ -804,6 +836,11 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
         /// Gets or sets the client secret, if applicable.
         /// </summary>
         public string? ClientSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the post-logout redirect URI.
+        /// </summary>
+        public Uri? PostLogoutRedirectUri { get; set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.
