@@ -1160,7 +1160,7 @@ To validate tokens received by custom API endpoints, the OpenIddict validation h
     <value>A common response mode supported by both the client and the server couldn't be negotiated automatically. Ensure at least one common flow is enabled in the client options. If the error persists, consider specifying a list of allowed response modes in the client registration and ensure the supported response modes listed in the authorization server configuration are appropriate.</value>
   </data>
   <data name="ID0300" xml:space="preserve">
-    <value>A redirection URI must be specified in the client registration options when using OpenID Connect.</value>
+    <value>A redirection URI must be specified in the client registration or web provider options when using an interactive flow.</value>
   </data>
   <data name="ID0301" xml:space="preserve">
     <value>The '{0}' cannot be resolved from the authorization server configuration or doesn't represent a valid absolute URI, which may indicate this endpoint is not supported or is not enabled in the server configuration.</value>
