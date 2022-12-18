@@ -108,7 +108,6 @@ public static partial class OpenIddictClientHandlers
         AttachNonce.Descriptor,
         AttachCodeChallengeParameters.Descriptor,
         PrepareLoginStateTokenPrincipal.Descriptor,
-        ValidateRedirectUriParameter.Descriptor,
         GenerateLoginStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
         AttachCustomChallengeParameters.Descriptor,
@@ -783,7 +782,10 @@ public static partial class OpenIddictClientHandlers
             };
 
             // If the endpoint URI cannot be resolved, this likely means the authorization or
-            // logout request was sent without a redirect_uri/post_logout_redirect_uri attached.
+            // logout request was sent without a redirect_uri/post_logout_redirect_uri attached
+            // (by default, OpenIddict throws an exception when sending an authorization request
+            // that doesn't include a redirect_uri for security reasons, but a custom handler can
+            // remove the redirect_uri from the state token principal to disable this security check).
             if (string.IsNullOrEmpty(value))
             {
                 return default;
@@ -4247,14 +4249,15 @@ public static partial class OpenIddictClientHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Unlike OpenID Connect, OAuth 2.0 and 2.1 don't require specifying a redirect_uri.
-            //
-            // To keep OpenIddict compatible with OAuth 2.0/2.1 deployments, the redirect_uri
-            // is not required for OAuth 2.0 requests but an exception will be thrown later
-            // if the request that is being prepared is an OpenID Connect request.
+            // Unlike OpenID Connect, OAuth 2.0 and 2.1 don't require specifying a redirect_uri
+            // but it is always considered mandatory in OpenIddict (independently of whether the
+            // selected flow is an OpenID Connect flow) as it's later used to ensure the redirection
+            // URI the authorization response was sent to matches the expected endpoint, which helps
+            // mitigate mix-up attacks when no standard issuer validation can be directly used.
             context.RedirectUri ??= OpenIddictHelpers.CreateAbsoluteUri(
                 context.BaseUri,
-                context.Registration.RedirectUri)?.AbsoluteUri;
+                context.Registration.RedirectUri)?.AbsoluteUri ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0300));
 
             return default;
         }
@@ -4660,42 +4663,6 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
-    /// Contains the logic responsible for ensuring the redirect_uri parameter is present
-    /// if the "openid" scope is requested (indicating the request is an OpenID Connect request).
-    /// </summary>
-    public sealed class ValidateRedirectUriParameter : IOpenIddictClientHandler<ProcessChallengeContext>
-    {
-        /// <summary>
-        /// Gets the default descriptor definition assigned to this handler.
-        /// </summary>
-        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
-            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
-                .AddFilter<RequireInteractiveGrantType>()
-                .UseSingletonHandler<ValidateRedirectUriParameter>()
-                .SetOrder(GenerateLoginStateToken.Descriptor.Order + 1_000)
-                .Build();
-
-        /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessChallengeContext context)
-        {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // While OAuth 2.0/2.1 allows sending an authorization request without a redirect_uri,
-            // doing so is illegal in OpenID Connect and such requests will always be rejected.
-            // To make that requirement explicit, an exception is proactively thrown here.
-            if (string.IsNullOrEmpty(context.RedirectUri) && context.Scopes.Contains(Scopes.OpenId))
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0300));
-            }
-
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Contains the logic responsible for attaching the appropriate parameters to the challenge response.
     /// </summary>
     public sealed class AttachChallengeParameters : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -4706,7 +4673,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .UseSingletonHandler<AttachChallengeParameters>()
-                .SetOrder(ValidateRedirectUriParameter.Descriptor.Order + 1_000)
+                .SetOrder(GenerateLoginStateToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
 
