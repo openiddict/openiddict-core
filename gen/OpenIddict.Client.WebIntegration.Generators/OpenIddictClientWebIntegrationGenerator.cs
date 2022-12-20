@@ -567,6 +567,20 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
                 },
 
+                ConfigurationEndpoint = settings.Environment switch
+                {
+                    {{~ for environment in provider.environments ~}}
+                    OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
+                    {{~ if environment.configuration_endpoint ~}}
+                        => new Uri(formatter.Format(""{{ environment.configuration_endpoint }}"", settings), UriKind.Absolute),
+                    {{~ else ~}}
+                        => null,
+                    {{~ end ~}}
+                    {{~ end ~}}
+
+                    _ => throw new InvalidOperationException(SR.FormatID0194(nameof(settings.Environment)))
+                },
+
                 ClientId = settings.ClientId,
                 ClientSecret = settings.ClientSecret,
 
@@ -678,7 +692,10 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                             Environments = provider.Elements("Environment").Select(environment => new
                             {
                                 Name = (string?) environment.Attribute("Name") ?? "Production",
+
                                 Issuer = (string) environment.Attribute("Issuer"),
+                                ConfigurationEndpoint = (string?) environment.Attribute("ConfigurationEndpoint"),
+
                                 Configuration = environment.Element("Configuration") switch
                                 {
                                     XElement configuration => new
