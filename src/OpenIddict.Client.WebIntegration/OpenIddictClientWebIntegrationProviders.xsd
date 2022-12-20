@@ -220,6 +220,12 @@
                     </xs:annotation>
                   </xs:attribute>
 
+                  <xs:attribute name="ConfigurationEndpoint" type="xs:string" use="optional">
+                    <xs:annotation>
+                      <xs:documentation>The URI of the configuration endpoint, if the provider supports server metadata and the URI differs from the standard value.</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+
                   <xs:attribute name="Name" use="optional">
                     <xs:annotation>
                       <xs:documentation>The environment name (by default, Production).</xs:documentation>
@@ -413,9 +419,7 @@
               </xs:annotation>
 
               <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:pattern value="^[A-Z][a-zA-Z0-9]*$" />
-                </xs:restriction>
+                <xs:restriction base="xs:string" />
               </xs:simpleType>
             </xs:attribute>
 
