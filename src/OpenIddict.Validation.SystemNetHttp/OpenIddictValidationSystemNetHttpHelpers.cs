@@ -14,6 +14,14 @@ namespace System.Net.Http;
 public static class OpenIddictValidationSystemNetHttpHelpers
 {
     /// <summary>
+    /// Gets the <see cref="HttpClient"/> associated with the current context.
+    /// </summary>
+    /// <param name="transaction">The transaction instance.</param>
+    /// <returns>The <see cref="HttpClient"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    public static HttpClient? GetHttpClient(this OpenIddictValidationTransaction transaction)
+        => transaction.GetProperty<HttpClient>(typeof(HttpClient).FullName!);
+
+    /// <summary>
     /// Gets the <see cref="HttpRequestMessage"/> associated with the current context.
     /// </summary>
     /// <param name="transaction">The transaction instance.</param>
