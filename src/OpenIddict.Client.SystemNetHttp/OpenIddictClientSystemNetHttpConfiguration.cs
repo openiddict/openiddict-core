@@ -54,7 +54,7 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
 
         // Only amend the HTTP client factory options if the instance is managed by OpenIddict.
         var assembly = typeof(OpenIddictClientSystemNetHttpOptions).Assembly.GetName();
-        if (!string.Equals(name, assembly.Name, StringComparison.Ordinal))
+        if (string.IsNullOrEmpty(name) || !name.StartsWith(assembly.Name!, StringComparison.Ordinal))
         {
             return;
         }

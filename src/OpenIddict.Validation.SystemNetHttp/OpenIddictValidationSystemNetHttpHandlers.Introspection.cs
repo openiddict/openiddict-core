@@ -19,7 +19,9 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             /*
              * Introspection request processing:
              */
+            CreateHttpClient<PrepareIntrospectionRequestContext>.Descriptor,
             PreparePostHttpRequest<PrepareIntrospectionRequestContext>.Descriptor,
+            AttachHttpVersion<PrepareIntrospectionRequestContext>.Descriptor,
             AttachJsonAcceptHeaders<PrepareIntrospectionRequestContext>.Descriptor,
             AttachUserAgentHeader<PrepareIntrospectionRequestContext>.Descriptor,
             AttachFromHeader<PrepareIntrospectionRequestContext>.Descriptor,

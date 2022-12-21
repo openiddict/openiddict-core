@@ -9,7 +9,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http.Headers;
-using System.Net.Mail;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -27,6 +26,45 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             .AddRange(Introspection.DefaultHandlers);
 
     /// <summary>
+    /// Contains the logic responsible for creating and attaching a <see cref="HttpClient"/>.
+    /// </summary>
+    public sealed class CreateHttpClient<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
+    {
+        private readonly IHttpClientFactory _factory;
+
+        public CreateHttpClient(IHttpClientFactory factory)
+            => _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataUri>()
+                .UseSingletonHandler<CreateHttpClient<TContext>>()
+                .SetOrder(int.MinValue + 100_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
+
+            // Create and store the HttpClient in the transaction properties.
+            context.Transaction.SetProperty(typeof(HttpClient).FullName!, _factory.CreateClient(assembly.Name!) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0174)));
+
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for preparing an HTTP GET request message.
     /// </summary>
     public sealed class PrepareGetHttpRequest<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
@@ -38,7 +76,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<PrepareGetHttpRequest<TContext>>()
-                .SetOrder(int.MinValue + 100_000)
+                .SetOrder(CreateHttpClient<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -91,6 +129,53 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for attaching the HTTP version to the HTTP request message.
+    /// </summary>
+    public sealed class AttachHttpVersion<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpMetadataUri>()
+                .UseSingletonHandler<AttachHttpVersion<TContext>>()
+                .SetOrder(PreparePostHttpRequest<TContext>.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION || SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY
+            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var request = context.Transaction.GetHttpRequestMessage() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            var client = context.Transaction.GetHttpClient() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0372));
+
+#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION
+            // If supported, import the HTTP version from the client instance.
+            request.Version = client.DefaultRequestVersion;
+#endif
+
+#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY
+            // If supported, import the HTTP version policy from the client instance.
+            request.VersionPolicy = client.DefaultVersionPolicy;
+#endif
+#endif
+            return default;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the appropriate HTTP
     /// Accept-* headers to the HTTP request message to receive JSON responses.
     /// </summary>
@@ -103,7 +188,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataUri>()
                 .UseSingletonHandler<AttachJsonAcceptHeaders<TContext>>()
-                .SetOrder(PreparePostHttpRequest<TContext>.Descriptor.Order + 1_000)
+                .SetOrder(AttachHttpVersion<TContext>.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -320,11 +405,6 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     /// </summary>
     public sealed class SendHttpRequest<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
-        private readonly IHttpClientFactory _factory;
-
-        public SendHttpRequest(IHttpClientFactory factory)
-            => _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -349,19 +429,10 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             var request = context.Transaction.GetHttpRequestMessage() ??
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
-            var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
-            using var client = _factory.CreateClient(assembly.Name!) ??
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0174));
+            // Note: a "using" statement is deliberately used here to dispose of the client in this handler.
+            using var client = context.Transaction.GetHttpClient() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0372));
 
-#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION
-            // If supported, import the HTTP version from the client instance.
-            request.Version = client.DefaultRequestVersion;
-#endif
-
-#if SUPPORTS_HTTP_CLIENT_DEFAULT_REQUEST_VERSION_POLICY
-            // If supported, import the HTTP version policy from the client instance.
-            request.VersionPolicy = client.DefaultVersionPolicy;
-#endif
             HttpResponseMessage response;
 
             try
