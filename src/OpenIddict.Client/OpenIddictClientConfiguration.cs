@@ -83,6 +83,24 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             }
         }
 
+        // Implicitly add the redirect_uri attached to the client registrations
+        // to the list of redirection endpoints URIs if they haven't been added.
+        options.RedirectionEndpointUris.AddRange(options.Registrations
+            .Where(registration => registration.RedirectUri is not null)
+            .Select(registration => registration.RedirectUri!)
+            .Where(uri => !options.RedirectionEndpointUris.Contains(uri))
+            .Distinct()
+            .ToList());
+
+        // Implicitly add the post_logout_redirect_uri attached to the client registrations
+        // to the list of post-logout redirection endpoints URIs if they haven't been added.
+        options.PostLogoutRedirectionEndpointUris.AddRange(options.Registrations
+            .Where(registration => registration.PostLogoutRedirectUri is not null)
+            .Select(registration => registration.PostLogoutRedirectUri!)
+            .Where(uri => !options.PostLogoutRedirectionEndpointUris.Contains(uri))
+            .Distinct()
+            .ToList());
+
         // Ensure at least one flow has been enabled.
         if (options.GrantTypes.Count is 0 && options.ResponseTypes.Count is 0)
         {

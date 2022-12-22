@@ -29,11 +29,19 @@ public sealed class OpenIddictClientRegistration
     /// <summary>
     /// Gets or sets the URI of the redirection endpoint that will handle the callback.
     /// </summary>
+    /// <remarks>
+    /// Note: this value is automatically added to
+    /// <see cref="OpenIddictClientOptions.RedirectionEndpointUris"/>.
+    /// </remarks>
     public Uri? RedirectUri { get; set; }
 
     /// <summary>
     /// Gets or sets the URI of the post-logout redirection endpoint that will handle the callback.
     /// </summary>
+    /// <remarks>
+    /// Note: this value is automatically added to
+    /// <see cref="OpenIddictClientOptions.PostLogoutRedirectionEndpointUris"/>.
+    /// </remarks>
     public Uri? PostLogoutRedirectUri { get; set; }
 
     /// <summary>

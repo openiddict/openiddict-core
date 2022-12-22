@@ -40,21 +40,6 @@ namespace OpenIddict.Sandbox.AspNet.Client
                 // Register the OpenIddict client components.
                 .AddClient(options =>
                 {
-                    // Enable the redirection endpoint needed to handle the callback stage.
-                    //
-                    // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-                    // URI per provider, unless all the registered providers support returning a special "iss"
-                    // parameter containing their URL as part of authorization responses. For more information,
-                    // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                    options.SetRedirectionEndpointUris(
-                        "callback/login/local",
-                        "callback/login/github",
-                        "callback/login/google",
-                        "callback/login/twitter");
-
-                    // Enable the post-logout redirection endpoint needed to handle the callback stage.
-                    options.SetPostLogoutRedirectionEndpointUris("callback/logout/local");
-
                     // Note: this sample uses the authorization code and refresh token
                     // flows, but you can enable the other flows if necessary.
                     options.AllowAuthorizationCodeFlow()
@@ -92,6 +77,11 @@ namespace OpenIddict.Sandbox.AspNet.Client
                     });
 
                     // Register the Web providers integrations.
+                    //
+                    // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
+                    // URI per provider, unless all the registered providers support returning a special "iss"
+                    // parameter containing their URL as part of authorization responses. For more information,
+                    // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                     options.UseWebProviders()
                            .UseGitHub(options =>
                            {
