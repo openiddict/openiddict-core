@@ -180,6 +180,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Sets the post-logout redirection URI, if applicable.
         /// </summary>
+        /// <remarks>
+        /// Note: the post-logout redirection URI is automatically added to
+        /// <see cref=""OpenIddictClientOptions.PostLogoutRedirectionEndpointUris""/>.
+        /// </remarks>
         /// <param name=""uri"">The post-logout redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetPostLogoutRedirectUri(Uri uri)
@@ -195,6 +199,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Sets the post-logout redirection URI, if applicable.
         /// </summary>
+        /// <remarks>
+        /// Note: the post-logout redirection URI is automatically added to
+        /// <see cref=""OpenIddictClientOptions.PostLogoutRedirectionEndpointUris""/>.
+        /// </remarks>
         /// <param name=""uri"">The post-logout redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
@@ -210,6 +218,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Sets the redirection URI, if applicable.
         /// </summary>
+        /// <remarks>
+        /// Note: the redirection URI is automatically added to
+        /// <see cref=""OpenIddictClientOptions.RedirectionEndpointUris""/>.
+        /// </remarks>
         /// <param name=""uri"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetRedirectUri(Uri uri)
@@ -225,6 +237,10 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Sets the redirection URI, if applicable.
         /// </summary>
+        /// <remarks>
+        /// Note: the redirection URI is automatically added to
+        /// <see cref=""OpenIddictClientOptions.RedirectionEndpointUris""/>.
+        /// </remarks>
         /// <param name=""uri"">The redirection URI.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
         public {{ provider.name }} SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
@@ -1092,11 +1108,19 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
         /// <summary>
         /// Gets or sets the post-logout redirect URI.
         /// </summary>
+        /// <remarks>
+        /// Note: this value is automatically added to
+        /// <see cref=""OpenIddictClientOptions.PostLogoutRedirectionEndpointUris""/>.
+        /// </remarks>
         public Uri? PostLogoutRedirectUri { get; set; }
 
         /// <summary>
         /// Gets or sets the redirect URI.
         /// </summary>
+        /// <remarks>
+        /// Note: this value is automatically added to
+        /// <see cref=""OpenIddictClientOptions.RedirectionEndpointUris""/>.
+        /// </remarks>
         public Uri? RedirectUri { get; set; }
 
         /// <summary>

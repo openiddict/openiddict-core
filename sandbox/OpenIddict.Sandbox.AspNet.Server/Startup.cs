@@ -45,14 +45,6 @@ namespace OpenIddict.Sandbox.AspNet.Server
                 // Register the OpenIddict client components.
                 .AddClient(options =>
                 {
-                    // Enable the redirection endpoint needed to handle the callback stage.
-                    //
-                    // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-                    // URI per provider, unless all the registered providers support returning a special "iss"
-                    // parameter containing their URL as part of authorization responses. For more information,
-                    // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
-                    options.SetRedirectionEndpointUris("callback/login/github");
-
                     // Note: this sample uses the code flow, but you can enable the other flows if necessary.
                     options.AllowAuthorizationCodeFlow();
 
@@ -73,13 +65,16 @@ namespace OpenIddict.Sandbox.AspNet.Server
                            .SetProductInformation(typeof(Startup).Assembly);
 
                     // Register the Web providers integrations.
+                    //
+                    // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
+                    // URI per provider, unless all the registered providers support returning a special "iss"
+                    // parameter containing their URL as part of authorization responses. For more information,
+                    // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
                     options.UseWebProviders()
-                           .UseGitHub(options =>
-                           {
-                               options.SetClientId("c4ade52327b01ddacff3")
-                                      .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
-                                      .SetRedirectUri("callback/login/github");
-                           });
+                           .UseGitHub()
+                           .SetClientId("c4ade52327b01ddacff3")
+                           .SetClientSecret("da6bed851b75e317bf6b2cb67013679d9467c122")
+                           .SetRedirectUri("callback/login/github");
                 })
 
                 // Register the OpenIddict server components.
