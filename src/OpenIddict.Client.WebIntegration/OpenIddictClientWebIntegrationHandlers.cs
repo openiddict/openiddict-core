@@ -545,6 +545,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["access_type"] = options.AccessType;
             }
 
+            // By default, Reddit doesn't return a refresh token but
+            // allows sending a "duration" parameter to retrieve one.
             else if (context.Registration.ProviderName is Providers.Reddit)
             {
                 var options = context.Registration.GetRedditOptions();
