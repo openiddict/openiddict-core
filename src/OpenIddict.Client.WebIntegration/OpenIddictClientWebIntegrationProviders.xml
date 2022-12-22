@@ -136,6 +136,7 @@
                      TokenEndpoint="https://www.reddit.com/api/v1/access_token"
                      UserinfoEndpoint="https://oauth.reddit.com/api/v1/me">
         <GrantType Value="authorization_code" />
+        <GrantType Value="client_credentials" />
         <GrantType Value="refresh_token" />
 
         <TokenEndpointAuthMethod Value="client_secret_basic" />

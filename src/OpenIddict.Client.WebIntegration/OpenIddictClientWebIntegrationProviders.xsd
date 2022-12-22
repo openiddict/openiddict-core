@@ -64,6 +64,7 @@
                                 <xs:simpleType>
                                   <xs:restriction base="xs:string">
                                     <xs:enumeration value="authorization_code" />
+                                    <xs:enumeration value="client_credentials" />
                                     <xs:enumeration value="implicit" />
                                     <xs:enumeration value="refresh_token" />
                                   </xs:restriction>
