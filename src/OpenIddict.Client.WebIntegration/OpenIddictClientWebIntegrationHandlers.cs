@@ -545,6 +545,16 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 context.Request["access_type"] = options.AccessType;
             }
 
+            // Pro Santé Connect's specification requires sending an acr_values parameter containing
+            // the desired level of authentication (currently, only "eidas1" is supported). For more
+            // information, see https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045551195.
+            else if (context.Registration.ProviderName is Providers.ProSantéConnect)
+            {
+                var options = context.Registration.GetProSantéConnectOptions();
+
+                context.Request.AcrValues = options.AuthenticationLevel;
+            }
+
             // By default, Reddit doesn't return a refresh token but
             // allows sending a "duration" parameter to retrieve one.
             else if (context.Registration.ProviderName is Providers.Reddit)

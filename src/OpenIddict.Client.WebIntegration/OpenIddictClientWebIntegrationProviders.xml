@@ -130,6 +130,28 @@
     <Environment Name="Sandbox"    Issuer="https://www.paypal.com/" />
   </Provider>
 
+  <Provider Name="ProSantéConnect" Documentation="https://industriels.esante.gouv.fr/en/products-services/health-pro-authentication-pro-sante-connect">
+    <!--
+      Note: Pro Santé Connect requires sending the "scope_all" scope (which is currently the only supported value).
+    -->
+
+    <Environment Name="Production" Issuer="https://auth.esw.esante.gouv.fr/auth/realms/esante-wallet"
+                 ConfigurationEndpoint="https://auth.esw.esante.gouv.fr/auth/realms/esante-wallet/.well-known/wallet-openid-configuration">
+      <Scope Name="scope_all" Default="true" Required="true" />
+    </Environment>
+
+    <Environment Name="Sandbox" Issuer="https://auth.bas.psc.esante.gouv.fr/auth/realms/esante-wallet"
+                 ConfigurationEndpoint="https://auth.bas.psc.esante.gouv.fr/auth/realms/esante-wallet/.well-known/wallet-openid-configuration">
+      <Scope Name="scope_all" Default="true" Required="true" />
+    </Environment>
+
+    <Setting PropertyName="AuthenticationLevel" ParameterName="level" Type="String" Required="true" DefaultValue="eidas1"
+             Description="The level of authentication requested, sent as part of the 'acr_values' parameter (by default, 'eidas1')" />
+
+    <Setting PropertyName="ClientCertificate" ParameterName="certificate" Type="Certificate" Required="false"
+             Description="The TLS client certificate that will be used with the backchannel endpoints (while not enforced yet, its use is strongly recommended)" />
+  </Provider>
+
   <Provider Name="Reddit" Documentation="https://github.com/reddit-archive/reddit/wiki/OAuth2">
     <Environment Issuer="https://www.reddit.com/">
       <Configuration AuthorizationEndpoint="https://www.reddit.com/api/v1/authorize"

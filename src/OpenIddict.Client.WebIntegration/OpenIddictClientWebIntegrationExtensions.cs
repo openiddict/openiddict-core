@@ -5,6 +5,7 @@
  */
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
@@ -40,7 +41,8 @@ public static class OpenIddictClientWebIntegrationExtensions
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(new[]
         {
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>()
+            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictClientOptions>, OpenIddictClientWebIntegrationConfiguration>(),
+            ServiceDescriptor.Singleton<IConfigureOptions<HttpClientFactoryOptions>, OpenIddictClientWebIntegrationConfiguration>()
         });
 
         return new OpenIddictClientWebIntegrationBuilder(builder.Services);
