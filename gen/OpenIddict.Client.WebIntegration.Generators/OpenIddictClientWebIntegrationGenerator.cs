@@ -49,11 +49,16 @@ namespace OpenIddict.Client.WebIntegration.Generators
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
 using OpenIddict.Client.WebIntegration;
+using OpenIddict.Extensions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -272,6 +277,79 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
             return Configure(options => options.{{ setting.property_name }}.UnionWith({{ setting.parameter_name }}));
         }
+        {{~ else if setting.clr_type == 'ECDsaSecurityKey' ~}}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(ECDsaSecurityKey {{ setting.parameter_name }})
+        {
+            if ({{ setting.parameter_name }} is null)
+            {
+                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
+            }
+
+            if ({{ setting.parameter_name }}.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0055), nameof({{ setting.parameter_name }}));
+            }
+
+            return Configure(options => options.{{ setting.property_name }} = {{ setting.parameter_name }});
+        }
+
+#if SUPPORTS_PEM_ENCODED_KEY_IMPORT
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""key"">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
+        /// </param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(string key)
+            => Set{{ setting.property_name }}(key.AsMemory());
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""key"">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
+        /// </param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlyMemory<char> key)
+            => Set{{ setting.property_name }}(key.Span);
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""key"">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
+        /// </param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlySpan<char> key)
+        {
+            if (key.IsEmpty)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0346), nameof(key));
+            }
+
+            var algorithm = OpenIddictHelpers.CreateEcdsaKey();
+
+            try
+            {
+                algorithm.ImportFromPem(key);
+            }
+
+            catch
+            {
+                algorithm.Dispose();
+
+                throw;
+            }
+
+            return Set{{ setting.property_name }}(new ECDsaSecurityKey(algorithm));
+        }
+#endif
         {{~ else if setting.clr_type == 'Uri' ~}}
         /// <summary>
         /// Configures {{ setting.description }}.
@@ -306,6 +384,161 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             }
 
             return Set{{ setting.property_name }}(new Uri({{ setting.parameter_name }}, UriKind.RelativeOrAbsolute));
+        }
+        {{~ else if setting.clr_type == 'X509Certificate2' ~}}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(X509Certificate2 {{ setting.parameter_name }})
+        {
+            if ({{ setting.parameter_name }} is null)
+            {
+                throw new ArgumentNullException(nameof({{ setting.parameter_name }}));
+            }
+
+            if (!{{ setting.parameter_name }}.HasPrivateKey)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0061), nameof({{ setting.parameter_name }}));
+            }
+
+            return Configure(options => options.{{ setting.property_name }} = {{ setting.parameter_name }});
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""assembly"">The assembly containing the certificate.</param>
+        /// <param name=""resource"">The name of the embedded resource.</param>
+        /// <param name=""password"">The password used to open the certificate.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(Assembly assembly, string resource, string? password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => Set{{ setting.property_name }}(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                X509KeyStorageFlags.MachineKeySet :
+                X509KeyStorageFlags.EphemeralKeySet);
+#else
+            => Set{{ setting.property_name }}(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
+#endif
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""assembly"">The assembly containing the certificate.</param>
+        /// <param name=""resource"">The name of the embedded resource.</param>
+        /// <param name=""password"">The password used to open the certificate.</param>
+        /// <param name=""flags"">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(
+            Assembly assembly, string resource,
+            string? password, X509KeyStorageFlags flags)
+        {
+            if (assembly is null)
+            {
+                throw new ArgumentNullException(nameof(assembly));
+            }
+
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0062), nameof(resource));
+            }
+
+            using var stream = assembly.GetManifestResourceStream(resource) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
+
+            return Set{{ setting.property_name }}(stream, password, flags);
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""stream"">The stream containing the certificate.</param>
+        /// <param name=""password"">The password used to open the certificate.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => Set{{ setting.property_name }}(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                X509KeyStorageFlags.MachineKeySet :
+                X509KeyStorageFlags.EphemeralKeySet);
+#else
+            => Set{{ setting.property_name }}(stream, password, X509KeyStorageFlags.MachineKeySet);
+#endif
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""stream"">The stream containing the certificate.</param>
+        /// <param name=""password"">The password used to open the certificate.</param>
+        /// <param name=""flags"">
+        /// An enumeration of flags indicating how and where
+        /// to store the private key of the certificate.
+        /// </param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password, X509KeyStorageFlags flags)
+        {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            using var buffer = new MemoryStream();
+            stream.CopyTo(buffer);
+
+            return Set{{ setting.property_name }}(new X509Certificate2(buffer.ToArray(), password, flags));
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""thumbprint"">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint)
+        {
+            if (string.IsNullOrEmpty(thumbprint))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
+            }
+
+            return Set{{ setting.property_name }}(
+                GetCertificate(StoreLocation.CurrentUser, thumbprint) ??
+                GetCertificate(StoreLocation.LocalMachine, thumbprint) ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
+
+            static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
+            {
+                using var store = new X509Store(StoreName.My, location);
+                store.Open(OpenFlags.ReadOnly);
+
+                return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                    .OfType<X509Certificate2>()
+                    .SingleOrDefault();
+            }
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name=""thumbprint"">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+        /// <param name=""name"">The name of the X.509 store.</param>
+        /// <param name=""location"">The location of the X.509 store.</param>
+        /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
+        public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint, StoreName name, StoreLocation location)
+        {
+            if (string.IsNullOrEmpty(thumbprint))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0065), nameof(thumbprint));
+            }
+
+            using var store = new X509Store(name, location);
+            store.Open(OpenFlags.ReadOnly);
+
+            return Set{{ setting.property_name }}(
+                store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                    .OfType<X509Certificate2>()
+                    .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
         }
         {{~ else ~}}
         /// <summary>
@@ -375,6 +608,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                                         is "PS256" or "PS384" or "PS512" or
                                            "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
+                                    "Certificate" => "X509Certificate2",
                                     "String" => "string",
                                     "StringHashSet" => "HashSet<string>",
                                     "Uri" => "Uri",
@@ -832,6 +1066,7 @@ public static partial class OpenIddictClientWebIntegrationHelpers
             {
                 var template = Template.Parse(@"#nullable enable
 
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client.WebIntegration;
@@ -915,6 +1150,7 @@ public sealed partial class OpenIddictClientWebIntegrationOptions
                                         is "PS256" or "PS384" or "PS512" or
                                            "RS256" or "RS384" or "RS512" => "RsaSecurityKey",
 
+                                    "Certificate" => "X509Certificate2",
                                     "String" => "string",
                                     "StringHashSet" => "HashSet<string>",
                                     "Uri" => "Uri",
