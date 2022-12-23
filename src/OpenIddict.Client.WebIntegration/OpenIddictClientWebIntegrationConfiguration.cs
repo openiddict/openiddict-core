@@ -85,16 +85,14 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration : IConfi
                 var options = _provider.GetRequiredService<IOptionsMonitor<
                     OpenIddictClientWebIntegrationOptions.ProSantéConnect>>().CurrentValue;
 #endif
-                // If a client certificate was specified, alter the HTTP handler.
+                if (builder.PrimaryHandler is not HttpClientHandler handler)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0373));
+                }
+
+                // If a client certificate was specified, update the HTTP handler to use it.
                 if (options.ClientCertificate is X509Certificate certificate)
                 {
-                    // If the primary HTTP handler is not an instance of HttpClientHandler, replace it by
-                    // a new instance of HttpClientHandler as it required to attach the client certificate.
-                    if (builder.PrimaryHandler is not HttpClientHandler handler)
-                    {
-                        builder.PrimaryHandler = handler = new HttpClientHandler();
-                    }
-
                     handler.ClientCertificates.Add(certificate);
                     handler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 }

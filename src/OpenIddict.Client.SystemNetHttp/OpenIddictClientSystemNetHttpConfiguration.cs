@@ -8,6 +8,7 @@ using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace OpenIddict.Client.SystemNetHttp;
 
@@ -75,8 +76,24 @@ public sealed class OpenIddictClientSystemNetHttpConfiguration : IConfigureOptio
 #else
             var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientSystemNetHttpOptions>>();
 #endif
-            var policy = options.CurrentValue.HttpErrorPolicy;
-            if (policy is not null)
+            if (builder.PrimaryHandler is not HttpClientHandler handler)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0373));
+            }
+
+            // OpenIddict uses IHttpClientFactory to manage the creation of the HTTP clients and
+            // their underlying HTTP message handlers, that are cached for the specified duration
+            // and re-used to process multiple requests during that period. While remote APIs are
+            // typically not expected to return cookies, it is in practice a very frequent case,
+            // which poses a serious security issue when the cookies are shared across multiple
+            // requests (which is the case when the same message handler is cached and re-used).
+            //
+            // To avoid that, cookies support is explicitly disabled here, for security reasons.
+            handler.UseCookies = false;
+
+            // Unless the HTTP error policy was explicitly disabled in the options,
+            // add the HTTP handler responsible for replaying failed HTTP requests.
+            if (options.CurrentValue.HttpErrorPolicy is IAsyncPolicy<HttpResponseMessage> policy)
             {
                 builder.AdditionalHandlers.Add(new PolicyHttpMessageHandler(policy));
             }
