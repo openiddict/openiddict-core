@@ -1417,6 +1417,9 @@ To apply post-logout redirection responses, create a class implementing 'IOpenId
   <data name="ID0372" xml:space="preserve">
     <value>The System.Net.Http client cannot be resolved.</value>
   </data>
+  <data name="ID0373" xml:space="preserve">
+    <value>Only instances of type '{0}' can be used as primary HTTP handlers for the HTTP clients managed by OpenIddict.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
